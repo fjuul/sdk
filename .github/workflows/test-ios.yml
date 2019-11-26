@@ -1,0 +1,15 @@
+name: Test iOS
+
+on:
+  push:
+    paths:
+      - ios/**
+
+jobs:
+
+  test:
+
+    runs-on: macOS-10.14
+
+    steps:
+    - uses: actions/checkout@v1

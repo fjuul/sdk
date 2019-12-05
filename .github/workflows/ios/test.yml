@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - ios/**
+      - .github/workflows/ios/**
 
 jobs:
 

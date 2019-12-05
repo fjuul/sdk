@@ -6,7 +6,7 @@ final class AnalyticsTests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
-        XCTAssertEqual(Analytics().text, "Hello, World!")
+        XCTAssertEqual(Analytics().text(), "Hello, Core!")
     }
 
     static var allTests = [

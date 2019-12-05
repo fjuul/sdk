@@ -13,3 +13,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+    - name: Test Core
+        run: |
+          cd ios/Core
+          swift test
+    - name: Test Analytics
+        run: |
+          cd ios/Analytics
+          swift test

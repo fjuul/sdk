@@ -14,6 +14,6 @@ public class AnalyticsTest {
 
     @Test public void testGetTextMethod() {
         Analytics classUnderTest = new Analytics();
-        assertEquals("Hello, Core!", classUnderTest.getText());
+        assertEquals("Hello, Core", classUnderTest.getText());
     }
 }

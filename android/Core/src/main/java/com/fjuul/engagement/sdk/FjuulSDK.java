@@ -6,6 +6,6 @@ public class FjuulSDK {
     }
 
     public String getText() {
-        return "Hello, Core!";
+        return "Hello, Core!"    ;
     }
 }

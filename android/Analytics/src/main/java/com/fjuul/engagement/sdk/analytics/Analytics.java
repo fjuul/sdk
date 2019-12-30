@@ -2,11 +2,11 @@ package com.fjuul.engagement.sdk.analytics;
 
 import com.fjuul.engagement.sdk.FjuulSDK;
 
-public class Library {
+public class Analytics {
 
     private FjuulSDK coreSDK;
 
-    Library() {
+    Analytics() {
         coreSDK = new FjuulSDK();
     }
 

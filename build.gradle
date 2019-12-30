@@ -1,4 +1,18 @@
+plugins {
+    id "com.diffplug.gradle.spotless" version "3.26.1"
+}
+
 apply plugin: 'java'
+
+spotless {
+    java {
+        target fileTree('.') {
+            include '**/*.java'
+        }
+//        licenseHeaderFile project.rootProject.file('spotless/copyright.java')
+        googleJavaFormat('1.7').aosp()
+    }
+}
 
 configure(subprojects) {
     apply plugin: 'java'

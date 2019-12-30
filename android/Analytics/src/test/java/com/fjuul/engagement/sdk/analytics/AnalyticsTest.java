@@ -3,16 +3,19 @@
  */
 package com.fjuul.engagement.sdk.analytics;
 
-import org.junit.Test;
 import static org.junit.Assert.*;
 
+import org.junit.Test;
+
 public class AnalyticsTest {
-    @Test public void testSomeLibraryMethod() {
+    @Test
+    public void testSomeLibraryMethod() {
         Analytics classUnderTest = new Analytics();
         assertTrue("someLibraryMethod should return 'true'", classUnderTest.someLibraryMethod());
     }
 
-    @Test public void testGetTextMethod() {
+    @Test
+    public void testGetTextMethod() {
         Analytics classUnderTest = new Analytics();
         assertEquals("Hello, Core!", classUnderTest.getText());
     }

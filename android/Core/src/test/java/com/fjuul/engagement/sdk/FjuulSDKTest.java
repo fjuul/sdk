@@ -3,8 +3,9 @@
  */
 package com.fjuul.engagement.sdk;
 
-import org.junit.Test;
 import static org.junit.Assert.*;
+
+import org.junit.Test;
 
 public class FjuulSDKTest {
     @Test

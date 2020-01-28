@@ -5,10 +5,7 @@
       location = "container:"
       name = "SDK">
       <FileRef
-         location = "container:Analytics">
-      </FileRef>
-      <FileRef
-         location = "container:Core">
+         location = "group:../Package.swift">
       </FileRef>
    </Group>
    <FileRef

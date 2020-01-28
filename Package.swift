@@ -8,21 +8,38 @@ let package = Package(
     products: [
         // Products define the executables and libraries produced by a package, and make them visible to other packages.
         .library(
-            name: "FjuulSDK",
-            targets: ["FjuulSDK"]
+            name: "Core",
+            targets: ["Core"]
         ),
+        .library(
+            name: "Analytics",
+            targets: ["Analytics"]
+        )
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
-        // .package(url: /* package url */, from: "1.0.0"),
-        .package(path: "ios/Analytics")
+        // .package(url: /* package url */, from: "1.0.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
-            name: "FjuulSDK",
-            dependencies: ["Analytics"]
+            name: "Core",
+            dependencies: [],
+            path: "ios/Sources/Core"
+        ),
+        .target(
+            name: "Analytics",
+            dependencies: ["Core"],
+            path: "ios/Sources/Analytics"
+        ),
+        .testTarget(
+            name: "CoreTests",
+            path: "ios/Tests/Core"
+        ),
+        .testTarget(
+            name: "AnalyticsTests",
+            path: "ios/Tests/Analytics"
         )
     ]
 )

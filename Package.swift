@@ -6,17 +6,35 @@ import PackageDescription
 let package = Package(
     name: "FjuulSDK",
     products: [
-        .library(name: "FjuulSDK", targets: ["FjuulSDK"])
+        .library(
+            name: "Core",
+            targets: ["Core"]
+        ),
+        .library(
+            name: "Analytics",
+            targets: ["Analytics"]
+        )
     ],
-    dependencies: [
-        .package(path: "ios/Core"),
-        .package(path: "ios/Analytics")
-    ],
+    dependencies: [],
     targets: [
         .target(
-            name: "FjuulSDK",
-            dependencies: ["Core", "Analytics"],
-            path: "ios"
+            name: "Core",
+            path: "ios/Core/Sources"
+        ),
+        .target(
+            name: "Analytics",
+            dependencies: ["Core"],
+            path: "ios/Analytics/Sources"
+        ),
+        .testTarget(
+            name: "CoreTests",
+            dependencies: ["Core"],
+            path: "ios/Core/Tests"
+        ),
+        .testTarget(
+            name: "AnalyticsTests",
+            dependencies: ["Analytics"],
+            path: "ios/Analytics/Tests"
         )
     ]
 )

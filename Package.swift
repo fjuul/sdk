@@ -8,32 +8,32 @@ let package = Package(
     products: [
         .library(
             name: "FjuulCore",
-            targets: ["Core"]
+            targets: ["FjuulCore"]
         ),
         .library(
             name: "FjuulAnalytics",
-            targets: ["Analytics"]
+            targets: ["FjuulAnalytics"]
         )
     ],
     dependencies: [],
     targets: [
         .target(
-            name: "Core",
+            name: "FjuulCore",
             path: "ios/Core/Sources"
         ),
         .testTarget(
-            name: "CoreTests",
-            dependencies: ["Core"],
+            name: "FjuulCoreTests",
+            dependencies: ["FjuulCore"],
             path: "ios/Core/Tests"
         ),
         .target(
-            name: "Analytics",
-            dependencies: ["Core"],
+            name: "FjuulAnalytics",
+            dependencies: ["FjuulCore"],
             path: "ios/Analytics/Sources"
         ),
         .testTarget(
-            name: "AnalyticsTests",
-            dependencies: ["Analytics"],
+            name: "FjuulAnalyticsTests",
+            dependencies: ["FjuulAnalytics"],
             path: "ios/Analytics/Tests"
         )
     ]

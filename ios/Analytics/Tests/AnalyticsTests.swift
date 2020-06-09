@@ -1,7 +1,7 @@
 import XCTest
-@testable import Analytics
+@testable import FjuulAnalytics
 
-final class AnalyticsTests: XCTestCase {
+final class FjuulAnalyticsTests: XCTestCase {
     func testExample() {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct

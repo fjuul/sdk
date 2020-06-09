@@ -1,4 +1,4 @@
-import Core
+import FjuulCore
 
 public struct Analytics {
     

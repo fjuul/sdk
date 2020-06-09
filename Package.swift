@@ -4,14 +4,14 @@
 import PackageDescription
 
 let package = Package(
-    name: "FjuulSDK",
+    name: "Fjuul",
     products: [
         .library(
-            name: "Core",
+            name: "FjuulCore",
             targets: ["Core"]
         ),
         .library(
-            name: "Analytics",
+            name: "FjuulAnalytics",
             targets: ["Analytics"]
         )
     ],
@@ -21,15 +21,15 @@ let package = Package(
             name: "Core",
             path: "ios/Core/Sources"
         ),
-        .target(
-            name: "Analytics",
-            dependencies: ["Core"],
-            path: "ios/Analytics/Sources"
-        ),
         .testTarget(
             name: "CoreTests",
             dependencies: ["Core"],
             path: "ios/Core/Tests"
+        ),
+        .target(
+            name: "Analytics",
+            dependencies: ["Core"],
+            path: "ios/Analytics/Sources"
         ),
         .testTarget(
             name: "AnalyticsTests",

@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import Analytics
+import FjuulAnalytics
 
 struct ContentView: View {
     var body: some View {

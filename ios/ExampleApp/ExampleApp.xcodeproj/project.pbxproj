@@ -13,7 +13,7 @@
 		B3BB7F1723993ECC00A7BEF2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B3BB7F1623993ECC00A7BEF2 /* Assets.xcassets */; };
 		B3BB7F1A23993ECC00A7BEF2 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B3BB7F1923993ECC00A7BEF2 /* Preview Assets.xcassets */; };
 		B3BB7F1D23993ECC00A7BEF2 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B3BB7F1B23993ECC00A7BEF2 /* LaunchScreen.storyboard */; };
-		B3BB7F272399407C00A7BEF2 /* Analytics in Frameworks */ = {isa = PBXBuildFile; productRef = B3BB7F262399407C00A7BEF2 /* Analytics */; };
+		B3C683E8248F99730025056E /* FjuulAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = B3C683E7248F99730025056E /* FjuulAnalytics */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,7 +32,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B3BB7F272399407C00A7BEF2 /* Analytics in Frameworks */,
+				B3C683E8248F99730025056E /* FjuulAnalytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -102,7 +102,7 @@
 			);
 			name = ExampleApp;
 			packageProductDependencies = (
-				B3BB7F262399407C00A7BEF2 /* Analytics */,
+				B3C683E7248F99730025056E /* FjuulAnalytics */,
 			);
 			productName = ExampleApp;
 			productReference = B3BB7F0D23993EC800A7BEF2 /* ExampleApp.app */;
@@ -357,9 +357,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		B3BB7F262399407C00A7BEF2 /* Analytics */ = {
+		B3C683E7248F99730025056E /* FjuulAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = Analytics;
+			productName = FjuulAnalytics;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

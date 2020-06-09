@@ -14,7 +14,18 @@
 		B3BB7F1A23993ECC00A7BEF2 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B3BB7F1923993ECC00A7BEF2 /* Preview Assets.xcassets */; };
 		B3BB7F1D23993ECC00A7BEF2 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B3BB7F1B23993ECC00A7BEF2 /* LaunchScreen.storyboard */; };
 		B3C683E8248F99730025056E /* FjuulAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = B3C683E7248F99730025056E /* FjuulAnalytics */; };
+		B3C683F2248FADB50025056E /* ExampleAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C683F1248FADB50025056E /* ExampleAppUITests.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B3C683F4248FADB50025056E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B3BB7F0523993EC800A7BEF2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B3BB7F0C23993EC800A7BEF2;
+			remoteInfo = ExampleApp;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		B3BB7F0D23993EC800A7BEF2 /* ExampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ExampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -25,6 +36,9 @@
 		B3BB7F1923993ECC00A7BEF2 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		B3BB7F1C23993ECC00A7BEF2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		B3BB7F1E23993ECC00A7BEF2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B3C683EF248FADB50025056E /* ExampleAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExampleAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B3C683F1248FADB50025056E /* ExampleAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleAppUITests.swift; sourceTree = "<group>"; };
+		B3C683F3248FADB50025056E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,6 +50,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B3C683EC248FADB50025056E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -43,6 +64,7 @@
 			isa = PBXGroup;
 			children = (
 				B3BB7F0F23993EC800A7BEF2 /* ExampleApp */,
+				B3C683F0248FADB50025056E /* ExampleAppUITests */,
 				B3BB7F0E23993EC800A7BEF2 /* Products */,
 				B3BB7F252399407C00A7BEF2 /* Frameworks */,
 			);
@@ -52,6 +74,7 @@
 			isa = PBXGroup;
 			children = (
 				B3BB7F0D23993EC800A7BEF2 /* ExampleApp.app */,
+				B3C683EF248FADB50025056E /* ExampleAppUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -85,6 +108,15 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		B3C683F0248FADB50025056E /* ExampleAppUITests */ = {
+			isa = PBXGroup;
+			children = (
+				B3C683F1248FADB50025056E /* ExampleAppUITests.swift */,
+				B3C683F3248FADB50025056E /* Info.plist */,
+			);
+			path = ExampleAppUITests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -108,18 +140,40 @@
 			productReference = B3BB7F0D23993EC800A7BEF2 /* ExampleApp.app */;
 			productType = "com.apple.product-type.application";
 		};
+		B3C683EE248FADB50025056E /* ExampleAppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B3C683F6248FADB50025056E /* Build configuration list for PBXNativeTarget "ExampleAppUITests" */;
+			buildPhases = (
+				B3C683EB248FADB50025056E /* Sources */,
+				B3C683EC248FADB50025056E /* Frameworks */,
+				B3C683ED248FADB50025056E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B3C683F5248FADB50025056E /* PBXTargetDependency */,
+			);
+			name = ExampleAppUITests;
+			productName = ExampleAppUITests;
+			productReference = B3C683EF248FADB50025056E /* ExampleAppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		B3BB7F0523993EC800A7BEF2 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1120;
+				LastSwiftUpdateCheck = 1150;
 				LastUpgradeCheck = 1120;
 				ORGANIZATIONNAME = "Fjuul Vision Oy";
 				TargetAttributes = {
 					B3BB7F0C23993EC800A7BEF2 = {
 						CreatedOnToolsVersion = 11.2.1;
+					};
+					B3C683EE248FADB50025056E = {
+						CreatedOnToolsVersion = 11.5;
+						TestTargetID = B3BB7F0C23993EC800A7BEF2;
 					};
 				};
 			};
@@ -137,6 +191,7 @@
 			projectRoot = "";
 			targets = (
 				B3BB7F0C23993EC800A7BEF2 /* ExampleApp */,
+				B3C683EE248FADB50025056E /* ExampleAppUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -149,6 +204,13 @@
 				B3BB7F1D23993ECC00A7BEF2 /* LaunchScreen.storyboard in Resources */,
 				B3BB7F1A23993ECC00A7BEF2 /* Preview Assets.xcassets in Resources */,
 				B3BB7F1723993ECC00A7BEF2 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B3C683ED248FADB50025056E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -165,7 +227,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B3C683EB248FADB50025056E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B3C683F2248FADB50025056E /* ExampleAppUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B3C683F5248FADB50025056E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B3BB7F0C23993EC800A7BEF2 /* ExampleApp */;
+			targetProxy = B3C683F4248FADB50025056E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		B3BB7F1B23993ECC00A7BEF2 /* LaunchScreen.storyboard */ = {
@@ -333,6 +411,44 @@
 			};
 			name = Release;
 		};
+		B3C683F7248FADB50025056E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = ExampleAppUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.fjuul.sdk.ios.ExampleAppUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ExampleApp;
+			};
+			name = Debug;
+		};
+		B3C683F8248FADB50025056E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = ExampleAppUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.fjuul.sdk.ios.ExampleAppUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ExampleApp;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -350,6 +466,15 @@
 			buildConfigurations = (
 				B3BB7F2223993ECC00A7BEF2 /* Debug */,
 				B3BB7F2323993ECC00A7BEF2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B3C683F6248FADB50025056E /* Build configuration list for PBXNativeTarget "ExampleAppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B3C683F7248FADB50025056E /* Debug */,
+				B3C683F8248FADB50025056E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

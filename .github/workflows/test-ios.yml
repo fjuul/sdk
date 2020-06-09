@@ -15,3 +15,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - run: swift test
+    - name: xcode test
+      run: |
+        xcodebuild \
+          -workspace ios/SDK.xcworkspace \
+          -scheme ExampleApp \
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=13.5' \
+          test | xcpretty

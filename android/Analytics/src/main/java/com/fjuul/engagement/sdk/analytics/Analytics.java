@@ -6,7 +6,7 @@ public class Analytics {
 
     private FjuulSDK coreSDK;
 
-    Analytics() {
+    public Analytics() {
         coreSDK = new FjuulSDK();
     }
 

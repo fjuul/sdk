@@ -27,3 +27,26 @@ configure(subprojects) {
         }
     }
 }
+
+subprojects {
+    apply plugin: "maven-publish"
+    publishing {
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/fjuul/sdk")
+                credentials {
+                    username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+                    password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_PERSONAL_TOKEN")
+                }
+            }
+        }
+        publications {
+            gpr(MavenPublication) {
+                groupId "com.fjuul.sdk"
+                version = project.findProperty("VERSION_NAME")
+                from(project.components.java)
+            }
+        }
+    }
+}

@@ -4,12 +4,26 @@ on:
   push:
     paths:
       - ios/**
+      - .github/workflows/**
 
 jobs:
 
   test:
 
-    runs-on: macOS-10.14
+    runs-on: macOS-10.15
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+    - run: swift test
+    - name: lint
+      run: |
+        HOMEBREW_NO_AUTO_UPDATE=1 brew install swiftlint
+        (cd ios; swiftlint)
+    - name: xcode test
+      run: |
+        set -o pipefail && xcodebuild \
+          -workspace ios/SDK.xcworkspace \
+          -scheme ExampleApp \
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=13.5' \
+          test | xcpretty

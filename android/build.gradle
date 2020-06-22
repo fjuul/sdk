@@ -42,7 +42,7 @@ subprojects {
             }
         }
         publications {
-            gpr(MavenPublication) {
+            FjuulSDK(MavenPublication) {
                 groupId "com.fjuul.sdk"
                 version = project.findProperty("VERSION_NAME")
                 from(project.components.java)

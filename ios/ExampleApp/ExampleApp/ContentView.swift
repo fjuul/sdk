@@ -1,11 +1,3 @@
-//
-//  ContentView.swift
-//  ExampleApp
-//
-//  Created by Leo on 05.12.19.
-//  Copyright © 2019 Fjuul Vision Oy. All rights reserved.
-//
-
 import SwiftUI
 import FjuulAnalytics
 

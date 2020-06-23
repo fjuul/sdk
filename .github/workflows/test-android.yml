@@ -24,7 +24,10 @@ jobs:
     - name: unit tests
       working-directory: ./android
       run: ./gradlew clean test
-    - name: set up android emulator
+    - name: build fjuul-sdk for the local maven repo
+      working-directory: ./android
+      run: ./gradlew publishFjuulSDKPublicationToMavenLocal -PVERSION_NAME=100.0.0-SNAPSHOT
+    - name: ui tests (example app)
       uses: reactivecircus/android-emulator-runner@v2
       with:
         api-level: 24

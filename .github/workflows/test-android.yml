@@ -29,4 +29,5 @@ jobs:
       with:
         api-level: 24
     - name: ui tests
+      working-directory: ./android/ExampleApp
       run: ./gradlew app:connectedAndroidTest

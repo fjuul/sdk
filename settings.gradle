@@ -1,0 +1,5 @@
+rootProject.name = 'FjuulSDK'
+
+include ':Core', ':Analytics'
+project(':Core').projectDir = new File(rootProject.projectDir, 'android/Core')
+project(':Analytics').projectDir = new File(rootProject.projectDir, 'android/Analytics')

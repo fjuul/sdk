@@ -8,30 +8,24 @@ on:
 
 jobs:
 
-  lint:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v1
-    - name: set up JDK 1.8
-      uses: actions/setup-java@v1
-      with:
-        java-version: 1.8
-    - name: Check code style
-      working-directory: ./android
-      run: ./gradlew spotlessCheck
-
   test:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: set up JDK 1.8
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
-    - name: Run Tests
+    - name: lint
+      working-directory: ./android
+      run: ./gradlew spotlessCheck
+    - name: unit tests
       working-directory: ./android
       run: ./gradlew clean test
+    - name: ui tests
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 24
+      run: ./gradlew app:connectedAndroidTest

@@ -1,6 +1,6 @@
-package com.fjuul.engagement.sdk.analytics;
+package com.fjuul.sdk.analytics;
 
-import com.fjuul.engagement.sdk.FjuulSDK;
+import com.fjuul.sdk.FjuulSDK;
 
 public class Analytics {
 

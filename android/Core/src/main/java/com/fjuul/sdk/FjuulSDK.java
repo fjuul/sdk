@@ -1,4 +1,4 @@
-package com.fjuul.engagement.sdk;
+package com.fjuul.sdk;
 
 public class FjuulSDK {
     public boolean someLibraryMethod() {

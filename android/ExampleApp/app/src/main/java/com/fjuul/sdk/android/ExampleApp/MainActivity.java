@@ -1,10 +1,9 @@
 package com.fjuul.sdk.android.ExampleApp;
 
 import android.os.Bundle;
+import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import android.widget.TextView;
-
 import com.fjuul.sdk.analytics.Analytics;
 
 public class MainActivity extends AppCompatActivity {

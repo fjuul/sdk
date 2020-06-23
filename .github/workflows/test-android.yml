@@ -24,10 +24,8 @@ jobs:
     - name: unit tests
       working-directory: ./android
       run: ./gradlew clean test
-    - name switch to the example app
-      working-directory: ./android/ExampleApp
     - name: set up android emulator
       uses: reactivecircus/android-emulator-runner@v2
       with:
         api-level: 24
-        script: ./gradlew app:connectedAndroidTest
+        script: cd ExampleApp && ./gradlew app:connectedAndroidTest

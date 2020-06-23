@@ -10,7 +10,7 @@ jobs:
 
   test:
 
-    runs-on: macOS-10.15
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v2
@@ -25,9 +25,8 @@ jobs:
       working-directory: ./android
       run: ./gradlew clean test
     - name: set up android emulator
+      working-directory: ./android/ExampleApp
       uses: reactivecircus/android-emulator-runner@v2
       with:
         api-level: 24
-    - name: ui tests
-      working-directory: ./android/ExampleApp
-      run: ./gradlew app:connectedAndroidTest
+        script: ./gradlew app:connectedAndroidTest

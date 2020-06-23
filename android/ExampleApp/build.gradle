@@ -17,14 +17,7 @@ allprojects {
     repositories {
         google()
         jcenter()
-        maven {
-            name = 'GitHubPackages'
-            url = uri('https://maven.pkg.github.com/fjuul/sdk')
-            credentials {
-                username = project.findProperty('gpr.user') ?: System.getenv('GITHUB_ACTOR')
-                password = project.findProperty('gpr.key') ?: System.getenv('GITHUB_TOKEN')
-            }
-        }
+        mavenLocal()
     }
 }
 

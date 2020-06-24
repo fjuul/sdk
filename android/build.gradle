@@ -28,6 +28,11 @@ configure(subprojects) {
         jcenter()
     }
 
+    java {
+        withSourcesJar()
+        withJavadocJar()
+    }
+
     test {
         testLogging {
             events "passed", "skipped", "failed", "standardOut", "standardError"

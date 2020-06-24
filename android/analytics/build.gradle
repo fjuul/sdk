@@ -25,7 +25,7 @@ dependencies {
     // implementation 'com.google.guava:guava:28.0-jre'
 
     // TODO: specify an exact version for the Core package
-    api project(':Core')
+    api project(':core')
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'

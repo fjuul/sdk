@@ -9,8 +9,15 @@ spotless {
         target fileTree('.') {
             include '**/*.java'
         }
-//        licenseHeaderFile project.rootProject.file('spotless/copyright.java')
+        // licenseHeaderFile project.rootProject.file('spotless/copyright.java')
         googleJavaFormat('1.7').aosp()
+    }
+    groovyGradle {
+        target fileTree('.') {
+            include '**/*.gradle'
+        }
+        greclipse()
+        indentWithSpaces(4)
     }
 }
 

@@ -1,0 +1,52 @@
+plugins {
+    id "com.diffplug.gradle.spotless" version "3.26.1"
+}
+
+apply plugin: 'java'
+
+spotless {
+    java {
+        target fileTree('.') {
+            include '**/*.java'
+        }
+//        licenseHeaderFile project.rootProject.file('spotless/copyright.java')
+        googleJavaFormat('1.7').aosp()
+    }
+}
+
+configure(subprojects) {
+    apply plugin: 'java'
+
+    repositories {
+        jcenter()
+    }
+
+    test {
+        testLogging {
+            events "passed", "skipped", "failed", "standardOut", "standardError"
+        }
+    }
+}
+
+subprojects {
+    apply plugin: "maven-publish"
+    publishing {
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/fjuul/sdk")
+                credentials {
+                    username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_ACTOR")
+                    password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+                }
+            }
+        }
+        publications {
+            FjuulSDK(MavenPublication) {
+                groupId "com.fjuul.sdk"
+                version = project.findProperty("VERSION_NAME")
+                from(project.components.java)
+            }
+        }
+    }
+}

@@ -1,5 +1,5 @@
 plugins {
-    id "com.diffplug.gradle.spotless" version "3.26.1"
+    id "com.diffplug.gradle.spotless" version "4.4.0"
 }
 
 apply plugin: 'java'
@@ -9,8 +9,15 @@ spotless {
         target fileTree('.') {
             include '**/*.java'
         }
-//        licenseHeaderFile project.rootProject.file('spotless/copyright.java')
+        // licenseHeaderFile project.rootProject.file('spotless/copyright.java')
         googleJavaFormat('1.7').aosp()
+    }
+    groovyGradle {
+        target fileTree('.') {
+            include '**/*.gradle'
+        }
+        greclipse()
+        indentWithSpaces(4)
     }
 }
 
@@ -19,6 +26,11 @@ configure(subprojects) {
 
     repositories {
         jcenter()
+    }
+
+    java {
+        withSourcesJar()
+        withJavadocJar()
     }
 
     test {

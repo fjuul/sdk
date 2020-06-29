@@ -2,12 +2,16 @@ package com.fjuul.sdk.http.utils;
 
 import com.fjuul.sdk.entities.SigningKey;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDate;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
@@ -16,8 +20,14 @@ import javax.crypto.spec.SecretKeySpec;
 
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okio.Buffer;
 
 public class RequestSigner {
+    Clock clock;
+    public RequestSigner(Clock clock) {
+        this.clock = clock;
+    }
+
     public Request signRequestByKey(Request request, SigningKey key) {
         Request.Builder signedRequestBuilder = request.newBuilder();
         String checkingRequestHeaders = this.isRequestWithDigestChecking(request) ?
@@ -28,16 +38,20 @@ public class RequestSigner {
             request.method().toLowerCase(),
             request.url().encodedPath()
         );
-        LocalDate date = LocalDate.now();
-        String formattedDate = date.format(DateTimeFormatter.RFC_1123_DATE_TIME);
+
+        Instant instant = Instant.now(clock);
+        OffsetDateTime offset = instant.atOffset( ZoneOffset.UTC );
+        String formattedDate = offset.format(DateTimeFormatter.RFC_1123_DATE_TIME);
         // TODO: assign date format to headers (check if retrofit do it by default) ?
+        signedRequestBuilder.addHeader("Date", formattedDate);
+
         String datePart = String.format("date: %s", formattedDate);
         StringBuilder signingStringBuilder = new StringBuilder(
             String.format("%s\n%s", requestTargetPart, datePart)
         );
         if (isRequestWithDigestChecking(request)) {
             RequestBody body = request.body();
-            if (body == null) {
+            if (body == null || RequestSigner.requestBodyToString(body).isEmpty()) {
                 signingStringBuilder.append("\ndigest: ");
                 signedRequestBuilder.addHeader("Digest", "");
             } else {
@@ -67,10 +81,26 @@ public class RequestSigner {
         } catch (NoSuchAlgorithmException ex) {
             throw new RuntimeException(ex);
         }
-        byte[] stringBodyBytes = body.toString().getBytes(StandardCharsets.UTF_8);
+
+        byte[] stringBodyBytes = RequestSigner.requestBodyToString(body).getBytes(StandardCharsets.UTF_8);
         byte[] hashedBodyBytes = digest.digest(stringBodyBytes);
         String encodedDigest = Base64.getEncoder().encodeToString(hashedBodyBytes);
         return encodedDigest;
+    }
+
+    public static String requestBodyToString(final RequestBody body){
+        try {
+            final RequestBody copy = body;
+            final Buffer buffer = new Buffer();
+            if(copy != null)
+                copy.writeTo(buffer);
+            else
+                return "";
+            return buffer.readUtf8();
+        }
+        catch (final IOException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     private Boolean isRequestWithDigestChecking(Request request) {

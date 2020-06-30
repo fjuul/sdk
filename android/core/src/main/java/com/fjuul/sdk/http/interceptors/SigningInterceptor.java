@@ -27,7 +27,7 @@ public class SigningInterceptor implements Interceptor {
         // TODO: handle case when current valid signing key was rejected by the back-end side
         Optional<SigningKey> keyOptional = this.keychain.getFirstValid();
         if (!keyOptional.isPresent()) {
-            throw new Error("No any valid keys to sign the request");
+            throw new IllegalStateException("No any valid keys to sign the request");
         }
         SigningKey key = keyOptional.get();
         Request signedRequest = requestSigner.signRequestByKey(chain.request(), key);

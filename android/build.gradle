@@ -11,6 +11,8 @@ spotless {
         }
         // licenseHeaderFile project.rootProject.file('spotless/copyright.java')
         googleJavaFormat('1.7').aosp()
+        removeUnusedImports()
+        importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''	// A sequence of package names
     }
     groovyGradle {
         target fileTree('.') {

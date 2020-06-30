@@ -1,11 +1,11 @@
 package com.fjuul.sdk.http.interceptors;
 
+import java.io.IOException;
+import java.util.Optional;
+
 import com.fjuul.sdk.entities.SigningKey;
 import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.http.utils.RequestSigner;
-
-import java.io.IOException;
-import java.util.Optional;
 
 import okhttp3.Interceptor;
 import okhttp3.Request;

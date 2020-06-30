@@ -1,28 +1,23 @@
 package com.fjuul.sdk.http.utils;
 
-import com.fjuul.sdk.entities.SigningKey;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 
-import static org.mockito.Mockito.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
 
+import com.fjuul.sdk.entities.SigningKey;
 
 import okhttp3.Request;
 
-import static org.junit.Assert.*;
-
 @RunWith(Enclosed.class)
 public class RequestSignerTest {
-
 
     public static class GetRequestTest {
         final String SECRET_KEY = "REAL_SECRET_KEY";
@@ -38,10 +33,12 @@ public class RequestSignerTest {
         @Test
         public void signRequest_WithGetMethod_returnsSignedRequest() throws InterruptedException {
             Request.Builder testRequestBuilder = new Request.Builder();
-            Request testRequest = testRequestBuilder
-                .url("https://fjuul.dev.api/analytics/v1/dailyStats/userToken/2020-01-15")
-                .get()
-                .build();
+            Request testRequest =
+                    testRequestBuilder
+                            .url(
+                                    "https://fjuul.dev.api/analytics/v1/dailyStats/userToken/2020-01-15")
+                            .get()
+                            .build();
             SigningKey key = mock(SigningKey.class);
             when(key.getSecret()).thenReturn(SECRET_KEY);
             when(key.getId()).thenReturn(KEY_ID);
@@ -49,15 +46,13 @@ public class RequestSignerTest {
 
             final Request signedRequest = subject.signRequestByKey(testRequest, key);
             assertEquals(
-                "request has correct signature header",
-                signedRequest.header("Signature"),
-                "keyId=\"signing-key-id-1234\",algorithm=\"hmac-sha256\",headers=\"(request-target) date\",signature=\"tu8E+96kyaexTmJ7Oep4Ds4bDFYE5ZdDWafqS8yEd20=\"")
-            ;
+                    "request has correct signature header",
+                    signedRequest.header("Signature"),
+                    "keyId=\"signing-key-id-1234\",algorithm=\"hmac-sha256\",headers=\"(request-target) date\",signature=\"tu8E+96kyaexTmJ7Oep4Ds4bDFYE5ZdDWafqS8yEd20=\"");
             assertEquals(
-                "request has a date header",
-                signedRequest.header("Date"),
-                "Thu, 13 Feb 2020 15:56:23 GMT"
-            );
+                    "request has a date header",
+                    signedRequest.header("Date"),
+                    "Thu, 13 Feb 2020 15:56:23 GMT");
         }
     }
 }

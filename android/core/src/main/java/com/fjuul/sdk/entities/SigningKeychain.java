@@ -21,12 +21,11 @@ public class SigningKeychain {
     }
 
     public Boolean invalidateKeyById(String id) {
-        Optional<SigningKey> keyToInvalidate = signingKeys.stream()
-            .filter(key -> key.getId().equals(id))
-            .findFirst();
+        Optional<SigningKey> keyToInvalidate =
+                signingKeys.stream().filter(key -> key.getId().equals(id)).findFirst();
         if (keyToInvalidate.isPresent()) {
             keyToInvalidate.get().invalidate();
-            return  true;
+            return true;
         } else {
             return false;
         }

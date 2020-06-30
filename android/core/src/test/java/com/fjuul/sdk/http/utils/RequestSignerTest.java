@@ -14,14 +14,16 @@ import org.junit.runner.RunWith;
 
 import com.fjuul.sdk.entities.SigningKey;
 
+import okhttp3.MediaType;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 
 @RunWith(Enclosed.class)
 public class RequestSignerTest {
+    static final String SECRET_KEY = "REAL_SECRET_KEY";
+    static final String KEY_ID = "signing-key-id-1234";
 
-    public static class GetRequestTest {
-        final String SECRET_KEY = "REAL_SECRET_KEY";
-        final String KEY_ID = "signing-key-id-1234";
+    public static class RequestWithoutDigestTest {
         Clock fixedClock;
 
         @Before
@@ -47,12 +49,80 @@ public class RequestSignerTest {
             final Request signedRequest = subject.signRequestByKey(testRequest, key);
             assertEquals(
                     "request has correct signature header",
-                    signedRequest.header("Signature"),
-                    "keyId=\"signing-key-id-1234\",algorithm=\"hmac-sha256\",headers=\"(request-target) date\",signature=\"tu8E+96kyaexTmJ7Oep4Ds4bDFYE5ZdDWafqS8yEd20=\"");
+                    "keyId=\"signing-key-id-1234\",algorithm=\"hmac-sha256\",headers=\"(request-target) date\",signature=\"tu8E+96kyaexTmJ7Oep4Ds4bDFYE5ZdDWafqS8yEd20=\"",
+                    signedRequest.header("Signature"));
             assertEquals(
                     "request has a date header",
-                    signedRequest.header("Date"),
-                    "Thu, 13 Feb 2020 15:56:23 GMT");
+                    "Thu, 13 Feb 2020 15:56:23 GMT",
+                    signedRequest.header("Date"));
+        }
+    }
+
+    public static class RequestWithDigestTest {
+        Clock fixedClock;
+
+        @Before
+        public void beforeTests() {
+            String instantExpected = "2020-02-13T15:56:23Z";
+            fixedClock = Clock.fixed(Instant.parse(instantExpected), ZoneId.of("UTC"));
+        }
+
+        @Test
+        public void signRequest_PostWithoutRequestBody_returnsSignedRequest() throws InterruptedException {
+            Request.Builder testRequestBuilder = new Request.Builder();
+            Request testRequest =
+                testRequestBuilder
+                    .url(
+                        "https://fjuul.dev.api/analytics/v1/dailyStats/userToken/2020-01-15")
+                    .post(RequestBody.create(null, ""))
+                    .build();
+            SigningKey key = mock(SigningKey.class);
+            when(key.getSecret()).thenReturn(SECRET_KEY);
+            when(key.getId()).thenReturn(KEY_ID);
+            RequestSigner subject = new RequestSigner(fixedClock);
+
+            final Request signedRequest = subject.signRequestByKey(testRequest, key);
+            assertEquals(
+                "request has correct signature header",
+                "keyId=\"signing-key-id-1234\",algorithm=\"hmac-sha256\",headers=\"(request-target) date digest\",signature=\"Mmyp9dkZcBG/7Bk3okAExqvKS/E7bAOyanfAbrdAUnA=\"",
+                signedRequest.header("Signature"));
+            assertEquals(
+                "request has a date header",
+                "Thu, 13 Feb 2020 15:56:23 GMT",
+                signedRequest.header("Date"));
+            assertEquals(
+                "request has an empty digest header",
+                "",
+                signedRequest.header("Digest"));
+        }
+
+        @Test
+        public void signRequest_PostWithJsonRequestBody_returnsSignedRequest() throws InterruptedException {
+            Request.Builder testRequestBuilder = new Request.Builder();
+            Request testRequest =
+                testRequestBuilder
+                    .url(
+                        "https://fjuul.dev.api/analytics/v1/dailyStats/userToken/2020-01-15")
+                    .post(RequestBody.create(MediaType.get("application/json"), "{\"hello\":\"world\",\"foo\":\"bar\"}"))
+                    .build();
+            SigningKey key = mock(SigningKey.class);
+            when(key.getSecret()).thenReturn(SECRET_KEY);
+            when(key.getId()).thenReturn(KEY_ID);
+            RequestSigner subject = new RequestSigner(fixedClock);
+
+            final Request signedRequest = subject.signRequestByKey(testRequest, key);
+            assertEquals(
+                "request has correct signature header",
+                "keyId=\"signing-key-id-1234\",algorithm=\"hmac-sha256\",headers=\"(request-target) date digest\",signature=\"78ygswe54lAGd24/ksNjNXuZ9JNrMTI4E9TsqHaLjaU=\"",
+                signedRequest.header("Signature"));
+            assertEquals(
+                "request has a date header",
+                "Thu, 13 Feb 2020 15:56:23 GMT",
+                signedRequest.header("Date"));
+            assertEquals(
+                "request has a digest header",
+                "SHA-256=Q95/OQtk+2T6qHbUBZyTr/JITn+2qDMFeqAKJee0Uz0=",
+                signedRequest.header("Digest"));
         }
     }
 }

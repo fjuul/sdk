@@ -29,6 +29,10 @@ public class RequestSigner {
         this.clock = clock;
     }
 
+    public RequestSigner() {
+        this.clock = Clock.systemUTC();
+    }
+
     public Request signRequestByKey(Request request, SigningKey key) {
         Request.Builder signedRequestBuilder = request.newBuilder();
         String checkingRequestHeaders =

@@ -1,8 +1,10 @@
 package com.fjuul.sdk.http;
 
 import com.fjuul.sdk.entities.SigningKeychain;
+import com.fjuul.sdk.entities.UserCredentials;
 import com.fjuul.sdk.http.interceptors.ApiKeyAttachingInterceptor;
 import com.fjuul.sdk.http.interceptors.SigningInterceptor;
+import com.fjuul.sdk.http.interceptors.UserAuthInterceptor;
 import com.fjuul.sdk.http.utils.RequestSigner;
 
 import okhttp3.OkHttpClient;
@@ -23,10 +25,10 @@ public class FjuulSDKApiHttpClientBuilder {
         return client;
     }
 
-    public OkHttpClient buildAuthorizedClient(String token, String secret) {
-        // TODO: apply interceptor for authentication
+    public OkHttpClient buildUserAuthorizedClient(UserCredentials credentials) {
         OkHttpClient client = new OkHttpClient().newBuilder()
             .addInterceptor(new ApiKeyAttachingInterceptor(serviceKey))
+            .addInterceptor(new UserAuthInterceptor(credentials))
             .build();
         return client;
     }

@@ -10,18 +10,24 @@ import com.fjuul.sdk.http.utils.RequestSigner;
 import okhttp3.OkHttpClient;
 
 public class FjuulSDKApiHttpClientBuilder {
-    String serviceKey;
+    private String baseUrl;
+    private String apiKey;
 
     // TODO: add base-url
     // TODO: add the overloaded constructor with an environment parameter
-    public FjuulSDKApiHttpClientBuilder(String serviceKey) {
-        this.serviceKey = serviceKey;
+    public FjuulSDKApiHttpClientBuilder(String baseUrl, String apiKey) {
+        this.baseUrl = baseUrl;
+        this.apiKey = apiKey;
+    }
+
+    public String getBaseUrl() {
+        return baseUrl;
     }
 
     // TODO: consider returning the retrofit client
     public OkHttpClient buildSigningClient(SigningKeychain keychain) {
         OkHttpClient client = new OkHttpClient().newBuilder()
-            .addInterceptor(new ApiKeyAttachingInterceptor(serviceKey))
+            .addInterceptor(new ApiKeyAttachingInterceptor(apiKey))
             .addInterceptor(new SigningInterceptor(keychain, new RequestSigner()))
             .build();
         return client;
@@ -29,7 +35,7 @@ public class FjuulSDKApiHttpClientBuilder {
 
     public OkHttpClient buildUserAuthorizedClient(UserCredentials credentials) {
         OkHttpClient client = new OkHttpClient().newBuilder()
-            .addInterceptor(new ApiKeyAttachingInterceptor(serviceKey))
+            .addInterceptor(new ApiKeyAttachingInterceptor(apiKey))
             .addInterceptor(new UserAuthInterceptor(credentials))
             .build();
         return client;

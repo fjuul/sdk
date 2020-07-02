@@ -4,26 +4,33 @@ import com.fjuul.sdk.entities.SigningKey;
 import com.fjuul.sdk.entities.UserCredentials;
 import com.fjuul.sdk.http.FjuulSDKApiHttpClientBuilder;
 import com.fjuul.sdk.http.apis.SigningApi;
+import com.squareup.moshi.Moshi;
+import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
 import java.io.IOException;
+import java.util.Date;
 
 import okhttp3.OkHttpClient;
+import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.converter.moshi.MoshiConverterFactory;
 
 public class UserSigningService {
     private SigningApi signingApiClient;
 
     public UserSigningService(FjuulSDKApiHttpClientBuilder clientBuilder, UserCredentials credentials) {
         OkHttpClient httpClient = clientBuilder.buildUserAuthorizedClient(credentials);
+        Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
         Retrofit retrofit = new Retrofit.Builder()
             .baseUrl(clientBuilder.getBaseUrl())
             .client(httpClient)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build();
         signingApiClient = retrofit.create(SigningApi.class);
     }
 
-    public Response<SigningKey> issueUserKey() throws IOException {
-        return signingApiClient.issueUserKey().execute();
+    public Call<SigningKey> issueUserKey() throws IOException {
+        return signingApiClient.issueUserKey();
     }
 }

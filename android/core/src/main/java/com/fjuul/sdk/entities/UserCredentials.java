@@ -12,7 +12,7 @@ public class UserCredentials {
         // require by Retrofit
     }
 
-    UserCredentials(String token, String secret) {
+    public UserCredentials(String token, String secret) {
         this.token = token;
         this.secret = secret;
     }

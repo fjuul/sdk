@@ -12,6 +12,8 @@ import okhttp3.OkHttpClient;
 public class FjuulSDKApiHttpClientBuilder {
     String serviceKey;
 
+    // TODO: add base-url
+    // TODO: add the overloaded constructor with an environment parameter
     public FjuulSDKApiHttpClientBuilder(String serviceKey) {
         this.serviceKey = serviceKey;
     }

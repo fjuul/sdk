@@ -26,7 +26,6 @@ dependencies {
 
     // TODO: specify an exact version for the Core package
     api project(':core')
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.moshi:moshi:1.9.3'
 
     // Use JUnit test framework

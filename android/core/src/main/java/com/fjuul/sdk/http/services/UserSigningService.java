@@ -12,11 +12,10 @@ import java.util.Date;
 
 import okhttp3.OkHttpClient;
 import retrofit2.Call;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;
 
-public class UserSigningService {
+public class UserSigningService implements ISigningService {
     private SigningApi signingApiClient;
 
     public UserSigningService(FjuulSDKApiHttpClientBuilder clientBuilder, UserCredentials credentials) {
@@ -30,7 +29,8 @@ public class UserSigningService {
         signingApiClient = retrofit.create(SigningApi.class);
     }
 
-    public Call<SigningKey> issueUserKey() throws IOException {
+    @Override
+    public Call<SigningKey> issueKey() throws IOException {
         return signingApiClient.issueUserKey();
     }
 }

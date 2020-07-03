@@ -9,6 +9,11 @@ public class SigningKey {
 
     private Boolean valid;
 
+    @SuppressWarnings("unused") // Moshi uses this!
+    private SigningKey() {
+        valid = true;
+    }
+
     public SigningKey(
             String id, String secret, Date expiresAt, Boolean valid) {
         this.id = id;

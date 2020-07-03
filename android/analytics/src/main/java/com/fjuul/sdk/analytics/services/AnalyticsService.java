@@ -10,9 +10,11 @@ import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 import java.io.IOException;
 import java.util.Date;
 
+import io.reactivex.Observable;
 import okhttp3.OkHttpClient;
-import retrofit2.Call;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.Result;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.moshi.MoshiConverterFactory;
 
 public class AnalyticsService {
@@ -24,16 +26,17 @@ public class AnalyticsService {
         Retrofit retrofit = new Retrofit.Builder()
             .baseUrl(clientBuilder.getBaseUrl())
             .client(httpClient)
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build();
         analyticsApiClient = retrofit.create(AnalyticsApi.class);
     }
 
-    public Call<DailyStats> getDailyStats(String userToken, String date) throws IOException {
+    public Observable<Result<DailyStats>> getDailyStats(String userToken, String date) throws IOException {
         return analyticsApiClient.getDailyStats(userToken, date);
     }
 
-    public Call<DailyStats> getDailyStats(String userToken, String startDate, String endDate) throws IOException {
+    public Observable<Result<DailyStats>> getDailyStats(String userToken, String startDate, String endDate) throws IOException {
         return analyticsApiClient.getDailyStats(userToken, startDate, endDate);
     }
 }

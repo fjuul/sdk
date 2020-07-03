@@ -10,9 +10,11 @@ import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 import java.io.IOException;
 import java.util.Date;
 
+import io.reactivex.Observable;
 import okhttp3.OkHttpClient;
-import retrofit2.Call;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.Result;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.moshi.MoshiConverterFactory;
 
 public class UserSigningService implements ISigningService {
@@ -24,13 +26,14 @@ public class UserSigningService implements ISigningService {
         Retrofit retrofit = new Retrofit.Builder()
             .baseUrl(clientBuilder.getBaseUrl())
             .client(httpClient)
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build();
         signingApiClient = retrofit.create(SigningApi.class);
     }
 
     @Override
-    public Call<SigningKey> issueKey() throws IOException {
+    public Observable<Result<SigningKey>> issueKey() throws IOException {
         return signingApiClient.issueUserKey();
     }
 }

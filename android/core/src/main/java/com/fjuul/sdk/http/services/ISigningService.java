@@ -4,8 +4,9 @@ import com.fjuul.sdk.entities.SigningKey;
 
 import java.io.IOException;
 
-import retrofit2.Call;
+import io.reactivex.Observable;
+import retrofit2.adapter.rxjava2.Result;
 
 public interface ISigningService {
-    Call<SigningKey> issueKey() throws IOException;
+    Observable<Result<SigningKey>> issueKey() throws IOException;
 }

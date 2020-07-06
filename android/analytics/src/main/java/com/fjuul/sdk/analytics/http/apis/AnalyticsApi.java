@@ -15,5 +15,5 @@ public interface AnalyticsApi {
     Observable<Result<DailyStats>> getDailyStats(@Path("userToken") String userToken, @Path("date") String date);
 
     @GET("/sdk/analytics/v1/daily-stats/{userToken}")
-    Observable<Result<DailyStats>> getDailyStats(@Path("userToken") String userToken, @Query("startDate") String startDate, @Query("endDate") String endDate);
+    Observable<Result<DailyStats[]>> getDailyStats(@Path("userToken") String userToken, @Query("startDate") String startDate, @Query("endDate") String endDate);
 }

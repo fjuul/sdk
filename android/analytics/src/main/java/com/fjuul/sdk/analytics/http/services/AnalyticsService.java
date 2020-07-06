@@ -38,7 +38,7 @@ public class AnalyticsService {
         return analyticsApiClient.getDailyStats(userToken, date);
     }
 
-    public Observable<Result<DailyStats>> getDailyStats(String userToken, String startDate, String endDate) throws IOException {
+    public Observable<Result<DailyStats[]>> getDailyStats(String userToken, String startDate, String endDate) throws IOException {
         return analyticsApiClient.getDailyStats(userToken, startDate, endDate);
     }
 }

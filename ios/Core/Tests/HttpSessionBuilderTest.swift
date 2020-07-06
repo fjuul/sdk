@@ -7,7 +7,7 @@ final class HttpSessionBuilderTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        stub(condition: { req in true }) { _ in
+        stub(condition: { _ in true }) { _ in
             let stubData = "".data(using: String.Encoding.utf8)
             return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
         }
@@ -23,7 +23,7 @@ final class HttpSessionBuilderTests: XCTestCase {
         let builder = HttpSessionBuilder(baseUrl: "https://foo", apiKey: "this-is-sparta")
         let session = builder.buildBearerAuthenticatedSession(credentials: UserCredentials(token: "", secret: ""))
         let request = session.request("https://foo")
-        request.response { response in
+        request.response { _ in
             XCTAssertEqual(request.request?.value(forHTTPHeaderField: "x-api-key"), "this-is-sparta")
             e.fulfill()
         }

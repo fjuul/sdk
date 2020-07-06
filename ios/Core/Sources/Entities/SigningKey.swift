@@ -2,7 +2,6 @@ import Foundation
 
 struct SigningKey: CustomStringConvertible {
 
-    // swiftlint:disable:next identifier_name
     let id: String
     let secret: String
     let expiresAt: Date

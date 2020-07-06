@@ -6,6 +6,17 @@ struct HttpSessionBuilder {
     let baseUrl: String
     let apiKey: String
 
+    func buildBearerAuthenticatedSession(credentials: UserCredentials) -> Session {
+        let apiKeyAdapter = ApiKeyAdapter(apiKey: apiKey)
+        let bearerAuthAdapter = BearerAuthenticationAdapter(userCredentials: credentials)
+        let compositeInterceptor = Interceptor(
+            adapters: [apiKeyAdapter, bearerAuthAdapter],
+            retriers: [],
+            interceptors: []
+        )
+        return Session(interceptor: compositeInterceptor)
+    }
+
     func buildSignedSession(credentials: UserCredentials) -> Session {
 
         let hmacCredentials = HmacCredentials(userCredentials: credentials, signingKey: nil)
@@ -21,8 +32,7 @@ struct HttpSessionBuilder {
             interceptors: [authInterceptor]
         )
 
-        let session = Session(interceptor: compositeInterceptor)
-        return session
+        return Session(interceptor: compositeInterceptor)
 
     }
 

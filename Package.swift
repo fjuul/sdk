@@ -21,7 +21,8 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/Alamofire/Alamofire.git", .upToNextMajor(from: "5.2.0"))
+        .package(url: "https://github.com/Alamofire/Alamofire.git", .upToNextMajor(from: "5.2.0")),
+        .package(url: "https://github.com/AliSoftware/OHHTTPStubs.git", .upToNextMajor(from: "9.0.0"))
     ],
     targets: [
         .target(
@@ -31,7 +32,7 @@ let package = Package(
         ),
         .testTarget(
             name: "FjuulCoreTests",
-            dependencies: ["FjuulCore"],
+            dependencies: [.product(name: "OHHTTPStubsSwift", package: "OHHTTPStubs"), "FjuulCore"],
             path: "ios/Core/Tests"
         ),
         .target(
@@ -44,5 +45,6 @@ let package = Package(
             dependencies: ["FjuulAnalytics"],
             path: "ios/Analytics/Tests"
         )
-    ]
+    ],
+    swiftLanguageVersions: [.v5]
 )

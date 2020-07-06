@@ -14,8 +14,7 @@ public class SigningKey {
         valid = true;
     }
 
-    public SigningKey(
-            String id, String secret, Date expiresAt, Boolean valid) {
+    public SigningKey(String id, String secret, Date expiresAt, Boolean valid) {
         this.id = id;
         this.secret = secret;
         this.expiresAt = expiresAt;

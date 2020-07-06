@@ -27,6 +27,7 @@ public class UserCredentials {
 
     /**
      * Returns a Bearer token using the token and secret from this instance.
+     *
      * @return a Bearer token using the token and secret from this instance.
      */
     public String getCompleteAuthString() {
@@ -35,6 +36,7 @@ public class UserCredentials {
 
     /**
      * returns the base64 encoded credentials
+     *
      * @return the base64 encoded credentials
      */
     public String encodedBase64() {

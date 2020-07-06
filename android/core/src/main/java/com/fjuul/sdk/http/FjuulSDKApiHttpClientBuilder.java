@@ -27,11 +27,16 @@ public class FjuulSDKApiHttpClientBuilder {
     }
 
     // TODO: consider returning the retrofit client
-    public OkHttpClient buildSigningClient(SigningKeychain keychain, ISigningService signingService) {
-        OkHttpClient client = new OkHttpClient().newBuilder()
-            .addInterceptor(new ApiKeyAttachingInterceptor(apiKey))
-            .addInterceptor(new SigningInterceptor(keychain, new RequestSigner(), signingService))
-            .build();
+    public OkHttpClient buildSigningClient(
+            SigningKeychain keychain, ISigningService signingService) {
+        OkHttpClient client =
+                new OkHttpClient()
+                        .newBuilder()
+                        .addInterceptor(new ApiKeyAttachingInterceptor(apiKey))
+                        .addInterceptor(
+                                new SigningInterceptor(
+                                        keychain, new RequestSigner(), signingService))
+                        .build();
         return client;
     }
 
@@ -40,10 +45,12 @@ public class FjuulSDKApiHttpClientBuilder {
     }
 
     public OkHttpClient buildUserAuthorizedClient(UserCredentials credentials) {
-        OkHttpClient client = new OkHttpClient().newBuilder()
-            .addInterceptor(new ApiKeyAttachingInterceptor(apiKey))
-            .addInterceptor(new UserAuthInterceptor(credentials))
-            .build();
+        OkHttpClient client =
+                new OkHttpClient()
+                        .newBuilder()
+                        .addInterceptor(new ApiKeyAttachingInterceptor(apiKey))
+                        .addInterceptor(new UserAuthInterceptor(credentials))
+                        .build();
         return client;
     }
 }

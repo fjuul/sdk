@@ -12,7 +12,7 @@ public class UnauthorizedErrorResponseBody {
     private String message;
     private ErrorCode errorCode;
 
-    private UnauthorizedErrorResponseBody() { }
+    private UnauthorizedErrorResponseBody() {}
 
     public String getMessage() {
         return message;

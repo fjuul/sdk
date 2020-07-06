@@ -1,8 +1,8 @@
 package com.fjuul.sdk.http.interceptors;
 
-import com.fjuul.sdk.entities.UserCredentials;
-
 import java.io.IOException;
+
+import com.fjuul.sdk.entities.UserCredentials;
 
 import okhttp3.Interceptor;
 import okhttp3.Request;
@@ -18,9 +18,8 @@ public class UserAuthInterceptor implements Interceptor {
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request.Builder builder = chain.request().newBuilder();
-        Request newRequest = builder
-            .header("Authorization", credentials.getCompleteAuthString())
-            .build();
+        Request newRequest =
+                builder.header("Authorization", credentials.getCompleteAuthString()).build();
         return chain.proceed(newRequest);
     }
 }

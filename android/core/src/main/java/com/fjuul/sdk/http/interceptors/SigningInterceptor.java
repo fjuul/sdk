@@ -22,7 +22,8 @@ public class SigningInterceptor implements Interceptor {
     private RequestSigner requestSigner;
     private ISigningService signingService;
 
-    public SigningInterceptor(SigningKeychain keychain, RequestSigner requestSigner, ISigningService signingService) {
+    public SigningInterceptor(
+            SigningKeychain keychain, RequestSigner requestSigner, ISigningService signingService) {
         this.keychain = keychain;
         this.requestSigner = requestSigner;
         this.signingService = signingService;
@@ -36,8 +37,8 @@ public class SigningInterceptor implements Interceptor {
         if (!keyOptional.isPresent()) {
             SigningKey newKey = issueNewKey();
             if (newKey != null) {
-                 keychain.appendKey(newKey);
-                 signingKey = newKey;
+                keychain.appendKey(newKey);
+                signingKey = newKey;
             } else {
                 // TODO: specify an error cause (invalid credentials ?)
                 throw new IOException("Couldn't retrieve a signing key");
@@ -56,9 +57,13 @@ public class SigningInterceptor implements Interceptor {
         if (response.code() == 401) {
             ResponseBody responseBody = response.body();
             Moshi moshi = new Moshi.Builder().build();
-            JsonAdapter<UnauthorizedErrorResponseBody> bodyJsonAdapter = moshi.adapter(UnauthorizedErrorResponseBody.class).nullSafe();
-            UnauthorizedErrorResponseBody errorResponseBody = bodyJsonAdapter.fromJson(responseBody.source());
-            if (errorResponseBody != null && errorResponseBody.getErrorCode() == UnauthorizedErrorResponseBody.ErrorCode.expired_signing_key) {
+            JsonAdapter<UnauthorizedErrorResponseBody> bodyJsonAdapter =
+                    moshi.adapter(UnauthorizedErrorResponseBody.class).nullSafe();
+            UnauthorizedErrorResponseBody errorResponseBody =
+                    bodyJsonAdapter.fromJson(responseBody.source());
+            if (errorResponseBody != null
+                    && errorResponseBody.getErrorCode()
+                            == UnauthorizedErrorResponseBody.ErrorCode.expired_signing_key) {
                 SigningKey newKey = issueNewKey();
                 if (newKey != null) {
                     keychain.appendKey(newKey);
@@ -75,20 +80,25 @@ public class SigningInterceptor implements Interceptor {
     }
 
     private SigningKey issueNewKey() throws IOException {
-        SigningKey newKey = signingService.issueKey()
-            .firstOrError()
-            .flatMapMaybe(signingKeyResult -> {
-                if (signingKeyResult.isError()) {
-                    return Maybe.error(signingKeyResult.error());
-                }
+        SigningKey newKey =
+                signingService
+                        .issueKey()
+                        .firstOrError()
+                        .flatMapMaybe(
+                                signingKeyResult -> {
+                                    if (signingKeyResult.isError()) {
+                                        return Maybe.error(signingKeyResult.error());
+                                    }
 
-                retrofit2.Response<SigningKey> signingKeyResponse = signingKeyResult.response();
-                if (signingKeyResponse.isSuccessful()) {
-                    return Maybe.just(signingKeyResponse.body());
-                } else {
-                    return Maybe.empty();
-                }
-            }).blockingGet();
+                                    retrofit2.Response<SigningKey> signingKeyResponse =
+                                            signingKeyResult.response();
+                                    if (signingKeyResponse.isSuccessful()) {
+                                        return Maybe.just(signingKeyResponse.body());
+                                    } else {
+                                        return Maybe.empty();
+                                    }
+                                })
+                        .blockingGet();
         return newKey;
     }
 }

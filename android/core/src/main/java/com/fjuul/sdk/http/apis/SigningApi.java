@@ -3,7 +3,6 @@ package com.fjuul.sdk.http.apis;
 import com.fjuul.sdk.entities.SigningKey;
 
 import io.reactivex.Observable;
-import retrofit2.Call;
 import retrofit2.adapter.rxjava2.Result;
 import retrofit2.http.GET;
 

@@ -1,8 +1,8 @@
 package com.fjuul.sdk.http.services;
 
-import com.fjuul.sdk.entities.SigningKey;
-
 import java.io.IOException;
+
+import com.fjuul.sdk.entities.SigningKey;
 
 import io.reactivex.Observable;
 import retrofit2.adapter.rxjava2.Result;

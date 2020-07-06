@@ -5,6 +5,8 @@ import com.fjuul.sdk.entities.UserCredentials;
 import com.fjuul.sdk.http.interceptors.ApiKeyAttachingInterceptor;
 import com.fjuul.sdk.http.interceptors.SigningInterceptor;
 import com.fjuul.sdk.http.interceptors.UserAuthInterceptor;
+import com.fjuul.sdk.http.services.ISigningService;
+import com.fjuul.sdk.http.services.UserSigningService;
 import com.fjuul.sdk.http.utils.RequestSigner;
 
 import okhttp3.OkHttpClient;
@@ -25,12 +27,16 @@ public class FjuulSDKApiHttpClientBuilder {
     }
 
     // TODO: consider returning the retrofit client
-    public OkHttpClient buildSigningClient(SigningKeychain keychain) {
+    public OkHttpClient buildSigningClient(SigningKeychain keychain, ISigningService signingService) {
         OkHttpClient client = new OkHttpClient().newBuilder()
             .addInterceptor(new ApiKeyAttachingInterceptor(apiKey))
-            .addInterceptor(new SigningInterceptor(keychain, new RequestSigner()))
+            .addInterceptor(new SigningInterceptor(keychain, new RequestSigner(), signingService))
             .build();
         return client;
+    }
+
+    public OkHttpClient buildSigningClient(SigningKeychain keychain, UserCredentials credentials) {
+        return buildSigningClient(keychain, new UserSigningService(this, credentials));
     }
 
     public OkHttpClient buildUserAuthorizedClient(UserCredentials credentials) {

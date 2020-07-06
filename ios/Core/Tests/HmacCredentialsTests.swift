@@ -3,15 +3,13 @@ import XCTest
 
 final class HmacCredentialsTests: XCTestCase {
 
-    let userCredentials = UserCredentials(token: "", secret: "")
-
     func testRequiresRefreshExpired() {
         let key = SigningKey(
             id: "",
             secret: "",
             expiresAt: Date(timeIntervalSinceNow: 60 * -1)
         )
-        let credentials = HmacCredentials(userCredentials: userCredentials, signingKey: key)
+        let credentials = HmacCredentials(signingKey: key)
         XCTAssertTrue(credentials.requiresRefresh)
     }
 
@@ -21,12 +19,12 @@ final class HmacCredentialsTests: XCTestCase {
             secret: "",
             expiresAt: Date(timeIntervalSinceNow: 60 * 6)
         )
-        let credentials = HmacCredentials(userCredentials: userCredentials, signingKey: key)
+        let credentials = HmacCredentials(signingKey: key)
         XCTAssertFalse(credentials.requiresRefresh)
     }
 
     func testNoSigningKey() {
-        let credentials = HmacCredentials(userCredentials: userCredentials, signingKey: nil)
+        let credentials = HmacCredentials(signingKey: nil)
         XCTAssertTrue(credentials.requiresRefresh)
     }
 

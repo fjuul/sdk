@@ -3,7 +3,6 @@ import Alamofire
 
 struct HmacCredentials: AuthenticationCredential {
 
-    let userCredentials: UserCredentials
     let signingKey: SigningKey?
 
     var requiresRefresh: Bool {

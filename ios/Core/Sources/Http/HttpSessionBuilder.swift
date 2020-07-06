@@ -21,7 +21,7 @@ struct HttpSessionBuilder {
 
     func buildSignedSession() -> Session {
 
-        let hmacCredentials = HmacCredentials(userCredentials: credentials, signingKey: nil)
+        let hmacCredentials = HmacCredentials(signingKey: nil)
 
         let apiKeyAdapter = ApiKeyAdapter(apiKey: apiKey)
 

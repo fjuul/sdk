@@ -22,7 +22,7 @@ public class SigningKey {
         this.valid = valid;
     }
 
-    public SigningKey(String id, String secret, Date expiresAt, String identityType) {
+    public SigningKey(String id, String secret, Date expiresAt) {
         this(id, secret, expiresAt, true);
     }
 

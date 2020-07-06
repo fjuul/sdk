@@ -1,7 +1,7 @@
 name: Test iOS
 
 on:
-  push:
+  pull_request:
     paths:
       - ios/**
       - .github/workflows/**

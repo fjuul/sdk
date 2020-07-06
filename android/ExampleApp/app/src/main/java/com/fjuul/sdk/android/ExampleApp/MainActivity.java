@@ -40,29 +40,28 @@ public class MainActivity extends AppCompatActivity {
             "https://dev.api.fjuul.com",
             "c1e51fc6-d253-4961-ab9a-5d91560bae75");
         UserSigningService signingService = new UserSigningService(clientBuilder, new UserCredentials(userToken, secret));
+        AnalyticsService analyticsService = new AnalyticsService(clientBuilder, new SigningKeychain(), signingService);
 
         try {
-            signingService.issueKey()
+            analyticsService
+                .getDailyStats(userToken, "2020-06-30")
                 .firstElement()
-                .flatMap(signingKeyResult -> {
-                    if (!signingKeyResult.isError()) {
-                        Log.i("FJUUL_SDK", String.format("error: %s", signingKeyResult.error().toString()));
-                        return Maybe.empty();
-                    }
-                    Response<SigningKey> response = signingKeyResult.response();
-                    Log.i("FJUUL_SDK", "parse signing key");
-                    SigningKey key = response.body();
-                    return Maybe.just(key);
-                }).flatMapObservable(signingKey -> {
-                    AnalyticsService analyticsService = new AnalyticsService(clientBuilder, new SigningKeychain(signingKey));
-                    return analyticsService.getDailyStats(userToken, "2020-02-30");
-                }).subscribeOn(Schedulers.io())
+                .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.newThread())
-//                .unsubscribeOn(Schedulers.io());
                 .subscribe(result -> {
-                     DailyStats dailyStats = result.response().body();
-                Log.i("FJUUL_SDK", String.format("date: %s; active calories: %d", dailyStats.getDate(), dailyStats.getActiveCalories()));
-            }, error -> {
+                    if (result.isError()) {
+                        Log.i("FJUUL_SDK", String.format("error: %s", result.error().toString()));
+                        return;
+                    }
+
+                    if (result.response().isSuccessful()) {
+                        DailyStats dailyStats = result.response().body();
+                        Log.i("FJUUL_SDK", String.format("date: %s; active calories: %d", dailyStats.getDate(), dailyStats.getActiveCalories()));
+                    } else {
+                        Response<DailyStats> response = result.response();
+                        Log.i("FJUUL_SDK", String.format("error response: %d %s", response.code(), response.errorBody().string()));
+                    }
+                }, error -> {
                     Log.i("FJUUL_SDK", String.format("error: %s", error.getMessage()));
                 });
         } catch (IOException e) {

@@ -26,13 +26,10 @@ public class SigningInterceptor implements Interceptor {
 
     @Override
     public Response intercept(Chain chain) throws IOException {
-        // TODO: handle case when no valid signing key in the keychain
         // TODO: handle case when current valid signing key was expired already
-        // TODO: handle case when current valid signing key was rejected by the back-end side
         Optional<SigningKey> keyOptional = this.keychain.getFirstValid();
         SigningKey signingKey = null;
         if (!keyOptional.isPresent()) {
-            // TODO: log about it!
             SigningKey newKey = issueNewKey();
             if (newKey != null) {
                  keychain.appendKey(newKey);
@@ -45,6 +42,7 @@ public class SigningInterceptor implements Interceptor {
         }
 
         Request signedRequest = requestSigner.signRequestByKey(chain.request(), signingKey);
+        // TODO: handle case when current valid signing key was rejected by the back-end side
         return chain.proceed(signedRequest);
     }
 

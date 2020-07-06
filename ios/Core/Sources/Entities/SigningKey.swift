@@ -1,6 +1,6 @@
 import Foundation
 
-struct SigningKey: CustomStringConvertible {
+struct SigningKey: CustomStringConvertible, Decodable {
 
     let id: String
     let secret: String

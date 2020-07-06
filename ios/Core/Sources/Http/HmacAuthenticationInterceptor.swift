@@ -1,23 +1,55 @@
 import Foundation
 import Alamofire
 
+extension DateFormatter {
+  static let iso8601Full: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ"
+    formatter.calendar = Calendar(identifier: .iso8601)
+    formatter.timeZone = TimeZone(secondsFromGMT: 0)
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    return formatter
+  }()
+}
+
 class HmacAuthenticationInterceptor: Authenticator {
 
+    let refreshSession: Session
+
+    init(refreshSession: Session) {
+        self.refreshSession = refreshSession
+    }
+
     func apply(_ credential: HmacCredentials, to urlRequest: inout URLRequest) {
+        debugPrint("Apply credential: \(credential)")
         // urlRequest.headers.add(.authorization(bearerToken: credential.accessToken))
     }
 
     func refresh(_ credential: HmacCredentials,
                  for session: Session,
                  completion: @escaping (Result<HmacCredentials, Error>) -> Void) {
+        
+        refreshSession.request(SigningApiRouter.issueUserKey)
+            .validate(statusCode: 200..<299)
+            .response { response in
+                switch response.result {
+                case .success(let data):
+                    do {
+                        let decoder = JSONDecoder()
+                        decoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601Full)
+                        let signingKey = try decoder.decode(SigningKey.self, from: data!)
+                        completion(.success(HmacCredentials(
+                            userCredentials: credential.userCredentials,
+                            signingKey: signingKey
+                        )))
+                    } catch {
+                        completion(.failure(error))
+                    }
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
 
-        session.request("https://httpbin.org/get").response { response in
-            debugPrint("Response: \(response)")
-        }
-        // Refresh the credential using the refresh token...then call completion with the new credential.
-        //
-        // The new credential will automatically be stored within the `AuthenticationInterceptor`. Future requests will
-        // be authenticated using the `apply(_:to:)` method using the new credential.
     }
 
     func didRequest(_ urlRequest: URLRequest,

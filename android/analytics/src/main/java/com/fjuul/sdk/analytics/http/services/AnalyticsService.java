@@ -1,4 +1,4 @@
-package com.fjuul.sdk.analytics.services;
+package com.fjuul.sdk.analytics.http.services;
 
 import com.fjuul.sdk.analytics.entities.DailyStats;
 import com.fjuul.sdk.analytics.http.apis.AnalyticsApi;

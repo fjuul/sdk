@@ -2,7 +2,7 @@ package com.fjuul.sdk.android.ExampleApp;
 
 import com.fjuul.sdk.analytics.Analytics;
 import com.fjuul.sdk.analytics.entities.DailyStats;
-import com.fjuul.sdk.analytics.services.AnalyticsService;
+import com.fjuul.sdk.analytics.http.services.AnalyticsService;
 import com.fjuul.sdk.entities.SigningKey;
 import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.entities.UserCredentials;

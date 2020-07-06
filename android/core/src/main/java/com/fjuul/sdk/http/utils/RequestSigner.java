@@ -22,6 +22,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okio.Buffer;
 
+// TODO: Clock is available since android api 26, find a way to launch on earlier versions
 public class RequestSigner {
     Clock clock;
 

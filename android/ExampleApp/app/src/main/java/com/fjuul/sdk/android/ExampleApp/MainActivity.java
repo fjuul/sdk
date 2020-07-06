@@ -41,8 +41,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void testAnalyticsRequest() {
         // NOTE: provide your credentials
-        String userToken = "cef799c2-d189-49ea-9621-4457dca83655";
-        String secret = "a1bdbf49-0966-43d4-af33-a7bdfa4b9857";
+        String userToken = "<TOKEN>";
+        String secret = "<SECRET>";
         FjuulSDKApiHttpClientBuilder clientBuilder = new FjuulSDKApiHttpClientBuilder(
             "https://dev.api.fjuul.com",
             "c1e51fc6-d253-4961-ab9a-5d91560bae75");

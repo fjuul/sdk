@@ -5,7 +5,11 @@ import PackageDescription
 
 let package = Package(
     name: "Fjuul",
-    platforms: [.iOS(.v10)],
+    platforms: [
+        // required to run tests depending on Alamofire
+        .macOS(.v10_12),
+        .iOS(.v10)
+    ],
     products: [
         .library(
             name: "FjuulCore",
@@ -16,10 +20,13 @@ let package = Package(
             targets: ["FjuulAnalytics"]
         )
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/Alamofire/Alamofire.git", .upToNextMajor(from: "5.2.0"))
+    ],
     targets: [
         .target(
             name: "FjuulCore",
+            dependencies: ["Alamofire"],
             path: "ios/Core/Sources"
         ),
         .testTarget(

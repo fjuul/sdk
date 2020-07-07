@@ -21,14 +21,17 @@ class HmacAuthenticationInterceptor: Authenticator {
     }
 
     func apply(_ credential: HmacCredentials, to urlRequest: inout URLRequest) {
-        debugPrint("Apply credential: \(credential)")
-        // urlRequest.headers.add(.authorization(bearerToken: credential.accessToken))
+        guard let signingKey = credential.signingKey else {
+            // TODO this should never happen
+            return
+        }
+        urlRequest.signWith(key: signingKey, forDate: Date())
     }
 
     func refresh(_ credential: HmacCredentials,
                  for session: Session,
                  completion: @escaping (Result<HmacCredentials, Error>) -> Void) {
-        
+
         refreshSession.request(SigningApiRouter.issueUserKey)
             .validate(statusCode: 200..<299)
             .response { response in

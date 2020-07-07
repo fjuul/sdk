@@ -58,14 +58,15 @@ public class RequestSignerTest {
         }
 
         @Test
-        public void signRequest_WithGetMethodAndQueryParamsAndHash_returnsSignedRequest() throws InterruptedException {
+        public void signRequest_WithGetMethodAndQueryParamsAndHash_returnsSignedRequest()
+                throws InterruptedException {
             Request.Builder testRequestBuilder = new Request.Builder();
             Request testRequest =
-                testRequestBuilder
-                    .url(
-                        "https://fjuul.dev.api/analytics/v1/dailyStats/userToken?startDate=2020-01-15&endDate=2020-01-20#fragment")
-                    .get()
-                    .build();
+                    testRequestBuilder
+                            .url(
+                                    "https://fjuul.dev.api/analytics/v1/dailyStats/userToken?startDate=2020-01-15&endDate=2020-01-20#fragment")
+                            .get()
+                            .build();
             SigningKey key = mock(SigningKey.class);
             when(key.getSecret()).thenReturn(SECRET_KEY);
             when(key.getId()).thenReturn(KEY_ID);
@@ -73,13 +74,13 @@ public class RequestSignerTest {
 
             final Request signedRequest = subject.signRequestByKey(testRequest, key);
             assertEquals(
-                "request has correct signature header",
-                "keyId=\"signing-key-id-1234\",algorithm=\"hmac-sha256\",headers=\"(request-target) date\",signature=\"ops3L4iYL3YI1mrQ6HJbrNPuYL7av1lkGHluPuuaZig=\"",
-                signedRequest.header("Signature"));
+                    "request has correct signature header",
+                    "keyId=\"signing-key-id-1234\",algorithm=\"hmac-sha256\",headers=\"(request-target) date\",signature=\"ops3L4iYL3YI1mrQ6HJbrNPuYL7av1lkGHluPuuaZig=\"",
+                    signedRequest.header("Signature"));
             assertEquals(
-                "request has a date header",
-                "Thu, 13 Feb 2020 15:56:23 GMT",
-                signedRequest.header("Date"));
+                    "request has a date header",
+                    "Thu, 13 Feb 2020 15:56:23 GMT",
+                    signedRequest.header("Date"));
         }
     }
 

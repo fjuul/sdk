@@ -2,7 +2,7 @@ package com.fjuul.sdk.analytics.entities;
 
 public class ActivityMeasure {
     long seconds;
-    int metMinutes;
+    float metMinutes;
 
     ActivityMeasure(long seconds, int metMinutes) {
         this.seconds = seconds;
@@ -13,7 +13,7 @@ public class ActivityMeasure {
         return seconds;
     }
 
-    public int getMetMinutes() {
+    public float getMetMinutes() {
         return metMinutes;
     }
 }

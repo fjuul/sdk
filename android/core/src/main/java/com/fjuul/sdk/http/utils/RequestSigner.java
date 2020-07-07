@@ -40,10 +40,19 @@ public class RequestSigner {
                 this.isRequestWithDigestChecking(request)
                         ? "(request-target) date digest"
                         : "(request-target) date";
+        StringBuilder encodedRequestTargetBuilder = new StringBuilder(
+            String.format("%s %s", request.method().toLowerCase(), request.url().encodedPath()));
+        String encodedQuery = request.url().encodedQuery();
+        if (encodedQuery != null) {
+            encodedRequestTargetBuilder.append("?").append(encodedQuery);
+        }
+        String encodedFragment = request.url().encodedFragment();
+        if (encodedFragment != null) {
+            encodedRequestTargetBuilder.append("#").append(encodedFragment);
+        }
+
         String requestTargetPart =
-                String.format(
-                        "(request-target): %s %s",
-                        request.method().toLowerCase(), request.url().encodedPath());
+                String.format("(request-target): %s", encodedRequestTargetBuilder.toString());
 
         Instant instant = Instant.now(clock);
         OffsetDateTime offset = instant.atOffset(ZoneOffset.UTC);

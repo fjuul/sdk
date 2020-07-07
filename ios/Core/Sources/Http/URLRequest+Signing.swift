@@ -50,9 +50,9 @@ extension URLRequest {
 
 }
 
-extension Data {
+private extension Data {
 
-    fileprivate func sha256() -> String {
+    func sha256() -> String {
         var hash = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
         self.withUnsafeBytes {
             _ = CC_SHA256($0.baseAddress, CC_LONG(self.count), &hash)
@@ -62,25 +62,13 @@ extension Data {
 
 }
 
-extension String {
+private extension String {
 
-    fileprivate func hmac(key: String) -> String {
+    func hmac(key: String) -> String {
         var digest = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
         CCHmac(CCHmacAlgorithm(kCCHmacAlgSHA256), key, key.count, self, self.count, &digest)
         let data = Data(digest)
         return data.base64EncodedString()
     }
-
-}
-
-extension DateFormatter {
-
-    static let rfc1123: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        formatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss z"
-        return formatter
-    }()
 
 }

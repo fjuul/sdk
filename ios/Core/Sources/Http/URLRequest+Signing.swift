@@ -14,7 +14,14 @@ extension URLRequest {
 
         let httpMethod = self.httpMethod?.lowercased() ?? ""
         let path = self.url?.path ?? ""
-        signingString.append("(request-target): \(httpMethod) \(path)\n")
+        var requestTarget = "(request-target): \(httpMethod) \(path)"
+        if let query = self.url?.query {
+            requestTarget.append("?\(query)")
+        }
+        if let fragment = self.url?.fragment {
+            requestTarget.append("#\(fragment)")
+        }
+        signingString.append("\(requestTarget)\n")
 
         let formattedDate = DateFormatter.rfc1123.string(from: date)
         self.headers.add(name: "Date", value: formattedDate)

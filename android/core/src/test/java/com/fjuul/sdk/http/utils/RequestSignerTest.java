@@ -1,11 +1,11 @@
 package com.fjuul.sdk.http.utils;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.Date;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -41,9 +41,7 @@ public class RequestSignerTest {
                                     "https://fjuul.dev.api/analytics/v1/dailyStats/userToken/2020-01-15")
                             .get()
                             .build();
-            SigningKey key = mock(SigningKey.class);
-            when(key.getSecret()).thenReturn(SECRET_KEY);
-            when(key.getId()).thenReturn(KEY_ID);
+            SigningKey key = new SigningKey(KEY_ID, SECRET_KEY, new Date());
             RequestSigner subject = new RequestSigner(fixedClock);
 
             final Request signedRequest = subject.signRequestByKey(testRequest, key);
@@ -67,9 +65,7 @@ public class RequestSignerTest {
                                     "https://fjuul.dev.api/analytics/v1/dailyStats/userToken?startDate=2020-01-15&endDate=2020-01-20#fragment")
                             .get()
                             .build();
-            SigningKey key = mock(SigningKey.class);
-            when(key.getSecret()).thenReturn(SECRET_KEY);
-            when(key.getId()).thenReturn(KEY_ID);
+            SigningKey key = new SigningKey(KEY_ID, SECRET_KEY, new Date());
             RequestSigner subject = new RequestSigner(fixedClock);
 
             final Request signedRequest = subject.signRequestByKey(testRequest, key);
@@ -103,9 +99,7 @@ public class RequestSignerTest {
                                     "https://fjuul.dev.api/analytics/v1/dailyStats/userToken/2020-01-15")
                             .post(RequestBody.create(null, ""))
                             .build();
-            SigningKey key = mock(SigningKey.class);
-            when(key.getSecret()).thenReturn(SECRET_KEY);
-            when(key.getId()).thenReturn(KEY_ID);
+            SigningKey key = new SigningKey(KEY_ID, SECRET_KEY, new Date());
             RequestSigner subject = new RequestSigner(fixedClock);
 
             final Request signedRequest = subject.signRequestByKey(testRequest, key);
@@ -133,9 +127,7 @@ public class RequestSignerTest {
                                             MediaType.get("application/json"),
                                             "{\"hello\":\"world\",\"foo\":\"bar\"}"))
                             .build();
-            SigningKey key = mock(SigningKey.class);
-            when(key.getSecret()).thenReturn(SECRET_KEY);
-            when(key.getId()).thenReturn(KEY_ID);
+            SigningKey key = new SigningKey(KEY_ID, SECRET_KEY, new Date());
             RequestSigner subject = new RequestSigner(fixedClock);
 
             final Request signedRequest = subject.signRequestByKey(testRequest, key);

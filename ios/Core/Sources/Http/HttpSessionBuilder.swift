@@ -25,7 +25,7 @@ struct HttpSessionBuilder {
 
         let apiKeyAdapter = ApiKeyAdapter(apiKey: apiKey)
 
-        let authenticator = HmacAuthenticationInterceptor(refreshSession: self.buildBearerAuthenticatedSession())
+        let authenticator = HmacAuthenticationInterceptor(baseUrl: baseUrl, refreshSession: self.buildBearerAuthenticatedSession())
         let authInterceptor = AuthenticationInterceptor(authenticator: authenticator, credential: hmacCredentials)
 
         let compositeInterceptor = Interceptor(

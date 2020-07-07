@@ -3,9 +3,11 @@ import Alamofire
 
 class HmacAuthenticationInterceptor: Authenticator {
 
+    let baseUrl: String
     let refreshSession: Session
 
-    init(refreshSession: Session) {
+    init(baseUrl: String, refreshSession: Session) {
+        self.baseUrl = baseUrl
         self.refreshSession = refreshSession
     }
 
@@ -21,7 +23,7 @@ class HmacAuthenticationInterceptor: Authenticator {
                  for session: Session,
                  completion: @escaping (Result<HmacCredentials, Error>) -> Void) {
 
-        refreshSession.request(SigningApi.issueUserKey)
+        refreshSession.request("\(baseUrl)/sdk/signing/v1/issue-key/user", method: .get)
             .validate(statusCode: 200..<299)
             .response { response in
                 switch response.result {

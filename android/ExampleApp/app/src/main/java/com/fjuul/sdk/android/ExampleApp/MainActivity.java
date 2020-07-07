@@ -68,9 +68,33 @@ public class MainActivity extends AppCompatActivity {
                                     Log.i(
                                             TAG,
                                             String.format(
-                                                    "date: %s; active calories: %d",
+                                                    "date: %s; active calories: %f",
                                                     dailyStats.getDate(),
                                                     dailyStats.getActiveCalories()));
+                                    Log.i(
+                                            TAG,
+                                            String.format(
+                                                    "lowest: seconds: %d, metMinutes %f",
+                                                    dailyStats.getLowest().getSeconds(),
+                                                    dailyStats.getLowest().getMetMinutes()));
+                                    Log.i(
+                                            TAG,
+                                            String.format(
+                                                    "low: seconds: %d, metMinutes %f",
+                                                    dailyStats.getLow().getSeconds(),
+                                                    dailyStats.getLow().getMetMinutes()));
+                                    Log.i(
+                                            TAG,
+                                            String.format(
+                                                    "moderate: seconds: %d, metMinutes %f",
+                                                    dailyStats.getModerate().getSeconds(),
+                                                    dailyStats.getModerate().getMetMinutes()));
+                                    Log.i(
+                                            TAG,
+                                            String.format(
+                                                    "high: seconds: %d, metMinutes %f",
+                                                    dailyStats.getHigh().getSeconds(),
+                                                    dailyStats.getHigh().getMetMinutes()));
                                 } else {
                                     Response<DailyStats> response = result.response();
                                     Log.i(

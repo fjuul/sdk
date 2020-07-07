@@ -1,9 +1,14 @@
 import Foundation
 
-struct UserCredentials: CustomStringConvertible {
+public struct UserCredentials: CustomStringConvertible {
 
     let token: String
     let secret: String
+
+    public init(token: String, secret: String) {
+        self.token = token
+        self.secret = secret
+    }
 
     func completeAuthString() -> String {
         return "Bearer \(encodedBase64())"
@@ -14,7 +19,7 @@ struct UserCredentials: CustomStringConvertible {
         return Data(foo.utf8).base64EncodedString()
     }
 
-    var description: String {
+    public var description: String {
         return "UserCredentials(token: \(token), secret: ***)"
     }
 

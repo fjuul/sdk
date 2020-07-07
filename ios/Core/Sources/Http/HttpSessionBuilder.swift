@@ -36,7 +36,7 @@ struct HttpSessionBuilder {
 
         let monitor = ClosureEventMonitor()
         monitor.requestDidCompleteTaskWithError = { (request, task, error) in
-            debugPrint(request)
+            debugPrint(request, error)
         }
 
         return Session(interceptor: compositeInterceptor, eventMonitors: [monitor])

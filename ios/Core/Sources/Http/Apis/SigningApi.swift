@@ -1,7 +1,7 @@
 import Foundation
 import Alamofire
 
-enum SigningApiRouter: URLRequestConvertible {
+enum SigningApi: URLRequestConvertible {
 
     case issueUserKey
 

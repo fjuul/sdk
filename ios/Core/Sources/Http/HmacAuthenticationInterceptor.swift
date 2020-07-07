@@ -21,7 +21,7 @@ class HmacAuthenticationInterceptor: Authenticator {
                  for session: Session,
                  completion: @escaping (Result<HmacCredentials, Error>) -> Void) {
 
-        refreshSession.request(SigningApiRouter.issueUserKey)
+        refreshSession.request(SigningApi.issueUserKey)
             .validate(statusCode: 200..<299)
             .response { response in
                 switch response.result {

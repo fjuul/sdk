@@ -15,7 +15,7 @@ public class AnalyticsApi {
 
     private var baseUrl: String { get { return "\(self.apiClient.baseUrl)/sdk/analytics/v1" } }
 
-    func dailyStats(date: Date, completion: @escaping (DailyStats?, Error?) -> Void) {
+    func dailyStats(date: Date, completion: @escaping (Result<DailyStats, Error>) -> Void) {
         let path = "/daily-stats/\(apiClient.userToken)/\(dateFormatter.string(from: date))"
         apiClient.signedSession.request("\(baseUrl)\(path)", method: .get).response { response in
             switch response.result {
@@ -24,18 +24,37 @@ public class AnalyticsApi {
                     let decoder = JSONDecoder()
                     decoder.dateDecodingStrategy = .formatted(self.dateFormatter)
                     let dailyStats = try decoder.decode(DailyStats.self, from: data!)
-                    completion(dailyStats, nil)
+                    completion(.success(dailyStats))
                 } catch {
-                    completion(nil, error)
+                    completion(.failure(error))
                 }
             case .failure(let error):
-                completion(nil, error)
+                completion(.failure(error))
             }
         }
     }
 
-    func dailyStats(from: Date, to: Date) {
-
+    func dailyStats(from: Date, to: Date, completion: @escaping (Result<[DailyStats], Error>) -> Void) {
+        let path = "/daily-stats/\(apiClient.userToken)"
+        let parameters = [
+            "from": dateFormatter.string(from: from),
+            "to": dateFormatter.string(from: to),
+        ]
+        apiClient.signedSession.request("\(baseUrl)\(path)", method: .get, parameters: parameters, encoding: URLEncoding(destination: .queryString)).response { response in
+            switch response.result {
+            case .success(let data):
+                do {
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .formatted(self.dateFormatter)
+                    let dailyStats = try decoder.decode([DailyStats].self, from: data!)
+                    completion(.success(dailyStats))
+                } catch {
+                    completion(.failure(error))
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
     }
 
 }

@@ -33,17 +33,8 @@ public class AnalyticsApi {
             return completion(.failure(AnalyticsApiError.invalidConfig))
         }
         apiClient.signedSession.request(url, method: .get).response { response in
-            switch response.result {
-            case .success(let data):
-                do {
-                    let dailyStats = try self.decoder.decode(DailyStats.self, from: data!)
-                    completion(.success(dailyStats))
-                } catch {
-                    completion(.failure(error))
-                }
-            case .failure(let error):
-                completion(.failure(error))
-            }
+            let decodedResponse = response.tryMap { try self.decoder.decode(DailyStats.self, from: $0!) }
+            completion(decodedResponse.result)
         }
     }
 
@@ -63,17 +54,8 @@ public class AnalyticsApi {
             "to": DateFormatters.yyyyMMdd.string(from: to),
         ]
         apiClient.signedSession.request(url, method: .get, parameters: parameters).response { response in
-            switch response.result {
-            case .success(let data):
-                do {
-                    let dailyStats = try self.decoder.decode([DailyStats].self, from: data!)
-                    completion(.success(dailyStats))
-                } catch {
-                    completion(.failure(error))
-                }
-            case .failure(let error):
-                completion(.failure(error))
-            }
+            let decodedResponse = response.tryMap { try self.decoder.decode([DailyStats].self, from: $0!) }
+            completion(decodedResponse.result)
         }
     }
 

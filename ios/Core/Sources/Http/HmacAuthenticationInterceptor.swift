@@ -26,19 +26,13 @@ class HmacAuthenticationInterceptor: Authenticator {
         refreshSession.request("\(baseUrl)/sdk/signing/v1/issue-key/user", method: .get)
             .validate(statusCode: 200..<299)
             .response { response in
-                switch response.result {
-                case .success(let data):
-                    do {
-                        let decoder = JSONDecoder()
-                        decoder.dateDecodingStrategy = .formatted(DateFormatters.iso8601Full)
-                        let signingKey = try decoder.decode(SigningKey.self, from: data!)
-                        completion(.success(HmacCredentials(signingKey: signingKey)))
-                    } catch {
-                        completion(.failure(error))
-                    }
-                case .failure(let error):
-                    completion(.failure(error))
+                let decodedResponse = response.tryMap { (data: Data?) -> HmacCredentials in
+                    let decoder = JSONDecoder()
+                    decoder.dateDecodingStrategy = .formatted(DateFormatters.iso8601Full)
+                    let signingKey = try decoder.decode(SigningKey.self, from: data!)
+                    return HmacCredentials(signingKey: signingKey)
                 }
+                completion(decodedResponse.result)
             }
 
     }

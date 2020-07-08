@@ -10,7 +10,6 @@ final class UserCredentialsTests: XCTestCase {
         )
         XCTAssertEqual(
             credentials.completeAuthString(),
-            // swiftlint:disable:next line_length
             "Bearer YjUzMGIzMWYtNzRjYS00ODE0LTllMjQtMWJkMzVkNWQxYjYxOjliMjhkZTIxLTkwNWItNGZmMy04ZTY2LTc4NTllNzc2ZTE0Mw=="
         )
     }

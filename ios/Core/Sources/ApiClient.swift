@@ -17,7 +17,7 @@ public class ApiClient {
     }
 
     public var userToken: String {
-        get { return credentials.token }
+        return credentials.token
     }
 
 }

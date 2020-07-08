@@ -41,7 +41,6 @@ final class ApiClientTests: XCTestCase {
         request.response { _ in
             XCTAssertEqual(
                 request.request?.value(forHTTPHeaderField: "Authorization"),
-                // swiftlint:disable:next line_length
                 "Bearer YjUzMGIzMWYtNzRjYS00ODE0LTllMjQtMWJkMzVkNWQxYjYxOjliMjhkZTIxLTkwNWItNGZmMy04ZTY2LTc4NTllNzc2ZTE0Mw=="
             )
             e.fulfill()
@@ -59,7 +58,7 @@ final class ApiClientTests: XCTestCase {
         }
         waitForExpectations(timeout: 5.0, handler: nil)
     }
-    
+
     func testSignedSessionAttachesApiKey() {
         let e = expectation(description: "Alamofire")
         let client = ApiClient(baseUrl: "https://apibase", apiKey: "this-is-sparta", credentials: credentials)

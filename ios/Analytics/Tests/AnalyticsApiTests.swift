@@ -56,8 +56,8 @@ final class AnalyticsApiTests: XCTestCase {
             switch result {
             case .success(let dailyStats):
                 XCTAssertEqual(dailyStats.moderate.seconds, 1260)
-            case .failure(_):
-                XCTFail()
+            case .failure:
+                XCTFail("network level failure")
             }
             e.fulfill()
         }

@@ -17,16 +17,13 @@ public class AnalyticsApi {
     }
 
     private var baseUrl: URL? {
-        get {
-            return URL(string: self.apiClient.baseUrl)?.appendingPathComponent("sdk/analytics/v1")
-        }
+        return URL(string: self.apiClient.baseUrl)?.appendingPathComponent("sdk/analytics/v1")
     }
 
     public func dailyStats(date: Date, completion: @escaping (Result<DailyStats, Error>) -> Void) {
         let path = "/daily-stats/\(apiClient.userToken)/\(dateFormatter.string(from: date))"
         guard let url = baseUrl?.appendingPathComponent(path) else {
-            completion(.failure(AnalyticsApiError.invalidConfig))
-            return
+            return completion(.failure(AnalyticsApiError.invalidConfig))
         }
         apiClient.signedSession.request(url, method: .get).response { response in
             switch response.result {
@@ -46,8 +43,7 @@ public class AnalyticsApi {
     public func dailyStats(from: Date, to: Date, completion: @escaping (Result<[DailyStats], Error>) -> Void) {
         let path = "/daily-stats/\(apiClient.userToken)"
         guard let url = baseUrl?.appendingPathComponent(path) else {
-            completion(.failure(AnalyticsApiError.invalidConfig))
-            return
+            return completion(.failure(AnalyticsApiError.invalidConfig))
         }
         let parameters = [
             "from": dateFormatter.string(from: from),
@@ -75,14 +71,12 @@ private var AssociatedObjectHandle: UInt8 = 0
 public extension ApiClient {
 
     var analytics: AnalyticsApi {
-        get {
-            if let analyticsApi = objc_getAssociatedObject(self, &AssociatedObjectHandle) as? AnalyticsApi {
-                return analyticsApi
-            } else {
-                let analyticsApi = AnalyticsApi(apiClient: self)
-                objc_setAssociatedObject(self, &AssociatedObjectHandle, analyticsApi, .OBJC_ASSOCIATION_RETAIN)
-                return analyticsApi
-            }
+        if let analyticsApi = objc_getAssociatedObject(self, &AssociatedObjectHandle) as? AnalyticsApi {
+            return analyticsApi
+        } else {
+            let analyticsApi = AnalyticsApi(apiClient: self)
+            objc_setAssociatedObject(self, &AssociatedObjectHandle, analyticsApi, .OBJC_ASSOCIATION_RETAIN)
+            return analyticsApi
         }
     }
 

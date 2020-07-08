@@ -2,12 +2,17 @@ import Foundation
 import Alamofire
 import FjuulCore
 
+/// The `AnalyticsApi` encapsulates access to a users fitness and activity data.
 public class AnalyticsApi {
 
     let apiClient: ApiClient
     let dateFormatter: DateFormatter
     let decoder: JSONDecoder
 
+    /// Initializes an `AnalyticsApi` instance.
+    ///
+    /// You should generally not call this directly, but instead use the default instance provided on `ApiClient`.
+    /// - Parameter apiClient: The `ApiClient` instance to use for API requests.
     init(apiClient: ApiClient) {
         self.apiClient = apiClient
         self.dateFormatter = DateFormatter()
@@ -20,6 +25,11 @@ public class AnalyticsApi {
         return URL(string: self.apiClient.baseUrl)?.appendingPathComponent("sdk/analytics/v1")
     }
 
+    /// Retrieves the daily activity statistics for a given day.
+    ///
+    /// - Parameters:
+    ///   - date: The day to request daily stats for; this is the date in the users local timezone.
+    ///   - completion: The code to be executed once the request has finished.
     public func dailyStats(date: Date, completion: @escaping (Result<DailyStats, Error>) -> Void) {
         let path = "/daily-stats/\(apiClient.userToken)/\(dateFormatter.string(from: date))"
         guard let url = baseUrl?.appendingPathComponent(path) else {
@@ -40,6 +50,12 @@ public class AnalyticsApi {
         }
     }
 
+    /// Retrieves the daily activity statistics for a given day interval.
+    ///
+    /// - Parameters:
+    ///   - from: The start of the day interval to requests daily stats for (inclusive).
+    ///   - to: The end of the day interval to request daily stats for (inclusive).
+    ///   - completion: The code to be executed once the request has finished.
     public func dailyStats(from: Date, to: Date, completion: @escaping (Result<[DailyStats], Error>) -> Void) {
         let path = "/daily-stats/\(apiClient.userToken)"
         guard let url = baseUrl?.appendingPathComponent(path) else {

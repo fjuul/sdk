@@ -34,8 +34,13 @@ final class AnalyticsApiTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        stub(condition: isHost("apibase") && pathMatches("^/sdk/analytics/v1/daily-stats/*")) { _ in
-            let stubData = self.singleDailyStatsResponse.data(using: String.Encoding.utf8)
+        let multipleDailyStatsResponse = """
+            [\(singleDailyStatsResponse),\(singleDailyStatsResponse),\(singleDailyStatsResponse)]
+        """
+        stub(condition: isHost("apibase") && pathMatches("^/sdk/analytics/v1/daily-stats/*")) { request in
+            let isMultiRequest = request.url?.query?.contains("from") ?? false
+            let response = isMultiRequest ? multipleDailyStatsResponse : self.singleDailyStatsResponse
+            let stubData = response.data(using: String.Encoding.utf8)
             return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
         }
         stub(condition: isHost("apibase") && isPath("/sdk/signing/v1/issue-key/user")) { _ in
@@ -64,4 +69,20 @@ final class AnalyticsApiTests: XCTestCase {
         waitForExpectations(timeout: 5.0, handler: nil)
     }
 
+    func testMultipleSingleDailyStats() {
+        let e = expectation(description: "Alamofire")
+        let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials)
+        client.analytics.dailyStats(from: Date.distantPast, to: Date.distantFuture) { result in
+            switch result {
+            case .success(let dailyStats):
+                XCTAssertEqual(dailyStats.count, 3)
+                XCTAssertEqual(dailyStats.first?.moderate.seconds, 1260)
+                XCTAssertEqual(dailyStats.last?.moderate.seconds, 1260)
+            case .failure:
+                XCTFail("network level failure")
+            }
+            e.fulfill()
+        }
+        waitForExpectations(timeout: 5.0, handler: nil)
+    }
 }

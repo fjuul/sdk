@@ -42,7 +42,7 @@ let package = Package(
         ),
         .testTarget(
             name: "FjuulAnalyticsTests",
-            dependencies: ["FjuulAnalytics"],
+            dependencies: [.product(name: "OHHTTPStubsSwift", package: "OHHTTPStubs"), "FjuulAnalytics"],
             path: "ios/Analytics/Tests"
         )
     ],

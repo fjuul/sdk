@@ -12,7 +12,10 @@ final class ApiClientTests: XCTestCase {
             \"expiresAt\":\"2030-01-01T00:00:00.000Z\"
         }
     """
-    let credentials = UserCredentials(token: "", secret: "")
+    let credentials = UserCredentials(
+        token: "b530b31f-74ca-4814-9e24-1bd35d5d1b61",
+        secret: "9b28de21-905b-4ff3-8e66-7859e776e143"
+    )
 
     override func setUp() {
         super.setUp()
@@ -29,6 +32,21 @@ final class ApiClientTests: XCTestCase {
     override func tearDown() {
         HTTPStubs.removeAllStubs()
         super.tearDown()
+    }
+
+    func testBearerAuthenticationSessionAttachesAuthHeader() {
+        let e = expectation(description: "Alamofire")
+        let client = ApiClient(baseUrl: "", apiKey: "this-is-sparta", credentials: credentials)
+        let request = client.bearerAuthenticatedSession.request("https://foo")
+        request.response { _ in
+            XCTAssertEqual(
+                request.request?.value(forHTTPHeaderField: "Authorization"),
+                // swiftlint:disable:next line_length
+                "Bearer YjUzMGIzMWYtNzRjYS00ODE0LTllMjQtMWJkMzVkNWQxYjYxOjliMjhkZTIxLTkwNWItNGZmMy04ZTY2LTc4NTllNzc2ZTE0Mw=="
+            )
+            e.fulfill()
+        }
+        waitForExpectations(timeout: 5.0, handler: nil)
     }
 
     func testBearerAuthenticatedSessionAttachesApiKey() {

@@ -15,7 +15,7 @@ public class AnalyticsApi {
 
     private var baseUrl: String { get { return "\(self.apiClient.baseUrl)/sdk/analytics/v1" } }
 
-    func dailyStats(date: Date, completion: @escaping (Result<DailyStats, Error>) -> Void) {
+    public func dailyStats(date: Date, completion: @escaping (Result<DailyStats, Error>) -> Void) {
         let path = "/daily-stats/\(apiClient.userToken)/\(dateFormatter.string(from: date))"
         apiClient.signedSession.request("\(baseUrl)\(path)", method: .get).response { response in
             switch response.result {
@@ -34,7 +34,7 @@ public class AnalyticsApi {
         }
     }
 
-    func dailyStats(from: Date, to: Date, completion: @escaping (Result<[DailyStats], Error>) -> Void) {
+    public func dailyStats(from: Date, to: Date, completion: @escaping (Result<[DailyStats], Error>) -> Void) {
         let path = "/daily-stats/\(apiClient.userToken)"
         let parameters = [
             "from": dateFormatter.string(from: from),

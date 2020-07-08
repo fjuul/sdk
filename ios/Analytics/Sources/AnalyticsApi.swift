@@ -6,24 +6,33 @@ public class AnalyticsApi {
 
     let apiClient: ApiClient
     let dateFormatter: DateFormatter
+    let decoder: JSONDecoder
 
     init(apiClient: ApiClient) {
         self.apiClient = apiClient
         self.dateFormatter = DateFormatter()
         self.dateFormatter.dateFormat = "yyyy-MM-dd"
+        self.decoder = JSONDecoder()
+        self.decoder.dateDecodingStrategy = .formatted(self.dateFormatter)
     }
 
-    private var baseUrl: String { get { return "\(self.apiClient.baseUrl)/sdk/analytics/v1" } }
+    private var baseUrl: URL? {
+        get {
+            return URL(string: self.apiClient.baseUrl)?.appendingPathComponent("sdk/analytics/v1")
+        }
+    }
 
     public func dailyStats(date: Date, completion: @escaping (Result<DailyStats, Error>) -> Void) {
         let path = "/daily-stats/\(apiClient.userToken)/\(dateFormatter.string(from: date))"
-        apiClient.signedSession.request("\(baseUrl)\(path)", method: .get).response { response in
+        guard let url = baseUrl?.appendingPathComponent(path) else {
+            completion(.failure(AnalyticsApiError.invalidConfig))
+            return
+        }
+        apiClient.signedSession.request(url, method: .get).response { response in
             switch response.result {
             case .success(let data):
                 do {
-                    let decoder = JSONDecoder()
-                    decoder.dateDecodingStrategy = .formatted(self.dateFormatter)
-                    let dailyStats = try decoder.decode(DailyStats.self, from: data!)
+                    let dailyStats = try self.decoder.decode(DailyStats.self, from: data!)
                     completion(.success(dailyStats))
                 } catch {
                     completion(.failure(error))
@@ -36,17 +45,19 @@ public class AnalyticsApi {
 
     public func dailyStats(from: Date, to: Date, completion: @escaping (Result<[DailyStats], Error>) -> Void) {
         let path = "/daily-stats/\(apiClient.userToken)"
+        guard let url = baseUrl?.appendingPathComponent(path) else {
+            completion(.failure(AnalyticsApiError.invalidConfig))
+            return
+        }
         let parameters = [
             "from": dateFormatter.string(from: from),
             "to": dateFormatter.string(from: to),
         ]
-        apiClient.signedSession.request("\(baseUrl)\(path)", method: .get, parameters: parameters, encoding: URLEncoding(destination: .queryString)).response { response in
+        apiClient.signedSession.request(url, method: .get, parameters: parameters).response { response in
             switch response.result {
             case .success(let data):
                 do {
-                    let decoder = JSONDecoder()
-                    decoder.dateDecodingStrategy = .formatted(self.dateFormatter)
-                    let dailyStats = try decoder.decode([DailyStats].self, from: data!)
+                    let dailyStats = try self.decoder.decode([DailyStats].self, from: data!)
                     completion(.success(dailyStats))
                 } catch {
                     completion(.failure(error))

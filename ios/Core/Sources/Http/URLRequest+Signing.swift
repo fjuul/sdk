@@ -23,7 +23,7 @@ extension URLRequest {
         }
         signingString.append("\(requestTarget)\n")
 
-        let formattedDate = DateFormatter.rfc1123.string(from: date)
+        let formattedDate = DateFormatters.rfc1123.string(from: date)
         self.headers.add(name: "Date", value: formattedDate)
 
         signingString.append("date: \(formattedDate)")

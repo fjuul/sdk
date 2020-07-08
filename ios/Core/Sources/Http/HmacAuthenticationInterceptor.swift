@@ -30,7 +30,7 @@ class HmacAuthenticationInterceptor: Authenticator {
                 case .success(let data):
                     do {
                         let decoder = JSONDecoder()
-                        decoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601Full)
+                        decoder.dateDecodingStrategy = .formatted(DateFormatters.iso8601Full)
                         let signingKey = try decoder.decode(SigningKey.self, from: data!)
                         completion(.success(HmacCredentials(signingKey: signingKey)))
                     } catch {

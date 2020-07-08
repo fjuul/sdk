@@ -6,7 +6,6 @@ import FjuulCore
 public class AnalyticsApi {
 
     let apiClient: ApiClient
-    let dateFormatter: DateFormatter
     let decoder: JSONDecoder
 
     /// Initializes an `AnalyticsApi` instance.
@@ -15,10 +14,8 @@ public class AnalyticsApi {
     /// - Parameter apiClient: The `ApiClient` instance to use for API requests.
     init(apiClient: ApiClient) {
         self.apiClient = apiClient
-        self.dateFormatter = DateFormatter()
-        self.dateFormatter.dateFormat = "yyyy-MM-dd"
         self.decoder = JSONDecoder()
-        self.decoder.dateDecodingStrategy = .formatted(self.dateFormatter)
+        self.decoder.dateDecodingStrategy = .formatted(DateFormatters.yyyyMMdd)
     }
 
     private var baseUrl: URL? {
@@ -31,7 +28,7 @@ public class AnalyticsApi {
     ///   - date: The day to request daily stats for; this is the date in the users local timezone.
     ///   - completion: The code to be executed once the request has finished.
     public func dailyStats(date: Date, completion: @escaping (Result<DailyStats, Error>) -> Void) {
-        let path = "/daily-stats/\(apiClient.userToken)/\(dateFormatter.string(from: date))"
+        let path = "/daily-stats/\(apiClient.userToken)/\(DateFormatters.yyyyMMdd.string(from: date))"
         guard let url = baseUrl?.appendingPathComponent(path) else {
             return completion(.failure(AnalyticsApiError.invalidConfig))
         }
@@ -62,8 +59,8 @@ public class AnalyticsApi {
             return completion(.failure(AnalyticsApiError.invalidConfig))
         }
         let parameters = [
-            "from": dateFormatter.string(from: from),
-            "to": dateFormatter.string(from: to),
+            "from": DateFormatters.yyyyMMdd.string(from: from),
+            "to": DateFormatters.yyyyMMdd.string(from: to),
         ]
         apiClient.signedSession.request(url, method: .get, parameters: parameters).response { response in
             switch response.result {

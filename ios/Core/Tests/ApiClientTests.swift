@@ -70,4 +70,18 @@ final class ApiClientTests: XCTestCase {
         waitForExpectations(timeout: 5.0, handler: nil)
     }
 
+    func testSignedSessionAttachesSignature() {
+        let e = expectation(description: "Alamofire")
+        let client = ApiClient(baseUrl: "https://apibase", apiKey: "this-is-sparta", credentials: credentials)
+        let request = client.signedSession.request("https://foo")
+        request.response { _ in
+            // Note: it would be a lot of ugly effort to actually verify the signature here, because
+            // this code path actually signs with the current point in time as date, so it is hard to
+            // predict the signature.
+            XCTAssertNotNil(request.request?.value(forHTTPHeaderField: "Signature"))
+            e.fulfill()
+        }
+        waitForExpectations(timeout: 5.0, handler: nil)
+    }
+
 }

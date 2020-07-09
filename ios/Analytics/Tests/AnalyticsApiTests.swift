@@ -85,5 +85,5 @@ final class AnalyticsApiTests: XCTestCase {
         }
         waitForExpectations(timeout: 5.0, handler: nil)
     }
-    
+
 }

@@ -54,8 +54,8 @@ class HmacAuthenticationInterceptor: Authenticator {
             return false
         }
         let regex = try? NSRegularExpression(pattern: "keyId=\"([a-f0-9\\-]+)\"", options: .caseInsensitive)
-        if let match = regex?.firstMatch(in: signature, range: NSMakeRange(0, signature.count)) {
-            if let range = Range(match.range(at: 0), in: signature) {
+        if let match = regex?.firstMatch(in: signature, range: NSRange(location: 0, length: signature.count)) {
+            if let range = Range(match.range(at: 1), in: signature) {
                 let keyId = signature[range]
                 return keyId == signingKey.id
             }

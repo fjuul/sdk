@@ -42,7 +42,7 @@ class HmacAuthenticationInterceptor: Authenticator {
         if response.statusCode != 401 {
             return false
         }
-        return ["expired_signing_key", "invalid_key_id"].contains(response.value(forHTTPHeaderField: "x-authentication-error"))
+        return ["expired_signing_key", "invalid_key_id"].contains(response.headers.value(for: "x-authentication-error"))
 
     }
 

@@ -7,7 +7,7 @@ let package = Package(
     name: "Fjuul",
     platforms: [
         // required to run tests depending on Alamofire
-        .macOS(.v10_15),
+        .macOS(.v10_12),
         .iOS(.v10)
     ],
     products: [

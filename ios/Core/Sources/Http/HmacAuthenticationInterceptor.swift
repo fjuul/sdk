@@ -33,26 +33,34 @@ class HmacAuthenticationInterceptor: Authenticator {
 
     }
 
+    // Determine based on the request failure if we need to refresh the signing key or if it was a general auth error
+    // return true to trigger a key refresh
     func didRequest(_ urlRequest: URLRequest,
                     with response: HTTPURLResponse,
                     failDueToAuthenticationError error: Error) -> Bool {
-        // If authentication server CANNOT invalidate credentials, return `false`
-        return false
 
-        // If authentication server CAN invalidate credentials, then inspect the response matching against what the
-        // authentication server returns as an authentication failure. This is generally a 401 along with a custom
-        // header value.
-        // return response.statusCode == 401
+        if response.statusCode != 401 {
+            return false
+        }
+        return ["expired_signing_key", "invalid_key_id"].contains(response.value(forHTTPHeaderField: "x-authentication-error"))
+
     }
 
+    // This method should return true if the URLRequest is authenticated in a way that matches the values in the Credential
+    // This is used to determine if credentials need to be refreshed, or have already been refreshed (e.g. due to multiple
+    // concurrent in-flight requests).
     func isRequest(_ urlRequest: URLRequest, authenticatedWith credential: HmacCredentials) -> Bool {
-        // If authentication server CANNOT invalidate credentials, return `true`
-        return true
-
-        // If authentication server CAN invalidate credentials, then compare the "Authorization" header value in the
-        // `URLRequest` against the Bearer token generated with the access token of the `Credential`.
-        // let bearerToken = HTTPHeader.authorization(bearerToken: credential.accessToken).value
-        // return urlRequest.headers["Authorization"] == bearerToken
+        guard let signingKey = credential.signingKey, let signature = urlRequest.value(forHTTPHeaderField: "Signature") else {
+            return false
+        }
+        let regex = try? NSRegularExpression(pattern: "keyId=\"([a-f0-9\\-]+)\"", options: .caseInsensitive)
+        if let match = regex?.firstMatch(in: signature, range: NSMakeRange(0, signature.count)) {
+            if let range = Range(match.range(at: 0), in: signature) {
+                let keyId = signature[range]
+                return keyId == signingKey.id
+            }
+        }
+        return false
     }
 
 }

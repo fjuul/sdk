@@ -23,17 +23,13 @@ class HmacAuthenticationInterceptor: Authenticator {
                  for session: Session,
                  completion: @escaping (Result<HmacCredentials, Error>) -> Void) {
 
-        refreshSession.request("\(baseUrl)/sdk/signing/v1/issue-key/user", method: .get)
-            .validate()
-            .responseData { response in
-                let decodedResponse = response.tryMap { (data: Data) -> HmacCredentials in
-                    let decoder = JSONDecoder()
-                    decoder.dateDecodingStrategy = .formatted(DateFormatters.iso8601Full)
-                    let signingKey = try decoder.decode(SigningKey.self, from: data)
-                    return HmacCredentials(signingKey: signingKey)
-                }
-                completion(decodedResponse.result)
+        refreshSession.request("\(baseUrl)/sdk/signing/v1/issue-key/user", method: .get).validate().responseData { response in
+            let decodedResponse = response.tryMap { data -> HmacCredentials in
+                let signingKey = try Decoders.iso8601Full.decode(SigningKey.self, from: data)
+                return HmacCredentials(signingKey: signingKey)
             }
+            completion(decodedResponse.result)
+        }
 
     }
 

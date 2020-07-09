@@ -6,7 +6,6 @@ import FjuulCore
 public class AnalyticsApi {
 
     let apiClient: ApiClient
-    let decoder: JSONDecoder
 
     /// Initializes an `AnalyticsApi` instance.
     ///
@@ -14,8 +13,6 @@ public class AnalyticsApi {
     /// - Parameter apiClient: The `ApiClient` instance to use for API requests.
     init(apiClient: ApiClient) {
         self.apiClient = apiClient
-        self.decoder = JSONDecoder()
-        self.decoder.dateDecodingStrategy = .formatted(DateFormatters.yyyyMMdd)
     }
 
     private var baseUrl: URL? {
@@ -33,7 +30,7 @@ public class AnalyticsApi {
             return completion(.failure(AnalyticsApiError.invalidConfig))
         }
         apiClient.signedSession.request(url, method: .get).validate().responseData { response in
-            let decodedResponse = response.tryMap { try self.decoder.decode(DailyStats.self, from: $0) }
+            let decodedResponse = response.tryMap { try Decoders.yyyyMMdd.decode(DailyStats.self, from: $0) }
             completion(decodedResponse.result)
         }
     }
@@ -54,7 +51,7 @@ public class AnalyticsApi {
             "to": DateFormatters.yyyyMMdd.string(from: to),
         ]
         apiClient.signedSession.request(url, method: .get, parameters: parameters).validate().responseData { response in
-            let decodedResponse = response.tryMap { try self.decoder.decode([DailyStats].self, from: $0) }
+            let decodedResponse = response.tryMap { try Decoders.yyyyMMdd.decode([DailyStats].self, from: $0) }
             completion(decodedResponse.result)
         }
     }

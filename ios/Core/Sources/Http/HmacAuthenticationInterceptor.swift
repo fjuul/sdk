@@ -24,7 +24,7 @@ class HmacAuthenticationInterceptor: Authenticator {
                  completion: @escaping (Result<HmacCredentials, Error>) -> Void) {
 
         refreshSession.request("\(baseUrl)/sdk/signing/v1/issue-key/user", method: .get)
-            .validate(statusCode: 200..<299)
+            .validate()
             .response { response in
                 let decodedResponse = response.tryMap { (data: Data?) -> HmacCredentials in
                     let decoder = JSONDecoder()

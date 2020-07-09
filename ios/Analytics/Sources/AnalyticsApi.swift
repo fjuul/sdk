@@ -32,8 +32,8 @@ public class AnalyticsApi {
         guard let url = baseUrl?.appendingPathComponent(path) else {
             return completion(.failure(AnalyticsApiError.invalidConfig))
         }
-        apiClient.signedSession.request(url, method: .get).validate().response { response in
-            let decodedResponse = response.tryMap { try self.decoder.decode(DailyStats.self, from: $0!) }
+        apiClient.signedSession.request(url, method: .get).validate().responseData { response in
+            let decodedResponse = response.tryMap { try self.decoder.decode(DailyStats.self, from: $0) }
             completion(decodedResponse.result)
         }
     }
@@ -53,8 +53,8 @@ public class AnalyticsApi {
             "from": DateFormatters.yyyyMMdd.string(from: from),
             "to": DateFormatters.yyyyMMdd.string(from: to),
         ]
-        apiClient.signedSession.request(url, method: .get, parameters: parameters).validate().response { response in
-            let decodedResponse = response.tryMap { try self.decoder.decode([DailyStats].self, from: $0!) }
+        apiClient.signedSession.request(url, method: .get, parameters: parameters).validate().responseData { response in
+            let decodedResponse = response.tryMap { try self.decoder.decode([DailyStats].self, from: $0) }
             completion(decodedResponse.result)
         }
     }

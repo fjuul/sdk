@@ -52,61 +52,51 @@ public class MainActivity extends AppCompatActivity {
         try {
             analyticsService
                     // NOTE: set an accessible date
-                    .getDailyStats(userToken, "2020-06-30")
-                    .enqueue(new Callback<DailyStats>() {
-                        @Override
-                        public void onResponse(Call<DailyStats> call, Response<DailyStats> response) {
-                            if (response.isSuccessful()) {
-                                DailyStats dailyStats = response.body();
-                                Log.i(
-                                    TAG,
-                                    String.format(
-                                        "date: %s; active calories: %f",
-                                        dailyStats.getDate(),
-                                        dailyStats.getActiveCalories()));
-                                Log.i(
-                                    TAG,
-                                    String.format(
-                                        "lowest: seconds: %d, metMinutes %f",
-                                        dailyStats.getLowest().getSeconds(),
-                                        dailyStats.getLowest().getMetMinutes()));
-                                Log.i(
-                                    TAG,
-                                    String.format(
-                                        "low: seconds: %d, metMinutes %f",
-                                        dailyStats.getLow().getSeconds(),
-                                        dailyStats.getLow().getMetMinutes()));
-                                Log.i(
-                                    TAG,
-                                    String.format(
-                                        "moderate: seconds: %d, metMinutes %f",
-                                        dailyStats.getModerate().getSeconds(),
-                                        dailyStats.getModerate().getMetMinutes()));
-                                Log.i(
-                                    TAG,
-                                    String.format(
-                                        "high: seconds: %d, metMinutes %f",
-                                        dailyStats.getHigh().getSeconds(),
-                                        dailyStats.getHigh().getMetMinutes()));
-                            } else {
-                                try {
-                                    Log.i(
-                                        TAG,
-                                        String.format(
-                                            "error response: %d %s",
-                                            response.code(),
-                                            response.errorBody().string()));
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<DailyStats> call, Throwable t) {
+                    .getDailyStats(userToken, "2020-06-10")
+                    .whenComplete((response, error) -> {
+                        if (response.isSuccessful()) {
+                            DailyStats dailyStats = response.body();
                             Log.i(
                                 TAG,
-                                String.format("error: %s", t.getMessage()));
+                                String.format(
+                                    "date: %s; active calories: %f",
+                                    dailyStats.getDate(),
+                                    dailyStats.getActiveCalories()));
+                            Log.i(
+                                TAG,
+                                String.format(
+                                    "lowest: seconds: %d, metMinutes %f",
+                                    dailyStats.getLowest().getSeconds(),
+                                    dailyStats.getLowest().getMetMinutes()));
+                            Log.i(
+                                TAG,
+                                String.format(
+                                    "low: seconds: %d, metMinutes %f",
+                                    dailyStats.getLow().getSeconds(),
+                                    dailyStats.getLow().getMetMinutes()));
+                            Log.i(
+                                TAG,
+                                String.format(
+                                    "moderate: seconds: %d, metMinutes %f",
+                                    dailyStats.getModerate().getSeconds(),
+                                    dailyStats.getModerate().getMetMinutes()));
+                            Log.i(
+                                TAG,
+                                String.format(
+                                    "high: seconds: %d, metMinutes %f",
+                                    dailyStats.getHigh().getSeconds(),
+                                    dailyStats.getHigh().getMetMinutes()));
+                        } else {
+                            try {
+                                Log.i(
+                                    TAG,
+                                    String.format(
+                                        "error response: %d %s",
+                                        response.code(),
+                                        response.errorBody().string()));
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
                     });
         } catch (IOException e) {

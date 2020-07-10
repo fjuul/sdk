@@ -2,6 +2,7 @@ package com.fjuul.sdk.analytics.http.services;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.concurrent.CompletableFuture;
 
 import com.fjuul.sdk.analytics.entities.DailyStats;
 import com.fjuul.sdk.analytics.http.apis.AnalyticsApi;
@@ -14,6 +15,7 @@ import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 import io.reactivex.Observable;
 import okhttp3.OkHttpClient;
 import retrofit2.Call;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.Result;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
@@ -38,12 +40,12 @@ public class AnalyticsService {
         analyticsApiClient = retrofit.create(AnalyticsApi.class);
     }
 
-    public Call<DailyStats> getDailyStats(String userToken, String date)
+    public CompletableFuture<Response<DailyStats>> getDailyStats(String userToken, String date)
             throws IOException {
         return analyticsApiClient.getDailyStats(userToken, date);
     }
 
-    public Call<DailyStats[]> getDailyStats(
+    public CompletableFuture<Response<DailyStats[]>> getDailyStats(
             String userToken, String startDate, String endDate) throws IOException {
         return analyticsApiClient.getDailyStats(userToken, startDate, endDate);
     }

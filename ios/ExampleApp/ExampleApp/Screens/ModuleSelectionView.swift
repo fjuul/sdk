@@ -6,7 +6,7 @@ struct ModuleSelectionView: View {
 
         Form {
             Section(header: Text("Analytics")) {
-                NavigationLink(destination: DailyStatsView()) {
+                NavigationLink(destination: LazyView(DailyStatsView())) {
                     Text("Daily Statistics")
                 }
             }

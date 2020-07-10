@@ -25,4 +25,3 @@ enum ApiEnvironment: Int, CaseIterable, Identifiable {
     var id: ApiEnvironment { self }
 
 }
-

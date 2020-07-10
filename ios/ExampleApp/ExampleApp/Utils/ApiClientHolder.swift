@@ -1,8 +1,9 @@
 import Foundation
 import FjuulCore
 
-class ApiClientHolder: ObservableObject {
+struct ApiClientHolder {
 
-    @Published var apiClient: ApiClient?
+    static var `default` = Self()
+    var apiClient: ApiClient?
 
 }

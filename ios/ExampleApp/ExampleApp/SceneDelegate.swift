@@ -1,6 +1,26 @@
 import UIKit
 import SwiftUI
 
+class UserDefaultsManager: ObservableObject {
+
+    @Published var environment: ApiEnvironment = ApiEnvironment(rawValue: UserDefaults.standard.integer(forKey: "environment")) ?? .test {
+        didSet { UserDefaults.standard.set(self.environment.rawValue, forKey: "environment") }
+    }
+
+    @Published var apiKey: String = UserDefaults.standard.string(forKey: "apiKey") ?? "" {
+        didSet { UserDefaults.standard.set(self.apiKey, forKey: "apiKey") }
+    }
+
+    @Published var token: String = UserDefaults.standard.string(forKey: "token") ?? "" {
+        didSet { UserDefaults.standard.set(self.token, forKey: "token") }
+    }
+
+    @Published var secret: String = UserDefaults.standard.string(forKey: "secret") ?? "" {
+        didSet { UserDefaults.standard.set(self.secret, forKey: "secret") }
+    }
+
+}
+
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
@@ -12,12 +32,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // (see `application:configurationForConnectingSceneSession` instead).
 
         // Create the SwiftUI view that provides the window contents.
-        let contentView = ContentView()
+        let contentView = OnboardingView()
 
         // Use a UIHostingController as window root view controller.
         if let windowScene = scene as? UIWindowScene {
+            let userDefaultsManager = UserDefaultsManager()
             let window = UIWindow(windowScene: windowScene)
-            window.rootViewController = UIHostingController(rootView: contentView)
+            window.rootViewController = UIHostingController(rootView: contentView.environmentObject(userDefaultsManager))
             self.window = window
             window.makeKeyAndVisible()
         }

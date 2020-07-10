@@ -13,6 +13,7 @@ import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
 import io.reactivex.Observable;
 import okhttp3.OkHttpClient;
+import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.Result;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
@@ -37,12 +38,12 @@ public class AnalyticsService {
         analyticsApiClient = retrofit.create(AnalyticsApi.class);
     }
 
-    public Observable<Result<DailyStats>> getDailyStats(String userToken, String date)
+    public Call<DailyStats> getDailyStats(String userToken, String date)
             throws IOException {
         return analyticsApiClient.getDailyStats(userToken, date);
     }
 
-    public Observable<Result<DailyStats[]>> getDailyStats(
+    public Call<DailyStats[]> getDailyStats(
             String userToken, String startDate, String endDate) throws IOException {
         return analyticsApiClient.getDailyStats(userToken, startDate, endDate);
     }

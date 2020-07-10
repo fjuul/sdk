@@ -11,7 +11,6 @@ import com.fjuul.sdk.http.utils.RequestSigner;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 
-import io.reactivex.Maybe;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -80,25 +79,11 @@ public class SigningInterceptor implements Interceptor {
     }
 
     private SigningKey issueNewKey() throws IOException {
-        SigningKey newKey =
-                signingService
-                        .issueKey()
-                        .firstOrError()
-                        .flatMapMaybe(
-                                signingKeyResult -> {
-                                    if (signingKeyResult.isError()) {
-                                        return Maybe.error(signingKeyResult.error());
-                                    }
-
-                                    retrofit2.Response<SigningKey> signingKeyResponse =
-                                            signingKeyResult.response();
-                                    if (signingKeyResponse.isSuccessful()) {
-                                        return Maybe.just(signingKeyResponse.body());
-                                    } else {
-                                        return Maybe.empty();
-                                    }
-                                })
-                        .blockingGet();
-        return newKey;
+        retrofit2.Response<SigningKey> response = signingService.issueKey().execute();
+        if (response.isSuccessful()) {
+            return response.body();
+        } else {
+            return null;
+        }
     }
 }

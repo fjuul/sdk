@@ -54,6 +54,7 @@ public class SigningInterceptor implements Interceptor {
 
         // NOTE: try to retrieve a signing key once if error_code is `expired_signing_key`
         if (response.code() == 401) {
+            // TODO: lookup error code by header
             ResponseBody responseBody = response.body();
             Moshi moshi = new Moshi.Builder().build();
             JsonAdapter<UnauthorizedErrorResponseBody> bodyJsonAdapter =

@@ -48,7 +48,7 @@ fileprivate extension ApiClient {
         )
         let configuration = URLSessionConfiguration.default
         configuration.urlCache = nil
-        return Session(interceptor: compositeInterceptor)
+        return Session(configuration: configuration, interceptor: compositeInterceptor)
     }
 
     static func buildSignedSession(apiKey: String, baseUrl: String, refreshSession: Session) -> Session {

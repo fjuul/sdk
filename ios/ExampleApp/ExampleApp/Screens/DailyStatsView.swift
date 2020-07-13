@@ -14,16 +14,17 @@ class DailyStatsObservable: ObservableObject {
     private var dateObserver: AnyCancellable?
 
     init() {
-        dateObserver = $fromDate.merge(with: $toDate).debounce(for: 0.2, scheduler: DispatchQueue.main).sink { _ in
-            self.fetch()
+        dateObserver = $fromDate.combineLatest($toDate).sink { (fromDate, toDate) in
+            self.fetch(fromDate, toDate)
         }
     }
 
-    func fetch() {
+    func fetch(_ fromDate: Date, _ toDate: Date) {
         guard let apiClient = ApiClientHolder.default.apiClient else {
             print("no api client initialized")
             return
         }
+        self.value = []
         self.isLoading = true
         apiClient.analytics.dailyStats(from: fromDate, to: toDate) { result in
             self.isLoading = false

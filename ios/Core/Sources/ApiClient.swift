@@ -46,7 +46,7 @@ fileprivate extension ApiClient {
             retriers: [],
             interceptors: []
         )
-        let configuration = URLSessionConfiguration.default
+        let configuration = URLSessionConfiguration.af.default
         configuration.urlCache = nil
         return Session(configuration: configuration, interceptor: compositeInterceptor)
     }
@@ -66,7 +66,7 @@ fileprivate extension ApiClient {
             interceptors: [authInterceptor]
         )
 
-        let configuration = URLSessionConfiguration.default
+        let configuration = URLSessionConfiguration.af.default
         configuration.urlCache = nil
         return Session(configuration: configuration, interceptor: compositeInterceptor)
 

@@ -8,6 +8,8 @@ import com.fjuul.sdk.analytics.http.apis.AnalyticsApi;
 import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.http.FjuulSDKApiHttpClientBuilder;
 import com.fjuul.sdk.http.services.ISigningService;
+import com.fjuul.sdk.http.utils.ApiCall;
+import com.fjuul.sdk.http.utils.ApiCallAdapterFactory;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
@@ -29,17 +31,18 @@ public class AnalyticsService {
                 new Retrofit.Builder()
                         .baseUrl(clientBuilder.getBaseUrl())
                         .client(httpClient)
+                        .addCallAdapterFactory(ApiCallAdapterFactory.create())
                         .addConverterFactory(MoshiConverterFactory.create(moshi))
                         .build();
         analyticsApiClient = retrofit.create(AnalyticsApi.class);
     }
 
-    public Call<DailyStats> getDailyStats(String userToken, String date)
+    public ApiCall<DailyStats> getDailyStats(String userToken, String date)
             throws IOException {
         return analyticsApiClient.getDailyStats(userToken, date);
     }
 
-    public Call<DailyStats[]> getDailyStats(
+    public ApiCall<DailyStats[]> getDailyStats(
             String userToken, String startDate, String endDate) throws IOException {
         return analyticsApiClient.getDailyStats(userToken, startDate, endDate);
     }

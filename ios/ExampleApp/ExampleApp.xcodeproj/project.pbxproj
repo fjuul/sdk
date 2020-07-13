@@ -24,6 +24,7 @@
 		B3FBCDB624B8B3F400184A88 /* DailyStatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDB524B8B3F400184A88 /* DailyStatsView.swift */; };
 		B3FBCDB824B8BE2F00184A88 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDB724B8BE2F00184A88 /* RootView.swift */; };
 		B3FBCDBA24B8D5A400184A88 /* LazyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDB924B8D5A400184A88 /* LazyView.swift */; };
+		B3FBCDBC24BCAFF300184A88 /* ErrorHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDBB24BCAFF300184A88 /* ErrorHolder.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +58,7 @@
 		B3FBCDB524B8B3F400184A88 /* DailyStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyStatsView.swift; sourceTree = "<group>"; };
 		B3FBCDB724B8BE2F00184A88 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		B3FBCDB924B8D5A400184A88 /* LazyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LazyView.swift; sourceTree = "<group>"; };
+		B3FBCDBB24BCAFF300184A88 /* ErrorHolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorHolder.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -141,6 +143,7 @@
 			children = (
 				B3FBCDB324B8AC7800184A88 /* ApiClientHolder.swift */,
 				B3FBCDAF24B8AB3000184A88 /* ApiEnvironment.swift */,
+				B3FBCDBB24BCAFF300184A88 /* ErrorHolder.swift */,
 				B3FBCDA624B8AB1200184A88 /* FloatingTextField.swift */,
 				B3FBCDB924B8D5A400184A88 /* LazyView.swift */,
 				B3FBCDB124B8AB6200184A88 /* UserDefaultsManager.swift */,
@@ -297,6 +300,7 @@
 				B3BB7F1323993EC800A7BEF2 /* SceneDelegate.swift in Sources */,
 				B3FBCDB624B8B3F400184A88 /* DailyStatsView.swift in Sources */,
 				B3FBCDB424B8AC7800184A88 /* ApiClientHolder.swift in Sources */,
+				B3FBCDBC24BCAFF300184A88 /* ErrorHolder.swift in Sources */,
 				B3FBCDB824B8BE2F00184A88 /* RootView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

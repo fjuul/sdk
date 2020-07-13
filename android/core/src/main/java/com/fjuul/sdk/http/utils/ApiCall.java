@@ -26,7 +26,7 @@ public class ApiCall<T> {
         return convertResponseToResult(response);
     }
 
-    public void enqueue(ApiCallCallback<Result<T, Error>> callback) {
+    public void enqueue(ApiCallCallback<T, Error, Result<T, Error>> callback) {
         delegate.enqueue(new Callback<T>() {
             @Override
             public void onResponse(Call<T> call, Response<T> response) {
@@ -66,7 +66,7 @@ public class ApiCall<T> {
 
     protected Result<T, Error> convertResponseToResult(Response<T> response) {
         if (response.isSuccessful()) {
-            return Result.success(response.body());
+            return Result.value(response.body());
         }
         // TODO: add additional checks
         return Result.error(new Error("Unsuccessful request"));

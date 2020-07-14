@@ -3,7 +3,6 @@ package com.fjuul.sdk.analytics.http.apis;
 import com.fjuul.sdk.analytics.entities.DailyStats;
 import com.fjuul.sdk.http.utils.ApiCall;
 
-import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 import retrofit2.http.Query;

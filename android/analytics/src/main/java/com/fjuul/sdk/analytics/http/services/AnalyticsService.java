@@ -14,7 +14,6 @@ import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
 import okhttp3.OkHttpClient;
-import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;
 
@@ -26,7 +25,9 @@ public class AnalyticsService {
             SigningKeychain keychain,
             ISigningService signingService) {
         OkHttpClient httpClient = clientBuilder.buildSigningClient(keychain, signingService);
-        Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
+        Moshi moshi = new Moshi.Builder()
+            .add(Date.class, new Rfc3339DateJsonAdapter())
+            .build();
         Retrofit retrofit =
                 new Retrofit.Builder()
                         .baseUrl(clientBuilder.getBaseUrl())

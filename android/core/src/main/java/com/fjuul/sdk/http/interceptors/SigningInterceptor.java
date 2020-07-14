@@ -5,16 +5,12 @@ import java.util.Optional;
 
 import com.fjuul.sdk.entities.SigningKey;
 import com.fjuul.sdk.entities.SigningKeychain;
-import com.fjuul.sdk.http.responses.UnauthorizedErrorResponseBody;
 import com.fjuul.sdk.http.services.ISigningService;
 import com.fjuul.sdk.http.utils.RequestSigner;
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
 
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 
 public class SigningInterceptor implements Interceptor {
     private SigningKeychain keychain;
@@ -34,13 +30,14 @@ public class SigningInterceptor implements Interceptor {
         Optional<SigningKey> keyOptional = this.keychain.getFirstValid();
         SigningKey signingKey = null;
         if (!keyOptional.isPresent()) {
-            SigningKey newKey = issueNewKey();
-            if (newKey != null) {
+            retrofit2.Response<SigningKey> newKeyResponse = issueNewKey();
+            if (newKeyResponse.isSuccessful()) {
+                SigningKey newKey = newKeyResponse.body();
                 keychain.appendKey(newKey);
                 signingKey = newKey;
             } else {
-                // TODO: specify an error cause (invalid credentials ?)
-                throw new IOException("Couldn't retrieve a signing key");
+                // return response of a request of signing key to infer http error
+                return newKeyResponse.raw();
             }
         } else {
             signingKey = keyOptional.get();
@@ -48,43 +45,30 @@ public class SigningInterceptor implements Interceptor {
 
         Request signedRequest = requestSigner.signRequestByKey(chain.request(), signingKey);
         Response response = chain.proceed(signedRequest);
-        if (response.isSuccessful()) {
+        if (response.isSuccessful() || response.code() != 401) {
             return response;
         }
 
-        // NOTE: try to retrieve a signing key once if error_code is `expired_signing_key`
-        if (response.code() == 401) {
-            // TODO: lookup error code by header
-            ResponseBody responseBody = response.body();
-            Moshi moshi = new Moshi.Builder().build();
-            JsonAdapter<UnauthorizedErrorResponseBody> bodyJsonAdapter =
-                    moshi.adapter(UnauthorizedErrorResponseBody.class).nullSafe();
-            UnauthorizedErrorResponseBody errorResponseBody =
-                    bodyJsonAdapter.fromJson(responseBody.source());
-            if (errorResponseBody != null
-                    && errorResponseBody.getErrorCode()
-                            == UnauthorizedErrorResponseBody.ErrorCode.expired_signing_key) {
-                SigningKey newKey = issueNewKey();
-                if (newKey != null) {
-                    keychain.appendKey(newKey);
-                    signingKey = newKey;
-                    signedRequest = requestSigner.signRequestByKey(chain.request(), signingKey);
-                    return chain.proceed(signedRequest);
-                } else {
-                    // TODO: specify an error cause (invalid credentials ?)
-                    throw new IOException("Couldn't refresh a signing key");
-                }
+        // NOTE: try to retrieve a signing key once if error_code is `expired_signing_key` or 'invalid_key_id'
+        String authenticationErrorCode = response.header("x-authentication-error");
+        if (authenticationErrorCode != null &&
+            authenticationErrorCode.equals("invalid_key_id") ||
+            authenticationErrorCode.equals("expired_signing_key")) {
+            retrofit2.Response<SigningKey> newKeyResponse = issueNewKey();
+            if (newKeyResponse.isSuccessful()) {
+                SigningKey newKey = newKeyResponse.body();
+                keychain.appendKey(newKey);
+                signedRequest = requestSigner.signRequestByKey(chain.request(), newKey);
+                return chain.proceed(signedRequest);
+            } else {
+                // return response of a request of signing key to infer http error
+                return newKeyResponse.raw();
             }
         }
         return response;
     }
 
-    private SigningKey issueNewKey() throws IOException {
-        retrofit2.Response<SigningKey> response = signingService.issueKey().execute();
-        if (response.isSuccessful()) {
-            return response.body();
-        } else {
-            return null;
-        }
+    private retrofit2.Response<SigningKey> issueNewKey() throws IOException {
+        return signingService.issueKey().execute();
     }
 }

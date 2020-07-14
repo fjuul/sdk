@@ -33,7 +33,12 @@ public class ApiClient {
         self.credentials = credentials
         self.persistor = persistor
         self.bearerAuthenticatedSession = ApiClient.buildBearerAuthenticatedSession(apiKey: apiKey, credentials: credentials)
-        self.signedSession = ApiClient.buildSignedSession(apiKey: apiKey, baseUrl: baseUrl, refreshSession: self.bearerAuthenticatedSession, persistor: persistor)
+        self.signedSession = ApiClient.buildSignedSession(
+            apiKey: apiKey,
+            baseUrl: baseUrl,
+            refreshSession: self.bearerAuthenticatedSession,
+            credentialStore: HmacCredentialStore(userToken: credentials.token, persistor: persistor)
+        )
     }
 
     public var userToken: String {
@@ -57,14 +62,12 @@ fileprivate extension ApiClient {
         return Session(configuration: configuration, interceptor: compositeInterceptor)
     }
 
-    static func buildSignedSession(apiKey: String, baseUrl: String, refreshSession: Session, persistor: Persistor) -> Session {
-
-        let hmacCredentials = HmacCredentialsStore(userToken: "", persistor: persistor)
+    static func buildSignedSession(apiKey: String, baseUrl: String, refreshSession: Session, credentialStore: HmacCredentialStore) -> Session {
 
         let apiKeyAdapter = ApiKeyAdapter(apiKey: apiKey)
 
-        let authenticator = HmacAuthenticationInterceptor(baseUrl: baseUrl, refreshSession: refreshSession)
-        let authInterceptor = AuthenticationInterceptor(authenticator: authenticator, credential: hmacCredentials)
+        let authenticator = HmacAuthenticatior(baseUrl: baseUrl, refreshSession: refreshSession, credentialStore: credentialStore)
+        let authInterceptor = AuthenticationInterceptor(authenticator: authenticator, credential: credentialStore.signingKey)
 
         let compositeInterceptor = Interceptor(
             adapters: [apiKeyAdapter],

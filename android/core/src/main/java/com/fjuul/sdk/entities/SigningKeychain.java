@@ -1,5 +1,6 @@
 package com.fjuul.sdk.entities;
 
+import java.util.Date;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
@@ -32,6 +33,8 @@ public class SigningKeychain {
     }
 
     public Optional<SigningKey> getFirstValid() {
-        return signingKeys.stream().filter(key -> key.isValid()).findFirst();
+        return signingKeys.stream()
+            .filter(key -> key.isValid() && key.getExpiresAt().after(new Date()))
+            .findFirst();
     }
 }

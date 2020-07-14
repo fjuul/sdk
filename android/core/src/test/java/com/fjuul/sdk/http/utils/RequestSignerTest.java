@@ -56,13 +56,13 @@ public class RequestSignerTest {
         }
 
         @Test
-        public void signRequest_WithGetMethodAndQueryParamsAndHash_returnsSignedRequest()
+        public void signRequest_WithGetMethodAndQueryParams_returnsSignedRequest()
                 throws InterruptedException {
             Request.Builder testRequestBuilder = new Request.Builder();
             Request testRequest =
                     testRequestBuilder
                             .url(
-                                    "https://fjuul.dev.api/analytics/v1/dailyStats/userToken?startDate=2020-01-15&endDate=2020-01-20#fragment")
+                                    "https://fjuul.dev.api/analytics/v1/dailyStats/userToken?startDate=2020-01-15&endDate=2020-01-20")
                             .get()
                             .build();
             SigningKey key = new SigningKey(KEY_ID, SECRET_KEY, new Date());
@@ -71,7 +71,7 @@ public class RequestSignerTest {
             final Request signedRequest = subject.signRequestByKey(testRequest, key);
             assertEquals(
                     "request has correct signature header",
-                    "keyId=\"signing-key-id-1234\",algorithm=\"hmac-sha256\",headers=\"(request-target) date\",signature=\"ops3L4iYL3YI1mrQ6HJbrNPuYL7av1lkGHluPuuaZig=\"",
+                    "keyId=\"signing-key-id-1234\",algorithm=\"hmac-sha256\",headers=\"(request-target) date\",signature=\"MOqamiGFYfhqxswMDto4zzB/1UrBJukoWIQGqN+N9vg=\"",
                     signedRequest.header("Signature"));
             assertEquals(
                     "request has a date header",

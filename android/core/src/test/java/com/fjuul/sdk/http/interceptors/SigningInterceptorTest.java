@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.Date;
 
 import org.hamcrest.CoreMatchers;
@@ -28,7 +27,7 @@ import retrofit2.Response;
 public class SigningInterceptorTest {
 
     @Test
-    public void intercept_EmptyKeychainWithFailedIssueResult_throwsException() throws Exception {
+    public void intercept_EmptyKeychainWithFailedIssueResult_returnIssueResponse() throws Exception {
         MockWebServer mockWebServer = new MockWebServer();
         mockWebServer.start();
         mockWebServer.enqueue(new MockResponse());
@@ -45,23 +44,14 @@ public class SigningInterceptorTest {
                 new SigningInterceptor(testKeychain, new RequestSigner(), mockedSigningService);
         OkHttpClient okHttpClient =
                 new OkHttpClient().newBuilder().addInterceptor(interceptor).build();
-
-        try {
-            okHttpClient
-                    .newCall(
-                            new Request.Builder()
-                                    .url(mockWebServer.url("/sdk/v1/analytics"))
-                                    .build())
-                    .execute();
-            assertEquals("fails", true, false);
-        } catch (IOException exc) {
-            assertEquals(
-                    "throws io-exception with message",
-                    "Couldn't retrieve a signing key",
-                    exc.getMessage());
-        } finally {
-            mockWebServer.shutdown();
-        }
+        okhttp3.Response returnedResponse = okHttpClient
+            .newCall(
+                new Request.Builder()
+                    .url(mockWebServer.url("/sdk/v1/analytics"))
+                    .build())
+            .execute();
+        assertEquals(returnedResponse, mockedSigningKeyResponse.raw());
+        mockWebServer.shutdown();
     }
 
     @Test

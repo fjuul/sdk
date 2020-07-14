@@ -18,9 +18,6 @@ extension URLRequest {
         if let query = self.url?.query {
             requestTarget.append("?\(query)")
         }
-        if let fragment = self.url?.fragment {
-            requestTarget.append("#\(fragment)")
-        }
         signingString.append("\(requestTarget)\n")
 
         let formattedDate = DateFormatters.rfc1123.string(from: date)

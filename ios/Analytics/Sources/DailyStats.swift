@@ -3,7 +3,9 @@ import Foundation
 public struct DailyStats: Decodable {
 
     public let date: Date
-    public let activeCalories: Float
+    public let totalKcal: Float
+    public let activeKcal: Float
+    public let steps: UInt
 
     public let lowest: ActivityMeasure
     public let low: ActivityMeasure

@@ -32,7 +32,7 @@ final class URLRequestSiginigTests: XCTestCase {
 
         XCTAssertEqual(
             request.value(forHTTPHeaderField: "Signature"),
-            "keyId=\"signing-key-id-1234\",algorithm=\"hmac-sha256\",headers=\"(request-target) date\",signature=\"ops3L4iYL3YI1mrQ6HJbrNPuYL7av1lkGHluPuuaZig=\""
+            "keyId=\"signing-key-id-1234\",algorithm=\"hmac-sha256\",headers=\"(request-target) date\",signature=\"MOqamiGFYfhqxswMDto4zzB/1UrBJukoWIQGqN+N9vg=\""
         )
 
         XCTAssertEqual(request.value(forHTTPHeaderField: "Date"), "Thu, 13 Feb 2020 15:56:23 GMT")

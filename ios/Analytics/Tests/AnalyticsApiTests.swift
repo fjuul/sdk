@@ -23,7 +23,7 @@ final class AnalyticsApiTests: XCTestCase {
             \"low\":{\"seconds\":180,\"metMinutes\":8.24},
             \"moderate\":{\"seconds\":1260,\"metMinutes\":89.8},
             \"high\":{\"seconds\":540,\"metMinutes\":63.23},
-            \"activeCalories\":1755.64
+            \"totalKcal\":1755.64,\"activeKcal\":755.64,\"steps\":10000
         }
     """
 

@@ -15,7 +15,6 @@ public class FjuulSDKApiHttpClientBuilder {
     private String baseUrl;
     private String apiKey;
 
-    // TODO: add base-url
     // TODO: add the overloaded constructor with an environment parameter
     public FjuulSDKApiHttpClientBuilder(String baseUrl, String apiKey) {
         this.baseUrl = baseUrl;

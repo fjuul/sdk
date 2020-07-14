@@ -16,6 +16,7 @@ public class ApiClient {
     public let baseUrl: String
 
     let credentials: UserCredentials
+    let persistor: Persistor
 
     /// Initializes a Fjuul API client.
     ///
@@ -23,11 +24,16 @@ public class ApiClient {
     ///   - baseUrl: The API base URL to connect to, e.g. `https://api.fjuul.com`.
     ///   - apiKey: The API key.
     ///   - credentials: The credentials of the user.
-    public init(baseUrl: String, apiKey: String, credentials: UserCredentials) {
+    public convenience init(baseUrl: String, apiKey: String, credentials: UserCredentials) {
+        self.init(baseUrl: baseUrl, apiKey: apiKey, credentials: credentials, persistor: DiskPersistor())
+    }
+
+    public init(baseUrl: String, apiKey: String, credentials: UserCredentials, persistor: Persistor) {
         self.baseUrl = baseUrl
         self.credentials = credentials
+        self.persistor = persistor
         self.bearerAuthenticatedSession = ApiClient.buildBearerAuthenticatedSession(apiKey: apiKey, credentials: credentials)
-        self.signedSession = ApiClient.buildSignedSession(apiKey: apiKey, baseUrl: baseUrl, refreshSession: self.bearerAuthenticatedSession)
+        self.signedSession = ApiClient.buildSignedSession(apiKey: apiKey, baseUrl: baseUrl, refreshSession: self.bearerAuthenticatedSession, persistor: persistor)
     }
 
     public var userToken: String {
@@ -51,9 +57,9 @@ fileprivate extension ApiClient {
         return Session(configuration: configuration, interceptor: compositeInterceptor)
     }
 
-    static func buildSignedSession(apiKey: String, baseUrl: String, refreshSession: Session) -> Session {
+    static func buildSignedSession(apiKey: String, baseUrl: String, refreshSession: Session, persistor: Persistor) -> Session {
 
-        let hmacCredentials = HmacCredentials(signingKey: nil)
+        let hmacCredentials = HmacCredentialsStore(userToken: "", persistor: persistor)
 
         let apiKeyAdapter = ApiKeyAdapter(apiKey: apiKey)
 

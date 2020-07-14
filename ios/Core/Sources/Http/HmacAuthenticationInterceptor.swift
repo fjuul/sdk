@@ -11,7 +11,7 @@ class HmacAuthenticationInterceptor: Authenticator {
         self.refreshSession = refreshSession
     }
 
-    func apply(_ credential: HmacCredentials, to urlRequest: inout URLRequest) {
+    func apply(_ credential: SigningKey, to urlRequest: inout URLRequest) {
         guard let signingKey = credential.signingKey else {
             // TODO this should never happen
             return
@@ -19,16 +19,21 @@ class HmacAuthenticationInterceptor: Authenticator {
         urlRequest.signWith(key: signingKey, forDate: Date())
     }
 
-    func refresh(_ credential: HmacCredentials,
+    func refresh(_ credential: SigningKey,
                  for session: Session,
-                 completion: @escaping (Result<HmacCredentials, Error>) -> Void) {
+                 completion: @escaping (Result<HmacCredentialsStore, Error>) -> Void) {
 
         refreshSession.request("\(baseUrl)/sdk/signing/v1/issue-key/user", method: .get).validate().responseData { response in
-            let decodedResponse = response.tryMap { data -> HmacCredentials in
-                let signingKey = try Decoders.iso8601Full.decode(SigningKey.self, from: data)
-                return HmacCredentials(signingKey: signingKey)
+            let decodedResponse = response.tryMap { data -> SigningKey in
+                return try Decoders.iso8601Full.decode(SigningKey.self, from: data)
             }
-            completion(decodedResponse.result)
+            switch decodedResponse.result {
+            case .success(let key):
+                credential.signingKey = key
+                completion(.success(credential))
+            case .failure(let err):
+                completion(.failure(err))
+            }
         }
 
     }
@@ -49,7 +54,7 @@ class HmacAuthenticationInterceptor: Authenticator {
     // This method should return true if the URLRequest is authenticated in a way that matches the values in the Credential
     // This is used to determine if credentials need to be refreshed, or have already been refreshed (e.g. due to multiple
     // concurrent in-flight requests).
-    func isRequest(_ urlRequest: URLRequest, authenticatedWith credential: HmacCredentials) -> Bool {
+    func isRequest(_ urlRequest: URLRequest, authenticatedWith credential: SigningKey) -> Bool {
         guard let signingKey = credential.signingKey, let signature = urlRequest.value(forHTTPHeaderField: "Signature") else {
             return false
         }

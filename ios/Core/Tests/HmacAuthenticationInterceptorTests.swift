@@ -13,21 +13,21 @@ final class HmacAuthenticationInterceptorTests: XCTestCase {
     let url = URL(string: "https://foo")!
 
     func testIsAuthenticatedNoCredentialsNoSignature() {
-        let credentials = HmacCredentials(signingKey: nil)
+        let credentials = HmacCredentialsStore(signingKey: nil)
         let interceptor = HmacAuthenticationInterceptor(baseUrl: "https://foo", refreshSession: Session())
         let request = URLRequest(url: url)
         XCTAssertFalse(interceptor.isRequest(request, authenticatedWith: credentials))
     }
 
     func testIsAuthenticatedWithCredentialsNoSignature() {
-        let credentials = HmacCredentials(signingKey: key)
+        let credentials = HmacCredentialsStore(signingKey: key)
         let interceptor = HmacAuthenticationInterceptor(baseUrl: "https://foo", refreshSession: Session())
         let request = URLRequest(url: url)
         XCTAssertFalse(interceptor.isRequest(request, authenticatedWith: credentials))
     }
 
     func testIsAuthenticatedWithCredentialsInvalidKey() {
-        let credentials = HmacCredentials(signingKey: key)
+        let credentials = HmacCredentialsStore(signingKey: key)
         let interceptor = HmacAuthenticationInterceptor(baseUrl: "https://foo", refreshSession: Session())
         var request = URLRequest(url: url)
         request.addValue(
@@ -38,7 +38,7 @@ final class HmacAuthenticationInterceptorTests: XCTestCase {
     }
 
     func testIsAuthenticatedWithCredentialsWrongKey() {
-        let credentials = HmacCredentials(signingKey: key)
+        let credentials = HmacCredentialsStore(signingKey: key)
         let interceptor = HmacAuthenticationInterceptor(baseUrl: "https://foo", refreshSession: Session())
         var request = URLRequest(url: url)
         request.addValue(
@@ -49,7 +49,7 @@ final class HmacAuthenticationInterceptorTests: XCTestCase {
     }
 
     func testIsAuthenticatedWithCredentialsSameKey() {
-        let credentials = HmacCredentials(signingKey: key)
+        let credentials = HmacCredentialsStore(signingKey: key)
         let interceptor = HmacAuthenticationInterceptor(baseUrl: "https://foo", refreshSession: Session())
         var request = URLRequest(url: url)
         request.addValue(

@@ -36,7 +36,7 @@ final class ApiClientTests: XCTestCase {
 
     func testBearerAuthenticationSessionAttachesAuthHeader() {
         let e = expectation(description: "Alamofire")
-        let client = ApiClient(baseUrl: "", apiKey: "this-is-sparta", credentials: credentials)
+        let client = ApiClient(baseUrl: "", apiKey: "this-is-sparta", credentials: credentials, persistor: InMemoryPersistor())
         let request = client.bearerAuthenticatedSession.request("https://foo")
         request.response { _ in
             XCTAssertEqual(
@@ -50,7 +50,7 @@ final class ApiClientTests: XCTestCase {
 
     func testBearerAuthenticatedSessionAttachesApiKey() {
         let e = expectation(description: "Alamofire")
-        let client = ApiClient(baseUrl: "", apiKey: "this-is-sparta", credentials: credentials)
+        let client = ApiClient(baseUrl: "", apiKey: "this-is-sparta", credentials: credentials, persistor: InMemoryPersistor())
         let request = client.bearerAuthenticatedSession.request("https://foo")
         request.response { _ in
             XCTAssertEqual(request.request?.value(forHTTPHeaderField: "x-api-key"), "this-is-sparta")
@@ -61,7 +61,7 @@ final class ApiClientTests: XCTestCase {
 
     func testSignedSessionAttachesApiKey() {
         let e = expectation(description: "Alamofire")
-        let client = ApiClient(baseUrl: "https://apibase", apiKey: "this-is-sparta", credentials: credentials)
+        let client = ApiClient(baseUrl: "https://apibase", apiKey: "this-is-sparta", credentials: credentials, persistor: InMemoryPersistor())
         let request = client.signedSession.request("https://foo")
         request.response { _ in
             XCTAssertEqual(request.request?.value(forHTTPHeaderField: "x-api-key"), "this-is-sparta")
@@ -72,7 +72,7 @@ final class ApiClientTests: XCTestCase {
 
     func testSignedSessionAttachesSignature() {
         let e = expectation(description: "Alamofire")
-        let client = ApiClient(baseUrl: "https://apibase", apiKey: "this-is-sparta", credentials: credentials)
+        let client = ApiClient(baseUrl: "https://apibase", apiKey: "this-is-sparta", credentials: credentials, persistor: InMemoryPersistor())
         let request = client.signedSession.request("https://foo")
         request.response { _ in
             // Note: it would be a lot of ugly effort to actually verify the signature here, because

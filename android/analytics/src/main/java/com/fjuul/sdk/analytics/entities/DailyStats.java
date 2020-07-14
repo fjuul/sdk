@@ -2,7 +2,9 @@ package com.fjuul.sdk.analytics.entities;
 
 public class DailyStats {
     String date;
-    float activeCalories;
+    float activeKcal;
+    float totalKcal;
+    int steps;
 
     ActivityMeasure lowest;
     ActivityMeasure low;
@@ -13,8 +15,16 @@ public class DailyStats {
         return date;
     }
 
-    public float getActiveCalories() {
-        return activeCalories;
+    public float getActiveKcal() {
+        return activeKcal;
+    }
+
+    public float getTotalKcal() {
+        return totalKcal;
+    }
+
+    public int getSteps() {
+        return steps;
     }
 
     public ActivityMeasure getLowest() {

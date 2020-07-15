@@ -161,93 +161,94 @@ public class AnalyticsServiceTest {
 
     @Test
     public void getDailyStats_EmptyKeychainWithUnauthorizedError_ReturnsErrorResult()
-        throws IOException {
-        analyticsService = new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
+            throws IOException {
+        analyticsService =
+                new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
         MockResponse mockResponse =
-            new MockResponse()
-                .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
-                .setHeader("Content-Type", "application/json")
-                .setHeader("x-authentication-error", "wrong_credentials")
-                .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
+                new MockResponse()
+                        .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
+                        .setHeader("Content-Type", "application/json")
+                        .setHeader("x-authentication-error", "wrong_credentials")
+                        .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
         mockWebServer.enqueue(mockResponse);
 
         Result<DailyStats, HttpErrors.CommonError> result =
-            analyticsService.getDailyStats(USER_TOKEN, "2020-03-10").execute();
+                analyticsService.getDailyStats(USER_TOKEN, "2020-03-10").execute();
 
         assertTrue("error result", result.isError());
         Error error = result.getError();
         assertThat(result.getError(), IsInstanceOf.instanceOf(HttpErrors.UnauthorizedError.class));
         HttpErrors.UnauthorizedError authError = (HttpErrors.UnauthorizedError) error;
         assertEquals(
-            "has wrong_credentials error code",
-            HttpErrors.UnauthorizedError.ErrorCode.wrong_credentials,
-            authError.getErrorCode());
+                "has wrong_credentials error code",
+                HttpErrors.UnauthorizedError.ErrorCode.wrong_credentials,
+                authError.getErrorCode());
         assertEquals(
-            "has error message from response body",
-            "Unauthorized request",
-            authError.getMessage());
+                "has error message from response body",
+                "Unauthorized request",
+                authError.getMessage());
     }
 
     @Test
     public void getDailyStats_ResponseWithUnauthorizedError_ReturnsErrorResult()
-        throws IOException {
-        analyticsService = new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
+            throws IOException {
+        analyticsService =
+                new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
         MockResponse mockResponse =
-            new MockResponse()
-                .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
-                .setHeader("Content-Type", "application/json")
-                .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
+                new MockResponse()
+                        .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
+                        .setHeader("Content-Type", "application/json")
+                        .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
         mockWebServer.enqueue(mockResponse);
 
         Result<DailyStats, HttpErrors.CommonError> result =
-            analyticsService.getDailyStats(USER_TOKEN, "2020-03-10").execute();
+                analyticsService.getDailyStats(USER_TOKEN, "2020-03-10").execute();
 
         assertTrue("error result", result.isError());
         Error error = result.getError();
         assertThat(result.getError(), IsInstanceOf.instanceOf(HttpErrors.UnauthorizedError.class));
         HttpErrors.UnauthorizedError authError = (HttpErrors.UnauthorizedError) error;
+        assertEquals("has wrong_credentials error code", null, authError.getErrorCode());
         assertEquals(
-            "has wrong_credentials error code",
-            null,
-            authError.getErrorCode());
-        assertEquals(
-            "has error message from response body",
-            "Unauthorized request",
-            authError.getMessage());
+                "has error message from response body",
+                "Unauthorized request",
+                authError.getMessage());
     }
 
     @Test
     public void getDailyStats_ResponseWithUnauthorizedErrorWithCode_ReturnsErrorResult()
-        throws IOException {
-        analyticsService = new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
+            throws IOException {
+        analyticsService =
+                new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
         MockResponse mockResponse =
-            new MockResponse()
-                .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
-                .setHeader("Content-Type", "application/json")
-                .setHeader("x-authentication-error", "wrong_credentials")
-                .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
+                new MockResponse()
+                        .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
+                        .setHeader("Content-Type", "application/json")
+                        .setHeader("x-authentication-error", "wrong_credentials")
+                        .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
         mockWebServer.enqueue(mockResponse);
 
         Result<DailyStats, HttpErrors.CommonError> result =
-            analyticsService.getDailyStats(USER_TOKEN, "2020-03-10").execute();
+                analyticsService.getDailyStats(USER_TOKEN, "2020-03-10").execute();
 
         assertTrue("error result", result.isError());
         Error error = result.getError();
         assertThat(result.getError(), IsInstanceOf.instanceOf(HttpErrors.UnauthorizedError.class));
         HttpErrors.UnauthorizedError authError = (HttpErrors.UnauthorizedError) error;
         assertEquals(
-            "has wrong_credentials error code",
-            HttpErrors.UnauthorizedError.ErrorCode.wrong_credentials,
-            authError.getErrorCode());
+                "has wrong_credentials error code",
+                HttpErrors.UnauthorizedError.ErrorCode.wrong_credentials,
+                authError.getErrorCode());
         assertEquals(
-            "has error message from response body",
-            "Unauthorized request",
-            authError.getMessage());
+                "has error message from response body",
+                "Unauthorized request",
+                authError.getMessage());
     }
 
     @Test
     public void getDailyStats_ResponseWithClockSkewError_ReturnsErrorResult() throws IOException {
-        analyticsService = new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
+        analyticsService =
+                new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
         MockResponse mockResponse =
                 new MockResponse()
                         .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)

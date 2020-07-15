@@ -7,7 +7,9 @@ import com.fjuul.sdk.analytics.entities.DailyStats;
 import com.fjuul.sdk.analytics.http.services.AnalyticsService;
 import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.entities.UserCredentials;
-import com.fjuul.sdk.http.FjuulSDKApiHttpClientBuilder;
+import com.fjuul.sdk.http.HttpClientBuilder;
+import com.fjuul.sdk.http.errors.HttpErrors;
+import com.fjuul.sdk.http.errors.HttpErrors.CommonError;
 import com.fjuul.sdk.http.services.UserSigningService;
 import com.fjuul.sdk.http.utils.ApiCall;
 import com.fjuul.sdk.http.utils.ApiCallCallback;
@@ -40,8 +42,8 @@ public class MainActivity extends AppCompatActivity {
         // NOTE: provide your credentials
         String userToken = "<TOKEN>";
         String secret = "<SECRET>";
-        FjuulSDKApiHttpClientBuilder clientBuilder =
-                new FjuulSDKApiHttpClientBuilder(
+        HttpClientBuilder clientBuilder =
+                new HttpClientBuilder(
                         "https://dev.api.fjuul.com", "c1e51fc6-d253-4961-ab9a-5d91560bae75");
         UserSigningService signingService =
                 new UserSigningService(clientBuilder, new UserCredentials(userToken, secret));
@@ -53,11 +55,11 @@ public class MainActivity extends AppCompatActivity {
                     // NOTE: set an accessible date
                     .getDailyStats(userToken, "2020-06-10")
                     .enqueue(
-                            new ApiCallCallback<DailyStats, Error, Result<DailyStats, Error>>() {
+                            new ApiCallCallback<DailyStats, CommonError, Result<DailyStats, CommonError>>() {
                                 @Override
                                 public void onResponse(
                                         ApiCall<DailyStats> call,
-                                        Result<DailyStats, Error> result) {
+                                        Result<DailyStats, CommonError> result) {
                                     if (result.isError()) {
                                         Log.i(
                                                 TAG,
@@ -72,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
                                             String.format(
                                                     "date: %s; active calories: %f",
                                                     dailyStats.getDate(),
-                                                    dailyStats.getActiveCalories()));
+                                                    dailyStats.getActiveKcal()));
                                     Log.i(
                                             TAG,
                                             String.format(

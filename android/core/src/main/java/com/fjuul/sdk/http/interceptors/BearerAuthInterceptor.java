@@ -8,10 +8,10 @@ import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class UserAuthInterceptor implements Interceptor {
+public class BearerAuthInterceptor implements Interceptor {
     UserCredentials credentials;
 
-    public UserAuthInterceptor(UserCredentials credentials) {
+    public BearerAuthInterceptor(UserCredentials credentials) {
         this.credentials = credentials;
     }
 

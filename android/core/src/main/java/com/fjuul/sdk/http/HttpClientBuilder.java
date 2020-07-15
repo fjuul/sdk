@@ -4,7 +4,7 @@ import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.entities.UserCredentials;
 import com.fjuul.sdk.http.interceptors.ApiKeyAttachingInterceptor;
 import com.fjuul.sdk.http.interceptors.SigningInterceptor;
-import com.fjuul.sdk.http.interceptors.UserAuthInterceptor;
+import com.fjuul.sdk.http.interceptors.BearerAuthInterceptor;
 import com.fjuul.sdk.http.services.ISigningService;
 import com.fjuul.sdk.http.services.UserSigningService;
 import com.fjuul.sdk.http.utils.RequestSigner;
@@ -48,7 +48,7 @@ public class HttpClientBuilder {
                 new OkHttpClient()
                         .newBuilder()
                         .addInterceptor(new ApiKeyAttachingInterceptor(apiKey))
-                        .addInterceptor(new UserAuthInterceptor(credentials))
+                        .addInterceptor(new BearerAuthInterceptor(credentials))
                         .build();
         return client;
     }

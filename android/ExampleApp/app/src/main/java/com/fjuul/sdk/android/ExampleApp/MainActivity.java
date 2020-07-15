@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
         textView.setText(new Analytics().getText());
 
         // UNCOMMENT BOTTOM LINE to perform a test request
-        //testAnalyticsRequest();
+        // testAnalyticsRequest();
     }
 
     private void testAnalyticsRequest() {

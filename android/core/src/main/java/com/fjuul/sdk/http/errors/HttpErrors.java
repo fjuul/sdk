@@ -20,6 +20,7 @@ public final class HttpErrors {
             wrong_credentials,
             clock_skew
         }
+
         private ErrorCode errorCode;
 
         public ErrorCode getErrorCode() {

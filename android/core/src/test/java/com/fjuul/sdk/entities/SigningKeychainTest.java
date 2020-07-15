@@ -1,13 +1,13 @@
 package com.fjuul.sdk.entities;
 
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
+import static org.junit.Assert.*;
 
 import java.util.Calendar;
 import java.util.Date;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
 
 @RunWith(Enclosed.class)
 public class SigningKeychainTest {
@@ -18,11 +18,9 @@ public class SigningKeychainTest {
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.MINUTE, -1);
             Date expiresAt = calendar.getTime();
-            SigningKeychain keychain = new SigningKeychain(new SigningKey("key-id", "REAL_SECRET", expiresAt));
-            assertEquals(
-                "returns empty optional",
-                false,
-                keychain.getFirstValid().isPresent());
+            SigningKeychain keychain =
+                    new SigningKeychain(new SigningKey("key-id", "REAL_SECRET", expiresAt));
+            assertEquals("returns empty optional", false, keychain.getFirstValid().isPresent());
         }
 
         @Test
@@ -32,17 +30,15 @@ public class SigningKeychainTest {
             Date expiresAt = calendar.getTime();
             SigningKey key = new SigningKey("key-id", "REAL_SECRET", expiresAt);
             SigningKeychain keychain = new SigningKeychain(key);
-            assertEquals(
-                "returns optional with key",
-                key,
-                keychain.getFirstValid().get());
+            assertEquals("returns optional with key", key, keychain.getFirstValid().get());
         }
     }
 
     public static class InvalidateKeyByIdTest {
         @Test
         public void invalidateKeyById_KeyNotFound_returnsFalse() {
-            SigningKeychain keychain = new SigningKeychain(new SigningKey("key-id", "REAL_SECRET", new Date()));
+            SigningKeychain keychain =
+                    new SigningKeychain(new SigningKey("key-id", "REAL_SECRET", new Date()));
             boolean result = keychain.invalidateKeyById("wrong-key-id");
             assertFalse("key not found", result);
         }

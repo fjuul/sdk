@@ -27,29 +27,33 @@ import retrofit2.Response;
 public class SigningInterceptorTest {
 
     @Test
-    public void intercept_EmptyKeychainWithFailedIssueResult_returnIssueResponse() throws Exception {
+    public void intercept_EmptyKeychainWithFailedIssueResult_returnIssueResponse()
+            throws Exception {
         MockWebServer mockWebServer = new MockWebServer();
         mockWebServer.start();
         mockWebServer.enqueue(new MockResponse());
 
         SigningKeychain testKeychain = new SigningKeychain();
-        UserSigningService mockedSigningService = mock(UserSigningService.class, Mockito.RETURNS_DEEP_STUBS);
-        Response mockedSigningKeyResponse = Response.error(
-                401,
-                ResponseBody.create(
-                    MediaType.get("application/json"),
-                    "{ \"message\": \"error message\", \"errorCode\": \"expired_signing_key\" }"));
+        UserSigningService mockedSigningService =
+                mock(UserSigningService.class, Mockito.RETURNS_DEEP_STUBS);
+        Response mockedSigningKeyResponse =
+                Response.error(
+                        401,
+                        ResponseBody.create(
+                                MediaType.get("application/json"),
+                                "{ \"message\": \"error message\", \"errorCode\": \"expired_signing_key\" }"));
         when(mockedSigningService.issueKey().execute()).thenReturn(mockedSigningKeyResponse);
         SigningInterceptor interceptor =
                 new SigningInterceptor(testKeychain, new RequestSigner(), mockedSigningService);
         OkHttpClient okHttpClient =
                 new OkHttpClient().newBuilder().addInterceptor(interceptor).build();
-        okhttp3.Response returnedResponse = okHttpClient
-            .newCall(
-                new Request.Builder()
-                    .url(mockWebServer.url("/sdk/v1/analytics"))
-                    .build())
-            .execute();
+        okhttp3.Response returnedResponse =
+                okHttpClient
+                        .newCall(
+                                new Request.Builder()
+                                        .url(mockWebServer.url("/sdk/v1/analytics"))
+                                        .build())
+                        .execute();
         assertEquals(returnedResponse, mockedSigningKeyResponse.raw());
         mockWebServer.shutdown();
     }
@@ -66,7 +70,8 @@ public class SigningInterceptorTest {
         SigningKeychain testKeychain = new SigningKeychain(testExpiredSigningKey);
 
         SigningKey newValidSigningKey = new SigningKey("valid-key-id", "TOP_SECRET1", new Date());
-        UserSigningService mockedSigningService = mock(UserSigningService.class, Mockito.RETURNS_DEEP_STUBS);
+        UserSigningService mockedSigningService =
+                mock(UserSigningService.class, Mockito.RETURNS_DEEP_STUBS);
         Response mockedSigningKeyResponse = Response.success(200, newValidSigningKey);
         when(mockedSigningService.issueKey().execute()).thenReturn(mockedSigningKeyResponse);
         SigningInterceptor interceptor =

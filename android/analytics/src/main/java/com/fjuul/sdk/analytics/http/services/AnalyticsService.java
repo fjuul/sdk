@@ -25,9 +25,7 @@ public class AnalyticsService {
             SigningKeychain keychain,
             ISigningService signingService) {
         OkHttpClient httpClient = clientBuilder.buildSigningClient(keychain, signingService);
-        Moshi moshi = new Moshi.Builder()
-            .add(Date.class, new Rfc3339DateJsonAdapter())
-            .build();
+        Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
         Retrofit retrofit =
                 new Retrofit.Builder()
                         .baseUrl(clientBuilder.getBaseUrl())
@@ -38,13 +36,12 @@ public class AnalyticsService {
         analyticsApiClient = retrofit.create(AnalyticsApi.class);
     }
 
-    public ApiCall<DailyStats> getDailyStats(String userToken, String date)
-            throws IOException {
+    public ApiCall<DailyStats> getDailyStats(String userToken, String date) throws IOException {
         return analyticsApiClient.getDailyStats(userToken, date);
     }
 
-    public ApiCall<DailyStats[]> getDailyStats(
-            String userToken, String startDate, String endDate) throws IOException {
+    public ApiCall<DailyStats[]> getDailyStats(String userToken, String startDate, String endDate)
+            throws IOException {
         return analyticsApiClient.getDailyStats(userToken, startDate, endDate);
     }
 }

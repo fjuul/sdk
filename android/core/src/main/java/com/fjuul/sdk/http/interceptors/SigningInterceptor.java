@@ -50,10 +50,12 @@ public class SigningInterceptor implements Interceptor {
             return response;
         }
 
-        // NOTE: try to retrieve a signing key once if error_code is `expired_signing_key` or 'invalid_key_id'
+        // NOTE: try to retrieve a signing key once if error_code is `expired_signing_key` or
+        // 'invalid_key_id'
         String authenticationErrorCode = response.header("x-authentication-error");
-        if (authenticationErrorCode != null &&
-            Arrays.asList("invalid_key_id", "expired_signing_key").contains(authenticationErrorCode)) {
+        if (authenticationErrorCode != null
+                && Arrays.asList("invalid_key_id", "expired_signing_key")
+                        .contains(authenticationErrorCode)) {
             retrofit2.Response<SigningKey> newKeyResponse = issueNewKey();
             if (newKeyResponse.isSuccessful()) {
                 SigningKey newKey = newKeyResponse.body();

@@ -16,15 +16,14 @@ public class ApiCallAdapterFactory extends CallAdapter.Factory {
     private ApiCallAdapterFactory() {}
 
     @Override
-    public CallAdapter<?, ?> get(
-        Type returnType, Annotation[] annotations, Retrofit retrofit) {
+    public CallAdapter<?, ?> get(Type returnType, Annotation[] annotations, Retrofit retrofit) {
         if (getRawType(returnType) != ApiCall.class) {
             return null;
         }
         if (!(returnType instanceof ParameterizedType)) {
             throw new IllegalStateException(
-                "ApiCall return type must be parameterized"
-                    + " as ApiCall<Foo> or ApiCall<? extends Foo>");
+                    "ApiCall return type must be parameterized"
+                            + " as ApiCall<Foo> or ApiCall<? extends Foo>");
         }
         Type innerType = getParameterUpperBound(0, (ParameterizedType) returnType);
 

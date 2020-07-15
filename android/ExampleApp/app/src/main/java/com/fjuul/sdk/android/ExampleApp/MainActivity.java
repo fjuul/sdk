@@ -18,7 +18,6 @@ import android.util.Log;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
     static String TAG = "FJUUL_SDK";
@@ -53,54 +52,58 @@ public class MainActivity extends AppCompatActivity {
             analyticsService
                     // NOTE: set an accessible date
                     .getDailyStats(userToken, "2020-06-10")
-                    .enqueue(new ApiCallCallback<DailyStats, Error, Result<DailyStats, Error>>() {
-                        @Override
-                        public void onResponse(ApiCall<DailyStats> call, Result<DailyStats, Error> result) {
-                            if (result.isError()) {
-                                Log.i(
-                                    TAG,
-                                    String.format("error: %s", result.getError().getMessage()));
-                                return;
-                            }
-                                DailyStats dailyStats = result.getValue();
-                                Log.i(
-                                    TAG,
-                                    String.format(
-                                        "date: %s; active calories: %f",
-                                        dailyStats.getDate(),
-                                        dailyStats.getActiveCalories()));
-                                Log.i(
-                                    TAG,
-                                    String.format(
-                                        "lowest: seconds: %d, metMinutes %f",
-                                        dailyStats.getLowest().getSeconds(),
-                                        dailyStats.getLowest().getMetMinutes()));
-                                Log.i(
-                                    TAG,
-                                    String.format(
-                                        "low: seconds: %d, metMinutes %f",
-                                        dailyStats.getLow().getSeconds(),
-                                        dailyStats.getLow().getMetMinutes()));
-                                Log.i(
-                                    TAG,
-                                    String.format(
-                                        "moderate: seconds: %d, metMinutes %f",
-                                        dailyStats.getModerate().getSeconds(),
-                                        dailyStats.getModerate().getMetMinutes()));
-                                Log.i(
-                                    TAG,
-                                    String.format(
-                                        "high: seconds: %d, metMinutes %f",
-                                        dailyStats.getHigh().getSeconds(),
-                                        dailyStats.getHigh().getMetMinutes()));
+                    .enqueue(
+                            new ApiCallCallback<DailyStats, Error, Result<DailyStats, Error>>() {
+                                @Override
+                                public void onResponse(
+                                        ApiCall<DailyStats> call,
+                                        Result<DailyStats, Error> result) {
+                                    if (result.isError()) {
+                                        Log.i(
+                                                TAG,
+                                                String.format(
+                                                        "error: %s",
+                                                        result.getError().getMessage()));
+                                        return;
+                                    }
+                                    DailyStats dailyStats = result.getValue();
+                                    Log.i(
+                                            TAG,
+                                            String.format(
+                                                    "date: %s; active calories: %f",
+                                                    dailyStats.getDate(),
+                                                    dailyStats.getActiveCalories()));
+                                    Log.i(
+                                            TAG,
+                                            String.format(
+                                                    "lowest: seconds: %d, metMinutes %f",
+                                                    dailyStats.getLowest().getSeconds(),
+                                                    dailyStats.getLowest().getMetMinutes()));
+                                    Log.i(
+                                            TAG,
+                                            String.format(
+                                                    "low: seconds: %d, metMinutes %f",
+                                                    dailyStats.getLow().getSeconds(),
+                                                    dailyStats.getLow().getMetMinutes()));
+                                    Log.i(
+                                            TAG,
+                                            String.format(
+                                                    "moderate: seconds: %d, metMinutes %f",
+                                                    dailyStats.getModerate().getSeconds(),
+                                                    dailyStats.getModerate().getMetMinutes()));
+                                    Log.i(
+                                            TAG,
+                                            String.format(
+                                                    "high: seconds: %d, metMinutes %f",
+                                                    dailyStats.getHigh().getSeconds(),
+                                                    dailyStats.getHigh().getMetMinutes()));
+                                }
 
-                        }
-
-                        @Override
-                        public void onFailure(ApiCall<DailyStats> call, Throwable t) {
-                            Log.i(TAG, String.format("error: %s", t.getMessage()));
-                        }
-                    });
+                                @Override
+                                public void onFailure(ApiCall<DailyStats> call, Throwable t) {
+                                    Log.i(TAG, String.format("error: %s", t.getMessage()));
+                                }
+                            });
         } catch (IOException e) {
             e.printStackTrace();
         }

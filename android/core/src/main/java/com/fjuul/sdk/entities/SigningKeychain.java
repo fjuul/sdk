@@ -5,7 +5,8 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class SigningKeychain {
-    // TODO: remove this concurrent collection after we'll add blocking mechanism to SigningInterceptor
+    // TODO: remove this concurrent collection after we'll add blocking mechanism to
+    // SigningInterceptor
     ConcurrentLinkedDeque<SigningKey> signingKeys;
 
     public SigningKeychain() {
@@ -35,7 +36,7 @@ public class SigningKeychain {
 
     public Optional<SigningKey> getFirstValid() {
         return signingKeys.stream()
-            .filter(key -> key.isValid() && key.getExpiresAt().after(new Date()))
-            .findFirst();
+                .filter(key -> key.isValid() && key.getExpiresAt().after(new Date()))
+                .findFirst();
     }
 }

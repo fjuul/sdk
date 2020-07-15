@@ -6,7 +6,7 @@ import java.util.Date;
 import com.fjuul.sdk.analytics.entities.DailyStats;
 import com.fjuul.sdk.analytics.http.apis.AnalyticsApi;
 import com.fjuul.sdk.entities.SigningKeychain;
-import com.fjuul.sdk.http.FjuulSDKApiHttpClientBuilder;
+import com.fjuul.sdk.http.HttpClientBuilder;
 import com.fjuul.sdk.http.services.ISigningService;
 import com.fjuul.sdk.http.utils.ApiCall;
 import com.fjuul.sdk.http.utils.ApiCallAdapterFactory;
@@ -21,7 +21,7 @@ public class AnalyticsService {
     private AnalyticsApi analyticsApiClient;
 
     public AnalyticsService(
-            FjuulSDKApiHttpClientBuilder clientBuilder,
+            HttpClientBuilder clientBuilder,
             SigningKeychain keychain,
             ISigningService signingService) {
         OkHttpClient httpClient = clientBuilder.buildSigningClient(keychain, signingService);

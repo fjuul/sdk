@@ -5,7 +5,7 @@ import java.util.Date;
 
 import com.fjuul.sdk.entities.SigningKey;
 import com.fjuul.sdk.entities.UserCredentials;
-import com.fjuul.sdk.http.FjuulSDKApiHttpClientBuilder;
+import com.fjuul.sdk.http.HttpClientBuilder;
 import com.fjuul.sdk.http.apis.SigningApi;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
@@ -19,7 +19,7 @@ public class UserSigningService implements ISigningService {
     private SigningApi signingApiClient;
 
     public UserSigningService(
-            FjuulSDKApiHttpClientBuilder clientBuilder, UserCredentials credentials) {
+            HttpClientBuilder clientBuilder, UserCredentials credentials) {
         OkHttpClient httpClient = clientBuilder.buildUserAuthorizedClient(credentials);
         Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
         Retrofit retrofit =

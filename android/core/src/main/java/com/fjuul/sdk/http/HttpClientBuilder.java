@@ -11,12 +11,12 @@ import com.fjuul.sdk.http.utils.RequestSigner;
 
 import okhttp3.OkHttpClient;
 
-public class FjuulSDKApiHttpClientBuilder {
+public class HttpClientBuilder {
     private String baseUrl;
     private String apiKey;
 
     // TODO: add the overloaded constructor with an environment parameter
-    public FjuulSDKApiHttpClientBuilder(String baseUrl, String apiKey) {
+    public HttpClientBuilder(String baseUrl, String apiKey) {
         this.baseUrl = baseUrl;
         this.apiKey = apiKey;
     }

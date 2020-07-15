@@ -4,7 +4,7 @@ import com.fjuul.sdk.analytics.entities.DailyStats;
 import com.fjuul.sdk.entities.SigningKey;
 import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.entities.UserCredentials;
-import com.fjuul.sdk.http.TestFjuulSDKApiHttpClientBuilder;
+import com.fjuul.sdk.http.TestHttpClientBuilder;
 import com.fjuul.sdk.http.errors.HttpErrors;
 import com.fjuul.sdk.http.services.ISigningService;
 import com.fjuul.sdk.http.services.UserSigningService;
@@ -14,8 +14,6 @@ import org.hamcrest.core.IsInstanceOf;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -39,7 +37,7 @@ public class AnalyticsServiceTest {
     public void setup() throws IOException {
         mockWebServer = new MockWebServer();
         mockWebServer.start();
-        TestFjuulSDKApiHttpClientBuilder clientBuilder = new TestFjuulSDKApiHttpClientBuilder(mockWebServer);
+        TestHttpClientBuilder clientBuilder = new TestHttpClientBuilder(mockWebServer);
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.HOUR, 2);
         SigningKeychain testKeychain = new SigningKeychain(new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime()));

@@ -1,6 +1,7 @@
 package com.fjuul.sdk.http.interceptors;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Optional;
 
 import com.fjuul.sdk.entities.SigningKey;
@@ -52,8 +53,7 @@ public class SigningInterceptor implements Interceptor {
         // NOTE: try to retrieve a signing key once if error_code is `expired_signing_key` or 'invalid_key_id'
         String authenticationErrorCode = response.header("x-authentication-error");
         if (authenticationErrorCode != null &&
-            authenticationErrorCode.equals("invalid_key_id") ||
-            authenticationErrorCode.equals("expired_signing_key")) {
+            Arrays.asList("invalid_key_id", "expired_signing_key").contains(authenticationErrorCode)) {
             retrofit2.Response<SigningKey> newKeyResponse = issueNewKey();
             if (newKeyResponse.isSuccessful()) {
                 SigningKey newKey = newKeyResponse.body();

@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Base64;
 
 import javax.crypto.Mac;
@@ -117,13 +118,7 @@ public class RequestSigner {
     }
 
     private Boolean isRequestWithDigestChecking(Request request) {
-        switch (request.method()) {
-            case "PUT":
-            case "POST":
-                return true;
-            default:
-                return false;
-        }
+        return Arrays.asList("PUT", "POST").contains(request.method());
     }
 
     private String buildEncodedEncryptedSignature(String string, String key) {

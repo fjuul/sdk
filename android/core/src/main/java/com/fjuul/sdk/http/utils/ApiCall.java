@@ -18,8 +18,10 @@ import retrofit2.Response;
 /**
  * This class is almost re-implementation (most likely wrapper) of original retrofit's Call. It
  * responds for:
+ * <ul>
  * <li>returning result without response/request information;
  * <li>handling error;
+ * </ul>
  */
 public class ApiCall<T> {
     private Call<T> delegate;

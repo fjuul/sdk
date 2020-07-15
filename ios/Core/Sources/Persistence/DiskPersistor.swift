@@ -2,10 +2,17 @@ import Foundation
 
 struct DiskPersistor: Persistor {
 
-    func set(key: String, value: Codable) {
+    func set(key: String, value: Codable?) {
         do {
-            let data = NSKeyedArchiver.archivedData(withRootObject: value)
-            try data.write(to: getFullPathForKey(key), options: .atomic)
+            let fullPath = getFullPathForKey(key)
+            guard let unwrapped = value else {
+                if FileManager.default.fileExists(atPath: fullPath.absoluteString) {
+                    try FileManager.default.removeItem(atPath: fullPath.absoluteString)
+                }
+                return
+            }
+            let data = NSKeyedArchiver.archivedData(withRootObject: unwrapped)
+            try data.write(to: fullPath, options: .atomic)
         } catch {
             print("Couldn't write file")
         }

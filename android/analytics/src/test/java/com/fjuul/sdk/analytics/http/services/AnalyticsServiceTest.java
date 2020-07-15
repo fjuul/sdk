@@ -32,19 +32,20 @@ public class AnalyticsServiceTest {
 
     AnalyticsService analyticsService;
     MockWebServer mockWebServer;
+    SigningKeychain testKeychain;
+    TestHttpClientBuilder clientBuilder;
+    ISigningService userSigningService;
 
     @Before
     public void setup() throws IOException {
         mockWebServer = new MockWebServer();
         mockWebServer.start();
-        TestHttpClientBuilder clientBuilder = new TestHttpClientBuilder(mockWebServer);
+        clientBuilder = new TestHttpClientBuilder(mockWebServer);
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.HOUR, 2);
-        SigningKeychain testKeychain =
-                new SigningKeychain(new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime()));
-        ISigningService userSigningService =
+        testKeychain = new SigningKeychain(new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime()));
+        userSigningService =
                 new UserSigningService(clientBuilder, new UserCredentials(USER_TOKEN, USER_SECRET));
-        analyticsService = new AnalyticsService(clientBuilder, testKeychain, userSigningService);
     }
 
     @After
@@ -54,6 +55,7 @@ public class AnalyticsServiceTest {
 
     @Test
     public void getDailyStatsTest() throws IOException {
+        analyticsService = new AnalyticsService(clientBuilder, testKeychain, userSigningService);
         MockResponse mockResponse =
                 new MockResponse()
                         .setResponseCode(HttpURLConnection.HTTP_OK)
@@ -93,6 +95,7 @@ public class AnalyticsServiceTest {
 
     @Test
     public void getDailyStatsRangeTest() throws IOException {
+        analyticsService = new AnalyticsService(clientBuilder, testKeychain, userSigningService);
         MockResponse mockResponse =
                 new MockResponse()
                         .setResponseCode(HttpURLConnection.HTTP_OK)
@@ -157,8 +160,38 @@ public class AnalyticsServiceTest {
     }
 
     @Test
+    public void getDailyStats_EmptyKeychainWithUnauthorizedError_ReturnsErrorResult()
+        throws IOException {
+        analyticsService = new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
+        MockResponse mockResponse =
+            new MockResponse()
+                .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
+                .setHeader("Content-Type", "application/json")
+                .setHeader("x-authentication-error", "wrong_credentials")
+                .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
+        mockWebServer.enqueue(mockResponse);
+
+        Result<DailyStats, HttpErrors.CommonError> result =
+            analyticsService.getDailyStats(USER_TOKEN, "2020-03-10").execute();
+
+        assertTrue("error result", result.isError());
+        Error error = result.getError();
+        assertThat(result.getError(), IsInstanceOf.instanceOf(HttpErrors.UnauthorizedError.class));
+        HttpErrors.UnauthorizedError authError = (HttpErrors.UnauthorizedError) error;
+        assertEquals(
+            "has wrong_credentials error code",
+            HttpErrors.UnauthorizedError.ErrorCode.wrong_credentials,
+            authError.getErrorCode());
+        assertEquals(
+            "has error message from response body",
+            "Unauthorized request",
+            authError.getMessage());
+    }
+
+    @Test
     public void getDailyStats_ResponseWithUnauthorizedError_ReturnsErrorResult()
             throws IOException {
+        analyticsService = new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
         MockResponse mockResponse =
                 new MockResponse()
                         .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
@@ -186,6 +219,7 @@ public class AnalyticsServiceTest {
 
     @Test
     public void getDailyStats_ResponseWithClockSkewError_ReturnsErrorResult() throws IOException {
+        analyticsService = new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
         MockResponse mockResponse =
                 new MockResponse()
                         .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)

@@ -5,16 +5,17 @@ import com.fjuul.sdk.entities.SigningKey;
 import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.entities.UserCredentials;
 import com.fjuul.sdk.http.TestFjuulSDKApiHttpClientBuilder;
+import com.fjuul.sdk.http.errors.HttpErrors;
 import com.fjuul.sdk.http.services.ISigningService;
 import com.fjuul.sdk.http.services.UserSigningService;
 import com.fjuul.sdk.http.utils.Result;
 
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
+import org.hamcrest.core.IsInstanceOf;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -67,7 +68,7 @@ public class AnalyticsServiceTest {
                 "}");
         mockWebServer.enqueue(mockResponse);
 
-        Result<DailyStats, Error> result = analyticsService
+        Result<DailyStats, HttpErrors.CommonError> result = analyticsService
             .getDailyStats(USER_TOKEN, "2020-03-10")
             .execute();
 
@@ -117,7 +118,7 @@ public class AnalyticsServiceTest {
                 "]");
         mockWebServer.enqueue(mockResponse);
 
-        Result<DailyStats[], Error> result = analyticsService
+        Result<DailyStats[], HttpErrors.CommonError> result = analyticsService
             .getDailyStats(USER_TOKEN, "2020-03-10", "2020-03-10")
             .execute();
 
@@ -150,5 +151,63 @@ public class AnalyticsServiceTest {
         assertEquals( 120, secondDailyStats.getModerate().getSeconds());
         assertEquals(3.4, secondDailyStats.getHigh().getMetMinutes(), 0.0001);
         assertEquals( 30, secondDailyStats.getHigh().getSeconds());
+    }
+
+    @Test
+    public void getDailyStats_ResponseWithUnauthorizedError_ReturnsErrorResult() throws IOException {
+        MockResponse mockResponse = new MockResponse()
+            .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
+            .setHeader("Content-Type", "application/json")
+            .setHeader("x-authentication-error", "wrong_credentials")
+            .setBody("{\n" +
+                "    \"message\": \"Unauthorized request\"" +
+                "}");
+        mockWebServer.enqueue(mockResponse);
+
+        Result<DailyStats, HttpErrors.CommonError> result = analyticsService
+            .getDailyStats(USER_TOKEN, "2020-03-10")
+            .execute();
+
+        assertTrue("error result", result.isError());
+        Error error = result.getError();
+        assertThat(result.getError(), IsInstanceOf.instanceOf(HttpErrors.UnauthorizedError.class));
+        HttpErrors.UnauthorizedError authError = (HttpErrors.UnauthorizedError) error;
+        assertEquals(
+            "has wrong_credentials error code",
+            HttpErrors.UnauthorizedError.ErrorCode.wrong_credentials,
+            authError.getErrorCode());
+        assertEquals(
+            "has error message from response body",
+            "Unauthorized request",
+            authError.getMessage());
+    }
+
+    @Test
+    public void getDailyStats_ResponseWithClockSkewError_ReturnsErrorResult() throws IOException {
+        MockResponse mockResponse = new MockResponse()
+            .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
+            .setHeader("Content-Type", "application/json")
+            .setHeader("x-authentication-error", "clock_skew")
+            .setBody("{\n" +
+                "    \"message\": \"Unauthorized: clock skew of 301s was greater than 300s\"" +
+                "}");
+        mockWebServer.enqueue(mockResponse);
+
+        Result<DailyStats, HttpErrors.CommonError> result = analyticsService
+            .getDailyStats(USER_TOKEN, "2020-03-10")
+            .execute();
+
+        assertTrue("error result", result.isError());
+        Error error = result.getError();
+        assertThat(result.getError(), IsInstanceOf.instanceOf(HttpErrors.UnauthorizedError.class));
+        HttpErrors.UnauthorizedError authError = (HttpErrors.UnauthorizedError) error;
+        assertEquals(
+            "has wrong_credentials error code",
+            HttpErrors.UnauthorizedError.ErrorCode.clock_skew,
+            authError.getErrorCode());
+        assertEquals(
+            "has error message from response body",
+            "Unauthorized: clock skew of 301s was greater than 300s",
+            authError.getMessage());
     }
 }

@@ -38,7 +38,7 @@ public class SigningInterceptor implements Interceptor {
                 signingKey = newKey;
             } else {
                 // return response of a request of signing key to infer http error
-                return newKeyResponse.raw();
+                return extractOriginalRawResponse(newKeyResponse);
             }
         } else {
             signingKey = keyOptional.get();
@@ -64,7 +64,7 @@ public class SigningInterceptor implements Interceptor {
                 return chain.proceed(signedRequest);
             } else {
                 // return response of a request of signing key to infer http error
-                return newKeyResponse.raw();
+                return extractOriginalRawResponse(newKeyResponse);
             }
         }
         return response;
@@ -72,5 +72,9 @@ public class SigningInterceptor implements Interceptor {
 
     private retrofit2.Response<SigningKey> issueNewKey() throws IOException {
         return signingService.issueKey().execute();
+    }
+
+    private <T> Response extractOriginalRawResponse(retrofit2.Response<T> response) {
+        return response.raw().newBuilder().body(response.errorBody()).build();
     }
 }

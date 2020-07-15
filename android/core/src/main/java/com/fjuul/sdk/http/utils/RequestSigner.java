@@ -109,8 +109,11 @@ public class RequestSigner {
         try {
             final RequestBody copy = body;
             final Buffer buffer = new Buffer();
-            if (copy != null) copy.writeTo(buffer);
-            else return "";
+            if (copy != null) {
+                copy.writeTo(buffer);
+            } else {
+                return "";
+            }
             return buffer.readUtf8();
         } catch (final IOException e) {
             throw new IllegalArgumentException(e);

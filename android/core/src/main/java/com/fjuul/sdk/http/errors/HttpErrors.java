@@ -17,6 +17,8 @@ public final class HttpErrors {
             expired_signing_key,
             mismatched_request_signature,
             bad_signature_header,
+            wrong_credentials,
+            clock_skew
         }
         private ErrorCode errorCode;
 

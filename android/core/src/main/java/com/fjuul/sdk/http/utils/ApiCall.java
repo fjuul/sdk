@@ -100,14 +100,14 @@ public class ApiCall<T> {
                 code =
                         UnauthorizedError.ErrorCode.valueOf(
                                 response.headers().get("x-authentication-error"));
-            } catch (IllegalArgumentException exc) {
+            } catch (IllegalArgumentException | NullPointerException exc) {
                 code = null;
             }
             error = new UnauthorizedError(errorMessage, code);
         } else {
             error = new CommonError(errorMessage);
         }
-        // TODO: add additional checks
+        // TODO: add additional checks (bad_request, forbidden)
         return Result.error(error);
     }
 }

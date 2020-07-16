@@ -1,7 +1,7 @@
 import Foundation
 import Alamofire
 
-struct HmacCredentialStore {
+class HmacCredentialStore {
 
     private let lookupKey: String
     private var persistor: Persistor

@@ -16,7 +16,7 @@ final class HmacCredentialStoreTests: XCTestCase {
     }
 
     func testInitWithExistingKeyInStore() {
-        var persistor = InMemoryPersistor()
+        let persistor = InMemoryPersistor()
         persistor.set(key: "signing-key.token", value: key)
         let credentialStore = HmacCredentialStore(userToken: "token", persistor: persistor)
         XCTAssertEqual(credentialStore.signingKey, key)
@@ -24,7 +24,7 @@ final class HmacCredentialStoreTests: XCTestCase {
 
     func testPersistsOnSet() {
         let persistor = InMemoryPersistor()
-        var credentialStore = HmacCredentialStore(userToken: "token", persistor: persistor)
+        let credentialStore = HmacCredentialStore(userToken: "token", persistor: persistor)
         credentialStore.signingKey = key
         XCTAssertEqual(persistor.get(key: "signing-key.token") as? SigningKey, key)
     }

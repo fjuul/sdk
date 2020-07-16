@@ -1,6 +1,6 @@
 import Foundation
 
-struct DiskPersistor: Persistor {
+class DiskPersistor: Persistor {
 
     func set(key: String, value: Codable?) {
         do {

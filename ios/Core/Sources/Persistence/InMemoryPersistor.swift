@@ -1,12 +1,12 @@
 import Foundation
 
-public struct InMemoryPersistor: Persistor {
+public class InMemoryPersistor: Persistor {
 
     var store: [String: Any] = [:]
 
     public init() {}
 
-    public mutating func set(key: String, value: Codable?) {
+    public func set(key: String, value: Codable?) {
         guard let unwrapped = value else {
             store.removeValue(forKey: key)
             return

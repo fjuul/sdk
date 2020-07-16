@@ -62,7 +62,7 @@ public class RequestSigner {
         OffsetDateTime offset = instant.atOffset(ZoneOffset.UTC);
         String formattedDate = offset.format(DateTimeFormatter.RFC_1123_DATE_TIME);
         // TODO: assign date format to headers (check if retrofit do it by default) ?
-        signedRequestBuilder.addHeader("Date", formattedDate);
+        signedRequestBuilder.header("Date", formattedDate);
 
         String datePart = String.format("date: %s", formattedDate);
         StringBuilder signingStringBuilder =
@@ -71,13 +71,13 @@ public class RequestSigner {
             RequestBody body = request.body();
             if (body == null || RequestSigner.requestBodyToString(body).isEmpty()) {
                 signingStringBuilder.append("\ndigest: ");
-                signedRequestBuilder.addHeader("Digest", "");
+                signedRequestBuilder.header("Digest", "");
             } else {
                 String bodyDigest = this.buildDigestOfBody(body);
                 String headerValue = String.format("SHA-256=%s", bodyDigest);
                 String digestPart = String.format("\ndigest: %s", headerValue);
                 signingStringBuilder.append(digestPart);
-                signedRequestBuilder.addHeader("Digest", headerValue);
+                signedRequestBuilder.header("Digest", headerValue);
             }
         }
         String signingString = signingStringBuilder.toString();
@@ -86,7 +86,7 @@ public class RequestSigner {
                 String.format(
                         "keyId=\"%s\",algorithm=\"hmac-sha256\",headers=\"%s\",signature=\"%s\"",
                         key.getId(), checkingRequestHeaders, signature);
-        signedRequestBuilder.addHeader("Signature", signatureHeader);
+        signedRequestBuilder.header("Signature", signatureHeader);
         return signedRequestBuilder.build();
     }
 

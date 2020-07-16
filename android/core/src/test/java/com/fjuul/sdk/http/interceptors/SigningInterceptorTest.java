@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.net.HttpURLConnection;
 import java.util.Date;
 
 import org.hamcrest.CoreMatchers;
@@ -17,6 +18,7 @@ import com.fjuul.sdk.http.utils.RequestSigner;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.ResponseBody;
 import okhttp3.mockwebserver.MockResponse;
@@ -36,25 +38,41 @@ public class SigningInterceptorTest {
         SigningKeychain testKeychain = new SigningKeychain();
         UserSigningService mockedSigningService =
                 mock(UserSigningService.class, Mockito.RETURNS_DEEP_STUBS);
+        Request outboundRequest =
+                new Request.Builder().url(mockWebServer.url("/sdk/v1/analytics")).build();
+        okhttp3.Response incomingRawResponse =
+                new okhttp3.Response.Builder()
+                        .header("x-authentication-error", "wrong_credentials")
+                        .code(HttpURLConnection.HTTP_UNAUTHORIZED)
+                        .request(outboundRequest)
+                        .protocol(Protocol.HTTP_1_1)
+                        .message("Unauthorized")
+                        .build();
         Response mockedSigningKeyResponse =
                 Response.error(
-                        401,
                         ResponseBody.create(
                                 MediaType.get("application/json"),
-                                "{ \"message\": \"error message\", \"errorCode\": \"expired_signing_key\" }"));
+                                "{ \"message\": \"error message\", \"errorCode\": \"expired_signing_key\" }"),
+                        incomingRawResponse);
+
         when(mockedSigningService.issueKey().execute()).thenReturn(mockedSigningKeyResponse);
         SigningInterceptor interceptor =
                 new SigningInterceptor(testKeychain, new RequestSigner(), mockedSigningService);
         OkHttpClient okHttpClient =
                 new OkHttpClient().newBuilder().addInterceptor(interceptor).build();
-        okhttp3.Response returnedResponse =
-                okHttpClient
-                        .newCall(
-                                new Request.Builder()
-                                        .url(mockWebServer.url("/sdk/v1/analytics"))
-                                        .build())
-                        .execute();
-        assertEquals(returnedResponse, mockedSigningKeyResponse.raw());
+        okhttp3.Response returnedResponse = okHttpClient.newCall(outboundRequest).execute();
+        assertEquals(
+                "returns raw response of the issue request",
+                mockedSigningKeyResponse.errorBody(),
+                returnedResponse.body());
+        assertEquals(
+                "returns raw response of the issue request",
+                mockedSigningKeyResponse.raw().message(),
+                returnedResponse.message());
+        assertEquals(
+                "returns raw response of the issue request",
+                mockedSigningKeyResponse.raw().code(),
+                returnedResponse.code());
         mockWebServer.shutdown();
     }
 
@@ -72,7 +90,8 @@ public class SigningInterceptorTest {
         SigningKey newValidSigningKey = new SigningKey("valid-key-id", "TOP_SECRET1", new Date());
         UserSigningService mockedSigningService =
                 mock(UserSigningService.class, Mockito.RETURNS_DEEP_STUBS);
-        Response mockedSigningKeyResponse = Response.success(200, newValidSigningKey);
+        Response mockedSigningKeyResponse =
+                Response.success(HttpURLConnection.HTTP_OK, newValidSigningKey);
         when(mockedSigningService.issueKey().execute()).thenReturn(mockedSigningKeyResponse);
         SigningInterceptor interceptor =
                 new SigningInterceptor(testKeychain, new RequestSigner(), mockedSigningService);

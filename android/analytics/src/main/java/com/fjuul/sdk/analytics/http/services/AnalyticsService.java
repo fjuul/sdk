@@ -20,19 +20,12 @@ import retrofit2.converter.moshi.MoshiConverterFactory;
 public class AnalyticsService {
     private AnalyticsApi analyticsApiClient;
 
-    public AnalyticsService(
-            HttpClientBuilder clientBuilder,
-            SigningKeychain keychain,
-            ISigningService signingService) {
+    public AnalyticsService(HttpClientBuilder clientBuilder, SigningKeychain keychain, ISigningService signingService) {
         OkHttpClient httpClient = clientBuilder.buildSigningClient(keychain, signingService);
         Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
-        Retrofit retrofit =
-                new Retrofit.Builder()
-                        .baseUrl(clientBuilder.getBaseUrl())
-                        .client(httpClient)
-                        .addCallAdapterFactory(ApiCallAdapterFactory.create())
-                        .addConverterFactory(MoshiConverterFactory.create(moshi))
-                        .build();
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(clientBuilder.getBaseUrl()).client(httpClient)
+                .addCallAdapterFactory(ApiCallAdapterFactory.create())
+                .addConverterFactory(MoshiConverterFactory.create(moshi)).build();
         analyticsApiClient = retrofit.create(AnalyticsApi.class);
     }
 
@@ -40,8 +33,7 @@ public class AnalyticsService {
         return analyticsApiClient.getDailyStats(userToken, date);
     }
 
-    public ApiCall<DailyStats[]> getDailyStats(String userToken, String startDate, String endDate)
-            throws IOException {
+    public ApiCall<DailyStats[]> getDailyStats(String userToken, String startDate, String endDate) throws IOException {
         return analyticsApiClient.getDailyStats(userToken, startDate, endDate);
     }
 }

@@ -16,12 +16,11 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
- * This class is almost re-implementation (most likely wrapper) of original retrofit's Call. It
- * responds for:
+ * This class is almost re-implementation (most likely wrapper) of original retrofit's Call. It responds for:
  *
  * <ul>
- *   <li>returning result without response/request information;
- *   <li>handling error;
+ * <li>returning result without response/request information;
+ * <li>handling error;
  * </ul>
  */
 public class ApiCall<T> {
@@ -37,18 +36,17 @@ public class ApiCall<T> {
     }
 
     public void enqueue(ApiCallCallback<T, CommonError, Result<T, CommonError>> callback) {
-        delegate.enqueue(
-                new Callback<T>() {
-                    @Override
-                    public void onResponse(Call<T> call, Response<T> response) {
-                        callback.onResponse(new ApiCall(call), convertResponseToResult(response));
-                    }
+        delegate.enqueue(new Callback<T>() {
+            @Override
+            public void onResponse(Call<T> call, Response<T> response) {
+                callback.onResponse(new ApiCall(call), convertResponseToResult(response));
+            }
 
-                    @Override
-                    public void onFailure(Call<T> call, Throwable t) {
-                        callback.onFailure(new ApiCall(call), t);
-                    }
-                });
+            @Override
+            public void onFailure(Call<T> call, Throwable t) {
+                callback.onFailure(new ApiCall(call), t);
+            }
+        });
     };
 
     public boolean isExecuted() {
@@ -82,24 +80,19 @@ public class ApiCall<T> {
         ErrorJSONBodyResponse responseBody;
         Moshi moshi = new Moshi.Builder().build();
         try {
-            JsonAdapter<ErrorJSONBodyResponse> jsonAdapter =
-                    moshi.adapter(ErrorJSONBodyResponse.class);
+            JsonAdapter<ErrorJSONBodyResponse> jsonAdapter = moshi.adapter(ErrorJSONBodyResponse.class);
             responseBody = jsonAdapter.fromJson(response.errorBody().source());
         } catch (IOException exc) {
             responseBody = null;
         }
 
         String errorMessage =
-                responseBody != null && responseBody.getMessage() != null
-                        ? responseBody.getMessage()
-                        : "Unknown Error";
+                responseBody != null && responseBody.getMessage() != null ? responseBody.getMessage() : "Unknown Error";
         CommonError error;
         if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
             UnauthorizedError.ErrorCode code;
             try {
-                code =
-                        UnauthorizedError.ErrorCode.valueOf(
-                                response.headers().get("x-authentication-error"));
+                code = UnauthorizedError.ErrorCode.valueOf(response.headers().get("x-authentication-error"));
             } catch (IllegalArgumentException | NullPointerException exc) {
                 code = null;
             }

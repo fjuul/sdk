@@ -9,12 +9,9 @@ import retrofit2.http.Query;
 
 public interface AnalyticsApi {
     @GET("/sdk/analytics/v1/daily-stats/{userToken}/{date}")
-    ApiCall<DailyStats> getDailyStats(
-            @Path("userToken") String userToken, @Path("date") String date);
+    ApiCall<DailyStats> getDailyStats(@Path("userToken") String userToken, @Path("date") String date);
 
     @GET("/sdk/analytics/v1/daily-stats/{userToken}")
-    ApiCall<DailyStats[]> getDailyStats(
-            @Path("userToken") String userToken,
-            @Query("startDate") String startDate,
+    ApiCall<DailyStats[]> getDailyStats(@Path("userToken") String userToken, @Query("startDate") String startDate,
             @Query("endDate") String endDate);
 }

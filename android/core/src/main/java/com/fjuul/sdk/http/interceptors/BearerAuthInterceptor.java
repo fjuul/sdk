@@ -18,8 +18,7 @@ public class BearerAuthInterceptor implements Interceptor {
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request.Builder builder = chain.request().newBuilder();
-        Request newRequest =
-                builder.header("Authorization", credentials.getCompleteAuthString()).build();
+        Request newRequest = builder.header("Authorization", credentials.getCompleteAuthString()).build();
         return chain.proceed(newRequest);
     }
 }

@@ -23,8 +23,8 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
     private ISigningService signingService;
     private final Pattern signatureHeaderKeyIdPattern = Pattern.compile("keyId=\"(.+?)\"");
 
-    public SigningAuthInterceptor(
-            SigningKeychain keychain, RequestSigner requestSigner, ISigningService signingService) {
+    public SigningAuthInterceptor(SigningKeychain keychain, RequestSigner requestSigner,
+            ISigningService signingService) {
         this.keychain = keychain;
         this.requestSigner = requestSigner;
         this.signingService = signingService;
@@ -72,8 +72,7 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
         // NOTE: try to retrieve a signing key once if error_code is `expired_signing_key` or
         // 'invalid_key_id'
         String authenticationErrorCode = response.header("x-authentication-error");
-        if (!Arrays.asList("invalid_key_id", "expired_signing_key")
-                .contains(authenticationErrorCode)) {
+        if (!Arrays.asList("invalid_key_id", "expired_signing_key").contains(authenticationErrorCode)) {
             return null;
         }
         Request request = getRelatedRequest(response);

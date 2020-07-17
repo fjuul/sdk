@@ -38,14 +38,9 @@ public class RequestSigner {
     public Request signRequestByKey(Request request, SigningKey key) {
         Request.Builder signedRequestBuilder = request.newBuilder();
         String checkingRequestHeaders =
-                this.isRequestWithDigestChecking(request)
-                        ? "(request-target) date digest"
-                        : "(request-target) date";
+                this.isRequestWithDigestChecking(request) ? "(request-target) date digest" : "(request-target) date";
         StringBuilder encodedRequestTargetBuilder =
-                new StringBuilder(
-                        String.format(
-                                "%s %s",
-                                request.method().toLowerCase(), request.url().encodedPath()));
+                new StringBuilder(String.format("%s %s", request.method().toLowerCase(), request.url().encodedPath()));
         String encodedQuery = request.url().encodedQuery();
         if (encodedQuery != null) {
             encodedRequestTargetBuilder.append("?").append(encodedQuery);
@@ -55,8 +50,7 @@ public class RequestSigner {
             encodedRequestTargetBuilder.append("#").append(encodedFragment);
         }
 
-        String requestTargetPart =
-                String.format("(request-target): %s", encodedRequestTargetBuilder.toString());
+        String requestTargetPart = String.format("(request-target): %s", encodedRequestTargetBuilder.toString());
 
         Instant instant = Instant.now(clock);
         OffsetDateTime offset = instant.atOffset(ZoneOffset.UTC);
@@ -65,8 +59,7 @@ public class RequestSigner {
         signedRequestBuilder.header("Date", formattedDate);
 
         String datePart = String.format("date: %s", formattedDate);
-        StringBuilder signingStringBuilder =
-                new StringBuilder(String.format("%s\n%s", requestTargetPart, datePart));
+        StringBuilder signingStringBuilder = new StringBuilder(String.format("%s\n%s", requestTargetPart, datePart));
         if (isRequestWithDigestChecking(request)) {
             RequestBody body = request.body();
             if (body == null || RequestSigner.requestBodyToString(body).isEmpty()) {
@@ -82,10 +75,8 @@ public class RequestSigner {
         }
         String signingString = signingStringBuilder.toString();
         String signature = buildEncodedEncryptedSignature(signingString, key.getSecret());
-        String signatureHeader =
-                String.format(
-                        "keyId=\"%s\",algorithm=\"hmac-sha256\",headers=\"%s\",signature=\"%s\"",
-                        key.getId(), checkingRequestHeaders, signature);
+        String signatureHeader = String.format("keyId=\"%s\",algorithm=\"hmac-sha256\",headers=\"%s\",signature=\"%s\"",
+                key.getId(), checkingRequestHeaders, signature);
         signedRequestBuilder.header("Signature", signatureHeader);
         return signedRequestBuilder.build();
     }
@@ -98,8 +89,7 @@ public class RequestSigner {
             throw new RuntimeException(ex);
         }
 
-        byte[] stringBodyBytes =
-                RequestSigner.requestBodyToString(body).getBytes(StandardCharsets.UTF_8);
+        byte[] stringBodyBytes = RequestSigner.requestBodyToString(body).getBytes(StandardCharsets.UTF_8);
         byte[] hashedBodyBytes = digest.digest(stringBodyBytes);
         String encodedDigest = Base64.getEncoder().encodeToString(hashedBodyBytes);
         return encodedDigest;
@@ -129,8 +119,7 @@ public class RequestSigner {
             Mac sha256HMAC = Mac.getInstance("HmacSHA256");
             SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "HmacSHA256");
             sha256HMAC.init(secretKeySpec);
-            final byte[] signatureBytes =
-                    sha256HMAC.doFinal(string.getBytes(StandardCharsets.UTF_8));
+            final byte[] signatureBytes = sha256HMAC.doFinal(string.getBytes(StandardCharsets.UTF_8));
             final Base64.Encoder encoder = Base64.getEncoder();
             final String result = new String(encoder.encode(signatureBytes), "UTF-8");
             return result;

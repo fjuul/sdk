@@ -44,8 +44,7 @@ public class AnalyticsServiceTest {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.HOUR, 2);
         testKeychain = new SigningKeychain(new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime()));
-        userSigningService =
-                new UserSigningService(clientBuilder, new UserCredentials(USER_TOKEN, USER_SECRET));
+        userSigningService = new UserSigningService(clientBuilder, new UserCredentials(USER_TOKEN, USER_SECRET));
     }
 
     @After
@@ -56,21 +55,14 @@ public class AnalyticsServiceTest {
     @Test
     public void getDailyStatsTest() throws IOException {
         analyticsService = new AnalyticsService(clientBuilder, testKeychain, userSigningService);
-        MockResponse mockResponse =
-                new MockResponse()
-                        .setResponseCode(HttpURLConnection.HTTP_OK)
-                        .setHeader("Content-Type", "application/json")
-                        .setBody(
-                                "{\n"
-                                        + "    \"date\": \"2020-03-10\",\n"
-                                        + "    \"activeKcal\": 300.23,\n"
-                                        + "    \"totalKcal\": 502.10,\n"
-                                        + "    \"steps\": 4621,\n"
-                                        + "    \"lowest\": { \"seconds\": 2400, \"metMinutes\": 5.6 },\n"
-                                        + "    \"low\": { \"seconds\": 1800, \"metMinutes\": 20 },\n"
-                                        + "    \"moderate\": { \"seconds\": 1200, \"metMinutes\": 10 },\n"
-                                        + "    \"high\": { \"seconds\": 180, \"metMinutes\": 15 }\n"
-                                        + "}");
+        MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK)
+                .setHeader("Content-Type", "application/json")
+                .setBody("{\n" + "    \"date\": \"2020-03-10\",\n" + "    \"activeKcal\": 300.23,\n"
+                        + "    \"totalKcal\": 502.10,\n" + "    \"steps\": 4621,\n"
+                        + "    \"lowest\": { \"seconds\": 2400, \"metMinutes\": 5.6 },\n"
+                        + "    \"low\": { \"seconds\": 1800, \"metMinutes\": 20 },\n"
+                        + "    \"moderate\": { \"seconds\": 1200, \"metMinutes\": 10 },\n"
+                        + "    \"high\": { \"seconds\": 180, \"metMinutes\": 15 }\n" + "}");
         mockWebServer.enqueue(mockResponse);
 
         Result<DailyStats, HttpErrors.CommonError> result =
@@ -96,33 +88,20 @@ public class AnalyticsServiceTest {
     @Test
     public void getDailyStatsRangeTest() throws IOException {
         analyticsService = new AnalyticsService(clientBuilder, testKeychain, userSigningService);
-        MockResponse mockResponse =
-                new MockResponse()
-                        .setResponseCode(HttpURLConnection.HTTP_OK)
-                        .setHeader("Content-Type", "application/json")
-                        .setBody(
-                                "[\n"
-                                        + "    {\n"
-                                        + "        \"date\": \"2020-03-10\",\n"
-                                        + "        \"activeKcal\": 300,\n"
-                                        + "        \"totalKcal\": 500,\n"
-                                        + "        \"steps\": 4621,\n"
-                                        + "        \"lowest\": { \"seconds\": 2400, \"metMinutes\": 5 },\n"
-                                        + "        \"low\": { \"seconds\": 1800, \"metMinutes\": 20 },\n"
-                                        + "        \"moderate\": { \"seconds\": 1200, \"metMinutes\": 10 },\n"
-                                        + "        \"high\": { \"seconds\": 180, \"metMinutes\": 15 }\n"
-                                        + "    },\n"
-                                        + "    {\n"
-                                        + "        \"date\": \"2020-03-11\",\n"
-                                        + "        \"activeKcal\": 321,\n"
-                                        + "        \"totalKcal\": 550.55,\n"
-                                        + "        \"steps\": 1845,\n"
-                                        + "        \"lowest\": { \"seconds\": 300, \"metMinutes\": 1 },\n"
-                                        + "        \"low\": { \"seconds\": 100, \"metMinutes\": 2.1 },\n"
-                                        + "        \"moderate\": { \"seconds\": 120, \"metMinutes\": 2.3 },\n"
-                                        + "        \"high\": { \"seconds\": 30, \"metMinutes\": 3.4 }\n"
-                                        + "    }\n"
-                                        + "]");
+        MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK)
+                .setHeader("Content-Type", "application/json")
+                .setBody("[\n" + "    {\n" + "        \"date\": \"2020-03-10\",\n" + "        \"activeKcal\": 300,\n"
+                        + "        \"totalKcal\": 500,\n" + "        \"steps\": 4621,\n"
+                        + "        \"lowest\": { \"seconds\": 2400, \"metMinutes\": 5 },\n"
+                        + "        \"low\": { \"seconds\": 1800, \"metMinutes\": 20 },\n"
+                        + "        \"moderate\": { \"seconds\": 1200, \"metMinutes\": 10 },\n"
+                        + "        \"high\": { \"seconds\": 180, \"metMinutes\": 15 }\n" + "    },\n" + "    {\n"
+                        + "        \"date\": \"2020-03-11\",\n" + "        \"activeKcal\": 321,\n"
+                        + "        \"totalKcal\": 550.55,\n" + "        \"steps\": 1845,\n"
+                        + "        \"lowest\": { \"seconds\": 300, \"metMinutes\": 1 },\n"
+                        + "        \"low\": { \"seconds\": 100, \"metMinutes\": 2.1 },\n"
+                        + "        \"moderate\": { \"seconds\": 120, \"metMinutes\": 2.3 },\n"
+                        + "        \"high\": { \"seconds\": 30, \"metMinutes\": 3.4 }\n" + "    }\n" + "]");
         mockWebServer.enqueue(mockResponse);
 
         Result<DailyStats[], HttpErrors.CommonError> result =
@@ -160,16 +139,11 @@ public class AnalyticsServiceTest {
     }
 
     @Test
-    public void getDailyStats_EmptyKeychainWithUnauthorizedError_ReturnsErrorResult()
-            throws IOException {
-        analyticsService =
-                new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
-        MockResponse mockResponse =
-                new MockResponse()
-                        .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
-                        .setHeader("Content-Type", "application/json")
-                        .setHeader("x-authentication-error", "wrong_credentials")
-                        .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
+    public void getDailyStats_EmptyKeychainWithUnauthorizedError_ReturnsErrorResult() throws IOException {
+        analyticsService = new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
+        MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
+                .setHeader("Content-Type", "application/json").setHeader("x-authentication-error", "wrong_credentials")
+                .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
         mockWebServer.enqueue(mockResponse);
 
         Result<DailyStats, HttpErrors.CommonError> result =
@@ -179,26 +153,17 @@ public class AnalyticsServiceTest {
         Error error = result.getError();
         assertThat(result.getError(), IsInstanceOf.instanceOf(HttpErrors.UnauthorizedError.class));
         HttpErrors.UnauthorizedError authError = (HttpErrors.UnauthorizedError) error;
-        assertEquals(
-                "has wrong_credentials error code",
-                HttpErrors.UnauthorizedError.ErrorCode.wrong_credentials,
+        assertEquals("has wrong_credentials error code", HttpErrors.UnauthorizedError.ErrorCode.wrong_credentials,
                 authError.getErrorCode());
-        assertEquals(
-                "has error message from response body",
-                "Unauthorized request",
-                authError.getMessage());
+        assertEquals("has error message from response body", "Unauthorized request", authError.getMessage());
     }
 
     @Test
-    public void getDailyStats_ResponseWithUnauthorizedError_ReturnsErrorResult()
-            throws IOException {
-        analyticsService =
-                new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
-        MockResponse mockResponse =
-                new MockResponse()
-                        .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
-                        .setHeader("Content-Type", "application/json")
-                        .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
+    public void getDailyStats_ResponseWithUnauthorizedError_ReturnsErrorResult() throws IOException {
+        analyticsService = new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
+        MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
+                .setHeader("Content-Type", "application/json")
+                .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
         mockWebServer.enqueue(mockResponse);
 
         Result<DailyStats, HttpErrors.CommonError> result =
@@ -209,23 +174,15 @@ public class AnalyticsServiceTest {
         assertThat(result.getError(), IsInstanceOf.instanceOf(HttpErrors.UnauthorizedError.class));
         HttpErrors.UnauthorizedError authError = (HttpErrors.UnauthorizedError) error;
         assertEquals("has wrong_credentials error code", null, authError.getErrorCode());
-        assertEquals(
-                "has error message from response body",
-                "Unauthorized request",
-                authError.getMessage());
+        assertEquals("has error message from response body", "Unauthorized request", authError.getMessage());
     }
 
     @Test
-    public void getDailyStats_ResponseWithUnauthorizedErrorWithCode_ReturnsErrorResult()
-            throws IOException {
-        analyticsService =
-                new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
-        MockResponse mockResponse =
-                new MockResponse()
-                        .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
-                        .setHeader("Content-Type", "application/json")
-                        .setHeader("x-authentication-error", "wrong_credentials")
-                        .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
+    public void getDailyStats_ResponseWithUnauthorizedErrorWithCode_ReturnsErrorResult() throws IOException {
+        analyticsService = new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
+        MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
+                .setHeader("Content-Type", "application/json").setHeader("x-authentication-error", "wrong_credentials")
+                .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
         mockWebServer.enqueue(mockResponse);
 
         Result<DailyStats, HttpErrors.CommonError> result =
@@ -235,29 +192,17 @@ public class AnalyticsServiceTest {
         Error error = result.getError();
         assertThat(result.getError(), IsInstanceOf.instanceOf(HttpErrors.UnauthorizedError.class));
         HttpErrors.UnauthorizedError authError = (HttpErrors.UnauthorizedError) error;
-        assertEquals(
-                "has wrong_credentials error code",
-                HttpErrors.UnauthorizedError.ErrorCode.wrong_credentials,
+        assertEquals("has wrong_credentials error code", HttpErrors.UnauthorizedError.ErrorCode.wrong_credentials,
                 authError.getErrorCode());
-        assertEquals(
-                "has error message from response body",
-                "Unauthorized request",
-                authError.getMessage());
+        assertEquals("has error message from response body", "Unauthorized request", authError.getMessage());
     }
 
     @Test
     public void getDailyStats_ResponseWithClockSkewError_ReturnsErrorResult() throws IOException {
-        analyticsService =
-                new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
-        MockResponse mockResponse =
-                new MockResponse()
-                        .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
-                        .setHeader("Content-Type", "application/json")
-                        .setHeader("x-authentication-error", "clock_skew")
-                        .setBody(
-                                "{\n"
-                                        + "    \"message\": \"Unauthorized: clock skew of 301s was greater than 300s\""
-                                        + "}");
+        analyticsService = new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
+        MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
+                .setHeader("Content-Type", "application/json").setHeader("x-authentication-error", "clock_skew")
+                .setBody("{\n" + "    \"message\": \"Unauthorized: clock skew of 301s was greater than 300s\"" + "}");
         mockWebServer.enqueue(mockResponse);
 
         Result<DailyStats, HttpErrors.CommonError> result =
@@ -267,13 +212,9 @@ public class AnalyticsServiceTest {
         Error error = result.getError();
         assertThat(result.getError(), IsInstanceOf.instanceOf(HttpErrors.UnauthorizedError.class));
         HttpErrors.UnauthorizedError authError = (HttpErrors.UnauthorizedError) error;
-        assertEquals(
-                "has wrong_credentials error code",
-                HttpErrors.UnauthorizedError.ErrorCode.clock_skew,
+        assertEquals("has wrong_credentials error code", HttpErrors.UnauthorizedError.ErrorCode.clock_skew,
                 authError.getErrorCode());
-        assertEquals(
-                "has error message from response body",
-                "Unauthorized: clock skew of 301s was greater than 300s",
+        assertEquals("has error message from response body", "Unauthorized: clock skew of 301s was greater than 300s",
                 authError.getMessage());
     }
 }

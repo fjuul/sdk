@@ -18,8 +18,7 @@ public class SigningKeychainTest {
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.MINUTE, -1);
             Date expiresAt = calendar.getTime();
-            SigningKeychain keychain =
-                    new SigningKeychain(new SigningKey("key-id", "REAL_SECRET", expiresAt));
+            SigningKeychain keychain = new SigningKeychain(new SigningKey("key-id", "REAL_SECRET", expiresAt));
             assertEquals("returns empty optional", false, keychain.getFirstValid().isPresent());
         }
 
@@ -37,8 +36,7 @@ public class SigningKeychainTest {
     public static class InvalidateKeyByIdTest {
         @Test
         public void invalidateKeyById_KeyNotFound_returnsFalse() {
-            SigningKeychain keychain =
-                    new SigningKeychain(new SigningKey("key-id", "REAL_SECRET", new Date()));
+            SigningKeychain keychain = new SigningKeychain(new SigningKey("key-id", "REAL_SECRET", new Date()));
             boolean result = keychain.invalidateKeyById("wrong-key-id");
             assertFalse("key not found", result);
         }

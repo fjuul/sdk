@@ -23,9 +23,11 @@ public class AnalyticsService {
     public AnalyticsService(HttpClientBuilder clientBuilder, SigningKeychain keychain, ISigningService signingService) {
         OkHttpClient httpClient = clientBuilder.buildSigningClient(keychain, signingService);
         Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(clientBuilder.getBaseUrl()).client(httpClient)
-                .addCallAdapterFactory(ApiCallAdapterFactory.create())
-                .addConverterFactory(MoshiConverterFactory.create(moshi)).build();
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(clientBuilder.getBaseUrl())
+            .client(httpClient)
+            .addCallAdapterFactory(ApiCallAdapterFactory.create())
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build();
         analyticsApiClient = retrofit.create(AnalyticsApi.class);
     }
 

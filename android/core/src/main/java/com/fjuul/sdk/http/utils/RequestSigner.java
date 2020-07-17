@@ -38,9 +38,9 @@ public class RequestSigner {
     public Request signRequestByKey(Request request, SigningKey key) {
         Request.Builder signedRequestBuilder = request.newBuilder();
         String checkingRequestHeaders =
-                this.isRequestWithDigestChecking(request) ? "(request-target) date digest" : "(request-target) date";
+            this.isRequestWithDigestChecking(request) ? "(request-target) date digest" : "(request-target) date";
         StringBuilder encodedRequestTargetBuilder =
-                new StringBuilder(String.format("%s %s", request.method().toLowerCase(), request.url().encodedPath()));
+            new StringBuilder(String.format("%s %s", request.method().toLowerCase(), request.url().encodedPath()));
         String encodedQuery = request.url().encodedQuery();
         if (encodedQuery != null) {
             encodedRequestTargetBuilder.append("?").append(encodedQuery);
@@ -76,7 +76,7 @@ public class RequestSigner {
         String signingString = signingStringBuilder.toString();
         String signature = buildEncodedEncryptedSignature(signingString, key.getSecret());
         String signatureHeader = String.format("keyId=\"%s\",algorithm=\"hmac-sha256\",headers=\"%s\",signature=\"%s\"",
-                key.getId(), checkingRequestHeaders, signature);
+            key.getId(), checkingRequestHeaders, signature);
         signedRequestBuilder.header("Signature", signatureHeader);
         return signedRequestBuilder.build();
     }

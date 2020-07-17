@@ -45,26 +45,30 @@ public class SigningAuthInterceptorTest {
         SigningKeychain testKeychain = new SigningKeychain();
         UserSigningService mockedSigningService = mock(UserSigningService.class, Mockito.RETURNS_DEEP_STUBS);
         Request outboundRequest = new Request.Builder().url(mockWebServer.url("/sdk/v1/analytics")).build();
-        okhttp3.Response incomingRawResponse = new okhttp3.Response.Builder()
-                .header("x-authentication-error", "wrong_credentials").code(HttpURLConnection.HTTP_UNAUTHORIZED)
-                .request(outboundRequest).protocol(Protocol.HTTP_1_1).message("Unauthorized").build();
-        Response mockedSigningKeyResponse = Response.error(
-                ResponseBody.create(MediaType.get("application/json"),
-                        "{ \"message\": \"error message\", \"errorCode\": \"expired_signing_key\" }"),
-                incomingRawResponse);
+        okhttp3.Response incomingRawResponse =
+            new okhttp3.Response.Builder().header("x-authentication-error", "wrong_credentials")
+                .code(HttpURLConnection.HTTP_UNAUTHORIZED)
+                .request(outboundRequest)
+                .protocol(Protocol.HTTP_1_1)
+                .message("Unauthorized")
+                .build();
+        Response mockedSigningKeyResponse = Response.error(ResponseBody.create(MediaType.get("application/json"),
+            "{ \"message\": \"error message\", \"errorCode\": \"expired_signing_key\" }"), incomingRawResponse);
 
         when(mockedSigningService.issueKey().execute()).thenReturn(mockedSigningKeyResponse);
         SigningAuthInterceptor interceptorWithAuthenticator =
-                new SigningAuthInterceptor(testKeychain, new RequestSigner(), mockedSigningService);
-        OkHttpClient okHttpClient = new OkHttpClient().newBuilder().addInterceptor(interceptorWithAuthenticator)
-                .authenticator(interceptorWithAuthenticator).build();
+            new SigningAuthInterceptor(testKeychain, new RequestSigner(), mockedSigningService);
+        OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
+            .addInterceptor(interceptorWithAuthenticator)
+            .authenticator(interceptorWithAuthenticator)
+            .build();
         okhttp3.Response returnedResponse = okHttpClient.newCall(outboundRequest).execute();
         assertEquals("returns raw response of the issue request", mockedSigningKeyResponse.errorBody(),
-                returnedResponse.body());
+            returnedResponse.body());
         assertEquals("returns raw response of the issue request", mockedSigningKeyResponse.raw().message(),
-                returnedResponse.message());
+            returnedResponse.message());
         assertEquals("returns raw response of the issue request", mockedSigningKeyResponse.raw().code(),
-                returnedResponse.code());
+            returnedResponse.code());
         mockWebServer.shutdown();
     }
 
@@ -82,9 +86,11 @@ public class SigningAuthInterceptorTest {
         Response mockedSigningKeyResponse = Response.success(HttpURLConnection.HTTP_OK, newValidSigningKey);
         when(mockedSigningService.issueKey().execute()).thenReturn(mockedSigningKeyResponse);
         SigningAuthInterceptor interceptorWithAuthenticator =
-                new SigningAuthInterceptor(testKeychain, new RequestSigner(), mockedSigningService);
-        OkHttpClient okHttpClient = new OkHttpClient().newBuilder().addInterceptor(interceptorWithAuthenticator)
-                .authenticator(interceptorWithAuthenticator).build();
+            new SigningAuthInterceptor(testKeychain, new RequestSigner(), mockedSigningService);
+        OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
+            .addInterceptor(interceptorWithAuthenticator)
+            .authenticator(interceptorWithAuthenticator)
+            .build();
 
         okHttpClient.newCall(new Request.Builder().url(mockWebServer.url("/sdk/v1/analytics")).build()).execute();
         RecordedRequest request = mockWebServer.takeRequest();
@@ -94,7 +100,7 @@ public class SigningAuthInterceptorTest {
 
     @Test
     public void intercept_SimultaneousCallsWithEmptyKeychain_requestIssueKeyOnlyOnce()
-            throws IOException, InterruptedException {
+        throws IOException, InterruptedException {
         final int THREAD_POOL_SIZE = 5;
         ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
@@ -110,9 +116,11 @@ public class SigningAuthInterceptorTest {
         Response mockedSigningKeyResponse = Response.success(HttpURLConnection.HTTP_OK, newValidSigningKey);
         when(mockedSigningService.issueKey().execute()).thenReturn(mockedSigningKeyResponse);
         SigningAuthInterceptor interceptorWithAuthenticator =
-                new SigningAuthInterceptor(testKeychain, new RequestSigner(), mockedSigningService);
-        OkHttpClient okHttpClient = new OkHttpClient().newBuilder().addInterceptor(interceptorWithAuthenticator)
-                .authenticator(interceptorWithAuthenticator).build();
+            new SigningAuthInterceptor(testKeychain, new RequestSigner(), mockedSigningService);
+        OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
+            .addInterceptor(interceptorWithAuthenticator)
+            .authenticator(interceptorWithAuthenticator)
+            .build();
 
         // enqueue successful responses (it's assumed that issue response will be succeeded)
         IntStream.rangeClosed(1, THREAD_POOL_SIZE).forEach(i -> {
@@ -122,8 +130,8 @@ public class SigningAuthInterceptorTest {
         IntStream.rangeClosed(1, THREAD_POOL_SIZE).forEach(i -> {
             executor.submit(() -> {
                 try {
-                    okhttp3.Response response = okHttpClient
-                            .newCall(new Request.Builder().url(mockWebServer.url("/sdk/v1/analytics")).build())
+                    okhttp3.Response response =
+                        okHttpClient.newCall(new Request.Builder().url(mockWebServer.url("/sdk/v1/analytics")).build())
                             .execute();
                 } catch (IOException e) {
                     assertFalse("must no catch here", true);
@@ -138,13 +146,13 @@ public class SigningAuthInterceptorTest {
             // check all outbound requests from threads
             RecordedRequest request = mockWebServer.takeRequest();
             assertThat("each request carries new key-id", request.getHeader("Signature"),
-                    CoreMatchers.containsString("valid-key-id"));
+                CoreMatchers.containsString("valid-key-id"));
         }
     }
 
     @Test
     public void intercept_SimultaneousCallsWithInvalidatedKeyResponses_requestIssueKeyOnlyOnce()
-            throws IOException, InterruptedException {
+        throws IOException, InterruptedException {
         final int THREAD_POOL_SIZE = 5;
         ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
@@ -163,15 +171,17 @@ public class SigningAuthInterceptorTest {
         Response mockedSigningKeyResponse = Response.success(HttpURLConnection.HTTP_OK, newValidSigningKey);
         when(mockedSigningService.issueKey().execute()).thenReturn(mockedSigningKeyResponse);
         SigningAuthInterceptor interceptorWithAuthenticator =
-                new SigningAuthInterceptor(testKeychain, new RequestSigner(), mockedSigningService);
-        OkHttpClient okHttpClient = new OkHttpClient().newBuilder().addNetworkInterceptor(interceptorWithAuthenticator)
-                .authenticator(interceptorWithAuthenticator).build();
+            new SigningAuthInterceptor(testKeychain, new RequestSigner(), mockedSigningService);
+        OkHttpClient okHttpClient = new OkHttpClient().newBuilder()
+            .addNetworkInterceptor(interceptorWithAuthenticator)
+            .authenticator(interceptorWithAuthenticator)
+            .build();
 
         // enqueue unauthorized responses
         IntStream.rangeClosed(1, THREAD_POOL_SIZE).forEach(i -> {
             mockWebServer.enqueue(new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
-                    .addHeader("x-authentication-error", "invalid_key_id")
-                    .setBody("{\"message\":\"Unauthorized: key not found\"}"));
+                .addHeader("x-authentication-error", "invalid_key_id")
+                .setBody("{\"message\":\"Unauthorized: key not found\"}"));
         });
         // enqueue successful responses (it's assumed that issue response will be succeeded)
         IntStream.rangeClosed(1, THREAD_POOL_SIZE).forEach(i -> {
@@ -181,8 +191,8 @@ public class SigningAuthInterceptorTest {
         IntStream.rangeClosed(1, THREAD_POOL_SIZE).forEach(i -> {
             executor.submit(() -> {
                 try {
-                    okhttp3.Response response = okHttpClient
-                            .newCall(new Request.Builder().url(mockWebServer.url("/sdk/v1/analytics")).build())
+                    okhttp3.Response response =
+                        okHttpClient.newCall(new Request.Builder().url(mockWebServer.url("/sdk/v1/analytics")).build())
                             .execute();
                 } catch (IOException e) {
                     assertFalse("must no catch here", true);
@@ -195,13 +205,13 @@ public class SigningAuthInterceptorTest {
         for (int i = 0; i < THREAD_POOL_SIZE; i++) {
             RecordedRequest request = mockWebServer.takeRequest();
             assertThat("each request initially carried old key-id", request.getHeader("Signature"),
-                    CoreMatchers.containsString("previous-key-id"));
+                CoreMatchers.containsString("previous-key-id"));
         }
 
         for (int i = 0; i < THREAD_POOL_SIZE; i++) {
             RecordedRequest request = mockWebServer.takeRequest();
             assertThat("then each request carries new key-id", request.getHeader("Signature"),
-                    CoreMatchers.containsString("valid-key-id"));
+                CoreMatchers.containsString("valid-key-id"));
         }
         // NOTE: 1+1 is for case when we mock this method by self
         verify(mockedSigningService, times(2)).issueKey();

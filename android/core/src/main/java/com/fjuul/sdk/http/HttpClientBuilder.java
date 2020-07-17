@@ -28,9 +28,12 @@ public class HttpClientBuilder {
     // TODO: consider returning the retrofit client
     public OkHttpClient buildSigningClient(SigningKeychain keychain, ISigningService signingService) {
         SigningAuthInterceptor signingAuthInterceptor =
-                new SigningAuthInterceptor(keychain, new RequestSigner(), signingService);
-        OkHttpClient client = new OkHttpClient().newBuilder().addInterceptor(new ApiKeyAttachingInterceptor(apiKey))
-                .addInterceptor(signingAuthInterceptor).authenticator(signingAuthInterceptor).build();
+            new SigningAuthInterceptor(keychain, new RequestSigner(), signingService);
+        OkHttpClient client = new OkHttpClient().newBuilder()
+            .addInterceptor(new ApiKeyAttachingInterceptor(apiKey))
+            .addInterceptor(signingAuthInterceptor)
+            .authenticator(signingAuthInterceptor)
+            .build();
         return client;
     }
 
@@ -39,8 +42,10 @@ public class HttpClientBuilder {
     }
 
     public OkHttpClient buildUserAuthorizedClient(UserCredentials credentials) {
-        OkHttpClient client = new OkHttpClient().newBuilder().addInterceptor(new ApiKeyAttachingInterceptor(apiKey))
-                .addInterceptor(new BearerAuthInterceptor(credentials)).build();
+        OkHttpClient client = new OkHttpClient().newBuilder()
+            .addInterceptor(new ApiKeyAttachingInterceptor(apiKey))
+            .addInterceptor(new BearerAuthInterceptor(credentials))
+            .build();
         return client;
     }
 }

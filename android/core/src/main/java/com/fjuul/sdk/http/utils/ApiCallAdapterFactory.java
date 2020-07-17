@@ -22,7 +22,7 @@ public class ApiCallAdapterFactory extends CallAdapter.Factory {
         }
         if (!(returnType instanceof ParameterizedType)) {
             throw new IllegalStateException(
-                    "ApiCall return type must be parameterized" + " as ApiCall<Foo> or ApiCall<? extends Foo>");
+                "ApiCall return type must be parameterized" + " as ApiCall<Foo> or ApiCall<? extends Foo>");
         }
         Type innerType = getParameterUpperBound(0, (ParameterizedType) returnType);
 

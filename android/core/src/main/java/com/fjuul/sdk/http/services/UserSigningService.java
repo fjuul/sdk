@@ -21,8 +21,10 @@ public class UserSigningService implements ISigningService {
     public UserSigningService(HttpClientBuilder clientBuilder, UserCredentials credentials) {
         OkHttpClient httpClient = clientBuilder.buildUserAuthorizedClient(credentials);
         Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(clientBuilder.getBaseUrl()).client(httpClient)
-                .addConverterFactory(MoshiConverterFactory.create(moshi)).build();
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(clientBuilder.getBaseUrl())
+            .client(httpClient)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build();
         signingApiClient = retrofit.create(SigningApi.class);
     }
 

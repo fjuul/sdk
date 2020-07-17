@@ -87,7 +87,7 @@ public class ApiCall<T> {
         }
 
         String errorMessage =
-                responseBody != null && responseBody.getMessage() != null ? responseBody.getMessage() : "Unknown Error";
+            responseBody != null && responseBody.getMessage() != null ? responseBody.getMessage() : "Unknown Error";
         CommonError error;
         if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
             UnauthorizedError.ErrorCode code;

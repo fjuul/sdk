@@ -21,7 +21,7 @@ public class SigningInterceptor implements Interceptor, Authenticator {
     private SigningKeychain keychain;
     private RequestSigner requestSigner;
     private ISigningService signingService;
-    private final Pattern signatureHeaderKeyIdPattern = Pattern.compile("keyId=\"(.+)\"");
+    private final Pattern signatureHeaderKeyIdPattern = Pattern.compile("keyId=\"(.+?)\"");
 
     public SigningInterceptor(
             SigningKeychain keychain, RequestSigner requestSigner, ISigningService signingService) {
@@ -38,7 +38,6 @@ public class SigningInterceptor implements Interceptor, Authenticator {
         if (!keyOptional.isPresent()) {
             // need to request a new signing key
             synchronized (this) {
-                System.out.println("was here by" + Thread.currentThread().getName());
                 // double check if we have now new signing key
                 keyOptional = this.keychain.getFirstValid();
                 // if still no valid key => request new one
@@ -77,20 +76,24 @@ public class SigningInterceptor implements Interceptor, Authenticator {
                 .contains(authenticationErrorCode)) {
             return null;
         }
+        Request request = getRelatedRequest(response);
+        if (request == null) {
+            return null;
+        }
 
         synchronized (this) {
-            System.out.println("was here by" + Thread.currentThread().getName());
             // NOTE: double check if we have now new signing key
             // (it could be possible since this code block is synchronized)
             Optional<SigningKey> keyOptional = this.keychain.getFirstValid();
-            Matcher matcher = signatureHeaderKeyIdPattern.matcher(response.header("Signature"));
+            Matcher matcher = signatureHeaderKeyIdPattern.matcher(request.header("Signature"));
             matcher.find();
             String keyIdMatch = matcher.group(1);
             if (keyOptional.isPresent() && !keyOptional.get().getId().equals(keyIdMatch)) {
                 SigningKey key = keyOptional.get();
                 return requestSigner.signRequestByKey(response.request(), key);
             }
-            // if still no valid key => request new one
+            // if still no valid key => invalidate current one and request new one
+            keychain.invalidateKeyById(keyIdMatch);
             retrofit2.Response<SigningKey> newKeyResponse = issueNewKey();
             if (newKeyResponse.isSuccessful()) {
                 SigningKey newKey = newKeyResponse.body();
@@ -108,6 +111,22 @@ public class SigningInterceptor implements Interceptor, Authenticator {
 
     private <T> Response extractOriginalRawResponse(retrofit2.Response<T> response) {
         return response.raw().newBuilder().body(response.errorBody()).build();
+    }
+
+    private Request getRelatedRequest(Response response) {
+        // NOTE: for some weird reasons, in test environment request() method returns
+        // request with empty headers
+        Request request = response.request();
+        if (request.headers().size() == 0 && response.networkResponse() != null) {
+            request = response.networkResponse().request();
+        }
+        if (request.headers().size() == 0 && response.cacheResponse() != null) {
+            request = response.cacheResponse().request();
+        }
+        if (request.headers().size() == 0) {
+            return null;
+        }
+        return request;
     }
 
     private int responseCount(Response response) {

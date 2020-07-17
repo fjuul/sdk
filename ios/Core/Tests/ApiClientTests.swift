@@ -38,7 +38,7 @@ final class ApiClientTests: XCTestCase {
         let e = expectation(description: "Alamofire")
         let client = ApiClient(baseUrl: "", apiKey: "this-is-sparta", credentials: credentials)
         let request = client.bearerAuthenticatedSession.request("https://foo")
-        request.response { _ in
+        request.apiResponse { _ in
             XCTAssertEqual(
                 request.request?.value(forHTTPHeaderField: "Authorization"),
                 "Bearer YjUzMGIzMWYtNzRjYS00ODE0LTllMjQtMWJkMzVkNWQxYjYxOjliMjhkZTIxLTkwNWItNGZmMy04ZTY2LTc4NTllNzc2ZTE0Mw=="
@@ -52,7 +52,7 @@ final class ApiClientTests: XCTestCase {
         let e = expectation(description: "Alamofire")
         let client = ApiClient(baseUrl: "", apiKey: "this-is-sparta", credentials: credentials)
         let request = client.bearerAuthenticatedSession.request("https://foo")
-        request.response { _ in
+        request.apiResponse { _ in
             XCTAssertEqual(request.request?.value(forHTTPHeaderField: "x-api-key"), "this-is-sparta")
             e.fulfill()
         }
@@ -63,7 +63,7 @@ final class ApiClientTests: XCTestCase {
         let e = expectation(description: "Alamofire")
         let client = ApiClient(baseUrl: "https://apibase", apiKey: "this-is-sparta", credentials: credentials)
         let request = client.signedSession.request("https://foo")
-        request.response { _ in
+        request.apiResponse { _ in
             XCTAssertEqual(request.request?.value(forHTTPHeaderField: "x-api-key"), "this-is-sparta")
             e.fulfill()
         }
@@ -74,7 +74,7 @@ final class ApiClientTests: XCTestCase {
         let e = expectation(description: "Alamofire")
         let client = ApiClient(baseUrl: "https://apibase", apiKey: "this-is-sparta", credentials: credentials)
         let request = client.signedSession.request("https://foo")
-        request.response { _ in
+        request.apiResponse { _ in
             // Note: it would be a lot of ugly effort to actually verify the signature here, because
             // this code path actually signs with the current point in time as date, so it is hard to
             // predict the signature.

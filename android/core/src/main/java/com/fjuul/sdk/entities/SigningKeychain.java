@@ -5,8 +5,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class SigningKeychain {
-    // TODO: remove this concurrent collection after we'll add blocking mechanism to
-    // SigningInterceptor
     ConcurrentLinkedDeque<SigningKey> signingKeys;
 
     public SigningKeychain() {

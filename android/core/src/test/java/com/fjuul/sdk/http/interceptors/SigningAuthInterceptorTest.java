@@ -34,7 +34,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import retrofit2.Response;
 
-public class SigningInterceptorTest {
+public class SigningAuthInterceptorTest {
 
     @Test
     public void intercept_EmptyKeychainWithFailedIssueResult_returnIssueResponse()
@@ -64,8 +64,8 @@ public class SigningInterceptorTest {
                         incomingRawResponse);
 
         when(mockedSigningService.issueKey().execute()).thenReturn(mockedSigningKeyResponse);
-        SigningInterceptor interceptorWithAuthenticator =
-                new SigningInterceptor(testKeychain, new RequestSigner(), mockedSigningService);
+        SigningAuthInterceptor interceptorWithAuthenticator =
+                new SigningAuthInterceptor(testKeychain, new RequestSigner(), mockedSigningService);
         OkHttpClient okHttpClient =
                 new OkHttpClient().newBuilder()
                     .addInterceptor(interceptorWithAuthenticator)
@@ -104,8 +104,8 @@ public class SigningInterceptorTest {
         Response mockedSigningKeyResponse =
                 Response.success(HttpURLConnection.HTTP_OK, newValidSigningKey);
         when(mockedSigningService.issueKey().execute()).thenReturn(mockedSigningKeyResponse);
-        SigningInterceptor interceptorWithAuthenticator =
-                new SigningInterceptor(testKeychain, new RequestSigner(), mockedSigningService);
+        SigningAuthInterceptor interceptorWithAuthenticator =
+                new SigningAuthInterceptor(testKeychain, new RequestSigner(), mockedSigningService);
         OkHttpClient okHttpClient =
                 new OkHttpClient()
                     .newBuilder()
@@ -142,8 +142,8 @@ public class SigningInterceptorTest {
         Response mockedSigningKeyResponse =
             Response.success(HttpURLConnection.HTTP_OK, newValidSigningKey);
         when(mockedSigningService.issueKey().execute()).thenReturn(mockedSigningKeyResponse);
-        SigningInterceptor interceptorWithAuthenticator =
-            new SigningInterceptor(testKeychain, new RequestSigner(), mockedSigningService);
+        SigningAuthInterceptor interceptorWithAuthenticator =
+            new SigningAuthInterceptor(testKeychain, new RequestSigner(), mockedSigningService);
         OkHttpClient okHttpClient =
             new OkHttpClient().newBuilder()
                 .addInterceptor(interceptorWithAuthenticator)
@@ -201,8 +201,8 @@ public class SigningInterceptorTest {
         Response mockedSigningKeyResponse =
             Response.success(HttpURLConnection.HTTP_OK, newValidSigningKey);
         when(mockedSigningService.issueKey().execute()).thenReturn(mockedSigningKeyResponse);
-        SigningInterceptor interceptorWithAuthenticator =
-            new SigningInterceptor(testKeychain, new RequestSigner(), mockedSigningService);
+        SigningAuthInterceptor interceptorWithAuthenticator =
+            new SigningAuthInterceptor(testKeychain, new RequestSigner(), mockedSigningService);
         OkHttpClient okHttpClient =
             new OkHttpClient()
                 .newBuilder()

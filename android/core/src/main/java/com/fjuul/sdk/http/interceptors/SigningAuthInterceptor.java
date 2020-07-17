@@ -17,13 +17,13 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.Route;
 
-public class SigningInterceptor implements Interceptor, Authenticator {
+public class SigningAuthInterceptor implements Interceptor, Authenticator {
     private SigningKeychain keychain;
     private RequestSigner requestSigner;
     private ISigningService signingService;
     private final Pattern signatureHeaderKeyIdPattern = Pattern.compile("keyId=\"(.+?)\"");
 
-    public SigningInterceptor(
+    public SigningAuthInterceptor(
             SigningKeychain keychain, RequestSigner requestSigner, ISigningService signingService) {
         this.keychain = keychain;
         this.requestSigner = requestSigner;

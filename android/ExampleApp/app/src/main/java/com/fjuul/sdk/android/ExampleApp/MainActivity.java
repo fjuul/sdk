@@ -2,7 +2,6 @@ package com.fjuul.sdk.android.ExampleApp;
 
 import java.io.IOException;
 
-import com.fjuul.sdk.analytics.Analytics;
 import com.fjuul.sdk.analytics.entities.DailyStats;
 import com.fjuul.sdk.analytics.http.services.AnalyticsService;
 import com.fjuul.sdk.entities.SigningKeychain;
@@ -31,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         TextView textView = findViewById(R.id.main_text);
-        textView.setText(new Analytics().getText());
+        textView.setText(TAG);
 
         // UNCOMMENT BOTTOM LINE to perform a test request
         // testAnalyticsRequest();

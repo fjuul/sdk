@@ -23,7 +23,7 @@ class HmacAuthenticationInterceptor: Authenticator {
                  for session: Session,
                  completion: @escaping (Result<HmacCredentials, Error>) -> Void) {
 
-        refreshSession.request("\(baseUrl)/sdk/signing/v1/issue-key/user", method: .get).validate().responseData { response in
+        refreshSession.request("\(baseUrl)/sdk/signing/v1/issue-key/user", method: .get).apiResponse { response in
             let decodedResponse = response.tryMap { data -> HmacCredentials in
                 let signingKey = try Decoders.iso8601Full.decode(SigningKey.self, from: data)
                 return HmacCredentials(signingKey: signingKey)
@@ -42,7 +42,10 @@ class HmacAuthenticationInterceptor: Authenticator {
         if response.statusCode != 401 {
             return false
         }
-        return ["expired_signing_key", "invalid_key_id"].contains(response.headers.value(for: "x-authentication-error"))
+        if case FjuulError.authenticationFailure(reason: let reason) = error {
+            return [.expiredSigningKey, .invalidKeyId].contains(reason)
+        }
+        return false
 
     }
 

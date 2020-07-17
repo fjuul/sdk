@@ -29,6 +29,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.ResponseBody;
+import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -177,15 +178,20 @@ public class SigningAuthInterceptorTest {
             .authenticator(interceptorWithAuthenticator)
             .build();
 
-        // enqueue unauthorized responses
-        IntStream.rangeClosed(1, THREAD_POOL_SIZE).forEach(i -> {
-            mockWebServer.enqueue(new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
-                .addHeader("x-authentication-error", "invalid_key_id")
-                .setBody("{\"message\":\"Unauthorized: key not found\"}"));
-        });
-        // enqueue successful responses (it's assumed that issue response will be succeeded)
-        IntStream.rangeClosed(1, THREAD_POOL_SIZE).forEach(i -> {
-            mockWebServer.enqueue(new MockResponse());
+        mockWebServer.setDispatcher(new Dispatcher() {
+            @Override
+            public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
+                if (request.getHeader("Signature").contains("previous-key-id")) {
+                    // unauthorized response for the previous key
+                    return new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
+                        .addHeader("x-authentication-error", "invalid_key_id")
+                        .setBody("{\"message\":\"Unauthorized: key not found\"}");
+                } else if (request.getHeader("Signature").contains("valid-key-id")) {
+                    // successful response with new key
+                    return new MockResponse();
+                }
+                return null;
+            }
         });
         // make parallel requests
         IntStream.rangeClosed(1, THREAD_POOL_SIZE).forEach(i -> {

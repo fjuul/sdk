@@ -42,10 +42,9 @@ class HmacAuthenticationInterceptor: Authenticator {
         if response.statusCode != 401 {
             return false
         }
-        if case FjuulError.authenticationFailure(reason: let reason) = error {
-            return [.expiredSigningKey, .invalidKeyId].contains(reason)
-        }
-        return false
+        // Note: this is called before our custom error processing in `apiResponse`, thus `error` will not be one of
+        // our custom error types and we can not directly use those here
+        return ["expired_signing_key", "invalid_key_id"].contains(response.headers.value(for: "x-authentication-error"))
 
     }
 

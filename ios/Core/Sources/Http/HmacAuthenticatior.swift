@@ -24,7 +24,7 @@ class HmacAuthenticatior: Authenticator {
                  for session: Session,
                  completion: @escaping (Result<SigningKey?, Error>) -> Void) {
 
-        refreshSession.request("\(baseUrl)/sdk/signing/v1/issue-key/user", method: .get).validate().responseData { response in
+        refreshSession.request("\(baseUrl)/sdk/signing/v1/issue-key/user", method: .get).apiResponse { response in
             let decodedResponse = response.tryMap { data -> SigningKey in
                 return try Decoders.iso8601Full.decode(SigningKey.self, from: data)
             }
@@ -48,6 +48,8 @@ class HmacAuthenticatior: Authenticator {
         if response.statusCode != 401 {
             return false
         }
+        // Note: this is called before our custom error processing in `apiResponse`, thus `error` will not be one of
+        // our custom error types and we can not directly use those here
         return ["expired_signing_key", "invalid_key_id"].contains(response.headers.value(for: "x-authentication-error"))
 
     }

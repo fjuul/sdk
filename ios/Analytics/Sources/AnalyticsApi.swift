@@ -27,9 +27,9 @@ public class AnalyticsApi {
     public func dailyStats(date: Date, completion: @escaping (Result<DailyStats, Error>) -> Void) {
         let path = "/daily-stats/\(apiClient.userToken)/\(DateFormatters.yyyyMMdd.string(from: date))"
         guard let url = baseUrl?.appendingPathComponent(path) else {
-            return completion(.failure(AnalyticsApiError.invalidConfig))
+            return completion(.failure(FjuulError.invalidConfig))
         }
-        apiClient.signedSession.request(url, method: .get).validate().responseData { response in
+        apiClient.signedSession.request(url, method: .get).apiResponse { response in
             let decodedResponse = response.tryMap { try Decoders.yyyyMMdd.decode(DailyStats.self, from: $0) }
             completion(decodedResponse.result)
         }
@@ -44,13 +44,13 @@ public class AnalyticsApi {
     public func dailyStats(from: Date, to: Date, completion: @escaping (Result<[DailyStats], Error>) -> Void) {
         let path = "/daily-stats/\(apiClient.userToken)"
         guard let url = baseUrl?.appendingPathComponent(path) else {
-            return completion(.failure(AnalyticsApiError.invalidConfig))
+            return completion(.failure(FjuulError.invalidConfig))
         }
         let parameters = [
             "from": DateFormatters.yyyyMMdd.string(from: from),
             "to": DateFormatters.yyyyMMdd.string(from: to),
         ]
-        apiClient.signedSession.request(url, method: .get, parameters: parameters).validate().responseData { response in
+        apiClient.signedSession.request(url, method: .get, parameters: parameters).apiResponse { response in
             let decodedResponse = response.tryMap { try Decoders.yyyyMMdd.decode([DailyStats].self, from: $0) }
             completion(decodedResponse.result)
         }

@@ -9,11 +9,19 @@ import retrofit2.CallAdapter;
 import retrofit2.Retrofit;
 
 public class ApiCallAdapterFactory extends CallAdapter.Factory {
-    public static ApiCallAdapterFactory create() {
-        return new ApiCallAdapterFactory();
+    public static ApiCallAdapterFactory create(IApiResponseTransformer responseTransformer) {
+        return new ApiCallAdapterFactory(responseTransformer);
     }
 
-    private ApiCallAdapterFactory() {}
+    public static ApiCallAdapterFactory create() {
+        return new ApiCallAdapterFactory(new DefaultApiResponseTransformer());
+    }
+
+    private IApiResponseTransformer responseTransformer;
+
+    private ApiCallAdapterFactory(IApiResponseTransformer responseTransformer) {
+        this.responseTransformer = responseTransformer;
+    }
 
     @Override
     public CallAdapter<?, ?> get(Type returnType, Annotation[] annotations, Retrofit retrofit) {
@@ -26,14 +34,16 @@ public class ApiCallAdapterFactory extends CallAdapter.Factory {
         }
         Type innerType = getParameterUpperBound(0, (ParameterizedType) returnType);
 
-        return new ApiCallAdapter<>(innerType);
+        return new ApiCallAdapter<>(innerType, responseTransformer);
     }
 
     private static final class ApiCallAdapter<R> implements CallAdapter<R, ApiCall<R>> {
         private final Type responseType;
+        private final IApiResponseTransformer<R> responseTransformer;
 
-        ApiCallAdapter(Type responseType) {
+        ApiCallAdapter(Type responseType, IApiResponseTransformer<R> responseTransformer) {
             this.responseType = responseType;
+            this.responseTransformer = responseTransformer;
         }
 
         @Override
@@ -43,7 +53,7 @@ public class ApiCallAdapterFactory extends CallAdapter.Factory {
 
         @Override
         public ApiCall<R> adapt(final Call<R> call) {
-            return new ApiCall<>(call);
+            return new ApiCall<>(call, responseTransformer);
         }
     }
 }

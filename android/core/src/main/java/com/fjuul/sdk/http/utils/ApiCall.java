@@ -1,13 +1,6 @@
 package com.fjuul.sdk.http.utils;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-
-import com.fjuul.sdk.errors.ApiErrors.CommonError;
-import com.fjuul.sdk.errors.ApiErrors.UnauthorizedError;
-import com.fjuul.sdk.http.responses.ErrorJSONBodyResponse;
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
 
 import okhttp3.Request;
 import okio.Timeout;
@@ -25,26 +18,28 @@ import retrofit2.Response;
  */
 public class ApiCall<T> {
     private Call<T> delegate;
+    private IApiResponseTransformer<T> responseTransformer;
 
-    public ApiCall(Call<T> delegate) {
+    public ApiCall(Call<T> delegate, IApiResponseTransformer<T> responseTransformer) {
         this.delegate = delegate;
+        this.responseTransformer = responseTransformer;
     }
 
     public ApiCallResult<T> execute() throws IOException {
         Response<T> response = delegate.execute();
-        return convertResponseToResult(response);
+        return responseTransformer.transform(response);
     }
 
     public void enqueue(ApiCallCallback<T, ApiCallResult<T>> callback) {
         delegate.enqueue(new Callback<T>() {
             @Override
             public void onResponse(Call<T> call, Response<T> response) {
-                callback.onResponse(new ApiCall(call), convertResponseToResult(response));
+                callback.onResponse(new ApiCall(call, responseTransformer), responseTransformer.transform(response));
             }
 
             @Override
             public void onFailure(Call<T> call, Throwable t) {
-                callback.onFailure(new ApiCall(call), t);
+                callback.onFailure(new ApiCall(call, responseTransformer), t);
             }
         });
     };
@@ -62,7 +57,7 @@ public class ApiCall<T> {
     }
 
     public ApiCall<T> clone() {
-        return new ApiCall(delegate.clone());
+        return new ApiCall(delegate.clone(), responseTransformer);
     }
 
     protected Request request() {
@@ -71,36 +66,5 @@ public class ApiCall<T> {
 
     public Timeout timeout() {
         return delegate.timeout();
-    }
-
-    protected ApiCallResult<T> convertResponseToResult(Response<T> response) {
-        if (response.isSuccessful()) {
-            return ApiCallResult.value(response.body());
-        }
-        ErrorJSONBodyResponse responseBody;
-        Moshi moshi = new Moshi.Builder().build();
-        try {
-            JsonAdapter<ErrorJSONBodyResponse> jsonAdapter = moshi.adapter(ErrorJSONBodyResponse.class);
-            responseBody = jsonAdapter.fromJson(response.errorBody().source());
-        } catch (IOException exc) {
-            responseBody = null;
-        }
-
-        String errorMessage =
-            responseBody != null && responseBody.getMessage() != null ? responseBody.getMessage() : "Unknown Error";
-        CommonError error;
-        if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-            UnauthorizedError.ErrorCode code;
-            try {
-                code = UnauthorizedError.ErrorCode.valueOf(response.headers().get("x-authentication-error"));
-            } catch (IllegalArgumentException | NullPointerException exc) {
-                code = null;
-            }
-            error = new UnauthorizedError(errorMessage, code);
-        } else {
-            error = new CommonError(errorMessage);
-        }
-        // TODO: add additional checks (bad_request, forbidden)
-        return ApiCallResult.error(error);
     }
 }

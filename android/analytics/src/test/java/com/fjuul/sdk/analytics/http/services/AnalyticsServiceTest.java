@@ -76,13 +76,13 @@ public class AnalyticsServiceTest {
         assertEquals(502.10, dailyStats.getTotalKcal(), 0.0001);
         assertEquals(4621, dailyStats.getSteps());
         assertEquals(5.6, dailyStats.getLowest().getMetMinutes(), 0.0001);
-        assertEquals(2400, dailyStats.getLowest().getSeconds());
+        assertEquals(2400, dailyStats.getLowest().getSeconds(), 0.0001);
         assertEquals(20, dailyStats.getLow().getMetMinutes(), 0.0001);
-        assertEquals(1800, dailyStats.getLow().getSeconds());
+        assertEquals(1800, dailyStats.getLow().getSeconds(), 0.0001);
         assertEquals(10, dailyStats.getModerate().getMetMinutes(), 0.0001);
-        assertEquals(1200, dailyStats.getModerate().getSeconds());
+        assertEquals(1200, dailyStats.getModerate().getSeconds(), 0.0001);
         assertEquals(15, dailyStats.getHigh().getMetMinutes(), 0.0001);
-        assertEquals(180, dailyStats.getHigh().getSeconds());
+        assertEquals(180, dailyStats.getHigh().getSeconds(), 0.0001);
     }
 
     @Test
@@ -113,13 +113,13 @@ public class AnalyticsServiceTest {
         assertEquals(500, firstDailyStats.getTotalKcal(), 0.0001);
         assertEquals(4621, firstDailyStats.getSteps());
         assertEquals(5, firstDailyStats.getLowest().getMetMinutes(), 0.0001);
-        assertEquals(2400, firstDailyStats.getLowest().getSeconds());
+        assertEquals(2400, firstDailyStats.getLowest().getSeconds(), 0.0001);
         assertEquals(20, firstDailyStats.getLow().getMetMinutes(), 0.0001);
-        assertEquals(1800, firstDailyStats.getLow().getSeconds());
+        assertEquals(1800, firstDailyStats.getLow().getSeconds(), 0.0001);
         assertEquals(10, firstDailyStats.getModerate().getMetMinutes(), 0.0001);
-        assertEquals(1200, firstDailyStats.getModerate().getSeconds());
+        assertEquals(1200, firstDailyStats.getModerate().getSeconds(), 0.0001);
         assertEquals(15, firstDailyStats.getHigh().getMetMinutes(), 0.0001);
-        assertEquals(180, firstDailyStats.getHigh().getSeconds());
+        assertEquals(180, firstDailyStats.getHigh().getSeconds(), 0.0001);
 
         DailyStats secondDailyStats = dailyStatsRange[1];
         assertEquals("2020-03-11", secondDailyStats.getDate());
@@ -127,13 +127,13 @@ public class AnalyticsServiceTest {
         assertEquals(550.55, secondDailyStats.getTotalKcal(), 0.0001);
         assertEquals(1845, secondDailyStats.getSteps());
         assertEquals(1, secondDailyStats.getLowest().getMetMinutes(), 0.0001);
-        assertEquals(300, secondDailyStats.getLowest().getSeconds());
+        assertEquals(300, secondDailyStats.getLowest().getSeconds(), 0.0001);
         assertEquals(2.1, secondDailyStats.getLow().getMetMinutes(), 0.0001);
-        assertEquals(100, secondDailyStats.getLow().getSeconds());
+        assertEquals(100, secondDailyStats.getLow().getSeconds(), 0.0001);
         assertEquals(2.3, secondDailyStats.getModerate().getMetMinutes(), 0.0001);
-        assertEquals(120, secondDailyStats.getModerate().getSeconds());
+        assertEquals(120, secondDailyStats.getModerate().getSeconds(), 0.0001);
         assertEquals(3.4, secondDailyStats.getHigh().getMetMinutes(), 0.0001);
-        assertEquals(30, secondDailyStats.getHigh().getSeconds());
+        assertEquals(30, secondDailyStats.getHigh().getSeconds(), 0.0001);
     }
 
     @Test
@@ -170,7 +170,7 @@ public class AnalyticsServiceTest {
         Error error = result.getError();
         assertThat(result.getError(), IsInstanceOf.instanceOf(ApiErrors.UnauthorizedError.class));
         ApiErrors.UnauthorizedError authError = (ApiErrors.UnauthorizedError) error;
-        assertEquals("has wrong_credentials error code", null, authError.getErrorCode());
+        assertNull("has wrong_credentials error code", authError.getErrorCode());
         assertEquals("has error message from response body", "Unauthorized request", authError.getMessage());
     }
 

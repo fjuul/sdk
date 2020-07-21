@@ -59,13 +59,13 @@ public class MainActivity extends AppCompatActivity {
                         DailyStats dailyStats = result.getValue();
                         Log.i(TAG, String.format("date: %s; active calories: %f", dailyStats.getDate(),
                             dailyStats.getActiveKcal()));
-                        Log.i(TAG, String.format("lowest: seconds: %d, metMinutes %f",
+                        Log.i(TAG, String.format("lowest: seconds: %f, metMinutes %f",
                             dailyStats.getLowest().getSeconds(), dailyStats.getLowest().getMetMinutes()));
-                        Log.i(TAG, String.format("low: seconds: %d, metMinutes %f", dailyStats.getLow().getSeconds(),
+                        Log.i(TAG, String.format("low: seconds: %f, metMinutes %f", dailyStats.getLow().getSeconds(),
                             dailyStats.getLow().getMetMinutes()));
-                        Log.i(TAG, String.format("moderate: seconds: %d, metMinutes %f",
+                        Log.i(TAG, String.format("moderate: seconds: %f, metMinutes %f",
                             dailyStats.getModerate().getSeconds(), dailyStats.getModerate().getMetMinutes()));
-                        Log.i(TAG, String.format("high: seconds: %d, metMinutes %f", dailyStats.getHigh().getSeconds(),
+                        Log.i(TAG, String.format("high: seconds: %f, metMinutes %f", dailyStats.getHigh().getSeconds(),
                             dailyStats.getHigh().getMetMinutes()));
                     }
 

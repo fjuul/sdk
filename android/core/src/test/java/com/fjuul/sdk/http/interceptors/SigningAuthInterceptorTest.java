@@ -206,7 +206,7 @@ public class SigningAuthInterceptorTest {
             });
         });
         executor.shutdown();
-        executor.awaitTermination(5, TimeUnit.SECONDS);
+        executor.awaitTermination(15, TimeUnit.SECONDS);
 
         int rejectedRequestsCounter = 0;
         int updatedRequestsCounter = 0;

@@ -208,19 +208,15 @@ public class SigningAuthInterceptorTest {
         executor.shutdown();
         executor.awaitTermination(15, TimeUnit.SECONDS);
 
-        int rejectedRequestsCounter = 0;
         int updatedRequestsCounter = 0;
-        for (int i = 0; i < THREAD_POOL_SIZE * 2; i++) {
+        for (int i = 0; i < THREAD_POOL_SIZE * 2 && updatedRequestsCounter < THREAD_POOL_SIZE; i++) {
             RecordedRequest request = mockWebServer.takeRequest();
             final String signatureHeader = request.getHeader("Signature");
-            if (signatureHeader.contains("previous-key-id")) {
-                rejectedRequestsCounter += 1;
-            } else if (signatureHeader.contains("valid-key-id")) {
+            if (signatureHeader.contains("valid-key-id")) {
                 updatedRequestsCounter += 1;
             }
         }
-        assertEquals("all requests initially carried old key-id", THREAD_POOL_SIZE, rejectedRequestsCounter);
-        assertEquals("then all requests carry new key-id", THREAD_POOL_SIZE, updatedRequestsCounter);
+        assertEquals("all requests finally carry new key-id", THREAD_POOL_SIZE, updatedRequestsCounter);
         // NOTE: 1+1 is for case when we mock this method by self
         verify(mockedSigningService, times(2)).issueKey();
     }

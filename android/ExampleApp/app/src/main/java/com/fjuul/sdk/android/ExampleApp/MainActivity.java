@@ -7,11 +7,10 @@ import com.fjuul.sdk.analytics.http.services.AnalyticsService;
 import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.entities.UserCredentials;
 import com.fjuul.sdk.http.HttpClientBuilder;
-import com.fjuul.sdk.errors.HttpErrors.CommonError;
 import com.fjuul.sdk.http.services.UserSigningService;
 import com.fjuul.sdk.http.utils.ApiCall;
 import com.fjuul.sdk.http.utils.ApiCallCallback;
-import com.fjuul.sdk.http.utils.Result;
+import com.fjuul.sdk.http.utils.ApiCallResult;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -50,9 +49,9 @@ public class MainActivity extends AppCompatActivity {
             analyticsService
                 // NOTE: set an accessible date
                 .getDailyStats(userToken, "2020-06-10")
-                .enqueue(new ApiCallCallback<DailyStats, CommonError, Result<DailyStats, CommonError>>() {
+                .enqueue(new ApiCallCallback<DailyStats>() {
                     @Override
-                    public void onResponse(ApiCall<DailyStats> call, Result<DailyStats, CommonError> result) {
+                    public void onResponse(ApiCall<DailyStats> call, ApiCallResult<DailyStats> result) {
                         if (result.isError()) {
                             Log.i(TAG, String.format("error: %s", result.getError().getMessage()));
                             return;

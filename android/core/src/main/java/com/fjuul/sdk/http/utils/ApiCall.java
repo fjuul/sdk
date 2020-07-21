@@ -30,7 +30,7 @@ public class ApiCall<T> {
         return responseTransformer.transform(response);
     }
 
-    public void enqueue(ApiCallCallback<T, ApiCallResult<T>> callback) {
+    public void enqueue(ApiCallCallback<T> callback) {
         delegate.enqueue(new Callback<T>() {
             @Override
             public void onResponse(Call<T> call, Response<T> response) {

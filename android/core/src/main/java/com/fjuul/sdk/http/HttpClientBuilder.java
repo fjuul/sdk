@@ -11,6 +11,15 @@ import com.fjuul.sdk.http.utils.RequestSigner;
 
 import okhttp3.OkHttpClient;
 
+/**
+ * Main entry point to communicate with Fjuul API from a user identity.
+ *
+ * Besides constructor parameters, user credentials and singing keychain must be initialized through according setters.
+ *
+ * NOTE: an instance of this class must not be reused if you want to update it for other user. Instead create a new
+ * instance with the same parameters. From the other side, reuse the created instance as much as possible to share the
+ * same signing mechanism between services and prevent refreshing collision.
+ */
 public class HttpClientBuilder {
     private String baseUrl;
     private String apiKey;

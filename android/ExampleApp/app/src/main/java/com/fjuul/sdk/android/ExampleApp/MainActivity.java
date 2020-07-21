@@ -7,7 +7,7 @@ import com.fjuul.sdk.analytics.http.services.AnalyticsService;
 import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.entities.UserCredentials;
 import com.fjuul.sdk.http.HttpClientBuilder;
-import com.fjuul.sdk.http.errors.HttpErrors.CommonError;
+import com.fjuul.sdk.errors.HttpErrors.CommonError;
 import com.fjuul.sdk.http.services.UserSigningService;
 import com.fjuul.sdk.http.utils.ApiCall;
 import com.fjuul.sdk.http.utils.ApiCallCallback;

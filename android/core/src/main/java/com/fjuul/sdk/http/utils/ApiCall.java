@@ -3,8 +3,8 @@ package com.fjuul.sdk.http.utils;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
-import com.fjuul.sdk.http.errors.HttpErrors.CommonError;
-import com.fjuul.sdk.http.errors.HttpErrors.UnauthorizedError;
+import com.fjuul.sdk.errors.ApiErrors.CommonError;
+import com.fjuul.sdk.errors.ApiErrors.UnauthorizedError;
 import com.fjuul.sdk.http.responses.ErrorJSONBodyResponse;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
@@ -30,12 +30,12 @@ public class ApiCall<T> {
         this.delegate = delegate;
     }
 
-    public Result<T, CommonError> execute() throws IOException {
+    public ApiCallResult<T> execute() throws IOException {
         Response<T> response = delegate.execute();
         return convertResponseToResult(response);
     }
 
-    public void enqueue(ApiCallCallback<T, CommonError, Result<T, CommonError>> callback) {
+    public void enqueue(ApiCallCallback<T, ApiCallResult<T>> callback) {
         delegate.enqueue(new Callback<T>() {
             @Override
             public void onResponse(Call<T> call, Response<T> response) {
@@ -73,9 +73,9 @@ public class ApiCall<T> {
         return delegate.timeout();
     }
 
-    protected Result<T, CommonError> convertResponseToResult(Response<T> response) {
+    protected ApiCallResult<T> convertResponseToResult(Response<T> response) {
         if (response.isSuccessful()) {
-            return Result.value(response.body());
+            return ApiCallResult.value(response.body());
         }
         ErrorJSONBodyResponse responseBody;
         Moshi moshi = new Moshi.Builder().build();
@@ -101,6 +101,6 @@ public class ApiCall<T> {
             error = new CommonError(errorMessage);
         }
         // TODO: add additional checks (bad_request, forbidden)
-        return Result.error(error);
+        return ApiCallResult.error(error);
     }
 }

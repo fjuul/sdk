@@ -18,8 +18,8 @@ import retrofit2.converter.moshi.MoshiConverterFactory;
 public class UserSigningService implements ISigningService {
     private SigningApi signingApiClient;
 
-    public UserSigningService(HttpClientBuilder clientBuilder, UserCredentials credentials) {
-        OkHttpClient httpClient = clientBuilder.buildUserAuthorizedClient(credentials);
+    public UserSigningService(HttpClientBuilder clientBuilder) {
+        OkHttpClient httpClient = clientBuilder.buildUserAuthorizedClient();
         Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
         Retrofit retrofit = new Retrofit.Builder().baseUrl(clientBuilder.getBaseUrl())
             .client(httpClient)

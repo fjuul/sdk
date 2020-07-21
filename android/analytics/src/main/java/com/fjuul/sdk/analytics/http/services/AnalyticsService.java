@@ -5,9 +5,7 @@ import java.util.Date;
 
 import com.fjuul.sdk.analytics.entities.DailyStats;
 import com.fjuul.sdk.analytics.http.apis.AnalyticsApi;
-import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.http.HttpClientBuilder;
-import com.fjuul.sdk.http.services.ISigningService;
 import com.fjuul.sdk.http.utils.ApiCall;
 import com.fjuul.sdk.http.utils.ApiCallAdapterFactory;
 import com.squareup.moshi.Moshi;
@@ -20,8 +18,8 @@ import retrofit2.converter.moshi.MoshiConverterFactory;
 public class AnalyticsService {
     private AnalyticsApi analyticsApiClient;
 
-    public AnalyticsService(HttpClientBuilder clientBuilder, SigningKeychain keychain, ISigningService signingService) {
-        OkHttpClient httpClient = clientBuilder.buildSigningClient(keychain, signingService);
+    public AnalyticsService(HttpClientBuilder clientBuilder) {
+        OkHttpClient httpClient = clientBuilder.buildSigningClient();
         Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
         Retrofit retrofit = new Retrofit.Builder().baseUrl(clientBuilder.getBaseUrl())
             .client(httpClient)

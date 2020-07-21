@@ -41,10 +41,11 @@ public class AnalyticsServiceTest {
         mockWebServer = new MockWebServer();
         mockWebServer.start();
         clientBuilder = new TestHttpClientBuilder(mockWebServer);
+        clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.HOUR, 2);
         testKeychain = new SigningKeychain(new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime()));
-        userSigningService = new UserSigningService(clientBuilder, new UserCredentials(USER_TOKEN, USER_SECRET));
+        userSigningService = new UserSigningService(clientBuilder);
     }
 
     @After
@@ -54,7 +55,8 @@ public class AnalyticsServiceTest {
 
     @Test
     public void getDailyStatsTest() throws IOException {
-        analyticsService = new AnalyticsService(clientBuilder, testKeychain, userSigningService);
+        clientBuilder.setUserKeychain(testKeychain);
+        analyticsService = new AnalyticsService(clientBuilder);
         MockResponse mockResponse =
             new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK)
                 .setHeader("Content-Type", "application/json")
@@ -87,7 +89,8 @@ public class AnalyticsServiceTest {
 
     @Test
     public void getDailyStatsRangeTest() throws IOException {
-        analyticsService = new AnalyticsService(clientBuilder, testKeychain, userSigningService);
+        clientBuilder.setUserKeychain(testKeychain);
+        analyticsService = new AnalyticsService(clientBuilder);
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK)
             .setHeader("Content-Type", "application/json")
             .setBody("[ \n" + "{\n" + "\"date\": \"2020-03-10\",\n" + "\"activeKcal\": 300,\n" + "\"totalKcal\": 500,\n"
@@ -138,7 +141,8 @@ public class AnalyticsServiceTest {
 
     @Test
     public void getDailyStats_EmptyKeychainWithUnauthorizedError_ReturnsErrorResult() throws IOException {
-        analyticsService = new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
+        clientBuilder.setUserKeychain( new SigningKeychain());
+        analyticsService = new AnalyticsService(clientBuilder);
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
             .setHeader("Content-Type", "application/json")
             .setHeader("x-authentication-error", "wrong_credentials")
@@ -158,7 +162,8 @@ public class AnalyticsServiceTest {
 
     @Test
     public void getDailyStats_ResponseWithUnauthorizedError_ReturnsErrorResult() throws IOException {
-        analyticsService = new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
+        clientBuilder.setUserKeychain(new SigningKeychain());
+        analyticsService = new AnalyticsService(clientBuilder);
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
             .setHeader("Content-Type", "application/json")
             .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
@@ -176,7 +181,8 @@ public class AnalyticsServiceTest {
 
     @Test
     public void getDailyStats_ResponseWithUnauthorizedErrorWithCode_ReturnsErrorResult() throws IOException {
-        analyticsService = new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
+        clientBuilder.setUserKeychain(new SigningKeychain());
+        analyticsService = new AnalyticsService(clientBuilder);
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
             .setHeader("Content-Type", "application/json")
             .setHeader("x-authentication-error", "wrong_credentials")
@@ -196,7 +202,8 @@ public class AnalyticsServiceTest {
 
     @Test
     public void getDailyStats_ResponseWithClockSkewError_ReturnsErrorResult() throws IOException {
-        analyticsService = new AnalyticsService(clientBuilder, new SigningKeychain(), userSigningService);
+        clientBuilder.setUserKeychain(new SigningKeychain());
+        analyticsService = new AnalyticsService(clientBuilder);
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
             .setHeader("Content-Type", "application/json")
             .setHeader("x-authentication-error", "clock_skew")

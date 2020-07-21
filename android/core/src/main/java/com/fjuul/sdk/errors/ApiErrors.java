@@ -1,7 +1,7 @@
-package com.fjuul.sdk.http.errors;
+package com.fjuul.sdk.errors;
 
-public final class HttpErrors {
-    public static class CommonError extends Error {
+public final class ApiErrors {
+    public static class CommonError extends FjuulError {
         public CommonError(String message) {
             super(message);
         }

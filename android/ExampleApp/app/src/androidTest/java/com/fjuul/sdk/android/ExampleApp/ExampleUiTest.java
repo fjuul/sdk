@@ -22,6 +22,6 @@ public class ExampleUiTest {
 
     @Test
     public void assertSDKText_mainActivity() {
-        onView(withId(R.id.main_text)).check(matches(withText("Hello, Core!")));
+        onView(withId(R.id.main_text)).check(matches(withText("FJUUL_SDK")));
     }
 }

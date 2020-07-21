@@ -27,6 +27,7 @@ public class HttpClientBuilder {
     private UserCredentials userCredentials;
     private SigningAuthInterceptor signingAuthInterceptor;
 
+    // TODO: add builder to build a client per signing identity (user, tenant)
     // TODO: add the overloaded constructor with an environment parameter
     public HttpClientBuilder(String baseUrl, String apiKey) {
         this.baseUrl = baseUrl;

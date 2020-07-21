@@ -1,12 +1,12 @@
 package com.fjuul.sdk.http.utils;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+
 import com.fjuul.sdk.errors.ApiErrors;
 import com.fjuul.sdk.http.responses.ErrorJSONBodyResponse;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
-
-import java.io.IOException;
-import java.net.HttpURLConnection;
 
 import retrofit2.Response;
 

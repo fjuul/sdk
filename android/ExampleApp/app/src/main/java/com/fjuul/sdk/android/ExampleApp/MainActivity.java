@@ -41,9 +41,9 @@ public class MainActivity extends AppCompatActivity {
         String secret = "<SECRET>";
         HttpClientBuilder clientBuilder =
             new HttpClientBuilder("https://dev.api.fjuul.com", "c1e51fc6-d253-4961-ab9a-5d91560bae75");
-        UserSigningService signingService =
-            new UserSigningService(clientBuilder, new UserCredentials(userToken, secret));
-        AnalyticsService analyticsService = new AnalyticsService(clientBuilder, new SigningKeychain(), signingService);
+        clientBuilder.setUserCredentials(new UserCredentials(userToken, secret));
+        clientBuilder.setUserKeychain(new SigningKeychain());
+        AnalyticsService analyticsService = new AnalyticsService(clientBuilder);
 
         try {
             analyticsService

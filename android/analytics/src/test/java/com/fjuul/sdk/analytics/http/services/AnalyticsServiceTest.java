@@ -68,7 +68,7 @@ public class AnalyticsServiceTest {
                     + "\"high\": { \"seconds\": 180, \"metMinutes\": 15 }\n" + "}");
         mockWebServer.enqueue(mockResponse);
 
-        ApiCallResult<DailyStats> result = analyticsService.getDailyStats(USER_TOKEN, "2020-03-10").execute();
+        ApiCallResult<DailyStats> result = analyticsService.getDailyStats("2020-03-10").execute();
 
         assertFalse("success result", result.isError());
         DailyStats dailyStats = result.getValue();
@@ -106,7 +106,7 @@ public class AnalyticsServiceTest {
         mockWebServer.enqueue(mockResponse);
 
         ApiCallResult<DailyStats[]> result =
-            analyticsService.getDailyStats(USER_TOKEN, "2020-03-10", "2020-03-10").execute();
+            analyticsService.getDailyStats("2020-03-10", "2020-03-10").execute();
 
         assertFalse("success result", result.isError());
         DailyStats[] dailyStatsRange = result.getValue();
@@ -149,7 +149,7 @@ public class AnalyticsServiceTest {
             .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
         mockWebServer.enqueue(mockResponse);
 
-        ApiCallResult<DailyStats> result = analyticsService.getDailyStats(USER_TOKEN, "2020-03-10").execute();
+        ApiCallResult<DailyStats> result = analyticsService.getDailyStats("2020-03-10").execute();
 
         assertTrue("error result", result.isError());
         Error error = result.getError();
@@ -169,7 +169,7 @@ public class AnalyticsServiceTest {
             .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
         mockWebServer.enqueue(mockResponse);
 
-        ApiCallResult<DailyStats> result = analyticsService.getDailyStats(USER_TOKEN, "2020-03-10").execute();
+        ApiCallResult<DailyStats> result = analyticsService.getDailyStats("2020-03-10").execute();
 
         assertTrue("error result", result.isError());
         Error error = result.getError();
@@ -189,7 +189,7 @@ public class AnalyticsServiceTest {
             .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
         mockWebServer.enqueue(mockResponse);
 
-        ApiCallResult<DailyStats> result = analyticsService.getDailyStats(USER_TOKEN, "2020-03-10").execute();
+        ApiCallResult<DailyStats> result = analyticsService.getDailyStats("2020-03-10").execute();
 
         assertTrue("error result", result.isError());
         Error error = result.getError();
@@ -210,7 +210,7 @@ public class AnalyticsServiceTest {
             .setBody("{\n" + "    \"message\": \"Unauthorized: clock skew of 301s was greater than 300s\"" + "}");
         mockWebServer.enqueue(mockResponse);
 
-        ApiCallResult<DailyStats> result = analyticsService.getDailyStats(USER_TOKEN, "2020-03-10").execute();
+        ApiCallResult<DailyStats> result = analyticsService.getDailyStats("2020-03-10").execute();
 
         assertTrue("error result", result.isError());
         Error error = result.getError();

@@ -46,6 +46,13 @@ public class HttpClientBuilder {
         return baseUrl;
     }
 
+    public String getUserToken() {
+        if (userCredentials == null) {
+            throw new IllegalStateException("The builder needs user credentials");
+        }
+        return userCredentials.getToken();
+    }
+
     public SigningKeychain getUserSigningKeychain() {
         if (userKeychain == null) {
             throw new IllegalStateException("The builder requires the user keychain");

@@ -13,7 +13,7 @@ class HmacCredentialStore {
 
     var signingKey: SigningKey? {
         get {
-            return persistor.get(key: lookupKey) as? SigningKey
+            return persistor.get(key: lookupKey)
         }
         set {
             persistor.set(key: lookupKey, value: newValue)

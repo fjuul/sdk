@@ -4,8 +4,8 @@ import XCTest
 final class HmacCredentialStoreTests: XCTestCase {
 
     let key = SigningKey(
-        id: "",
-        secret: "",
+        id: "28c433cd-b2ec-4701-b4ab-269ac74c06cf",
+        secret: "cabbf8b9-d16f-4783-978a-05d6940bd17b",
         expiresAt: Date.distantFuture
     )
 

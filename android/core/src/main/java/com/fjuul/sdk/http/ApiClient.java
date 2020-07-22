@@ -20,26 +20,45 @@ import okhttp3.OkHttpClient;
  * instance with the same parameters. From the other side, reuse the created instance as much as possible to share the
  * same signing mechanism between services and prevent refreshing collision.
  */
-public class HttpClientBuilder {
+public class ApiClient {
     private String baseUrl;
     private String apiKey;
     private SigningKeychain userKeychain;
     private UserCredentials userCredentials;
     private SigningAuthInterceptor signingAuthInterceptor;
 
-    // TODO: add builder to build a client per signing identity (user, tenant)
-    // TODO: add the overloaded constructor with an environment parameter
-    public HttpClientBuilder(String baseUrl, String apiKey) {
+    private ApiClient(String baseUrl, String apiKey, SigningKeychain keychain, UserCredentials credentials) {
         this.baseUrl = baseUrl;
         this.apiKey = apiKey;
-    }
-
-    public void setUserCredentials(UserCredentials userCredentials) {
-        this.userCredentials = userCredentials;
-    }
-
-    public void setUserKeychain(SigningKeychain keychain) {
         this.userKeychain = keychain;
+        this.userCredentials = credentials;
+    }
+
+    public static class Builder {
+        private String baseUrl;
+        private String apiKey;
+        private SigningKeychain signingKeychain;
+        private UserCredentials userCredentials;
+
+        // TODO: add the overloaded constructor with an environment parameter
+        public Builder(String baseUrl, String apiKey) {
+            this.baseUrl = baseUrl;
+            this.apiKey = apiKey;
+        }
+
+        public Builder setUserCredentials(UserCredentials userCredentials) {
+            this.userCredentials = userCredentials;
+            return this;
+        }
+
+        public Builder setSigningKeychain(SigningKeychain keychain) {
+            this.signingKeychain = keychain;
+            return this;
+        }
+
+        public ApiClient build() {
+            return new ApiClient(baseUrl, apiKey, signingKeychain, userCredentials);
+        }
     }
 
     public String getBaseUrl() {
@@ -53,14 +72,6 @@ public class HttpClientBuilder {
         return userCredentials.getToken();
     }
 
-    public SigningKeychain getUserSigningKeychain() {
-        if (userKeychain == null) {
-            throw new IllegalStateException("The builder requires the user keychain");
-        }
-        return userKeychain;
-    }
-
-    // TODO: consider returning the retrofit client
     public OkHttpClient buildSigningClient(ISigningService signingService) {
         OkHttpClient client = new OkHttpClient().newBuilder()
             .addInterceptor(new ApiKeyAttachingInterceptor(apiKey))
@@ -88,6 +99,7 @@ public class HttpClientBuilder {
         return client;
     }
 
+    // TODO: consider moving this code to the builder class (share the same instance of the interceptor/authenticator)
     protected SigningAuthInterceptor getOrCreateSigningAuthInterceptor(ISigningService signingService) {
         if (signingAuthInterceptor == null) {
             signingAuthInterceptor = new SigningAuthInterceptor(userKeychain, new RequestSigner(), signingService);

@@ -5,7 +5,7 @@ import java.util.Date;
 
 import com.fjuul.sdk.analytics.entities.DailyStats;
 import com.fjuul.sdk.analytics.http.apis.AnalyticsApi;
-import com.fjuul.sdk.http.HttpClientBuilder;
+import com.fjuul.sdk.http.ApiClient;
 import com.fjuul.sdk.http.utils.ApiCall;
 import com.fjuul.sdk.http.utils.ApiCallAdapterFactory;
 import com.squareup.moshi.Moshi;
@@ -20,17 +20,17 @@ import retrofit2.converter.moshi.MoshiConverterFactory;
  */
 public class AnalyticsService {
     private AnalyticsApi analyticsApiClient;
-    private HttpClientBuilder clientBuilder;
+    private ApiClient clientBuilder;
 
     /**
      * Create instance of the analytics api service.
-     * @param clientBuilder configured client builder with signing ability and user credentials
+     * @param client configured client with signing ability and user credentials
      */
-    public AnalyticsService(HttpClientBuilder clientBuilder) {
-        this.clientBuilder = clientBuilder;
-        OkHttpClient httpClient = clientBuilder.buildSigningClient();
+    public AnalyticsService(ApiClient client) {
+        this.clientBuilder = client;
+        OkHttpClient httpClient = client.buildSigningClient();
         Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(clientBuilder.getBaseUrl())
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(client.getBaseUrl())
             .client(httpClient)
             .addCallAdapterFactory(ApiCallAdapterFactory.create())
             .addConverterFactory(MoshiConverterFactory.create(moshi))

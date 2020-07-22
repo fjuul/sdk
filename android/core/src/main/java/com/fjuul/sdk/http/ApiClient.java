@@ -14,11 +14,14 @@ import okhttp3.OkHttpClient;
 /**
  * Main entry point to communicate with Fjuul API from a user identity.
  *
- * Besides constructor parameters, user credentials and singing keychain must be initialized through according setters.
+ * <p>
+ * Use ApiClient.Builder to create instance of this class.
  *
- * NOTE: an instance of this class must not be reused if you want to update it for other user. Instead create a new
- * instance with the same parameters. From the other side, reuse the created instance as much as possible to share the
- * same signing mechanism between services and prevent refreshing collision.
+ * <p>
+ * NOTE: reuse the created instance as much as possible to share the same signing mechanism between services and prevent
+ * refreshing collision.
+ *
+ * @see ApiClient.Builder
  */
 public class ApiClient {
     private String baseUrl;
@@ -34,12 +37,20 @@ public class ApiClient {
         this.userCredentials = credentials;
     }
 
+    /**
+     * Besides constructor parameters, user credentials and singing keychain must be initialized through according
+     * setters.
+     */
     public static class Builder {
         private String baseUrl;
         private String apiKey;
         private SigningKeychain signingKeychain;
         private UserCredentials userCredentials;
 
+        /**
+         * @param baseUrl the API base URL to connect to, e.g. `https://api.fjuul.com`.
+         * @param apiKey the API key.
+         */
         // TODO: add the overloaded constructor with an environment parameter
         public Builder(String baseUrl, String apiKey) {
             this.baseUrl = baseUrl;
@@ -67,7 +78,7 @@ public class ApiClient {
 
     public String getUserToken() {
         if (userCredentials == null) {
-            throw new IllegalStateException("The builder needs user credentials");
+            throw new IllegalStateException("The builder needed user credentials");
         }
         return userCredentials.getToken();
     }
@@ -83,14 +94,14 @@ public class ApiClient {
 
     public OkHttpClient buildSigningClient() {
         if (userCredentials == null) {
-            throw new IllegalStateException("The builder needs user credentials to build a signing client");
+            throw new IllegalStateException("The builder needed user credentials to build a signing client");
         }
         return buildSigningClient(new UserSigningService(this));
     }
 
     public OkHttpClient buildUserAuthorizedClient() {
         if (userCredentials == null) {
-            throw new IllegalStateException("The builder needs user credentials to build an authenticated client");
+            throw new IllegalStateException("The builder needed user credentials to build an authenticated client");
         }
         OkHttpClient client = new OkHttpClient().newBuilder()
             .addInterceptor(new ApiKeyAttachingInterceptor(apiKey))

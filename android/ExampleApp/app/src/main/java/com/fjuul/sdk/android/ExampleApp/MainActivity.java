@@ -6,7 +6,7 @@ import com.fjuul.sdk.analytics.entities.DailyStats;
 import com.fjuul.sdk.analytics.http.services.AnalyticsService;
 import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.entities.UserCredentials;
-import com.fjuul.sdk.http.HttpClientBuilder;
+import com.fjuul.sdk.http.ApiClient;
 import com.fjuul.sdk.http.services.UserSigningService;
 import com.fjuul.sdk.http.utils.ApiCall;
 import com.fjuul.sdk.http.utils.ApiCallCallback;
@@ -39,16 +39,16 @@ public class MainActivity extends AppCompatActivity {
         // NOTE: provide your credentials
         String userToken = "<TOKEN>";
         String secret = "<SECRET>";
-        HttpClientBuilder clientBuilder =
-            new HttpClientBuilder("https://dev.api.fjuul.com", "c1e51fc6-d253-4961-ab9a-5d91560bae75");
-        clientBuilder.setUserCredentials(new UserCredentials(userToken, secret));
-        clientBuilder.setUserKeychain(new SigningKeychain());
-        AnalyticsService analyticsService = new AnalyticsService(clientBuilder);
+        ApiClient client = new ApiClient.Builder("https://dev.api.fjuul.com", "c1e51fc6-d253-4961-ab9a-5d91560bae75")
+            .setUserCredentials(new UserCredentials(userToken, secret))
+            .setSigningKeychain(new SigningKeychain())
+            .build();
+        AnalyticsService analyticsService = new AnalyticsService(client);
 
         try {
             analyticsService
                 // NOTE: set an accessible date
-                .getDailyStats(userToken, "2020-06-10")
+                .getDailyStats("2020-06-10")
                 .enqueue(new ApiCallCallback<DailyStats>() {
                     @Override
                     public void onResponse(ApiCall<DailyStats> call, ApiCallResult<DailyStats> result) {

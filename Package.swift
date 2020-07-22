@@ -5,7 +5,11 @@ import PackageDescription
 
 let package = Package(
     name: "Fjuul",
-    platforms: [.iOS(.v10)],
+    platforms: [
+        // required to run tests depending on Alamofire
+        .macOS(.v10_12),
+        .iOS(.v10)
+    ],
     products: [
         .library(
             name: "FjuulCore",
@@ -16,15 +20,19 @@ let package = Package(
             targets: ["FjuulAnalytics"]
         )
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/Alamofire/Alamofire.git", .upToNextMajor(from: "5.2.0")),
+        .package(url: "https://github.com/AliSoftware/OHHTTPStubs.git", .upToNextMajor(from: "9.0.0"))
+    ],
     targets: [
         .target(
             name: "FjuulCore",
+            dependencies: ["Alamofire"],
             path: "ios/Core/Sources"
         ),
         .testTarget(
             name: "FjuulCoreTests",
-            dependencies: ["FjuulCore"],
+            dependencies: [.product(name: "OHHTTPStubsSwift", package: "OHHTTPStubs"), "FjuulCore"],
             path: "ios/Core/Tests"
         ),
         .target(
@@ -34,8 +42,9 @@ let package = Package(
         ),
         .testTarget(
             name: "FjuulAnalyticsTests",
-            dependencies: ["FjuulAnalytics"],
+            dependencies: [.product(name: "OHHTTPStubsSwift", package: "OHHTTPStubs"), "FjuulAnalytics"],
             path: "ios/Analytics/Tests"
         )
-    ]
+    ],
+    swiftLanguageVersions: [.v5]
 )

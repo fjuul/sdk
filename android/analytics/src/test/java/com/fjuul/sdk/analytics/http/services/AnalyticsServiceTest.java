@@ -105,8 +105,7 @@ public class AnalyticsServiceTest {
                 + "\"high\": { \"seconds\": 30, \"metMinutes\": 3.4 }\n" + " " + "} \n" + "]");
         mockWebServer.enqueue(mockResponse);
 
-        ApiCallResult<DailyStats[]> result =
-            analyticsService.getDailyStats("2020-03-10", "2020-03-10").execute();
+        ApiCallResult<DailyStats[]> result = analyticsService.getDailyStats("2020-03-10", "2020-03-10").execute();
 
         assertFalse("success result", result.isError());
         DailyStats[] dailyStatsRange = result.getValue();

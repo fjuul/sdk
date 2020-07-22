@@ -1,34 +1,40 @@
 import Foundation
 import Alamofire
 
-class HmacAuthenticationInterceptor: Authenticator {
+class HmacAuthenticatior: Authenticator {
 
     let baseUrl: String
     let refreshSession: Session
+    var credentialStore: HmacCredentialStore
 
-    init(baseUrl: String, refreshSession: Session) {
+    init(baseUrl: String, refreshSession: Session, credentialStore: HmacCredentialStore) {
         self.baseUrl = baseUrl
         self.refreshSession = refreshSession
+        self.credentialStore = credentialStore
     }
 
-    func apply(_ credential: HmacCredentials, to urlRequest: inout URLRequest) {
-        guard let signingKey = credential.signingKey else {
-            // TODO this should never happen
+    func apply(_ credential: SigningKey?, to urlRequest: inout URLRequest) {
+        guard let signingKey = credential else {
             return
         }
         urlRequest.signWith(key: signingKey, forDate: Date())
     }
 
-    func refresh(_ credential: HmacCredentials,
+    func refresh(_ credential: SigningKey?,
                  for session: Session,
-                 completion: @escaping (Result<HmacCredentials, Error>) -> Void) {
+                 completion: @escaping (Result<SigningKey?, Error>) -> Void) {
 
         refreshSession.request("\(baseUrl)/sdk/signing/v1/issue-key/user", method: .get).apiResponse { response in
-            let decodedResponse = response.tryMap { data -> HmacCredentials in
-                let signingKey = try Decoders.iso8601Full.decode(SigningKey.self, from: data)
-                return HmacCredentials(signingKey: signingKey)
+            let decodedResponse = response.tryMap { data -> SigningKey in
+                return try Decoders.iso8601Full.decode(SigningKey.self, from: data)
             }
-            completion(decodedResponse.result)
+            switch decodedResponse.result {
+            case .success(let key):
+                self.credentialStore.signingKey = key
+                completion(.success(key))
+            case .failure(let err):
+                completion(.failure(err))
+            }
         }
 
     }
@@ -51,8 +57,8 @@ class HmacAuthenticationInterceptor: Authenticator {
     // This method should return true if the URLRequest is authenticated in a way that matches the values in the Credential
     // This is used to determine if credentials need to be refreshed, or have already been refreshed (e.g. due to multiple
     // concurrent in-flight requests).
-    func isRequest(_ urlRequest: URLRequest, authenticatedWith credential: HmacCredentials) -> Bool {
-        guard let signingKey = credential.signingKey, let signature = urlRequest.value(forHTTPHeaderField: "Signature") else {
+    func isRequest(_ urlRequest: URLRequest, authenticatedWith credential: SigningKey?) -> Bool {
+        guard let signingKey = credential, let signature = urlRequest.value(forHTTPHeaderField: "Signature") else {
             return false
         }
         let regex = try? NSRegularExpression(pattern: "keyId=\"([a-f0-9\\-]+)\"", options: .caseInsensitive)

@@ -56,7 +56,7 @@ final class AnalyticsApiTests: XCTestCase {
 
     func testGetSingleDailyStats() {
         let e = expectation(description: "Alamofire")
-        let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials)
+        let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: InMemoryPersistor())
         client.analytics.dailyStats(date: Date()) { result in
             switch result {
             case .success(let dailyStats):
@@ -69,9 +69,9 @@ final class AnalyticsApiTests: XCTestCase {
         waitForExpectations(timeout: 5.0, handler: nil)
     }
 
-    func testMultipleSingleDailyStats() {
+    func testGetMultipleDailyStats() {
         let e = expectation(description: "Alamofire")
-        let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials)
+        let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: InMemoryPersistor())
         client.analytics.dailyStats(from: Date.distantPast, to: Date.distantFuture) { result in
             switch result {
             case .success(let dailyStats):

@@ -16,6 +16,7 @@ public class ApiClient {
     public let baseUrl: String
 
     let credentials: UserCredentials
+    let persistor: Persistor
 
     /// Initializes a Fjuul API client.
     ///
@@ -23,11 +24,21 @@ public class ApiClient {
     ///   - baseUrl: The API base URL to connect to, e.g. `https://api.fjuul.com`.
     ///   - apiKey: The API key.
     ///   - credentials: The credentials of the user.
-    public init(baseUrl: String, apiKey: String, credentials: UserCredentials) {
+    public convenience init(baseUrl: String, apiKey: String, credentials: UserCredentials) {
+        self.init(baseUrl: baseUrl, apiKey: apiKey, credentials: credentials, persistor: DiskPersistor())
+    }
+
+    public init(baseUrl: String, apiKey: String, credentials: UserCredentials, persistor: Persistor) {
         self.baseUrl = baseUrl
         self.credentials = credentials
+        self.persistor = persistor
         self.bearerAuthenticatedSession = ApiClient.buildBearerAuthenticatedSession(apiKey: apiKey, credentials: credentials)
-        self.signedSession = ApiClient.buildSignedSession(apiKey: apiKey, baseUrl: baseUrl, refreshSession: self.bearerAuthenticatedSession)
+        self.signedSession = ApiClient.buildSignedSession(
+            apiKey: apiKey,
+            baseUrl: baseUrl,
+            refreshSession: self.bearerAuthenticatedSession,
+            credentialStore: HmacCredentialStore(userToken: credentials.token, persistor: persistor)
+        )
     }
 
     public var userToken: String {
@@ -51,14 +62,12 @@ fileprivate extension ApiClient {
         return Session(configuration: configuration, interceptor: compositeInterceptor)
     }
 
-    static func buildSignedSession(apiKey: String, baseUrl: String, refreshSession: Session) -> Session {
-
-        let hmacCredentials = HmacCredentials(signingKey: nil)
+    static func buildSignedSession(apiKey: String, baseUrl: String, refreshSession: Session, credentialStore: HmacCredentialStore) -> Session {
 
         let apiKeyAdapter = ApiKeyAdapter(apiKey: apiKey)
 
-        let authenticator = HmacAuthenticationInterceptor(baseUrl: baseUrl, refreshSession: refreshSession)
-        let authInterceptor = AuthenticationInterceptor(authenticator: authenticator, credential: hmacCredentials)
+        let authenticator = HmacAuthenticatior(baseUrl: baseUrl, refreshSession: refreshSession, credentialStore: credentialStore)
+        let authInterceptor = AuthenticationInterceptor(authenticator: authenticator, credential: credentialStore.signingKey)
 
         let compositeInterceptor = Interceptor(
             adapters: [apiKeyAdapter],

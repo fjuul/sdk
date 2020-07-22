@@ -1,9 +1,13 @@
 import Foundation
 import Alamofire
 
-struct ApiKeyAdapter: RequestAdapter {
+class ApiKeyAdapter: RequestAdapter {
 
     let apiKey: String
+
+    init(apiKey: String) {
+        self.apiKey = apiKey
+    }
 
     func adapt(_ urlRequest: URLRequest, for session: Session, completion: @escaping (Result<URLRequest, Error>) -> Void) {
         var urlRequest = urlRequest

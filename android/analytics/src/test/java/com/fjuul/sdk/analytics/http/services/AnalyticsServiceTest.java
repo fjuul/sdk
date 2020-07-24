@@ -16,7 +16,7 @@ import com.fjuul.sdk.entities.SigningKey;
 import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.entities.UserCredentials;
 import com.fjuul.sdk.errors.ApiErrors;
-import com.fjuul.sdk.http.TestApiClient;
+import com.fjuul.sdk.fixtures.http.TestApiClient;
 import com.fjuul.sdk.http.services.ISigningService;
 import com.fjuul.sdk.http.services.UserSigningService;
 import com.fjuul.sdk.http.utils.ApiCallResult;

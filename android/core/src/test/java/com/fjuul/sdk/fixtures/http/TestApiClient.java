@@ -1,4 +1,6 @@
-package com.fjuul.sdk.http;
+package com.fjuul.sdk.fixtures.http;
+
+import com.fjuul.sdk.http.ApiClient;
 
 import okhttp3.mockwebserver.MockWebServer;
 

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B3548D5924CAD2C1002F26B9 /* FjuulUser in Frameworks */ = {isa = PBXBuildFile; productRef = B3548D5824CAD2C1002F26B9 /* FjuulUser */; };
+		B3548D5B24CAD320002F26B9 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3548D5A24CAD320002F26B9 /* UserProfileView.swift */; };
 		B3BB7F1123993EC800A7BEF2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BB7F1023993EC800A7BEF2 /* AppDelegate.swift */; };
 		B3BB7F1323993EC800A7BEF2 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BB7F1223993EC800A7BEF2 /* SceneDelegate.swift */; };
 		B3BB7F1723993ECC00A7BEF2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B3BB7F1623993ECC00A7BEF2 /* Assets.xcassets */; };
@@ -38,6 +40,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B3548D5A24CAD320002F26B9 /* UserProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
 		B3BB7F0D23993EC800A7BEF2 /* ExampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ExampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B3BB7F1023993EC800A7BEF2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B3BB7F1223993EC800A7BEF2 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -66,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B3548D5924CAD2C1002F26B9 /* FjuulUser in Frameworks */,
 				B3C683E8248F99730025056E /* FjuulAnalytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -159,6 +163,7 @@
 				B3FBCDA924B8AB1200184A88 /* ModuleSelectionView.swift */,
 				B3FBCDAA24B8AB1200184A88 /* OnboardingView.swift */,
 				B3FBCDB724B8BE2F00184A88 /* RootView.swift */,
+				B3548D5A24CAD320002F26B9 /* UserProfileView.swift */,
 			);
 			path = Screens;
 			sourceTree = "<group>";
@@ -182,6 +187,7 @@
 			name = ExampleApp;
 			packageProductDependencies = (
 				B3C683E7248F99730025056E /* FjuulAnalytics */,
+				B3548D5824CAD2C1002F26B9 /* FjuulUser */,
 			);
 			productName = ExampleApp;
 			productReference = B3BB7F0D23993EC800A7BEF2 /* ExampleApp.app */;
@@ -296,6 +302,7 @@
 				B3FBCDB024B8AB3000184A88 /* ApiEnvironment.swift in Sources */,
 				B3FBCDAB24B8AB1200184A88 /* FloatingTextField.swift in Sources */,
 				B3FBCDAC24B8AB1200184A88 /* CreateUserView.swift in Sources */,
+				B3548D5B24CAD320002F26B9 /* UserProfileView.swift in Sources */,
 				B3FBCDB224B8AB6200184A88 /* UserDefaultsManager.swift in Sources */,
 				B3BB7F1323993EC800A7BEF2 /* SceneDelegate.swift in Sources */,
 				B3FBCDB624B8B3F400184A88 /* DailyStatsView.swift in Sources */,
@@ -558,6 +565,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		B3548D5824CAD2C1002F26B9 /* FjuulUser */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FjuulUser;
+		};
 		B3C683E7248F99730025056E /* FjuulAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = FjuulAnalytics;

@@ -5,6 +5,11 @@ struct ModuleSelectionView: View {
     var body: some View {
 
         Form {
+            Section(header: Text("User")){
+                NavigationLink(destination: LazyView(UserProfileView())) {
+                    Text("Profile")
+                }
+            }
             Section(header: Text("Analytics")) {
                 NavigationLink(destination: LazyView(DailyStatsView())) {
                     Text("Daily Statistics")

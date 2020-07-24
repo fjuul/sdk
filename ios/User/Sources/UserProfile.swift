@@ -28,8 +28,8 @@ public struct UserProfile: Codable {
 
 extension UserProfile: PartiallyEncodable {
 
-    static public func keyString(for key: PartialKeyPath<UserProfile>) -> String? {
-        switch key {
+    static public func key(for keyPath: PartialKeyPath<UserProfile>) -> String? {
+        switch keyPath {
         case \UserProfile.birthDate : return "birthDate"
         case \UserProfile.gender: return "gender"
         case \UserProfile.height: return "height"
@@ -39,7 +39,7 @@ extension UserProfile: PartiallyEncodable {
         }
     }
 
-    static public func jsonEncodableValueFor(for key: PartialKeyPath<UserProfile>, with value: Partial<UserProfile>) -> Any {
+    static public func jsonEncodableValue(for key: PartialKeyPath<UserProfile>, in value: Partial<UserProfile>) -> Any {
         switch key {
         case \UserProfile.birthDate: return DateFormatters.yyyyMMddLocale.string(from: value[\.birthDate]!)
         case \UserProfile.gender: return value[\.gender]!.rawValue

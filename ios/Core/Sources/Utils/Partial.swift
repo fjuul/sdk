@@ -4,7 +4,7 @@ public struct Partial<Wrapped: PartiallyEncodable> {
 
     private var values: [PartialKeyPath<Wrapped>: Encodable]
 
-    public init(initialValues: [PartialKeyPath<Wrapped>: Encodable] = [:]) {
+    public init(_ initialValues: [PartialKeyPath<Wrapped>: Encodable] = [:]) {
         self.values = initialValues
     }
 
@@ -25,8 +25,8 @@ public struct Partial<Wrapped: PartiallyEncodable> {
 
     public func asJsonEncodableDictionary() -> [String: Any] {
         return Dictionary(uniqueKeysWithValues: values
-            .filter { key, value in Wrapped.keyString(for: key) != nil }
-            .map { key, value in (Wrapped.keyString(for: key)!, Wrapped.jsonEncodableValueFor(for: key, with: self)) })
+            .filter { keyPath, _ in Wrapped.key(for: keyPath) != nil }
+            .map { keyPath, _ in (Wrapped.key(for: keyPath)!, Wrapped.jsonEncodableValue(for: keyPath, in: self)) })
     }
 
 }

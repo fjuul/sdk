@@ -68,10 +68,10 @@ struct UserProfileView: View {
             }
             Section {
                 Button("Update profile") {
-                    let update = Partial<UserProfile>(initialValues: [
-                        \UserProfile.birthDate: self.userProfile.birthDate
+                    let updatedValues = PartialUserProfile([
+                        \UserProfile.weight: self.userProfile.weight
                     ])
-                    ApiClientHolder.default.apiClient?.user.updateProfile(profile: update) { result in
+                    ApiClientHolder.default.apiClient?.user.updateProfile(updatedValues) { result in
                         print(result)
                     }
                 }

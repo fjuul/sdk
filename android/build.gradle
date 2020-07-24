@@ -1,68 +1,52 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        google()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.0.1'
+    }
+}
+
 plugins {
     id "com.diffplug.gradle.spotless" version "4.4.0"
 }
 
-apply plugin: 'java'
+ spotless {
+     java {
+         target fileTree('.') {
+             include '**/*.java'
+         }
+         // licenseHeaderFile project.rootProject.file('spotless/copyright.java')
 
-spotless {
-    java {
-        target fileTree('.') {
-            include '**/*.java'
-        }
-        // licenseHeaderFile project.rootProject.file('spotless/copyright.java')
+         // optional: you can specify a specific version and/or config file
+         eclipse('4.13.0').configFile('eclipse-java-google-style.xml')
+         removeUnusedImports()
+         importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''	// A sequence of package names
+     }
+     groovyGradle {
+         target fileTree('.') {
+             include '**/*.gradle'
+         }
+         greclipse()
+         indentWithSpaces(4)
+     }
+ }
 
-        // optional: you can specify a specific version and/or config file
-        eclipse('4.13.0').configFile('eclipse-java-google-style.xml')
-        removeUnusedImports()
-        importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''	// A sequence of package names
-    }
-    groovyGradle {
-        target fileTree('.') {
-            include '**/*.gradle'
-        }
-        greclipse()
-        indentWithSpaces(4)
-    }
-}
-
-configure(subprojects) {
-    apply plugin: 'java'
-
-    repositories {
-        jcenter()
-    }
-
-    java {
-        withSourcesJar()
-        withJavadocJar()
-    }
-
-    test {
+allprojects {
+    tasks.withType(Test) {
         testLogging {
-            events "passed", "skipped", "failed", "standardOut", "standardError"
+            exceptionFormat "full"
+            showCauses true
+            showExceptions true
+            showStackTraces true
+            showStandardStreams true
+            events = ["passed", "skipped", "failed", "standardOut"]
         }
     }
 }
 
-subprojects {
-    apply plugin: "maven-publish"
-    publishing {
-        repositories {
-            maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/fjuul/sdk")
-                credentials {
-                    username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_ACTOR")
-                    password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
-                }
-            }
-        }
-        publications {
-            FjuulSDK(MavenPublication) {
-                groupId "com.fjuul.sdk"
-                version = project.findProperty("VERSION_NAME")
-                from(project.components.java)
-            }
-        }
-    }
+repositories {
+    google()
 }

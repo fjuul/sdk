@@ -7,22 +7,10 @@ public class SigningKey {
     private String secret;
     private Date expiresAt;
 
-    private Boolean valid;
-
-    @SuppressWarnings("unused") // Moshi uses this!
-    private SigningKey() {
-        valid = true;
-    }
-
-    public SigningKey(String id, String secret, Date expiresAt, Boolean valid) {
+    public SigningKey(String id, String secret, Date expiresAt) {
         this.id = id;
         this.secret = secret;
         this.expiresAt = expiresAt;
-        this.valid = valid;
-    }
-
-    public SigningKey(String id, String secret, Date expiresAt) {
-        this(id, secret, expiresAt, true);
     }
 
     public String getId() {
@@ -37,11 +25,7 @@ public class SigningKey {
         return expiresAt;
     }
 
-    public boolean isValid() {
-        return valid;
-    }
-
-    public void invalidate() {
-        this.valid = false;
+    public boolean isExpired() {
+        return expiresAt.before(new Date());
     }
 }

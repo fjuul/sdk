@@ -1,4 +1,5 @@
 import Foundation
+import FjuulCore
 
 public enum Gender: String, Codable {
     case male = "male"
@@ -14,5 +15,36 @@ public struct UserProfile: Codable {
     public let weight: Int
     public let timezone: String
     //public let locale: String
+
+    public init(birthDate: Date, gender: Gender, height: Int, weight: Int, timezone: TimeZone = TimeZone.current) {
+        self.birthDate = birthDate
+        self.gender = gender
+        self.height = height
+        self.weight = weight
+        self.timezone = timezone.identifier
+    }
+
+}
+
+extension UserProfile: PartiallyEncodable {
+
+    static public func keyString(for key: PartialKeyPath<UserProfile>) -> String? {
+        switch key {
+        case \UserProfile.birthDate : return "birthDate"
+        case \UserProfile.gender: return "gender"
+        case \UserProfile.height: return "height"
+        case \UserProfile.weight: return "weight"
+        case \UserProfile.timezone: return "timezone"
+        default: return nil
+        }
+    }
+
+    static public func jsonEncodableValueFor(for key: PartialKeyPath<UserProfile>, with value: Partial<UserProfile>) -> Any {
+        switch key {
+        case \UserProfile.birthDate: return DateFormatters.yyyyMMddLocale.string(from: value[\.birthDate]!)
+        case \UserProfile.gender: return value[\.gender]!.rawValue
+        default: return value[key]!
+        }
+    }
 
 }

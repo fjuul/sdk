@@ -66,6 +66,16 @@ struct UserProfileView: View {
                     .disableAutocorrection(true)
                     .autocapitalization(.none)
             }
+            Section {
+                Button("Update profile") {
+                    let update = Partial<UserProfile>(initialValues: [
+                        \UserProfile.birthDate: self.userProfile.birthDate
+                    ])
+                    ApiClientHolder.default.apiClient?.user.updateProfile(profile: update) { result in
+                        print(result)
+                    }
+                }
+            }
         }
         .navigationBarTitle("User Profile", displayMode: .inline)
 

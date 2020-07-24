@@ -2,6 +2,8 @@ import Foundation
 import Alamofire
 import FjuulCore
 
+public typealias PartialUserProfile = Partial<UserProfile>
+
 /// The `UserApi` encapsulates access to a users profile data.
 public class UserApi {
 
@@ -25,7 +27,18 @@ public class UserApi {
             return completion(.failure(FjuulError.invalidConfig))
         }
         apiClient.signedSession.request(url, method: .get).apiResponse { response in
-            let decodedResponse = response.tryMap { try Decoders.yyyyMMdd.decode(UserProfile.self, from: $0) }
+            let decodedResponse = response.tryMap { try Decoders.yyyyMMddLocale.decode(UserProfile.self, from: $0) }
+            completion(decodedResponse.result)
+        }
+    }
+
+    public func updateProfile(profile: PartialUserProfile, completion: @escaping (Result<UserProfile, Error>) -> Void) {
+        let path = "/\(apiClient.userToken)"
+        guard let url = baseUrl?.appendingPathComponent(path) else {
+            return completion(.failure(FjuulError.invalidConfig))
+        }
+        apiClient.signedSession.request(url, method: .put, parameters: profile.asJsonEncodableDictionary(), encoding: JSONEncoding.default).apiResponse { response in
+            let decodedResponse = response.tryMap { try Decoders.yyyyMMddLocale.decode(UserProfile.self, from: $0) }
             completion(decodedResponse.result)
         }
     }
@@ -36,6 +49,7 @@ private var AssociatedObjectHandle: UInt8 = 0
 
 public extension ApiClient {
 
+    static func createUser(baseUrl: String, apiKey: String, profile: UserProfile, completion: @escaping (Result<UserProfile, Error>) -> Void) {
     var user: UserApi {
         if let userApi = objc_getAssociatedObject(self, &AssociatedObjectHandle) as? UserApi {
             return userApi

@@ -1,37 +1,53 @@
 package com.fjuul.sdk.entities;
 
+import android.annotation.SuppressLint;
+
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
+
+import java.io.IOException;
 import java.util.Date;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class SigningKeychain {
-    ConcurrentLinkedDeque<SigningKey> signingKeys;
+    IStorage storage;
+    String lookupKey;
+    JsonAdapter<SigningKey> keyJsonAdapter;
 
-    public SigningKeychain() {
-        this.signingKeys = new ConcurrentLinkedDeque<>();
+    public SigningKeychain(IStorage storage, String userToken) {
+        this.storage = storage;
+        this.lookupKey = String.format("signing-key.%s", userToken);
+        keyJsonAdapter = new Moshi.Builder()
+            .add(Date.class, new Rfc3339DateJsonAdapter())
+            .build()
+            .adapter(SigningKey.class)
+            .nullSafe();
     }
 
-    public SigningKeychain(SigningKey key) {
-        this();
-        signingKeys.add(key);
-    }
-
-    public void appendKey(SigningKey key) {
+    public void setKey(SigningKey key) {
         // TODO: check if the key is valid
-        signingKeys.addFirst(key);
-    }
-
-    public Boolean invalidateKeyById(String id) {
-        Optional<SigningKey> keyToInvalidate = signingKeys.stream().filter(key -> key.getId().equals(id)).findFirst();
-        if (keyToInvalidate.isPresent()) {
-            keyToInvalidate.get().invalidate();
-            return true;
-        } else {
-            return false;
+        if (key == null) {
+            storage.set(lookupKey, null);
+            return;
         }
+        storage.set(lookupKey, keyJsonAdapter.toJson(key));
     }
 
-    public Optional<SigningKey> getFirstValid() {
-        return signingKeys.stream().filter(key -> key.isValid() && key.getExpiresAt().after(new Date())).findFirst();
+    @SuppressLint("NewApi")
+    public Optional<SigningKey> getValidKey() {
+        String rawKeyPresentation = storage.get(lookupKey);
+        if (rawKeyPresentation == null) {
+            return Optional.empty();
+        }
+        try {
+            SigningKey key = keyJsonAdapter.fromJson(storage.get(lookupKey));
+            if (key != null && key.isExpired()) {
+                return Optional.empty();
+            }
+            return Optional.ofNullable(key);
+        } catch (IOException e) {
+            return Optional.empty();
+        }
     }
 }

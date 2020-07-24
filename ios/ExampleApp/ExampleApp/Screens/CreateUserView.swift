@@ -1,4 +1,6 @@
 import SwiftUI
+import FjuulCore
+import FjuulUser
 
 struct CreateUserView: View {
 
@@ -8,7 +10,7 @@ struct CreateUserView: View {
     @State private var birthDate = Date(timeIntervalSince1970: 0)
     @State private var height = 170
     @State private var weight = 80
-    @State private var gender = 0
+    @State private var gender = Gender.other
 
     var body: some View {
 
@@ -22,16 +24,19 @@ struct CreateUserView: View {
                     Text("Weight: \(weight)kg")
                 }
                 Picker(selection: $gender, label: Text("Gender"), content: {
-                    Text("male").tag(0)
-                    Text("female").tag(1)
-                    Text("other").tag(2)
+                    Text("male").tag(Gender.male)
+                    Text("female").tag(Gender.female)
+                    Text("other").tag(Gender.other)
                 })
             }
             Section {
                 Button("Create and apply") {
-                    // TODO actually create user and inject result here
-                    self.userDefaultsManager.token = "foobar"
-                    self.presentation.wrappedValue.dismiss()
+                    let profile = UserProfile(birthDate: self.birthDate, gender: self.gender, height: self.height, weight: self.weight)
+                    ApiClient.createUser(baseUrl: "", apiKey: "", profile: profile) { result in
+                        // TODO actually create user and inject result here
+                        self.userDefaultsManager.token = "foobar"
+                        self.presentation.wrappedValue.dismiss()
+                    }
                 }
             }
         }

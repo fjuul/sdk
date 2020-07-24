@@ -7,6 +7,10 @@ public typealias PartialUserProfile = Partial<UserProfile>
 /// The `UserApi` encapsulates access to a users profile data.
 public class UserApi {
 
+    static public func create(baseUrl: String, apiKey: String, profile: UserProfile, completion: @escaping (Result<UserProfile, Error>) -> Void) {
+        print(profile)
+    }
+
     let apiClient: ApiClient
 
     /// Initializes an `UserApi` instance.
@@ -32,7 +36,7 @@ public class UserApi {
         }
     }
 
-    public func updateProfile(profile: PartialUserProfile, completion: @escaping (Result<UserProfile, Error>) -> Void) {
+    public func updateProfile(_ profile: PartialUserProfile, completion: @escaping (Result<UserProfile, Error>) -> Void) {
         let path = "/\(apiClient.userToken)"
         guard let url = baseUrl?.appendingPathComponent(path) else {
             return completion(.failure(FjuulError.invalidConfig))
@@ -50,6 +54,9 @@ private var AssociatedObjectHandle: UInt8 = 0
 public extension ApiClient {
 
     static func createUser(baseUrl: String, apiKey: String, profile: UserProfile, completion: @escaping (Result<UserProfile, Error>) -> Void) {
+        return UserApi.create(baseUrl: baseUrl, apiKey: apiKey, profile: profile, completion: completion)
+    }
+
     var user: UserApi {
         if let userApi = objc_getAssociatedObject(self, &AssociatedObjectHandle) as? UserApi {
             return userApi

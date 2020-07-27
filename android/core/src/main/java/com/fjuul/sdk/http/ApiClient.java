@@ -1,5 +1,8 @@
 package com.fjuul.sdk.http;
 
+import android.content.Context;
+
+import com.fjuul.sdk.entities.PersistentStorage;
 import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.entities.UserCredentials;
 import com.fjuul.sdk.http.interceptors.ApiKeyAttachingInterceptor;
@@ -44,6 +47,7 @@ public class ApiClient {
     public static class Builder {
         private String baseUrl;
         private String apiKey;
+        private Context appContext;
         private SigningKeychain signingKeychain;
         private UserCredentials userCredentials;
 
@@ -52,22 +56,31 @@ public class ApiClient {
          * @param apiKey the API key.
          */
         // TODO: add the overloaded constructor with an environment parameter
-        public Builder(String baseUrl, String apiKey) {
+        public Builder(Context appContext, String baseUrl, String apiKey) {
+            this.appContext = appContext;
             this.baseUrl = baseUrl;
             this.apiKey = apiKey;
         }
 
+        /**
+         * The method must be invoked if it's planned to build an api-client with an ability of signing requests (it's
+         * very frequent case). An user credentials is needed to issue or refresh signing keys.
+         * @param userCredentials valid user credentials to authenticate an identity.
+         */
         public Builder setUserCredentials(UserCredentials userCredentials) {
             this.userCredentials = userCredentials;
             return this;
         }
 
-        public Builder setSigningKeychain(SigningKeychain keychain) {
+        protected Builder setSigningKeychain(SigningKeychain keychain) {
             this.signingKeychain = keychain;
             return this;
         }
 
         public ApiClient build() {
+            if (appContext != null && userCredentials != null) {
+                setSigningKeychain(new SigningKeychain(new PersistentStorage(appContext), userCredentials.getToken()));
+            }
             return new ApiClient(baseUrl, apiKey, signingKeychain, userCredentials);
         }
     }

@@ -13,6 +13,10 @@ plugins {
     id "com.diffplug.gradle.spotless" version "4.4.0"
 }
 
+ext {
+    okHttpVersion = '3.12.12'
+}
+
 spotless {
     java {
         target fileTree('.') {

@@ -54,6 +54,15 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     // This dependency is exported to consumers, that is to say found on their compile classpath.
     // api 'org.apache.commons:commons-math3:3.6.1'
+    // NOTE: we use okhttp version which supports of api 19
+    // TODO: remove this version constraint when we'll change min api level to 21
+    def okHttpVersion = rootProject.ext.okHttpVersion
+    api ("com.squareup.okhttp3:okhttp"){
+        version {
+            strictly okHttpVersion // API 19 support
+        }
+    }
+    api "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
     api 'com.squareup.retrofit2:retrofit:2.9.0'
     api 'com.squareup.retrofit2:converter-moshi:2.9.0'
     api 'com.squareup.moshi:moshi:1.9.3'
@@ -64,7 +73,7 @@ dependencies {
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.mockito:mockito-core:3.3.+'
-    testImplementation 'com.squareup.okhttp3:mockwebserver:3.14.+'
+    testImplementation "com.squareup.okhttp3:mockwebserver:$okHttpVersion"
     testImplementation 'org.robolectric:robolectric:4.3.1'
     testImplementation 'androidx.test:core:1.2.0'
 

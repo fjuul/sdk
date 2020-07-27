@@ -1,7 +1,7 @@
 import SwiftUI
 import FjuulCore
 
-struct OnboardingView: View {
+struct OnboardingScreen: View {
 
     @EnvironmentObject var userDefaultsManager: UserDefaultsManager
     @ObservedObject var viewRouter: ViewRouter
@@ -27,7 +27,7 @@ struct OnboardingView: View {
                 FloatingTextField(title: "API key", text: $userDefaultsManager.apiKey)
                     .disableAutocorrection(true)
                     .autocapitalization(.none)
-                NavigationLink(destination: CreateUserView()) {
+                NavigationLink(destination: CreateUserScreen()) {
                     Button("Create new user") {}
                 }.disabled(!everythingProvidedForUserCreation)
             }
@@ -60,6 +60,6 @@ struct OnboardingView: View {
 
 struct OnboardingView_Previews: PreviewProvider {
     static var previews: some View {
-        OnboardingView(viewRouter: ViewRouter())
+        OnboardingScreen(viewRouter: ViewRouter())
     }
 }

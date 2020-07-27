@@ -2,7 +2,7 @@ import SwiftUI
 import FjuulCore
 import FjuulUser
 
-struct CreateUserView: View {
+struct CreateUserScreen: View {
 
     @Environment(\.presentationMode) var presentation
     @EnvironmentObject var userDefaultsManager: UserDefaultsManager
@@ -43,6 +43,6 @@ struct CreateUserView: View {
 
 struct CreateUserView_Previews: PreviewProvider {
     static var previews: some View {
-        CreateUserView()
+        CreateUserScreen()
     }
 }

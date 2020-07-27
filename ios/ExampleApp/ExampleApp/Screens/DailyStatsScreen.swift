@@ -38,7 +38,7 @@ class DailyStatsObservable: ObservableObject {
 
 }
 
-struct DailyStatsView: View {
+struct DailyStatsScreen: View {
 
     @ObservedObject var dailyStats = DailyStatsObservable()
 
@@ -68,6 +68,6 @@ struct DailyStatsView: View {
 
 struct DailyStatsView_Previews: PreviewProvider {
     static var previews: some View {
-        DailyStatsView()
+        DailyStatsScreen()
     }
 }

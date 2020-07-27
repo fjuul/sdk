@@ -8,8 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		B3548D5924CAD2C1002F26B9 /* FjuulUser in Frameworks */ = {isa = PBXBuildFile; productRef = B3548D5824CAD2C1002F26B9 /* FjuulUser */; };
-		B3548D5B24CAD320002F26B9 /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3548D5A24CAD320002F26B9 /* UserProfileView.swift */; };
 		B3548D5F24CF0912002F26B9 /* UserProfileForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3548D5E24CF0912002F26B9 /* UserProfileForm.swift */; };
+		B3548D6224CF0F62002F26B9 /* CreateUserScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3548D6024CF0F62002F26B9 /* CreateUserScreen.swift */; };
+		B3548D6324CF0F62002F26B9 /* DailyStatsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3548D6124CF0F62002F26B9 /* DailyStatsScreen.swift */; };
+		B3548D6524CF0F7B002F26B9 /* ModuleSelectionScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3548D6424CF0F7B002F26B9 /* ModuleSelectionScreens.swift */; };
+		B3548D6724CF0F91002F26B9 /* OnboardingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3548D6624CF0F91002F26B9 /* OnboardingScreen.swift */; };
+		B3548D6924CF0FA8002F26B9 /* UserProfileScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3548D6824CF0FA8002F26B9 /* UserProfileScreen.swift */; };
 		B3BB7F1123993EC800A7BEF2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BB7F1023993EC800A7BEF2 /* AppDelegate.swift */; };
 		B3BB7F1323993EC800A7BEF2 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BB7F1223993EC800A7BEF2 /* SceneDelegate.swift */; };
 		B3BB7F1723993ECC00A7BEF2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B3BB7F1623993ECC00A7BEF2 /* Assets.xcassets */; };
@@ -18,13 +22,9 @@
 		B3C683E8248F99730025056E /* FjuulAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = B3C683E7248F99730025056E /* FjuulAnalytics */; };
 		B3C683F2248FADB50025056E /* ExampleAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C683F1248FADB50025056E /* ExampleAppUITests.swift */; };
 		B3FBCDAB24B8AB1200184A88 /* FloatingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDA624B8AB1200184A88 /* FloatingTextField.swift */; };
-		B3FBCDAC24B8AB1200184A88 /* CreateUserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDA824B8AB1200184A88 /* CreateUserView.swift */; };
-		B3FBCDAD24B8AB1200184A88 /* ModuleSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDA924B8AB1200184A88 /* ModuleSelectionView.swift */; };
-		B3FBCDAE24B8AB1200184A88 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDAA24B8AB1200184A88 /* OnboardingView.swift */; };
 		B3FBCDB024B8AB3000184A88 /* ApiEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDAF24B8AB3000184A88 /* ApiEnvironment.swift */; };
 		B3FBCDB224B8AB6200184A88 /* UserDefaultsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDB124B8AB6200184A88 /* UserDefaultsManager.swift */; };
 		B3FBCDB424B8AC7800184A88 /* ApiClientHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDB324B8AC7800184A88 /* ApiClientHolder.swift */; };
-		B3FBCDB624B8B3F400184A88 /* DailyStatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDB524B8B3F400184A88 /* DailyStatsView.swift */; };
 		B3FBCDB824B8BE2F00184A88 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDB724B8BE2F00184A88 /* RootView.swift */; };
 		B3FBCDBA24B8D5A400184A88 /* LazyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDB924B8D5A400184A88 /* LazyView.swift */; };
 		B3FBCDBC24BCAFF300184A88 /* ErrorHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDBB24BCAFF300184A88 /* ErrorHolder.swift */; };
@@ -41,8 +41,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		B3548D5A24CAD320002F26B9 /* UserProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
 		B3548D5E24CF0912002F26B9 /* UserProfileForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileForm.swift; sourceTree = "<group>"; };
+		B3548D6024CF0F62002F26B9 /* CreateUserScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreateUserScreen.swift; sourceTree = "<group>"; };
+		B3548D6124CF0F62002F26B9 /* DailyStatsScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DailyStatsScreen.swift; sourceTree = "<group>"; };
+		B3548D6424CF0F7B002F26B9 /* ModuleSelectionScreens.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModuleSelectionScreens.swift; sourceTree = "<group>"; };
+		B3548D6624CF0F91002F26B9 /* OnboardingScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OnboardingScreen.swift; sourceTree = "<group>"; };
+		B3548D6824CF0FA8002F26B9 /* UserProfileScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserProfileScreen.swift; sourceTree = "<group>"; };
 		B3BB7F0D23993EC800A7BEF2 /* ExampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ExampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B3BB7F1023993EC800A7BEF2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B3BB7F1223993EC800A7BEF2 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -54,13 +58,9 @@
 		B3C683F1248FADB50025056E /* ExampleAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleAppUITests.swift; sourceTree = "<group>"; };
 		B3C683F3248FADB50025056E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B3FBCDA624B8AB1200184A88 /* FloatingTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloatingTextField.swift; sourceTree = "<group>"; };
-		B3FBCDA824B8AB1200184A88 /* CreateUserView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreateUserView.swift; sourceTree = "<group>"; };
-		B3FBCDA924B8AB1200184A88 /* ModuleSelectionView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModuleSelectionView.swift; sourceTree = "<group>"; };
-		B3FBCDAA24B8AB1200184A88 /* OnboardingView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		B3FBCDAF24B8AB3000184A88 /* ApiEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiEnvironment.swift; sourceTree = "<group>"; };
 		B3FBCDB124B8AB6200184A88 /* UserDefaultsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsManager.swift; sourceTree = "<group>"; };
 		B3FBCDB324B8AC7800184A88 /* ApiClientHolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiClientHolder.swift; sourceTree = "<group>"; };
-		B3FBCDB524B8B3F400184A88 /* DailyStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyStatsView.swift; sourceTree = "<group>"; };
 		B3FBCDB724B8BE2F00184A88 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		B3FBCDB924B8D5A400184A88 /* LazyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LazyView.swift; sourceTree = "<group>"; };
 		B3FBCDBB24BCAFF300184A88 /* ErrorHolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorHolder.swift; sourceTree = "<group>"; };
@@ -170,11 +170,11 @@
 		B3FBCDA724B8AB1200184A88 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
-				B3FBCDA824B8AB1200184A88 /* CreateUserView.swift */,
-				B3FBCDB524B8B3F400184A88 /* DailyStatsView.swift */,
-				B3FBCDA924B8AB1200184A88 /* ModuleSelectionView.swift */,
-				B3FBCDAA24B8AB1200184A88 /* OnboardingView.swift */,
-				B3548D5A24CAD320002F26B9 /* UserProfileView.swift */,
+				B3548D6024CF0F62002F26B9 /* CreateUserScreen.swift */,
+				B3548D6124CF0F62002F26B9 /* DailyStatsScreen.swift */,
+				B3548D6424CF0F7B002F26B9 /* ModuleSelectionScreens.swift */,
+				B3548D6624CF0F91002F26B9 /* OnboardingScreen.swift */,
+				B3548D6824CF0FA8002F26B9 /* UserProfileScreen.swift */,
 			);
 			path = Screens;
 			sourceTree = "<group>";
@@ -306,20 +306,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B3548D6924CF0FA8002F26B9 /* UserProfileScreen.swift in Sources */,
 				B3FBCDBA24B8D5A400184A88 /* LazyView.swift in Sources */,
 				B3BB7F1123993EC800A7BEF2 /* AppDelegate.swift in Sources */,
-				B3FBCDAD24B8AB1200184A88 /* ModuleSelectionView.swift in Sources */,
-				B3FBCDAE24B8AB1200184A88 /* OnboardingView.swift in Sources */,
+				B3548D6324CF0F62002F26B9 /* DailyStatsScreen.swift in Sources */,
 				B3FBCDB024B8AB3000184A88 /* ApiEnvironment.swift in Sources */,
 				B3FBCDAB24B8AB1200184A88 /* FloatingTextField.swift in Sources */,
-				B3FBCDAC24B8AB1200184A88 /* CreateUserView.swift in Sources */,
-				B3548D5B24CAD320002F26B9 /* UserProfileView.swift in Sources */,
+				B3548D6724CF0F91002F26B9 /* OnboardingScreen.swift in Sources */,
 				B3FBCDB224B8AB6200184A88 /* UserDefaultsManager.swift in Sources */,
 				B3BB7F1323993EC800A7BEF2 /* SceneDelegate.swift in Sources */,
-				B3FBCDB624B8B3F400184A88 /* DailyStatsView.swift in Sources */,
 				B3FBCDB424B8AC7800184A88 /* ApiClientHolder.swift in Sources */,
 				B3FBCDBC24BCAFF300184A88 /* ErrorHolder.swift in Sources */,
 				B3FBCDB824B8BE2F00184A88 /* RootView.swift in Sources */,
+				B3548D6224CF0F62002F26B9 /* CreateUserScreen.swift in Sources */,
+				B3548D6524CF0F7B002F26B9 /* ModuleSelectionScreens.swift in Sources */,
 				B3548D5F24CF0912002F26B9 /* UserProfileForm.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

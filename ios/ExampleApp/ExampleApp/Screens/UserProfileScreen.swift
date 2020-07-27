@@ -1,7 +1,7 @@
 import SwiftUI
 import FjuulUser
 
-struct UserProfileView: View {
+struct UserProfileScreen: View {
 
     @ObservedObject var userProfile = UserProfileObservable(fetchOnInit: true)
 
@@ -30,6 +30,6 @@ struct UserProfileView: View {
 
 struct UserProfileView_Previews: PreviewProvider {
     static var previews: some View {
-        UserProfileView()
+        UserProfileScreen()
     }
 }

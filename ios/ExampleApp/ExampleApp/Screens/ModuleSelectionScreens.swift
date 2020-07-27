@@ -1,17 +1,17 @@
 import SwiftUI
 
-struct ModuleSelectionView: View {
+struct ModuleSelectionScreens: View {
 
     var body: some View {
 
         Form {
             Section(header: Text("User")){
-                NavigationLink(destination: LazyView(UserProfileView())) {
+                NavigationLink(destination: LazyView(UserProfileScreen())) {
                     Text("Profile")
                 }
             }
             Section(header: Text("Analytics")) {
-                NavigationLink(destination: LazyView(DailyStatsView())) {
+                NavigationLink(destination: LazyView(DailyStatsScreen())) {
                     Text("Daily Statistics")
                 }
             }
@@ -24,6 +24,6 @@ struct ModuleSelectionView: View {
 
 struct ModuleSelectionView_Previews: PreviewProvider {
     static var previews: some View {
-        ModuleSelectionView()
+        ModuleSelectionScreens()
     }
 }

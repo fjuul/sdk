@@ -34,9 +34,11 @@ public class MainActivity extends AppCompatActivity {
         // NOTE: provide your credentials
         String userToken = "<TOKEN>";
         String secret = "<SECRET>";
-        ApiClient client = new ApiClient.Builder("https://dev.api.fjuul.com", "c1e51fc6-d253-4961-ab9a-5d91560bae75")
+        ApiClient client = new ApiClient.Builder(
+            getApplicationContext(),
+            "https://dev.api.fjuul.com",
+            "c1e51fc6-d253-4961-ab9a-5d91560bae75")
             .setUserCredentials(new UserCredentials(userToken, secret))
-            .setSigningKeychain(new SigningKeychain())
             .build();
         AnalyticsService analyticsService = new AnalyticsService(client);
         analyticsService

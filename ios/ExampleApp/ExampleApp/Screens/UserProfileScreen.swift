@@ -1,8 +1,8 @@
 import SwiftUI
-import FjuulUser
 
 struct UserProfileScreen: View {
 
+    @Environment(\.presentationMode) var presentation
     @ObservedObject var userProfile = UserProfileObservable(fetchOnInit: true)
 
     var body: some View {
@@ -13,11 +13,11 @@ struct UserProfileScreen: View {
             }
             Section {
                 Button("Update profile") {
-                    let updatedValues = PartialUserProfile([
-                        \UserProfile.weight: self.userProfile.weight
-                    ])
-                    ApiClientHolder.default.apiClient?.user.updateProfile(updatedValues) { result in
-                        print(result)
+                    self.userProfile.updateUser { result in
+                        switch result {
+                        case .success: self.presentation.wrappedValue.dismiss()
+                        case .failure: break
+                        }
                     }
                 }
             }

@@ -5,7 +5,7 @@ struct ModuleSelectionScreens: View {
     var body: some View {
 
         Form {
-            Section(header: Text("User")){
+            Section(header: Text("User")) {
                 NavigationLink(destination: LazyView(UserProfileScreen())) {
                     Text("Profile")
                 }

@@ -27,7 +27,7 @@ jobs:
     - name: unit tests
       timeout-minutes: 5
       working-directory: ./android
-      run: ./gradlew clean test
+      run: ./gradlew clean testRelease
     - name: build fjuul-sdk for the local maven repo
       working-directory: ./android
       run: ./gradlew publishFjuulSDKPublicationToMavenLocal -PVERSION_NAME=100.0.0-SNAPSHOT

@@ -1,4 +1,5 @@
 import SwiftUI
+import FjuulCore
 import FjuulUser
 
 class UserProfileObservable: ObservableObject {
@@ -46,6 +47,24 @@ class UserProfileObservable: ObservableObject {
         }
     }
 
+    func createNewUser(baseUrl: String, apiKey: String, completion: @escaping (Result<UserCreationResult, Error>) -> Void) {
+        let profileData = PartialUserProfile([
+            \UserProfile.birthDate: self.birthDate,
+            \UserProfile.gender: self.gender,
+            \UserProfile.height: self.height,
+            \UserProfile.weight: self.weight,
+            \UserProfile.timezone: self.timezone,
+            \UserProfile.locale: self.locale
+        ])
+        return ApiClient.createUser(baseUrl: baseUrl, apiKey: apiKey, profile: profileData) { result in
+            switch result {
+            case .success(let creationResult): self.hydrateFromUserProfile(creationResult.user)
+            case .failure(let err): self.error = ErrorHolder(error: err)
+            }
+            completion(result)
+        }
+    }
+
 }
 
 struct UserProfileForm: View {
@@ -73,6 +92,9 @@ struct UserProfileForm: View {
                     .disableAutocorrection(true)
                     .autocapitalization(.none)
             }
+        }
+        .alert(item: $userProfile.error) { holder in
+            Alert(title: Text(holder.error.localizedDescription))
         }
     }
 

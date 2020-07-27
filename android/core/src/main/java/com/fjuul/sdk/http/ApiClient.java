@@ -47,9 +47,9 @@ public class ApiClient {
     public static class Builder {
         private String baseUrl;
         private String apiKey;
-        private Context appContext;
-        private SigningKeychain signingKeychain;
-        private UserCredentials userCredentials;
+        protected Context appContext;
+        protected SigningKeychain signingKeychain;
+        protected UserCredentials userCredentials;
 
         /**
          * @param baseUrl the API base URL to connect to, e.g. `https://api.fjuul.com`.
@@ -72,15 +72,14 @@ public class ApiClient {
             return this;
         }
 
-        protected Builder setSigningKeychain(SigningKeychain keychain) {
-            this.signingKeychain = keychain;
-            return this;
+        protected void setupDefaultSigningKeychain() {
+            if (appContext != null && userCredentials != null) {
+                this.signingKeychain = new SigningKeychain(new PersistentStorage(appContext), userCredentials.getToken());
+            }
         }
 
         public ApiClient build() {
-            if (appContext != null && userCredentials != null) {
-                setSigningKeychain(new SigningKeychain(new PersistentStorage(appContext), userCredentials.getToken()));
-            }
+            setupDefaultSigningKeychain();
             return new ApiClient(baseUrl, apiKey, signingKeychain, userCredentials);
         }
     }

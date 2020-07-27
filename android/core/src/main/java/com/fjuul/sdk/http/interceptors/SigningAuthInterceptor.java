@@ -1,7 +1,5 @@
 package com.fjuul.sdk.http.interceptors;
 
-import android.annotation.SuppressLint;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
@@ -13,6 +11,7 @@ import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.http.services.ISigningService;
 import com.fjuul.sdk.http.utils.RequestSigner;
 
+import android.annotation.SuppressLint;
 import okhttp3.Authenticator;
 import okhttp3.Interceptor;
 import okhttp3.Request;

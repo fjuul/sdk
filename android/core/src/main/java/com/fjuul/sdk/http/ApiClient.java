@@ -1,7 +1,5 @@
 package com.fjuul.sdk.http;
 
-import android.content.Context;
-
 import com.fjuul.sdk.entities.PersistentStorage;
 import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.entities.UserCredentials;
@@ -12,6 +10,7 @@ import com.fjuul.sdk.http.services.ISigningService;
 import com.fjuul.sdk.http.services.UserSigningService;
 import com.fjuul.sdk.http.utils.RequestSigner;
 
+import android.content.Context;
 import okhttp3.OkHttpClient;
 
 /**
@@ -65,6 +64,7 @@ public class ApiClient {
         /**
          * The method must be invoked if it's planned to build an api-client with an ability of signing requests (it's
          * very frequent case). An user credentials is needed to issue or refresh signing keys.
+         * 
          * @param userCredentials valid user credentials to authenticate an identity.
          */
         public Builder setUserCredentials(UserCredentials userCredentials) {
@@ -74,7 +74,8 @@ public class ApiClient {
 
         protected void setupDefaultSigningKeychain() {
             if (appContext != null && userCredentials != null) {
-                this.signingKeychain = new SigningKeychain(new PersistentStorage(appContext), userCredentials.getToken());
+                this.signingKeychain =
+                    new SigningKeychain(new PersistentStorage(appContext), userCredentials.getToken());
             }
         }
 

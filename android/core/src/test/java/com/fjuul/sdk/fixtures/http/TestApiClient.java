@@ -1,6 +1,5 @@
 package com.fjuul.sdk.fixtures.http;
 
-import com.fjuul.sdk.entities.InMemoryStorage;
 import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.http.ApiClient;
 

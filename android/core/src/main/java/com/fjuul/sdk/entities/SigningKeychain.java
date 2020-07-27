@@ -1,14 +1,14 @@
 package com.fjuul.sdk.entities;
 
-import android.annotation.SuppressLint;
+import java.io.IOException;
+import java.util.Date;
+import java.util.Optional;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
-import java.io.IOException;
-import java.util.Date;
-import java.util.Optional;
+import android.annotation.SuppressLint;
 
 public class SigningKeychain {
     IStorage storage;
@@ -18,8 +18,7 @@ public class SigningKeychain {
     public SigningKeychain(IStorage storage, String userToken) {
         this.storage = storage;
         this.lookupKey = String.format("signing-key.%s", userToken);
-        keyJsonAdapter = new Moshi.Builder()
-            .add(Date.class, new Rfc3339DateJsonAdapter())
+        keyJsonAdapter = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter())
             .build()
             .adapter(SigningKey.class)
             .nullSafe();

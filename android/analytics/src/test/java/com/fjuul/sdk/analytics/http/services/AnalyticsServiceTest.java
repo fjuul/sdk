@@ -1,7 +1,5 @@
 package com.fjuul.sdk.analytics.http.services;
 
-import android.os.Build;
-
 import static org.junit.Assert.*;
 
 import java.io.IOException;
@@ -27,11 +25,12 @@ import com.fjuul.sdk.http.services.ISigningService;
 import com.fjuul.sdk.http.services.UserSigningService;
 import com.fjuul.sdk.http.utils.ApiCallResult;
 
+import android.os.Build;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest= Config.NONE, sdk = {Build.VERSION_CODES.P})
+@Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
 public class AnalyticsServiceTest {
     static final String SECRET_KEY = "REAL_SECRET_KEY";
     static final String KEY_ID = "signing-key-id-1234";

@@ -1,7 +1,5 @@
 package com.fjuul.sdk.http.utils;
 
-import android.os.Build;
-
 import static org.junit.Assert.*;
 
 import java.time.Clock;
@@ -18,6 +16,7 @@ import org.robolectric.annotation.Config;
 
 import com.fjuul.sdk.entities.SigningKey;
 
+import android.os.Build;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -28,8 +27,9 @@ public class RequestSignerTest {
     static final String KEY_ID = "signing-key-id-1234";
 
     @RunWith(RobolectricTestRunner.class)
-    @Config(manifest= Config.NONE, sdk = {Build.VERSION_CODES.P})
-    public abstract static class GivenRobolectricContext {}
+    @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+    public abstract static class GivenRobolectricContext {
+    }
 
     public static class RequestWithoutDigestTest extends GivenRobolectricContext {
         Clock fixedClock;

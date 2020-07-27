@@ -12,18 +12,18 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import android.util.Base64;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.fjuul.sdk.entities.SigningKey;
 
+import android.annotation.SuppressLint;
+import android.util.Base64;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okio.Buffer;
 
-// TODO: Clock is available since android api 26, find a way to launch on earlier versions
 public class RequestSigner {
     Clock clock;
 
@@ -31,6 +31,7 @@ public class RequestSigner {
         this.clock = clock;
     }
 
+    @SuppressLint("NewApi")
     public RequestSigner() {
         this.clock = Clock.systemUTC();
     }
@@ -52,8 +53,11 @@ public class RequestSigner {
 
         String requestTargetPart = String.format("(request-target): %s", encodedRequestTargetBuilder.toString());
 
+        @SuppressLint({"NewApi", "LocalSuppress"})
         Instant instant = Instant.now(clock);
+        @SuppressLint({"NewApi", "LocalSuppress"})
         OffsetDateTime offset = instant.atOffset(ZoneOffset.UTC);
+        @SuppressLint({"NewApi", "LocalSuppress"})
         String formattedDate = offset.format(DateTimeFormatter.RFC_1123_DATE_TIME);
         // TODO: assign date format to headers (check if retrofit do it by default) ?
         signedRequestBuilder.header("Date", formattedDate);

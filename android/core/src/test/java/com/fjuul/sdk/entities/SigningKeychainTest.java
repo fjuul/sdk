@@ -1,13 +1,5 @@
 package com.fjuul.sdk.entities;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.Build;
-
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
-import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
-
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.text.IsEmptyString.isEmptyString;
 import static org.junit.Assert.*;
@@ -17,8 +9,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
 
-import org.hamcrest.core.IsNot;
-import org.hamcrest.text.IsEmptyString;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -26,6 +16,13 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 
 @RunWith(Enclosed.class)
@@ -53,8 +50,7 @@ public class SigningKeychainTest {
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.MINUTE, -1);
             Date expiresAt = calendar.getTime();
-            storage.set(
-                "signing-key." + DUMMY_USER_TOKEN,
+            storage.set("signing-key." + DUMMY_USER_TOKEN,
                 keyJsonAdapter.toJson(new SigningKey("key-id", "REAL_SECRET", expiresAt)));
             assertFalse("returns empty optional", keychain.getValidKey().isPresent());
         }
@@ -79,9 +75,7 @@ public class SigningKeychainTest {
             Date expiresAt = calendar.getTime();
             SigningKey key = new SigningKey("key-id", "REAL_SECRET", expiresAt);
             keychain.setKey(key);
-            assertThat(
-                "saves signing key in the storage",
-                storage.get("signing-key." + DUMMY_USER_TOKEN),
+            assertThat("saves signing key in the storage", storage.get("signing-key." + DUMMY_USER_TOKEN),
                 not(isEmptyString()));
             SigningKey savedKey = keyJsonAdapter.fromJson(storage.get("signing-key." + DUMMY_USER_TOKEN));
             assertEquals(key.getId(), savedKey.getId());
@@ -91,7 +85,7 @@ public class SigningKeychainTest {
     }
 
     @RunWith(RobolectricTestRunner.class)
-    @Config(manifest= Config.NONE, sdk = {Build.VERSION_CODES.P})
+    @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
     public static class WithPersistentStorage {
         PersistentStorage storage;
         SigningKeychain keychain;
@@ -110,9 +104,9 @@ public class SigningKeychainTest {
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.MINUTE, -1);
             Date expiresAt = calendar.getTime();
-            preferences.edit().putString(
-                "signing-key." + DUMMY_USER_TOKEN,
-                keyJsonAdapter.toJson(new SigningKey("key-id", "REAL_SECRET", expiresAt)))
+            preferences.edit()
+                .putString("signing-key." + DUMMY_USER_TOKEN,
+                    keyJsonAdapter.toJson(new SigningKey("key-id", "REAL_SECRET", expiresAt)))
                 .commit();
             assertFalse("returns empty optional", keychain.getValidKey().isPresent());
         }
@@ -138,10 +132,8 @@ public class SigningKeychainTest {
             SigningKey key = new SigningKey("key-id", "REAL_SECRET", expiresAt);
             keychain.setKey(key);
 
-            assertThat(
-                "saves signing key in the shared prefs",
-                preferences.getString("signing-key." + DUMMY_USER_TOKEN, null),
-                not(isEmptyString()));
+            assertThat("saves signing key in the shared prefs",
+                preferences.getString("signing-key." + DUMMY_USER_TOKEN, null), not(isEmptyString()));
             SigningKey savedKey = keyJsonAdapter.fromJson(storage.get("signing-key." + DUMMY_USER_TOKEN));
             assertEquals(key.getId(), savedKey.getId());
             assertEquals(key.getSecret(), savedKey.getSecret());

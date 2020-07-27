@@ -19,6 +19,7 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.fjuul.sdk.entities.InMemoryStorage;
 import com.fjuul.sdk.entities.SigningKey;
 import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.http.services.UserSigningService;
@@ -36,6 +37,7 @@ import okhttp3.mockwebserver.RecordedRequest;
 import retrofit2.Response;
 
 public class SigningAuthInterceptorTest {
+    static final String USER_TOKEN = "USER_TOKEN";
 
     @Test
     public void intercept_EmptyKeychainWithFailedIssueResult_returnIssueResponse() throws Exception {
@@ -43,7 +45,7 @@ public class SigningAuthInterceptorTest {
         mockWebServer.start();
         mockWebServer.enqueue(new MockResponse());
 
-        SigningKeychain testKeychain = new SigningKeychain();
+        SigningKeychain testKeychain = new SigningKeychain(new InMemoryStorage(), USER_TOKEN);
         UserSigningService mockedSigningService = mock(UserSigningService.class, Mockito.RETURNS_DEEP_STUBS);
         Request outboundRequest = new Request.Builder().url(mockWebServer.url("/sdk/v1/analytics")).build();
         okhttp3.Response incomingRawResponse =
@@ -79,8 +81,9 @@ public class SigningAuthInterceptorTest {
         mockWebServer.start();
         mockWebServer.enqueue(new MockResponse());
 
-        SigningKey testExpiredSigningKey = new SigningKey("expired-key-id", "TOP_SECRET", new Date(), false);
-        SigningKeychain testKeychain = new SigningKeychain(testExpiredSigningKey);
+        SigningKey testExpiredSigningKey = new SigningKey("expired-key-id", "TOP_SECRET", new Date());
+        SigningKeychain testKeychain = new SigningKeychain(new InMemoryStorage(), USER_TOKEN);
+        testKeychain.setKey(testExpiredSigningKey);
 
         SigningKey newValidSigningKey = new SigningKey("valid-key-id", "TOP_SECRET1", new Date());
         UserSigningService mockedSigningService = mock(UserSigningService.class, Mockito.RETURNS_DEEP_STUBS);
@@ -107,7 +110,7 @@ public class SigningAuthInterceptorTest {
 
         MockWebServer mockWebServer = new MockWebServer();
         mockWebServer.start();
-        SigningKeychain testKeychain = new SigningKeychain();
+        SigningKeychain testKeychain = new SigningKeychain(new InMemoryStorage(), USER_TOKEN);
 
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.HOUR, 2);
@@ -165,7 +168,8 @@ public class SigningAuthInterceptorTest {
         Date expiresAt = calendar.getTime();
 
         SigningKey signingKey = new SigningKey("previous-key-id", "TOP_SECRET", expiresAt);
-        SigningKeychain testKeychain = new SigningKeychain(signingKey);
+        SigningKeychain testKeychain = new SigningKeychain(new InMemoryStorage(), USER_TOKEN);
+        testKeychain.setKey(signingKey);
 
         UserSigningService mockedSigningService = mock(UserSigningService.class, Mockito.RETURNS_DEEP_STUBS);
         SigningKey newValidSigningKey = new SigningKey("valid-key-id", "TOP_SECRET1", expiresAt);

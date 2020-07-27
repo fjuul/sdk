@@ -1,5 +1,7 @@
 package com.fjuul.sdk.http.interceptors;
 
+import android.os.Build;
+
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -17,7 +19,10 @@ import java.util.stream.IntStream;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import com.fjuul.sdk.entities.InMemoryStorage;
 import com.fjuul.sdk.entities.SigningKey;
@@ -36,6 +41,8 @@ import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import retrofit2.Response;
 
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest= Config.NONE, sdk = {Build.VERSION_CODES.P})
 public class SigningAuthInterceptorTest {
     static final String USER_TOKEN = "USER_TOKEN";
 

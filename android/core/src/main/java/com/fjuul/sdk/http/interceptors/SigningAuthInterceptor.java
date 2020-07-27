@@ -1,5 +1,7 @@
 package com.fjuul.sdk.http.interceptors;
 
+import android.annotation.SuppressLint;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
@@ -30,22 +32,23 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
         this.signingService = signingService;
     }
 
+    @SuppressLint("NewApi")
     @Override
     public Response intercept(Chain chain) throws IOException {
         // TODO: handle case when current valid signing key was expired already
-        Optional<SigningKey> keyOptional = this.keychain.getFirstValid();
+        Optional<SigningKey> keyOptional = this.keychain.getValidKey();
         SigningKey signingKey = null;
         if (!keyOptional.isPresent()) {
             // need to request a new signing key
             synchronized (this) {
                 // double check if we have now new signing key
-                keyOptional = this.keychain.getFirstValid();
+                keyOptional = this.keychain.getValidKey();
                 // if still no valid key => request new one
                 if (!keyOptional.isPresent()) {
                     retrofit2.Response<SigningKey> newKeyResponse = issueNewKey();
                     if (newKeyResponse.isSuccessful()) {
                         SigningKey newKey = newKeyResponse.body();
-                        keychain.appendKey(newKey);
+                        keychain.setKey(newKey);
                         signingKey = newKey;
                     } else {
                         // return response of a request of the signing key to infer http error
@@ -62,6 +65,7 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
         return chain.proceed(signedRequest);
     }
 
+    @SuppressLint("NewApi")
     @Override
     public Request authenticate(Route route, Response response) throws IOException {
         // give up if retry count is more than 1
@@ -83,7 +87,7 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
         synchronized (this) {
             // NOTE: double check if we have now new signing key
             // (it could be possible since this code block is synchronized)
-            Optional<SigningKey> keyOptional = this.keychain.getFirstValid();
+            Optional<SigningKey> keyOptional = this.keychain.getValidKey();
             Matcher matcher = signatureHeaderKeyIdPattern.matcher(request.header("Signature"));
             matcher.find();
             String keyIdMatch = matcher.group(1);
@@ -91,12 +95,11 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
                 SigningKey key = keyOptional.get();
                 return requestSigner.signRequestByKey(response.request(), key);
             }
-            // if still no valid key => invalidate current one and request new one
-            keychain.invalidateKeyById(keyIdMatch);
+            // if still no valid key => request new one
             retrofit2.Response<SigningKey> newKeyResponse = issueNewKey();
             if (newKeyResponse.isSuccessful()) {
                 SigningKey newKey = newKeyResponse.body();
-                keychain.appendKey(newKey);
+                keychain.setKey(newKey);
                 return requestSigner.signRequestByKey(response.request(), newKey);
             } else {
                 return null;

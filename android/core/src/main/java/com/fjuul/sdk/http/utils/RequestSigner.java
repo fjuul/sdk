@@ -12,7 +12,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Base64;
+import android.util.Base64;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -91,7 +91,7 @@ public class RequestSigner {
 
         byte[] stringBodyBytes = RequestSigner.requestBodyToString(body).getBytes(StandardCharsets.UTF_8);
         byte[] hashedBodyBytes = digest.digest(stringBodyBytes);
-        String encodedDigest = Base64.getEncoder().encodeToString(hashedBodyBytes);
+        String encodedDigest = Base64.encodeToString(hashedBodyBytes, Base64.NO_WRAP);
         return encodedDigest;
     }
 
@@ -120,8 +120,7 @@ public class RequestSigner {
             SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "HmacSHA256");
             sha256HMAC.init(secretKeySpec);
             final byte[] signatureBytes = sha256HMAC.doFinal(string.getBytes(StandardCharsets.UTF_8));
-            final Base64.Encoder encoder = Base64.getEncoder();
-            final String result = new String(encoder.encode(signatureBytes), "UTF-8");
+            final String result = new String(Base64.encode(signatureBytes, Base64.NO_WRAP), "UTF-8");
             return result;
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);

@@ -1,7 +1,6 @@
 package com.fjuul.sdk.entities;
 
-// TODO: get back android's base64 module after turning this plugin to the android plugin
-import java.util.Base64;
+import android.util.Base64;
 
 // NOTE: this class was copied from the previous sdk
 public class UserCredentials {
@@ -41,7 +40,7 @@ public class UserCredentials {
      */
     public String encodedBase64() {
         String together = token + ":" + secret;
-        return Base64.getEncoder().encodeToString(together.getBytes());
+        return Base64.encodeToString(together.getBytes(), Base64.NO_WRAP);
     }
 
     @Override

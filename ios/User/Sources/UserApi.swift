@@ -7,8 +7,19 @@ public typealias PartialUserProfile = Partial<UserProfile>
 /// The `UserApi` encapsulates access to a users profile data.
 public class UserApi {
 
-    static public func create(baseUrl: String, apiKey: String, profile: UserProfile, completion: @escaping (Result<UserProfile, Error>) -> Void) {
-        print(profile)
+    static public func create(baseUrl: String, apiKey: String, profile: PartialUserProfile, completion: @escaping (Result<UserCreationResult, Error>) -> Void) {
+        let maybeUrl = URL(string: baseUrl)?.appendingPathComponent("sdk/users/v1/")
+        guard let url = maybeUrl else {
+            return completion(.failure(FjuulError.invalidConfig))
+        }
+        var profileData = profile
+        // TODO only set those when not already provided
+        profileData[\.timezone] = TimeZone.current.identifier
+        profileData[\.locale] = "de"
+        ApiClient.requestUnauthenticated(url, apiKey: apiKey, method: .post, parameters: profileData.asJsonEncodableDictionary(), encoding: JSONEncoding.default).apiResponse { response in
+            let decodedResponse = response.tryMap { try Decoders.yyyyMMddLocale.decode(UserCreationResult.self, from: $0) }
+            return completion(decodedResponse.result)
+        }
     }
 
     let apiClient: ApiClient
@@ -53,7 +64,7 @@ private var AssociatedObjectHandle: UInt8 = 0
 
 public extension ApiClient {
 
-    static func createUser(baseUrl: String, apiKey: String, profile: UserProfile, completion: @escaping (Result<UserProfile, Error>) -> Void) {
+    static func createUser(baseUrl: String, apiKey: String, profile: PartialUserProfile, completion: @escaping (Result<UserCreationResult, Error>) -> Void) {
         return UserApi.create(baseUrl: baseUrl, apiKey: apiKey, profile: profile, completion: completion)
     }
 

@@ -9,20 +9,13 @@ public enum Gender: String, Codable {
 
 public struct UserProfile: Codable {
 
+    public let token: String
     public let birthDate: Date
     public let gender: Gender
     public let height: Int
     public let weight: Int
     public let timezone: String
-    //public let locale: String
-
-    public init(birthDate: Date, gender: Gender, height: Int, weight: Int, timezone: TimeZone = TimeZone.current) {
-        self.birthDate = birthDate
-        self.gender = gender
-        self.height = height
-        self.weight = weight
-        self.timezone = timezone.identifier
-    }
+    public let locale: String?
 
 }
 
@@ -35,6 +28,7 @@ extension UserProfile: PartiallyEncodable {
         case \UserProfile.height: return "height"
         case \UserProfile.weight: return "weight"
         case \UserProfile.timezone: return "timezone"
+        case \UserProfile.locale: return "locale"
         default: return nil
         }
     }

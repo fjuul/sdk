@@ -31,10 +31,20 @@ struct CreateUserView: View {
             }
             Section {
                 Button("Create and apply") {
-                    let profile = UserProfile(birthDate: self.birthDate, gender: self.gender, height: self.height, weight: self.weight)
-                    ApiClient.createUser(baseUrl: "", apiKey: "", profile: profile) { result in
-                        // TODO actually create user and inject result here
-                        self.userDefaultsManager.token = "foobar"
+                    let profile = PartialUserProfile([
+                        \UserProfile.birthDate: self.birthDate,
+                        \UserProfile.gender: self.gender,
+                        \UserProfile.height: self.height,
+                        \UserProfile.weight: self.weight
+                    ])
+                    ApiClient.createUser(baseUrl: self.userDefaultsManager.environment.baseUrl, apiKey: self.userDefaultsManager.apiKey, profile: profile) { result in
+                        switch result {
+                        case .success(let user):
+                            print(user)
+                            self.userDefaultsManager.token = user.user.token
+                            self.userDefaultsManager.secret = user.secret
+                        case .failure(let err): print(err)
+                        }
                         self.presentation.wrappedValue.dismiss()
                     }
                 }

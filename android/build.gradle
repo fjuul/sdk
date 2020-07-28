@@ -42,6 +42,21 @@ spotless {
     }
 }
 
+configure(subprojects) {
+    apply plugin: 'com.android.library'
+    android {
+        lintOptions {
+            enable 'Interoperability'
+            // Interoperability issues
+            error 'UnknownNullness', 'NoHardKeywords', 'LambdaLast', 'KotlinPropertyAccess'
+            explainIssues true
+            textReport true
+        }
+    }
+}
+
+
+
 allprojects {
     tasks.withType(Test) {
         testLogging {

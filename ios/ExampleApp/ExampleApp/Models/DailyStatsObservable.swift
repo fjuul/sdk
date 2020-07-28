@@ -20,13 +20,9 @@ class DailyStatsObservable: ObservableObject {
     }
 
     func fetch(_ fromDate: Date, _ toDate: Date) {
-        guard let apiClient = ApiClientHolder.default.apiClient else {
-            print("no api client initialized")
-            return
-        }
         self.value = []
         self.isLoading = true
-        apiClient.analytics.dailyStats(from: fromDate, to: toDate) { result in
+        ApiClientHolder.default.apiClient?.analytics.dailyStats(from: fromDate, to: toDate) { result in
             self.isLoading = false
             switch result {
             case .success(let dailyStats):

@@ -14,7 +14,7 @@ public class UserApi {
         }
         var profileData = profile
         // TODO only set those when not already provided
-        profileData[\.timezone] = TimeZone.current.identifier
+        profileData[\.timezone] = TimeZone.current
         profileData[\.locale] = "de"
         ApiClient.requestUnauthenticated(url, apiKey: apiKey, method: .post, parameters: profileData.asJsonEncodableDictionary(), encoding: JSONEncoding.default).apiResponse { response in
             let decodedResponse = response.tryMap { try Decoders.yyyyMMddLocale.decode(UserCreationResult.self, from: $0) }

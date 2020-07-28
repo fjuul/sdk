@@ -14,8 +14,24 @@ public struct UserProfile: Codable {
     public let gender: Gender
     public let height: Int
     public let weight: Int
-    public let timezone: String
+    public var timezone: TimeZone {
+        get {
+            return TimeZone(identifier: _timezone)!
+        }
+    }
     public let locale: String?
+
+    enum CodingKeys: String, CodingKey {
+        case token
+        case birthDate
+        case gender
+        case height
+        case weight
+        case _timezone = "timezone"
+        case locale
+    }
+
+    private var _timezone: String
 
 }
 
@@ -37,6 +53,7 @@ extension UserProfile: PartiallyEncodable {
         switch key {
         case \UserProfile.birthDate: return DateFormatters.yyyyMMddLocale.string(from: value[\.birthDate]!)
         case \UserProfile.gender: return value[\.gender]!.rawValue
+        case \UserProfile.timezone: return value[\.timezone]!.identifier
         default: return value[key]!
         }
     }

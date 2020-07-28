@@ -29,7 +29,7 @@ class UserProfileObservable: ObservableObject {
         self.height = profile.height
         self.weight = profile.weight
         self.gender = profile.gender
-        self.timezone = profile.timezone
+        self.timezone = profile.timezone.identifier
         self.locale = profile.locale
     }
 
@@ -47,15 +47,14 @@ class UserProfileObservable: ObservableObject {
         if self.gender != originalProfile?.gender {
             result[\UserProfile.gender] = self.gender
         }
+        if self.timezone != originalProfile?.timezone.identifier {
+            result[\UserProfile.timezone] = TimeZone(identifier: self.timezone)
+        }
         return result
     }
 
     func fetch() {
-        guard let apiClient = ApiClientHolder.default.apiClient else {
-            print("no api client initialized")
-            return
-        }
-        apiClient.user.getProfile { result in
+        ApiClientHolder.default.apiClient?.user.getProfile { result in
             switch result {
             case .success(let profile): self.hydrateFromUserProfile(profile)
             case .failure(let err): self.error = ErrorHolder(error: err)
@@ -82,11 +81,7 @@ class UserProfileObservable: ObservableObject {
     }
 
     func updateUser(completion: @escaping (Result<UserProfile, Error>) -> Void) {
-        guard let apiClient = ApiClientHolder.default.apiClient else {
-            print("no api client initialized")
-            return
-        }
-        apiClient.user.updateProfile(self.getDirtyFields()) { result in
+        ApiClientHolder.default.apiClient?.user.updateProfile(self.getDirtyFields()) { result in
             switch result {
             case .success(let profile): self.hydrateFromUserProfile(profile)
             case .failure(let err): self.error = ErrorHolder(error: err)

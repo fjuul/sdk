@@ -13,26 +13,26 @@ plugins {
     id "com.diffplug.gradle.spotless" version "4.4.0"
 }
 
- spotless {
-     java {
-         target fileTree('.') {
-             include '**/*.java'
-         }
-         // licenseHeaderFile project.rootProject.file('spotless/copyright.java')
+spotless {
+    java {
+        target fileTree('.') {
+            include '**/*.java'
+        }
+        // licenseHeaderFile project.rootProject.file('spotless/copyright.java')
 
-         // optional: you can specify a specific version and/or config file
-         eclipse('4.13.0').configFile('eclipse-java-google-style.xml')
-         removeUnusedImports()
-         importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''	// A sequence of package names
-     }
-     groovyGradle {
-         target fileTree('.') {
-             include '**/*.gradle'
-         }
-         greclipse()
-         indentWithSpaces(4)
-     }
- }
+        // optional: you can specify a specific version and/or config file
+        eclipse('4.13.0').configFile('eclipse-java-google-style.xml')
+        removeUnusedImports()
+        importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''	// A sequence of package names
+    }
+    groovyGradle {
+        target fileTree('.') {
+            include '**/*.gradle'
+        }
+        greclipse()
+        indentWithSpaces(4)
+    }
+}
 
 allprojects {
     tasks.withType(Test) {
@@ -42,7 +42,12 @@ allprojects {
             showExceptions true
             showStackTraces true
             showStandardStreams true
-            events = ["passed", "skipped", "failed", "standardOut"]
+            events = [
+                "passed",
+                "skipped",
+                "failed",
+                "standardOut"
+            ]
         }
     }
 }

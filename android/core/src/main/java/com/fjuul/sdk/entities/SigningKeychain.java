@@ -10,12 +10,14 @@ import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
 import android.annotation.SuppressLint;
 
+import androidx.annotation.NonNull;
+
 public class SigningKeychain {
     IStorage storage;
     String lookupKey;
     JsonAdapter<SigningKey> keyJsonAdapter;
 
-    public SigningKeychain(IStorage storage, String userToken) {
+    public SigningKeychain(@NonNull IStorage storage, @NonNull String userToken) {
         this.storage = storage;
         this.lookupKey = String.format("signing-key.%s", userToken);
         keyJsonAdapter = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter())
@@ -24,7 +26,7 @@ public class SigningKeychain {
             .nullSafe();
     }
 
-    public void setKey(SigningKey key) {
+    public void setKey(@NonNull SigningKey key) {
         // TODO: check if the key is valid
         if (key == null) {
             storage.set(lookupKey, null);
@@ -34,6 +36,7 @@ public class SigningKeychain {
     }
 
     @SuppressLint("NewApi")
+    @NonNull
     public Optional<SigningKey> getValidKey() {
         String rawKeyPresentation = storage.get(lookupKey);
         if (rawKeyPresentation == null) {

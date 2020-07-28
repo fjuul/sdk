@@ -11,6 +11,9 @@ import com.fjuul.sdk.http.services.UserSigningService;
 import com.fjuul.sdk.http.utils.RequestSigner;
 
 import android.content.Context;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import okhttp3.OkHttpClient;
 
 /**
@@ -46,16 +49,16 @@ public class ApiClient {
     public static class Builder {
         private String baseUrl;
         private String apiKey;
-        protected Context appContext;
-        protected SigningKeychain signingKeychain;
-        protected UserCredentials userCredentials;
+        protected @NonNull Context appContext;
+        protected @Nullable SigningKeychain signingKeychain;
+        protected @Nullable UserCredentials userCredentials;
 
         /**
          * @param baseUrl the API base URL to connect to, e.g. `https://api.fjuul.com`.
          * @param apiKey the API key.
          */
         // TODO: add the overloaded constructor with an environment parameter
-        public Builder(Context appContext, String baseUrl, String apiKey) {
+        public Builder(@NonNull Context appContext, @NonNull String baseUrl, @NonNull String apiKey) {
             this.appContext = appContext;
             this.baseUrl = baseUrl;
             this.apiKey = apiKey;
@@ -64,10 +67,10 @@ public class ApiClient {
         /**
          * The method must be invoked if it's planned to build an api-client with an ability of signing requests (it's
          * very frequent case). An user credentials is needed to issue or refresh signing keys.
-         * 
+         *
          * @param userCredentials valid user credentials to authenticate an identity.
          */
-        public Builder setUserCredentials(UserCredentials userCredentials) {
+        public @NonNull Builder setUserCredentials(@NonNull UserCredentials userCredentials) {
             this.userCredentials = userCredentials;
             return this;
         }
@@ -79,24 +82,24 @@ public class ApiClient {
             }
         }
 
-        public ApiClient build() {
+        public @NonNull ApiClient build() {
             setupDefaultSigningKeychain();
             return new ApiClient(baseUrl, apiKey, signingKeychain, userCredentials);
         }
     }
 
-    public String getBaseUrl() {
+    public @NonNull String getBaseUrl() {
         return baseUrl;
     }
 
-    public String getUserToken() {
+    public @NonNull String getUserToken() {
         if (userCredentials == null) {
             throw new IllegalStateException("The builder needed user credentials");
         }
         return userCredentials.getToken();
     }
 
-    public OkHttpClient buildSigningClient(ISigningService signingService) {
+    public @NonNull OkHttpClient buildSigningClient(@NonNull ISigningService signingService) {
         OkHttpClient client = new OkHttpClient().newBuilder()
             .addInterceptor(new ApiKeyAttachingInterceptor(apiKey))
             .addInterceptor(getOrCreateSigningAuthInterceptor(signingService))
@@ -105,14 +108,14 @@ public class ApiClient {
         return client;
     }
 
-    public OkHttpClient buildSigningClient() {
+    public @NonNull OkHttpClient buildSigningClient() {
         if (userCredentials == null) {
             throw new IllegalStateException("The builder needed user credentials to build a signing client");
         }
         return buildSigningClient(new UserSigningService(this));
     }
 
-    public OkHttpClient buildUserAuthorizedClient() {
+    public @NonNull OkHttpClient buildUserAuthorizedClient() {
         if (userCredentials == null) {
             throw new IllegalStateException("The builder needed user credentials to build an authenticated client");
         }
@@ -124,7 +127,7 @@ public class ApiClient {
     }
 
     // TODO: consider moving this code to the builder class (share the same instance of the interceptor/authenticator)
-    protected SigningAuthInterceptor getOrCreateSigningAuthInterceptor(ISigningService signingService) {
+    protected @NonNull SigningAuthInterceptor getOrCreateSigningAuthInterceptor(@NonNull ISigningService signingService) {
         if (signingAuthInterceptor == null) {
             signingAuthInterceptor = new SigningAuthInterceptor(userKeychain, new RequestSigner(), signingService);
         }

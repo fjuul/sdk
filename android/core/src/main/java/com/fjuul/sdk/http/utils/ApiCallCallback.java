@@ -1,6 +1,8 @@
 package com.fjuul.sdk.http.utils;
 
 
+import androidx.annotation.NonNull;
+
 /**
  * Communicates responses from a server or offline requests.
  *
@@ -20,5 +22,5 @@ public interface ApiCallCallback<T> {
     /**
      * Invoked for a received result.
      */
-    public void onResult(ApiCall<T> call, ApiCallResult<T> result);
+    public void onResult(@NonNull ApiCall<T> call, @NonNull ApiCallResult<T> result);
 }

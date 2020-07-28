@@ -12,6 +12,8 @@ import com.fjuul.sdk.http.services.ISigningService;
 import com.fjuul.sdk.http.utils.RequestSigner;
 
 import android.annotation.SuppressLint;
+
+import androidx.annotation.NonNull;
 import okhttp3.Authenticator;
 import okhttp3.Interceptor;
 import okhttp3.Request;
@@ -24,14 +26,15 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
     private ISigningService signingService;
     private final Pattern signatureHeaderKeyIdPattern = Pattern.compile("keyId=\"(.+?)\"");
 
-    public SigningAuthInterceptor(SigningKeychain keychain, RequestSigner requestSigner,
-        ISigningService signingService) {
+    public SigningAuthInterceptor(@NonNull SigningKeychain keychain,
+                                  @NonNull RequestSigner requestSigner,
+                                  @NonNull ISigningService signingService) {
         this.keychain = keychain;
         this.requestSigner = requestSigner;
         this.signingService = signingService;
     }
 
-    @SuppressLint("NewApi")
+    @SuppressLint({"NewApi", "UnknownNullness"})
     @Override
     public Response intercept(Chain chain) throws IOException {
         // TODO: handle case when current valid signing key was expired already
@@ -64,7 +67,7 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
         return chain.proceed(signedRequest);
     }
 
-    @SuppressLint("NewApi")
+    @SuppressLint({"NewApi", "UnknownNullness"})
     @Override
     public Request authenticate(Route route, Response response) throws IOException {
         // give up if retry count is more than 1

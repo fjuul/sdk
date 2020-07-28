@@ -3,15 +3,16 @@ package com.fjuul.sdk.analytics.http.apis;
 import com.fjuul.sdk.analytics.entities.DailyStats;
 import com.fjuul.sdk.http.utils.ApiCall;
 
+import androidx.annotation.NonNull;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface AnalyticsApi {
     @GET("/sdk/analytics/v1/daily-stats/{userToken}/{date}")
-    ApiCall<DailyStats> getDailyStats(@Path("userToken") String userToken, @Path("date") String date);
+    @NonNull ApiCall<DailyStats> getDailyStats(@Path("userToken") @NonNull String userToken, @Path("date") @NonNull String date);
 
     @GET("/sdk/analytics/v1/daily-stats/{userToken}")
-    ApiCall<DailyStats[]> getDailyStats(@Path("userToken") String userToken, @Query("startDate") String startDate,
-        @Query("endDate") String endDate);
+    @NonNull ApiCall<DailyStats[]> getDailyStats(@Path("userToken") @NonNull String userToken, @Query("startDate") @NonNull String startDate,
+        @Query("endDate") @NonNull String endDate);
 }

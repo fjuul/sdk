@@ -20,6 +20,8 @@ import com.fjuul.sdk.entities.SigningKey;
 
 import android.annotation.SuppressLint;
 import android.util.Base64;
+
+import androidx.annotation.NonNull;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okio.Buffer;
@@ -27,7 +29,7 @@ import okio.Buffer;
 public class RequestSigner {
     Clock clock;
 
-    public RequestSigner(Clock clock) {
+    public RequestSigner(@NonNull Clock clock) {
         this.clock = clock;
     }
 
@@ -36,7 +38,8 @@ public class RequestSigner {
         this.clock = Clock.systemUTC();
     }
 
-    public Request signRequestByKey(Request request, SigningKey key) {
+    @NonNull
+    public Request signRequestByKey(@NonNull Request request, @NonNull SigningKey key) {
         Request.Builder signedRequestBuilder = request.newBuilder();
         String checkingRequestHeaders =
             this.isRequestWithDigestChecking(request) ? "(request-target) date digest" : "(request-target) date";
@@ -99,7 +102,7 @@ public class RequestSigner {
         return encodedDigest;
     }
 
-    public static String requestBodyToString(final RequestBody body) {
+    private static String requestBodyToString(final RequestBody body) {
         try {
             final RequestBody copy = body;
             final Buffer buffer = new Buffer();

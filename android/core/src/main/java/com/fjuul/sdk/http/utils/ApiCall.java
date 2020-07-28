@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.fjuul.sdk.errors.ApiErrors;
 
+import androidx.annotation.NonNull;
 import okhttp3.Request;
 import okio.Timeout;
 import retrofit2.Call;
@@ -22,7 +23,7 @@ public class ApiCall<T> {
      * @param delegate instance of retrofit's call to be wrapped of.
      * @param responseTransformer transformer which decides how to build the result of api call by the response.
      */
-    public ApiCall(Call<T> delegate, IApiResponseTransformer<T> responseTransformer) {
+    public ApiCall(@NonNull Call<T> delegate, @NonNull IApiResponseTransformer<T> responseTransformer) {
         this.delegate = delegate;
         this.responseTransformer = responseTransformer;
     }
@@ -30,7 +31,7 @@ public class ApiCall<T> {
     /**
      * Synchronously send the request and return its result.
      */
-    public ApiCallResult<T> execute() {
+    public @NonNull ApiCallResult<T> execute() {
         try {
             Response<T> response = delegate.execute();
             return responseTransformer.transform(response);
@@ -45,7 +46,7 @@ public class ApiCall<T> {
      * Asynchronously send the request and notify {@code callback} of its response or if an error occurred talking to
      * the server, creating the request, or processing the response.
      */
-    public void enqueue(ApiCallCallback<T> callback) {
+    public void enqueue(@NonNull ApiCallCallback<T> callback) {
         delegate.enqueue(new Callback<T>() {
             @Override
             public void onResponse(Call<T> call, Response<T> response) {
@@ -84,12 +85,12 @@ public class ApiCall<T> {
     /**
      * Create a new, identical call to this one which can be enqueued or executed even if this call has already been.
      */
-    public ApiCall<T> clone() {
+    public @NonNull ApiCall<T> clone() {
         return new ApiCall(delegate.clone(), responseTransformer);
     }
 
-    protected Request request() {
-        return null;
+    protected @NonNull Request request() {
+        return delegate.request();
     }
 
     /**
@@ -97,7 +98,7 @@ public class ApiCall<T> {
      * processing, and reading the response body. If the call requires redirects or retries all must complete within one
      * timeout period.
      */
-    public Timeout timeout() {
+    public @NonNull Timeout timeout() {
         return delegate.timeout();
     }
 }

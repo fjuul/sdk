@@ -1,6 +1,5 @@
 package com.fjuul.sdk.analytics.http.services;
 
-import java.io.IOException;
 import java.util.Date;
 
 import com.fjuul.sdk.analytics.entities.DailyStats;

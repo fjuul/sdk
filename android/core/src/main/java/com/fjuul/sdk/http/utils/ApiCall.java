@@ -1,8 +1,8 @@
 package com.fjuul.sdk.http.utils;
 
-import com.fjuul.sdk.errors.ApiErrors;
-
 import java.io.IOException;
+
+import com.fjuul.sdk.errors.ApiErrors;
 
 import okhttp3.Request;
 import okio.Timeout;

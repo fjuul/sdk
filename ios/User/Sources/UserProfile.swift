@@ -19,7 +19,7 @@ public struct UserProfile: Codable {
             return TimeZone(identifier: _timezone)!
         }
     }
-    public let locale: String?
+    public let locale: String
 
     enum CodingKeys: String, CodingKey {
         case token

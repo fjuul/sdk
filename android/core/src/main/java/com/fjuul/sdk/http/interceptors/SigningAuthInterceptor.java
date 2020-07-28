@@ -12,7 +12,6 @@ import com.fjuul.sdk.http.services.ISigningService;
 import com.fjuul.sdk.http.utils.RequestSigner;
 
 import android.annotation.SuppressLint;
-
 import androidx.annotation.NonNull;
 import okhttp3.Authenticator;
 import okhttp3.Interceptor;
@@ -26,9 +25,8 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
     private ISigningService signingService;
     private final Pattern signatureHeaderKeyIdPattern = Pattern.compile("keyId=\"(.+?)\"");
 
-    public SigningAuthInterceptor(@NonNull SigningKeychain keychain,
-                                  @NonNull RequestSigner requestSigner,
-                                  @NonNull ISigningService signingService) {
+    public SigningAuthInterceptor(@NonNull SigningKeychain keychain, @NonNull RequestSigner requestSigner,
+        @NonNull ISigningService signingService) {
         this.keychain = keychain;
         this.requestSigner = requestSigner;
         this.signingService = signingService;

@@ -5,8 +5,7 @@ import androidx.annotation.Nullable;
 public class ErrorJSONBodyResponse {
     private String message;
 
-    public @Nullable
-    String getMessage() {
+    public @Nullable String getMessage() {
         return message;
     }
 }

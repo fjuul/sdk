@@ -1,7 +1,6 @@
 package com.fjuul.sdk.entities;
 
 import android.util.Base64;
-
 import androidx.annotation.NonNull;
 
 // NOTE: this class was copied from the previous sdk

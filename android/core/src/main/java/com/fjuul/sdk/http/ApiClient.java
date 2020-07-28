@@ -11,7 +11,6 @@ import com.fjuul.sdk.http.services.UserSigningService;
 import com.fjuul.sdk.http.utils.RequestSigner;
 
 import android.content.Context;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import okhttp3.OkHttpClient;
@@ -127,7 +126,8 @@ public class ApiClient {
     }
 
     // TODO: consider moving this code to the builder class (share the same instance of the interceptor/authenticator)
-    protected @NonNull SigningAuthInterceptor getOrCreateSigningAuthInterceptor(@NonNull ISigningService signingService) {
+    protected @NonNull SigningAuthInterceptor getOrCreateSigningAuthInterceptor(
+        @NonNull ISigningService signingService) {
         if (signingAuthInterceptor == null) {
             signingAuthInterceptor = new SigningAuthInterceptor(userKeychain, new RequestSigner(), signingService);
         }

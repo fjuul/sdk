@@ -8,5 +8,6 @@ public interface IStorage {
 
     void set(@NonNull String key, @Nullable String value);
 
-    @Nullable String get(@NonNull String key);
+    @Nullable
+    String get(@NonNull String key);
 }

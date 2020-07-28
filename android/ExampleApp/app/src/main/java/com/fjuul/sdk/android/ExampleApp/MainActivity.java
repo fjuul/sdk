@@ -33,12 +33,8 @@ public class MainActivity extends AppCompatActivity {
         // NOTE: provide your credentials
         String userToken = "<TOKEN>";
         String secret = "<SECRET>";
-        ApiClient client = new ApiClient.Builder(
-            getApplicationContext(),
-            "https://dev.api.fjuul.com",
-            "c1e51fc6-d253-4961-ab9a-5d91560bae75")
-            .setUserCredentials(new UserCredentials(userToken, secret))
-            .build();
+        ApiClient client = new ApiClient.Builder(getApplicationContext(), "https://dev.api.fjuul.com",
+            "c1e51fc6-d253-4961-ab9a-5d91560bae75").setUserCredentials(new UserCredentials(userToken, secret)).build();
         AnalyticsService analyticsService = new AnalyticsService(client);
         analyticsService
             // NOTE: set an accessible date

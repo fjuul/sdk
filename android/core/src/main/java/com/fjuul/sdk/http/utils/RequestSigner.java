@@ -20,7 +20,6 @@ import com.fjuul.sdk.entities.SigningKey;
 
 import android.annotation.SuppressLint;
 import android.util.Base64;
-
 import androidx.annotation.NonNull;
 import okhttp3.Request;
 import okhttp3.RequestBody;

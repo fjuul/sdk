@@ -6,7 +6,7 @@ import retrofit2.Retrofit;
  * Communicates responses from a server or offline requests.
  *
  * <p>
- * Callback method is executed using the {@link Retrofit} callback executor. When none is specified, the following
+ * Callback method is executed using the <a href="https://square.github.io/retrofit/2.x/retrofit/retrofit2/Retrofit.html">Retrofit</a> callback executor. When none is specified, the following
  * defaults are used:
  *
  * <ul>

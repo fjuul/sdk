@@ -70,6 +70,7 @@ dependencies {
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     // implementation 'com.google.guava:guava:28.0-jre'
+    implementation "androidx.annotation:annotation:$rootProject.ext.androidXAnnotationVersion"
 
     // TODO: specify an exact version for the Core package
     api project(':core')

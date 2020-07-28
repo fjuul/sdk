@@ -65,6 +65,7 @@ dependencies {
     api 'com.squareup.moshi:moshi-adapters:1.9.3'
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
+    implementation "androidx.annotation:annotation:$rootProject.ext.androidXAnnotationVersion"
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'

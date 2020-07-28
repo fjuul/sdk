@@ -46,6 +46,6 @@ public class UserCredentials {
 
     @Override
     public String toString() {
-        return "{ token: " + token + ", secret: " + secret + " }";
+        return "{ token: " + token + ", secret: *** }";
     }
 }

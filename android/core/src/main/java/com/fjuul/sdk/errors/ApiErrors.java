@@ -1,5 +1,7 @@
 package com.fjuul.sdk.errors;
 
+import java.io.IOException;
+
 public final class ApiErrors {
     public static class CommonError extends FjuulError {
         public CommonError(String message) {
@@ -8,6 +10,28 @@ public final class ApiErrors {
 
         public CommonError(String message, Throwable cause) {
             super(message, cause);
+        }
+
+        public CommonError(Throwable cause) {
+            super(cause);
+        }
+    }
+
+    /**
+     * The error will be instantiated when a network exception occurred talking to the server or when an unexpected
+     * exception occurred creating the request or processing the response.
+     */
+    public static class InternalClientError extends CommonError {
+        public InternalClientError(IOException exception) {
+            super(exception.getMessage(), exception.getCause());
+        }
+
+        public InternalClientError(RuntimeException exception) {
+            super(exception.getMessage(), exception.getCause());
+        }
+
+        public InternalClientError(Throwable throwable) {
+            super(throwable);
         }
     }
 

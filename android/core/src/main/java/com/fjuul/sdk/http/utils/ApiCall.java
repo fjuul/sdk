@@ -1,5 +1,7 @@
 package com.fjuul.sdk.http.utils;
 
+import com.fjuul.sdk.errors.ApiErrors;
+
 import java.io.IOException;
 
 import okhttp3.Request;
@@ -27,14 +29,16 @@ public class ApiCall<T> {
 
     /**
      * Synchronously send the request and return its result.
-     *
-     * @throws IOException if a problem occurred talking to the server.
-     * @throws RuntimeException (and subclasses) if an unexpected error occurs creating the request or decoding the
-     *         response.
      */
-    public ApiCallResult<T> execute() throws IOException {
-        Response<T> response = delegate.execute();
-        return responseTransformer.transform(response);
+    public ApiCallResult<T> execute() {
+        try {
+            Response<T> response = delegate.execute();
+            return responseTransformer.transform(response);
+        } catch (IOException exc) {
+            return ApiCallResult.error(new ApiErrors.InternalClientError(exc));
+        } catch (RuntimeException exc) {
+            return ApiCallResult.error(new ApiErrors.InternalClientError(exc));
+        }
     }
 
     /**
@@ -45,12 +49,13 @@ public class ApiCall<T> {
         delegate.enqueue(new Callback<T>() {
             @Override
             public void onResponse(Call<T> call, Response<T> response) {
-                callback.onResponse(new ApiCall(call, responseTransformer), responseTransformer.transform(response));
+                callback.onResult(new ApiCall<>(call, responseTransformer), responseTransformer.transform(response));
             }
 
             @Override
             public void onFailure(Call<T> call, Throwable t) {
-                callback.onFailure(new ApiCall(call, responseTransformer), t);
+                callback.onResult(new ApiCall(call, responseTransformer),
+                    ApiCallResult.error(new ApiErrors.InternalClientError(t)));
             }
         });
     };

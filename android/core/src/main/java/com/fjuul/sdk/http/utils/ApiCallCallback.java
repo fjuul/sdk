@@ -3,11 +3,10 @@ package com.fjuul.sdk.http.utils;
 import retrofit2.Retrofit;
 
 /**
- * Communicates responses from a server or offline requests. One and only one method will be invoked in response to a
- * given request.
+ * Communicates responses from a server or offline requests.
  *
  * <p>
- * Callback methods are executed using the {@link Retrofit} callback executor. When none is specified, the following
+ * Callback method is executed using the {@link Retrofit} callback executor. When none is specified, the following
  * defaults are used:
  *
  * <ul>
@@ -19,13 +18,7 @@ import retrofit2.Retrofit;
  */
 public interface ApiCallCallback<T> {
     /**
-     * Invoked for a received response.
+     * Invoked for a received result.
      */
-    public void onResponse(ApiCall<T> call, ApiCallResult<T> result);
-
-    /**
-     * Invoked when a network exception occurred talking to the server or when an unexpected exception occurred creating
-     * the request or processing the response.
-     */
-    public void onFailure(ApiCall<T> call, Throwable t);
+    public void onResult(ApiCall<T> call, ApiCallResult<T> result);
 }

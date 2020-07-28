@@ -11,4 +11,8 @@ public class FjuulError extends Error {
     public FjuulError(String message, Throwable cause) {
         super(message, cause);
     }
+
+    public FjuulError(Throwable cause) {
+        super(cause);
+    }
 }

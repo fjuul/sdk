@@ -1,15 +1,11 @@
 package com.fjuul.sdk.android.ExampleApp;
 
-import java.io.IOException;
 
 import com.fjuul.sdk.analytics.entities.DailyStats;
 import com.fjuul.sdk.analytics.http.services.AnalyticsService;
 import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.entities.UserCredentials;
 import com.fjuul.sdk.http.ApiClient;
-import com.fjuul.sdk.http.utils.ApiCall;
-import com.fjuul.sdk.http.utils.ApiCallCallback;
-import com.fjuul.sdk.http.utils.ApiCallResult;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -43,38 +39,25 @@ public class MainActivity extends AppCompatActivity {
             .setSigningKeychain(new SigningKeychain())
             .build();
         AnalyticsService analyticsService = new AnalyticsService(client);
-
-        try {
-            analyticsService
-                // NOTE: set an accessible date
-                .getDailyStats("2020-06-10")
-                .enqueue(new ApiCallCallback<DailyStats>() {
-                    @Override
-                    public void onResponse(ApiCall<DailyStats> call, ApiCallResult<DailyStats> result) {
-                        if (result.isError()) {
-                            Log.i(TAG, String.format("error: %s", result.getError().getMessage()));
-                            return;
-                        }
-                        DailyStats dailyStats = result.getValue();
-                        Log.i(TAG, String.format("date: %s; active calories: %f", dailyStats.getDate(),
-                            dailyStats.getActiveKcal()));
-                        Log.i(TAG, String.format("lowest: seconds: %f, metMinutes %f",
-                            dailyStats.getLowest().getSeconds(), dailyStats.getLowest().getMetMinutes()));
-                        Log.i(TAG, String.format("low: seconds: %f, metMinutes %f", dailyStats.getLow().getSeconds(),
-                            dailyStats.getLow().getMetMinutes()));
-                        Log.i(TAG, String.format("moderate: seconds: %f, metMinutes %f",
-                            dailyStats.getModerate().getSeconds(), dailyStats.getModerate().getMetMinutes()));
-                        Log.i(TAG, String.format("high: seconds: %f, metMinutes %f", dailyStats.getHigh().getSeconds(),
-                            dailyStats.getHigh().getMetMinutes()));
-                    }
-
-                    @Override
-                    public void onFailure(ApiCall<DailyStats> call, Throwable t) {
-                        Log.i(TAG, String.format("error: %s", t.getMessage()));
-                    }
-                });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        analyticsService
+            // NOTE: set an accessible date
+            .getDailyStats("2020-06-10")
+            .enqueue((call, result) -> {
+                if (result.isError()) {
+                    Log.i(TAG, String.format("error: %s", result.getError().getMessage()));
+                    return;
+                }
+                DailyStats dailyStats = result.getValue();
+                Log.i(TAG,
+                    String.format("date: %s; active calories: %f", dailyStats.getDate(), dailyStats.getActiveKcal()));
+                Log.i(TAG, String.format("lowest: seconds: %f, metMinutes %f", dailyStats.getLowest().getSeconds(),
+                    dailyStats.getLowest().getMetMinutes()));
+                Log.i(TAG, String.format("low: seconds: %f, metMinutes %f", dailyStats.getLow().getSeconds(),
+                    dailyStats.getLow().getMetMinutes()));
+                Log.i(TAG, String.format("moderate: seconds: %f, metMinutes %f", dailyStats.getModerate().getSeconds(),
+                    dailyStats.getModerate().getMetMinutes()));
+                Log.i(TAG, String.format("high: seconds: %f, metMinutes %f", dailyStats.getHigh().getSeconds(),
+                    dailyStats.getHigh().getMetMinutes()));
+            });
     }
 }

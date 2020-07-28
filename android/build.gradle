@@ -52,6 +52,8 @@ configure(subprojects) {
             error 'UnknownNullness', 'NoHardKeywords', 'LambdaLast', 'KotlinPropertyAccess'
             explainIssues true
             textReport true
+            xmlReport System.getenv("CI") != "true"
+            htmlReport System.getenv("CI") != "true"
         }
     }
 }

@@ -24,7 +24,7 @@ public class AnalyticsService {
 
     /**
      * Create instance of the analytics api service.
-     * 
+     *
      * @param client configured client with signing ability and user credentials
      */
     public AnalyticsService(ApiClient client) {
@@ -41,27 +41,25 @@ public class AnalyticsService {
 
     /**
      * Builds the call to get the daily activity statistics for a given day.
-     * 
+     *
      * @param date the day in format 'YYYY-MM-DD' to request daily stats for; this is the date in the users local
      *        timezone.
      * @return ApiCall for the user activity statistics for the given day.
-     * @throws IOException
      */
-    public ApiCall<DailyStats> getDailyStats(String date) throws IOException {
+    public ApiCall<DailyStats> getDailyStats(String date) {
         return analyticsApiClient.getDailyStats(clientBuilder.getUserToken(), date);
     }
 
     /**
      * Builds the call to get the daily activity statistics for a given day interval.
-     * 
+     *
      * @param startDate the start of the day interval in format 'YYYY-MM-DD' to request daily stats for (inclusive);
      *        this is the date in the users local timezone.
      * @param endDate the end of the day interval in format 'YYYY-MM-DD' to request daily stats for (inclusive); this is
      *        the date in the users local timezone.
      * @return ApiCall for the user activity statistics for the given day interval.
-     * @throws IOException
      */
-    public ApiCall<DailyStats[]> getDailyStats(String startDate, String endDate) throws IOException {
+    public ApiCall<DailyStats[]> getDailyStats(String startDate, String endDate) {
         return analyticsApiClient.getDailyStats(clientBuilder.getUserToken(), startDate, endDate);
     }
 }

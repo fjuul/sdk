@@ -17,11 +17,7 @@ public struct Partial<Wrapped: PartiallyEncodable> {
         }
     }
 
-    public subscript(key: PartialKeyPath<Wrapped>) -> Encodable? {
-        get {
-            return values[key]
-        }
-    }
+    public subscript(key: PartialKeyPath<Wrapped>) -> Encodable? { return values[key] }
 
     public func asJsonEncodableDictionary() -> [String: Any] {
         return Dictionary(uniqueKeysWithValues: values

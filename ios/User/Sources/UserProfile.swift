@@ -2,9 +2,9 @@ import Foundation
 import FjuulCore
 
 public enum Gender: String, Codable {
-    case male = "male"
-    case female = "female"
-    case other = "other"
+    case male
+    case female
+    case other
 }
 
 public struct UserProfile: Codable {
@@ -14,11 +14,7 @@ public struct UserProfile: Codable {
     public let gender: Gender
     public let height: Int
     public let weight: Int
-    public var timezone: TimeZone {
-        get {
-            return TimeZone(identifier: _timezone)!
-        }
-    }
+    public var timezone: TimeZone { return TimeZone(identifier: _timezone)! }
     public let locale: String
 
     enum CodingKeys: String, CodingKey {

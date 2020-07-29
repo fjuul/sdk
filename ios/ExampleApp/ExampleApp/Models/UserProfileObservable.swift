@@ -69,7 +69,7 @@ class UserProfileObservable: ObservableObject {
             \UserProfile.height: self.height,
             \UserProfile.weight: self.weight,
             \UserProfile.timezone: self.timezone,
-            \UserProfile.locale: self.locale
+            \UserProfile.locale: self.locale,
         ])
         return ApiClient.createUser(baseUrl: baseUrl, apiKey: apiKey, profile: profileData) { result in
             switch result {

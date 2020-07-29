@@ -1,3 +1,4 @@
+//swiftlint:disable force_cast
 import Foundation
 
 import XCTest
@@ -49,12 +50,12 @@ final class UserApiTests: XCTestCase {
             \UserProfile.birthDate: DateFormatters.yyyyMMddLocale.date(from: "1989-11-03"),
             \UserProfile.gender: Gender.other,
             \UserProfile.height: 170,
-            \UserProfile.weight: 60
+            \UserProfile.weight: 60,
         ])
         let createStub = stub(condition: isHost("apibase") && isPath("/sdk/users/v1")) { request in
             XCTAssertEqual(request.httpMethod, "POST")
             do {
-                let profileData: [String: Any] = try JSONSerialization.jsonObject(with: request.ohhttpStubs_httpBody!) as! [String : Any]
+                let profileData: [String: Any] = try JSONSerialization.jsonObject(with: request.ohhttpStubs_httpBody!) as! [String: Any]
                 XCTAssertEqual(profileData["birthDate"] as? String, "1989-11-03")
                 XCTAssertEqual(profileData["gender"] as? String, "other")
                 XCTAssertEqual(profileData["height"] as? Int, profile[\.height])
@@ -63,7 +64,7 @@ final class UserApiTests: XCTestCase {
                 XCTAssertEqual(profileData["locale"] as? String, Bundle.main.preferredLocalizations.first)
                 XCTAssertEqual(profileData.count, 6)
             } catch {
-                XCTFail()
+                XCTFail("body deserialization failed")
             }
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
@@ -82,12 +83,12 @@ final class UserApiTests: XCTestCase {
             \UserProfile.height: 170,
             \UserProfile.weight: 60,
             \UserProfile.timezone: TimeZone(identifier: "Europe/Paris"),
-            \UserProfile.locale: "fi"
+            \UserProfile.locale: "fi",
         ])
         let createStub = stub(condition: isHost("apibase") && isPath("/sdk/users/v1")) { request in
             XCTAssertEqual(request.httpMethod, "POST")
             do {
-                let profileData: [String: Any] = try JSONSerialization.jsonObject(with: request.ohhttpStubs_httpBody!) as! [String : Any]
+                let profileData: [String: Any] = try JSONSerialization.jsonObject(with: request.ohhttpStubs_httpBody!) as! [String: Any]
                 XCTAssertEqual(profileData["birthDate"] as? String, "1989-11-03")
                 XCTAssertEqual(profileData["gender"] as? String, "other")
                 XCTAssertEqual(profileData["height"] as? Int, profile[\.height])
@@ -96,7 +97,7 @@ final class UserApiTests: XCTestCase {
                 XCTAssertEqual(profileData["locale"] as? String, "fi")
                 XCTAssertEqual(profileData.count, 6)
             } catch {
-                XCTFail()
+                XCTFail("body deserialization failed")
             }
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
@@ -118,7 +119,7 @@ final class UserApiTests: XCTestCase {
         client.user.getProfile { result in
             HTTPStubs.removeStub(getStub)
             switch result {
-            case .failure: XCTFail()
+            case .failure: XCTFail("response deserialization failed")
             case .success(let profile):
                 XCTAssertEqual(profile.birthDate, DateFormatters.yyyyMMddLocale.date(from: "1990-12-04"))
                 XCTAssertEqual(profile.gender, Gender.female)
@@ -137,17 +138,17 @@ final class UserApiTests: XCTestCase {
         let e = expectation(description: "Alamofire")
         let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: InMemoryPersistor())
         let update = PartialUserProfile([
-            \UserProfile.weight: 85
+            \UserProfile.weight: 85,
         ])
         let updateStub = stub(condition: isHost("apibase") && pathMatches("^/sdk/users/v1/*")) { request in
             XCTAssertEqual(request.httpMethod, "PUT")
             do {
-                let bodyData: [String: Any] = try JSONSerialization.jsonObject(with: request.ohhttpStubs_httpBody!) as! [String : Any]
+                let bodyData: [String: Any] = try JSONSerialization.jsonObject(with: request.ohhttpStubs_httpBody!) as! [String: Any]
                 print(bodyData)
                 XCTAssertEqual(bodyData["weight"] as? Int, update[\.weight])
                 XCTAssertEqual(bodyData.count, 1)
             } catch {
-                XCTFail()
+                XCTFail("body deserialization failed")
             }
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }

@@ -34,7 +34,7 @@ final class PartialTests: XCTestCase {
 
     func testOmitsUnmappedPropsInSerialization() {
         let data = Partial<TestStruct>([
-            \TestStruct.ommittedProp: "Hello World"
+            \TestStruct.ommittedProp: "Hello World",
         ])
         let result = data.asJsonEncodableDictionary()
         XCTAssertEqual(result.count, 0)
@@ -42,7 +42,7 @@ final class PartialTests: XCTestCase {
 
     func testConvertsNonJsonConvertibleProps() {
         let data = Partial<TestStruct>([
-            \TestStruct.timezoneProp: TimeZone.init(identifier: "Europe/Berlin")
+            \TestStruct.timezoneProp: TimeZone.init(identifier: "Europe/Berlin"),
         ])
         let result = data.asJsonEncodableDictionary()
         XCTAssertEqual(result["keyB"] as? String, "Europe/Berlin")
@@ -51,7 +51,7 @@ final class PartialTests: XCTestCase {
     func testIncludesMappedPropsIfSetInSerialization() {
         let data = Partial<TestStruct>([
             \TestStruct.stringProp: "Hello World",
-            \TestStruct.timezoneProp: TimeZone.current
+            \TestStruct.timezoneProp: TimeZone.current,
         ])
         let result = data.asJsonEncodableDictionary()
         XCTAssertEqual(result["keyA"] as? String, "Hello World")

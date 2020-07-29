@@ -19,13 +19,11 @@ final class HmacAuthenticatiorTests: XCTestCase {
         XCTAssertFalse(authenticator.isRequest(request, authenticatedWith: key))
     }
 
-
     func testIsAuthenticatedWithCredentialsNoSignature() {
         let authenticator = HmacAuthenticatior(baseUrl: "https://foo", refreshSession: Session(), credentialStore: store)
         let request = URLRequest(url: url)
         XCTAssertFalse(authenticator.isRequest(request, authenticatedWith: key))
     }
-
 
     func testIsAuthenticatedWithCredentialsInvalidKey() {
         let authenticator = HmacAuthenticatior(baseUrl: "https://foo", refreshSession: Session(), credentialStore: store)
@@ -36,7 +34,6 @@ final class HmacAuthenticatiorTests: XCTestCase {
         )
         XCTAssertFalse(authenticator.isRequest(request, authenticatedWith: key))
     }
-
 
     func testIsAuthenticatedWithCredentialsWrongKey() {
         let authenticator = HmacAuthenticatior(baseUrl: "https://foo", refreshSession: Session(), credentialStore: store)

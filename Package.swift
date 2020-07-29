@@ -47,7 +47,7 @@ let package = Package(
         ),
         .testTarget(
             name: "FjuulUserTests",
-            dependencies: ["FjuulUser"],
+            dependencies: [.product(name: "OHHTTPStubsSwift", package: "OHHTTPStubs"), "FjuulUser"],
             path: "ios/User/Tests"
         )
     ],

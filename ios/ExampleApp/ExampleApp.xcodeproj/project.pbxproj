@@ -311,7 +311,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if which swiftlint >/dev/null; then\n  swiftlint\nfi\n";
+			shellScript = "if which swiftlint >/dev/null; then\n  swiftlint --path $PROJECT_DIR/..\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

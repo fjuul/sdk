@@ -25,6 +25,9 @@ struct UserProfileForm: View {
                 FloatingTextField(title: "Timezone", text: $userProfile.timezone)
                     .disableAutocorrection(true)
                     .autocapitalization(.none)
+                FloatingTextField(title: "Locale", text: $userProfile.locale)
+                    .disableAutocorrection(true)
+                    .autocapitalization(.none)
             }
         }
         .alert(item: $userProfile.error) { holder in

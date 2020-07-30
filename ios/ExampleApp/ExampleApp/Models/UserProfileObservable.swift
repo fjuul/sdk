@@ -14,7 +14,7 @@ class UserProfileObservable: ObservableObject {
     @Published var weight = 80
     @Published var gender: Gender = .other
     @Published var timezone = ""
-    @Published var locale: String?
+    @Published var locale = ""
 
     init(fetchOnInit: Bool = false) {
         if fetchOnInit {

@@ -4,18 +4,7 @@ import FjuulCore
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    var apiClient: ApiClient?
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        let credentials = UserCredentials(
-            token: "",
-            secret: ""
-        )
-        self.apiClient = ApiClient(
-            baseUrl: "",
-            apiKey: "",
-            credentials: credentials
-        )
         return true
     }
 

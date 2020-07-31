@@ -26,7 +26,7 @@ final class HmacCredentialStoreTests: XCTestCase {
         let persistor = InMemoryPersistor()
         let credentialStore = HmacCredentialStore(userToken: "token", persistor: persistor)
         credentialStore.signingKey = key
-        XCTAssertEqual(persistor.get(key: "signing-key.token") as? SigningKey, key)
+        XCTAssertEqual(persistor.get(key: "signing-key.token"), key)
     }
 
 }

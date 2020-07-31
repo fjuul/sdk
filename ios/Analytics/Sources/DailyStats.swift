@@ -1,6 +1,6 @@
 import Foundation
 
-public struct DailyStats: Decodable {
+public struct DailyStats: Codable {
 
     public let date: Date
     public let totalKcal: Float

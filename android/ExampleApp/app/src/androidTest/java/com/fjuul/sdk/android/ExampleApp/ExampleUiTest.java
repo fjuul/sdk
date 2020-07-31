@@ -5,12 +5,13 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
-import androidx.test.filters.LargeTest;
-import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
-import androidx.test.rule.ActivityTestRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import androidx.test.filters.LargeTest;
+import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
+import androidx.test.rule.ActivityTestRule;
 
 @RunWith(AndroidJUnit4ClassRunner.class)
 @LargeTest
@@ -21,6 +22,6 @@ public class ExampleUiTest {
 
     @Test
     public void assertSDKText_mainActivity() {
-        onView(withId(R.id.main_text)).check(matches(withText("Hello, Core!")));
+        onView(withId(R.id.main_text)).check(matches(withText("FJUUL_SDK")));
     }
 }

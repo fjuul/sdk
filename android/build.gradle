@@ -10,7 +10,11 @@ spotless {
             include '**/*.java'
         }
         // licenseHeaderFile project.rootProject.file('spotless/copyright.java')
-        googleJavaFormat('1.7').aosp()
+
+        // optional: you can specify a specific version and/or config file
+        eclipse('4.13.0').configFile('eclipse-java-google-style.xml')
+        removeUnusedImports()
+        importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''	// A sequence of package names
     }
     groovyGradle {
         target fileTree('.') {

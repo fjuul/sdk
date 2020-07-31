@@ -20,10 +20,15 @@ repositories {
 dependencies {
     // This dependency is exported to consumers, that is to say found on their compile classpath.
     // api 'org.apache.commons:commons-math3:3.6.1'
+    api 'com.squareup.retrofit2:retrofit:2.9.0'
+    api 'com.squareup.retrofit2:converter-moshi:2.9.0'
+    api 'com.squareup.moshi:moshi:1.9.3'
+    api 'com.squareup.moshi:moshi-adapters:1.9.3'
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
-    // implementation 'com.google.guava:guava:28.0-jre'
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-core:3.3.+'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:3.14.+'
 }

@@ -2,25 +2,41 @@ import Foundation
 
 class DiskPersistor: Persistor {
 
-    func set(key: String, value: Codable?) {
+    func set<T: Encodable>(key: String, value: T?) {
         do {
+            // The Application Support directory does not exist by default, thus we need to create it here explicitly.
+            // This is a no-op if the directory already exists.
+            try FileManager.default.createDirectory(at: getStorageDirectory(), withIntermediateDirectories: true, attributes: nil)
             let fullPath = getFullPathForKey(key)
             guard let unwrapped = value else {
-                if FileManager.default.fileExists(atPath: fullPath.absoluteString) {
-                    try FileManager.default.removeItem(atPath: fullPath.absoluteString)
+                if FileManager.default.fileExists(atPath: fullPath.path) {
+                    try FileManager.default.removeItem(atPath: fullPath.path)
                 }
                 return
             }
-            let data = NSKeyedArchiver.archivedData(withRootObject: unwrapped)
-            try data.write(to: fullPath, options: .atomic)
+            let mutableData = NSMutableData()
+            let archiver = NSKeyedArchiver(forWritingWith: mutableData)
+            try archiver.encodeEncodable(unwrapped, forKey: NSKeyedArchiveRootObjectKey)
+            archiver.finishEncoding()
+            try mutableData.write(to: fullPath, options: .atomic)
         } catch {
-            print("Couldn't write file")
+            print("error while persisting object: \(error)")
         }
     }
 
-    func get(key: String) -> Any? {
-        let path = getFullPathForKey(key)
-        return NSKeyedUnarchiver.unarchiveObject(withFile: path.absoluteString)
+    func get<T: Decodable>(key: String) -> T? {
+        do {
+            let path = getFullPathForKey(key)
+            if !(FileManager.default.fileExists(atPath: path.path)) {
+                return nil
+            }
+            let data = try Data(contentsOf: path)
+            let unarchiver = NSKeyedUnarchiver(forReadingWith: data)
+            return try unarchiver.decodeTopLevelDecodable(T.self, forKey: NSKeyedArchiveRootObjectKey)
+        } catch {
+            print("error while reading persisted object: \(error)")
+            return nil
+        }
     }
 
     private func getStorageDirectory() -> URL {

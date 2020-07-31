@@ -6,7 +6,7 @@ public class InMemoryPersistor: Persistor {
 
     public init() {}
 
-    public func set(key: String, value: Codable?) {
+    public func set<T: Encodable>(key: String, value: T?) {
         guard let unwrapped = value else {
             store.removeValue(forKey: key)
             return
@@ -14,8 +14,8 @@ public class InMemoryPersistor: Persistor {
         store[key] = unwrapped
     }
 
-    public func get(key: String) -> Any? {
-        return store[key]
+    public func get<T: Decodable>(key: String) -> T? {
+        return store[key] as? T
     }
 
 }

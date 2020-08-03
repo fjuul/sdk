@@ -27,7 +27,8 @@ class LoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_login)
 
         val apiKeyInput = findViewById<EditText>(R.id.api_key_input)
-        val password = findViewById<EditText>(R.id.user_token)
+        val tokenInput = findViewById<EditText>(R.id.user_token)
+        val secretInput = findViewById<EditText>(R.id.user_secret)
         val login = findViewById<Button>(R.id.continue_btn)
         val loading = findViewById<ProgressBar>(R.id.loading)
         val createUserButton = findViewById<Button>(R.id.create_user_button);
@@ -43,11 +44,14 @@ class LoginActivity : AppCompatActivity() {
             // disable login button unless both username / password is valid
             login.isEnabled = loginState.isDataValid
 
+            if (loginState.apiKeyError != null) {
+                apiKeyInput.error = getString(loginState.apiKeyError)
+            }
             if (loginState.tokenError != null) {
-                apiKeyInput.error = getString(loginState.tokenError)
+                tokenInput.error = getString(loginState.tokenError)
             }
             if (loginState.secretError != null) {
-                password.error = getString(loginState.secretError)
+                secretInput.error = getString(loginState.secretError)
             }
         })
 
@@ -71,15 +75,25 @@ class LoginActivity : AppCompatActivity() {
             createUserButton.isEnabled = it.isNotEmpty()
             onboardingViewModel.loginDataChanged(
                     apiKeyInput.text.toString(),
-                    password.text.toString()
+                    tokenInput.text.toString(),
+                    secretInput.text.toString()
             )
         }
 
-        password.apply {
+        tokenInput.afterTextChanged {
+            onboardingViewModel.loginDataChanged(
+                apiKeyInput.text.toString(),
+                tokenInput.text.toString(),
+                secretInput.text.toString()
+            )
+        }
+
+        secretInput.apply {
             afterTextChanged {
                 onboardingViewModel.loginDataChanged(
                         apiKeyInput.text.toString(),
-                        password.text.toString()
+                        tokenInput.text.toString(),
+                        secretInput.text.toString()
                 )
             }
 
@@ -88,7 +102,7 @@ class LoginActivity : AppCompatActivity() {
                     EditorInfo.IME_ACTION_DONE ->
                         onboardingViewModel.login(
                                 apiKeyInput.text.toString(),
-                                password.text.toString()
+                                tokenInput.text.toString()
                         )
                 }
                 false
@@ -96,7 +110,7 @@ class LoginActivity : AppCompatActivity() {
 
             login.setOnClickListener {
                 loading.visibility = View.VISIBLE
-                onboardingViewModel.login(apiKeyInput.text.toString(), password.text.toString())
+                onboardingViewModel.login(apiKeyInput.text.toString(), tokenInput.text.toString())
             }
         }
     }

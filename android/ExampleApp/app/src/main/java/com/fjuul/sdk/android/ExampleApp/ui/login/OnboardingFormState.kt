@@ -5,4 +5,5 @@ package com.fjuul.sdk.android.exampleapp.ui.login
  */
 data class OnboardingFormState(val tokenError: Int? = null,
                                val secretError: Int? = null,
+                               val apiKeyError: Int? = null,
                                val isDataValid: Boolean = false)

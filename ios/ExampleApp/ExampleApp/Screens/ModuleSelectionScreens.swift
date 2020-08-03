@@ -22,7 +22,7 @@ struct ModuleSelectionScreens: View {
 
 }
 
-struct ModuleSelectionView_Previews: PreviewProvider {
+struct ModuleSelectionScreen_Previews: PreviewProvider {
     static var previews: some View {
         ModuleSelectionScreens()
     }

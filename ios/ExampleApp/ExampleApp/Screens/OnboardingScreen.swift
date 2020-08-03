@@ -58,7 +58,7 @@ struct OnboardingScreen: View {
 
 }
 
-struct OnboardingView_Previews: PreviewProvider {
+struct OnboardingScreen_Previews: PreviewProvider {
     static var previews: some View {
         OnboardingScreen(viewRouter: ViewRouter())
     }

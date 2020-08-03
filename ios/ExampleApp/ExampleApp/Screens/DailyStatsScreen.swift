@@ -28,7 +28,7 @@ struct DailyStatsScreen: View {
 
 }
 
-struct DailyStatsView_Previews: PreviewProvider {
+struct DailyStatsScreen_Previews: PreviewProvider {
     static var previews: some View {
         DailyStatsScreen()
     }

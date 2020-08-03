@@ -35,7 +35,7 @@ struct CreateUserScreen: View {
 
 }
 
-struct CreateUserView_Previews: PreviewProvider {
+struct CreateUserScreen_Previews: PreviewProvider {
     static var previews: some View {
         CreateUserScreen()
     }

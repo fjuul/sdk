@@ -28,7 +28,7 @@ struct UserProfileScreen: View {
 
 }
 
-struct UserProfileView_Previews: PreviewProvider {
+struct UserProfileScreen_Previews: PreviewProvider {
     static var previews: some View {
         UserProfileScreen()
     }

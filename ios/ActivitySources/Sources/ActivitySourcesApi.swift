@@ -2,7 +2,7 @@ import Foundation
 import Alamofire
 import FjuulCore
 
-/// The `ActivitySourcesApi` encapsulates access to a users fitness and activity data.
+/// The `ActivitySourcesApi` encapsulates the management of a users activity sources.
 public class ActivitySourcesApi {
 
     let apiClient: ApiClient

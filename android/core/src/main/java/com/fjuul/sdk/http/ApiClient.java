@@ -1,7 +1,7 @@
 package com.fjuul.sdk.http;
 
 import com.fjuul.sdk.entities.PersistentStorage;
-import com.fjuul.sdk.entities.SigningKeychain;
+import com.fjuul.sdk.entities.Keystore;
 import com.fjuul.sdk.entities.UserCredentials;
 import com.fjuul.sdk.http.interceptors.ApiKeyAttachingInterceptor;
 import com.fjuul.sdk.http.interceptors.BearerAuthInterceptor;
@@ -30,14 +30,14 @@ import okhttp3.OkHttpClient;
 public class ApiClient {
     private String baseUrl;
     private String apiKey;
-    private SigningKeychain userKeychain;
+    private Keystore userKeystore;
     private UserCredentials userCredentials;
     private SigningAuthInterceptor signingAuthInterceptor;
 
-    private ApiClient(String baseUrl, String apiKey, SigningKeychain keychain, UserCredentials credentials) {
+    private ApiClient(String baseUrl, String apiKey, Keystore keychain, UserCredentials credentials) {
         this.baseUrl = baseUrl;
         this.apiKey = apiKey;
-        this.userKeychain = keychain;
+        this.userKeystore = keychain;
         this.userCredentials = credentials;
     }
 
@@ -49,7 +49,8 @@ public class ApiClient {
         private String baseUrl;
         private String apiKey;
         protected @NonNull Context appContext;
-        protected @Nullable SigningKeychain signingKeychain;
+        protected @Nullable
+        Keystore keystore;
         protected @Nullable UserCredentials userCredentials;
 
         /**
@@ -74,16 +75,16 @@ public class ApiClient {
             return this;
         }
 
-        protected void setupDefaultSigningKeychain() {
+        protected void setupDefaultKeystore() {
             if (appContext != null && userCredentials != null) {
-                this.signingKeychain =
-                    new SigningKeychain(new PersistentStorage(appContext), userCredentials.getToken());
+                this.keystore =
+                    new Keystore(new PersistentStorage(appContext), userCredentials.getToken());
             }
         }
 
         public @NonNull ApiClient build() {
-            setupDefaultSigningKeychain();
-            return new ApiClient(baseUrl, apiKey, signingKeychain, userCredentials);
+            setupDefaultKeystore();
+            return new ApiClient(baseUrl, apiKey, keystore, userCredentials);
         }
     }
 
@@ -129,7 +130,7 @@ public class ApiClient {
     protected @NonNull SigningAuthInterceptor getOrCreateSigningAuthInterceptor(
         @NonNull ISigningService signingService) {
         if (signingAuthInterceptor == null) {
-            signingAuthInterceptor = new SigningAuthInterceptor(userKeychain, new RequestSigner(), signingService);
+            signingAuthInterceptor = new SigningAuthInterceptor(userKeystore, new RequestSigner(), signingService);
         }
         return signingAuthInterceptor;
     }

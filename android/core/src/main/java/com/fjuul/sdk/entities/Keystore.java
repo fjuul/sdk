@@ -11,12 +11,12 @@ import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 
-public class SigningKeychain {
+public class Keystore {
     IStorage storage;
     String lookupKey;
     JsonAdapter<SigningKey> keyJsonAdapter;
 
-    public SigningKeychain(@NonNull IStorage storage, @NonNull String userToken) {
+    public Keystore(@NonNull IStorage storage, @NonNull String userToken) {
         this.storage = storage;
         this.lookupKey = String.format("signing-key.%s", userToken);
         keyJsonAdapter = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter())

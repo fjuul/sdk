@@ -24,7 +24,7 @@ import org.robolectric.annotation.Config;
 
 import com.fjuul.sdk.entities.InMemoryStorage;
 import com.fjuul.sdk.entities.SigningKey;
-import com.fjuul.sdk.entities.SigningKeychain;
+import com.fjuul.sdk.entities.Keystore;
 import com.fjuul.sdk.http.services.UserSigningService;
 import com.fjuul.sdk.http.utils.RequestSigner;
 
@@ -46,12 +46,12 @@ public class SigningAuthInterceptorTest {
     static final String USER_TOKEN = "USER_TOKEN";
 
     @Test
-    public void intercept_EmptyKeychainWithFailedIssueResult_returnIssueResponse() throws Exception {
+    public void intercept_EmptyKeystoreWithFailedIssueResult_returnIssueResponse() throws Exception {
         MockWebServer mockWebServer = new MockWebServer();
         mockWebServer.start();
         mockWebServer.enqueue(new MockResponse());
 
-        SigningKeychain testKeychain = new SigningKeychain(new InMemoryStorage(), USER_TOKEN);
+        Keystore testKeychain = new Keystore(new InMemoryStorage(), USER_TOKEN);
         UserSigningService mockedSigningService = mock(UserSigningService.class, Mockito.RETURNS_DEEP_STUBS);
         Request outboundRequest = new Request.Builder().url(mockWebServer.url("/sdk/v1/analytics")).build();
         okhttp3.Response incomingRawResponse =
@@ -82,13 +82,13 @@ public class SigningAuthInterceptorTest {
     }
 
     @Test
-    public void intercept_KeychainWithExpiredKeyAndSuccessIssueResult_returnResponse() throws Exception {
+    public void intercept_KeystoreWithExpiredKeyAndSuccessIssueResult_returnResponse() throws Exception {
         MockWebServer mockWebServer = new MockWebServer();
         mockWebServer.start();
         mockWebServer.enqueue(new MockResponse());
 
         SigningKey testExpiredSigningKey = new SigningKey("expired-key-id", "TOP_SECRET", new Date());
-        SigningKeychain testKeychain = new SigningKeychain(new InMemoryStorage(), USER_TOKEN);
+        Keystore testKeychain = new Keystore(new InMemoryStorage(), USER_TOKEN);
         testKeychain.setKey(testExpiredSigningKey);
 
         SigningKey newValidSigningKey = new SigningKey("valid-key-id", "TOP_SECRET1", new Date());
@@ -109,14 +109,14 @@ public class SigningAuthInterceptorTest {
     }
 
     @Test
-    public void intercept_SimultaneousCallsWithEmptyKeychain_requestIssueKeyOnlyOnce()
+    public void intercept_SimultaneousCallsWithEmptyKeystore_requestIssueKeyOnlyOnce()
         throws IOException, InterruptedException {
         final int THREAD_POOL_SIZE = 5;
         ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
         MockWebServer mockWebServer = new MockWebServer();
         mockWebServer.start();
-        SigningKeychain testKeychain = new SigningKeychain(new InMemoryStorage(), USER_TOKEN);
+        Keystore testKeychain = new Keystore(new InMemoryStorage(), USER_TOKEN);
 
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.HOUR, 2);
@@ -174,7 +174,7 @@ public class SigningAuthInterceptorTest {
         Date expiresAt = calendar.getTime();
 
         SigningKey signingKey = new SigningKey("previous-key-id", "TOP_SECRET", expiresAt);
-        SigningKeychain testKeychain = new SigningKeychain(new InMemoryStorage(), USER_TOKEN);
+        Keystore testKeychain = new Keystore(new InMemoryStorage(), USER_TOKEN);
         testKeychain.setKey(signingKey);
 
         UserSigningService mockedSigningService = mock(UserSigningService.class, Mockito.RETURNS_DEEP_STUBS);

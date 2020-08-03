@@ -26,7 +26,7 @@ import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 
 @RunWith(Enclosed.class)
-public class SigningKeychainTest {
+public class KeystoreTest {
     public static final String DUMMY_USER_TOKEN = "USER_TOKEN";
     public static final JsonAdapter<SigningKey> keyJsonAdapter = createKeyJsonAdapter();
 
@@ -37,12 +37,12 @@ public class SigningKeychainTest {
 
     public static class WithInMemoryStorage {
         InMemoryStorage storage;
-        SigningKeychain keychain;
+        Keystore keystore;
 
         @Before
         public void beforeSetup() {
             storage = new InMemoryStorage();
-            keychain = new SigningKeychain(storage, DUMMY_USER_TOKEN);
+            keystore = new Keystore(storage, DUMMY_USER_TOKEN);
         }
 
         @Test
@@ -52,7 +52,7 @@ public class SigningKeychainTest {
             Date expiresAt = calendar.getTime();
             storage.set("signing-key." + DUMMY_USER_TOKEN,
                 keyJsonAdapter.toJson(new SigningKey("key-id", "REAL_SECRET", expiresAt)));
-            assertFalse("returns empty optional", keychain.getValidKey().isPresent());
+            assertFalse("returns empty optional", keystore.getValidKey().isPresent());
         }
 
         @Test
@@ -62,7 +62,7 @@ public class SigningKeychainTest {
             Date expiresAt = calendar.getTime();
             SigningKey key = new SigningKey("key-id", "REAL_SECRET", expiresAt);
             storage.set("signing-key." + DUMMY_USER_TOKEN, keyJsonAdapter.toJson(key));
-            Optional<SigningKey> result = keychain.getValidKey();
+            Optional<SigningKey> result = keystore.getValidKey();
             assertTrue("returns non-empty optional", result.isPresent());
             assertEquals("returns stored key", key.getId(), result.get().getId());
             assertEquals("returns stored key", key.getSecret(), result.get().getSecret());
@@ -74,7 +74,7 @@ public class SigningKeychainTest {
             calendar.add(Calendar.MINUTE, 1);
             Date expiresAt = calendar.getTime();
             SigningKey key = new SigningKey("key-id", "REAL_SECRET", expiresAt);
-            keychain.setKey(key);
+            keystore.setKey(key);
             assertThat("saves signing key in the storage", storage.get("signing-key." + DUMMY_USER_TOKEN),
                 not(isEmptyString()));
             SigningKey savedKey = keyJsonAdapter.fromJson(storage.get("signing-key." + DUMMY_USER_TOKEN));
@@ -88,7 +88,7 @@ public class SigningKeychainTest {
     @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
     public static class WithPersistentStorage {
         PersistentStorage storage;
-        SigningKeychain keychain;
+        Keystore keystore;
         SharedPreferences preferences;
 
         @Before
@@ -96,7 +96,7 @@ public class SigningKeychainTest {
             Context context = ApplicationProvider.getApplicationContext();
             preferences = context.getSharedPreferences("com.fjuul.sdk.persistence", Context.MODE_PRIVATE);
             storage = new PersistentStorage(context);
-            keychain = new SigningKeychain(storage, DUMMY_USER_TOKEN);
+            keystore = new Keystore(storage, DUMMY_USER_TOKEN);
         }
 
         @Test
@@ -108,7 +108,7 @@ public class SigningKeychainTest {
                 .putString("signing-key." + DUMMY_USER_TOKEN,
                     keyJsonAdapter.toJson(new SigningKey("key-id", "REAL_SECRET", expiresAt)))
                 .commit();
-            assertFalse("returns empty optional", keychain.getValidKey().isPresent());
+            assertFalse("returns empty optional", keystore.getValidKey().isPresent());
         }
 
         @Test
@@ -118,7 +118,7 @@ public class SigningKeychainTest {
             Date expiresAt = calendar.getTime();
             SigningKey key = new SigningKey("key-id", "REAL_SECRET", expiresAt);
             preferences.edit().putString("signing-key." + DUMMY_USER_TOKEN, keyJsonAdapter.toJson(key)).commit();
-            Optional<SigningKey> result = keychain.getValidKey();
+            Optional<SigningKey> result = keystore.getValidKey();
             assertTrue("returns non-empty optional", result.isPresent());
             assertEquals("returns stored key", key.getId(), result.get().getId());
             assertEquals("returns stored key", key.getSecret(), result.get().getSecret());
@@ -130,7 +130,7 @@ public class SigningKeychainTest {
             calendar.add(Calendar.MINUTE, 1);
             Date expiresAt = calendar.getTime();
             SigningKey key = new SigningKey("key-id", "REAL_SECRET", expiresAt);
-            keychain.setKey(key);
+            keystore.setKey(key);
 
             assertThat("saves signing key in the shared prefs",
                 preferences.getString("signing-key." + DUMMY_USER_TOKEN, null), not(isEmptyString()));

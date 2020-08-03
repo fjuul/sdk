@@ -1,6 +1,6 @@
 package com.fjuul.sdk.fixtures.http;
 
-import com.fjuul.sdk.entities.SigningKeychain;
+import com.fjuul.sdk.entities.Keystore;
 import com.fjuul.sdk.http.ApiClient;
 
 import okhttp3.mockwebserver.MockWebServer;
@@ -14,14 +14,14 @@ public final class TestApiClient {
             super(null, mockWebServer.url("/").toString(), TEST_API_KEY);
         }
 
-        public Builder setSigningKeychain(SigningKeychain keychain) {
-            this.signingKeychain = keychain;
+        public Builder setKeystore(Keystore keystore) {
+            this.keystore = keystore;
             return this;
         }
 
         @Override
-        protected void setupDefaultSigningKeychain() {
-            // NOTE: do not setup default signing keychain for the test builder
+        protected void setupDefaultKeystore() {
+            // NOTE: do not setup default signing keystore for the test builder
         }
     }
 }

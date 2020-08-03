@@ -8,11 +8,12 @@ import com.fjuul.sdk.http.responses.ErrorJSONBodyResponse;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 
+import androidx.annotation.NonNull;
 import retrofit2.Response;
 
 public class DefaultApiResponseTransformer<T> implements IApiResponseTransformer<T> {
     @Override
-    public ApiCallResult transform(Response response) {
+    public @NonNull ApiCallResult transform(@NonNull Response response) {
         if (response.isSuccessful()) {
             return ApiCallResult.value(response.body());
         }

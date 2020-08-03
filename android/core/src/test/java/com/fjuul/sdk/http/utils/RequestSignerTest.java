@@ -11,9 +11,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import com.fjuul.sdk.entities.SigningKey;
 
+import android.os.Build;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -23,7 +26,12 @@ public class RequestSignerTest {
     static final String SECRET_KEY = "REAL_SECRET_KEY";
     static final String KEY_ID = "signing-key-id-1234";
 
-    public static class RequestWithoutDigestTest {
+    @RunWith(RobolectricTestRunner.class)
+    @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+    public abstract static class GivenRobolectricContext {
+    }
+
+    public static class RequestWithoutDigestTest extends GivenRobolectricContext {
         Clock fixedClock;
 
         @Before
@@ -67,7 +75,7 @@ public class RequestSignerTest {
         }
     }
 
-    public static class RequestWithDigestTest {
+    public static class RequestWithDigestTest extends GivenRobolectricContext {
         Clock fixedClock;
 
         @Before

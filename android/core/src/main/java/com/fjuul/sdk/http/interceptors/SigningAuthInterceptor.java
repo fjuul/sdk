@@ -6,11 +6,13 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fjuul.sdk.entities.Keystore;
 import com.fjuul.sdk.entities.SigningKey;
-import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.http.services.ISigningService;
 import com.fjuul.sdk.http.utils.RequestSigner;
 
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
 import okhttp3.Authenticator;
 import okhttp3.Interceptor;
 import okhttp3.Request;
@@ -18,34 +20,35 @@ import okhttp3.Response;
 import okhttp3.Route;
 
 public class SigningAuthInterceptor implements Interceptor, Authenticator {
-    private SigningKeychain keychain;
+    private Keystore keystore;
     private RequestSigner requestSigner;
     private ISigningService signingService;
     private final Pattern signatureHeaderKeyIdPattern = Pattern.compile("keyId=\"(.+?)\"");
 
-    public SigningAuthInterceptor(SigningKeychain keychain, RequestSigner requestSigner,
-        ISigningService signingService) {
-        this.keychain = keychain;
+    public SigningAuthInterceptor(@NonNull Keystore keystore, @NonNull RequestSigner requestSigner,
+        @NonNull ISigningService signingService) {
+        this.keystore = keystore;
         this.requestSigner = requestSigner;
         this.signingService = signingService;
     }
 
+    @SuppressLint({"NewApi", "UnknownNullness"})
     @Override
     public Response intercept(Chain chain) throws IOException {
         // TODO: handle case when current valid signing key was expired already
-        Optional<SigningKey> keyOptional = this.keychain.getFirstValid();
+        Optional<SigningKey> keyOptional = this.keystore.getValidKey();
         SigningKey signingKey = null;
         if (!keyOptional.isPresent()) {
             // need to request a new signing key
             synchronized (this) {
                 // double check if we have now new signing key
-                keyOptional = this.keychain.getFirstValid();
+                keyOptional = this.keystore.getValidKey();
                 // if still no valid key => request new one
                 if (!keyOptional.isPresent()) {
                     retrofit2.Response<SigningKey> newKeyResponse = issueNewKey();
                     if (newKeyResponse.isSuccessful()) {
                         SigningKey newKey = newKeyResponse.body();
-                        keychain.appendKey(newKey);
+                        keystore.setKey(newKey);
                         signingKey = newKey;
                     } else {
                         // return response of a request of the signing key to infer http error
@@ -62,6 +65,7 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
         return chain.proceed(signedRequest);
     }
 
+    @SuppressLint({"NewApi", "UnknownNullness"})
     @Override
     public Request authenticate(Route route, Response response) throws IOException {
         // give up if retry count is more than 1
@@ -83,7 +87,7 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
         synchronized (this) {
             // NOTE: double check if we have now new signing key
             // (it could be possible since this code block is synchronized)
-            Optional<SigningKey> keyOptional = this.keychain.getFirstValid();
+            Optional<SigningKey> keyOptional = this.keystore.getValidKey();
             Matcher matcher = signatureHeaderKeyIdPattern.matcher(request.header("Signature"));
             matcher.find();
             String keyIdMatch = matcher.group(1);
@@ -91,12 +95,11 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
                 SigningKey key = keyOptional.get();
                 return requestSigner.signRequestByKey(response.request(), key);
             }
-            // if still no valid key => invalidate current one and request new one
-            keychain.invalidateKeyById(keyIdMatch);
+            // if still no valid key => request new one
             retrofit2.Response<SigningKey> newKeyResponse = issueNewKey();
             if (newKeyResponse.isSuccessful()) {
                 SigningKey newKey = newKeyResponse.body();
-                keychain.appendKey(newKey);
+                keystore.setKey(newKey);
                 return requestSigner.signRequestByKey(response.request(), newKey);
             } else {
                 return null;

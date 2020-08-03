@@ -2,12 +2,17 @@ package com.fjuul.sdk.http.utils;
 
 import com.fjuul.sdk.errors.ApiErrors.CommonError;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 public final class ApiCallResult<T> {
-    public static <T> ApiCallResult<T> value(T value) {
+    @NonNull
+    public static <T> ApiCallResult<T> value(@NonNull T value) {
         return new ApiCallResult<T>(value, null);
     }
 
-    public static <T> ApiCallResult<T> error(CommonError error) {
+    @NonNull
+    public static <T> ApiCallResult<T> error(@NonNull CommonError error) {
         return new ApiCallResult<T>(null, error);
     }
 
@@ -19,10 +24,12 @@ public final class ApiCallResult<T> {
         this.error = error;
     }
 
+    @Nullable
     public CommonError getError() {
         return error;
     }
 
+    @Nullable
     public T getValue() {
         return value;
     }

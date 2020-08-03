@@ -6,8 +6,8 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.fjuul.sdk.entities.SigningKey;
 import com.fjuul.sdk.entities.Keystore;
+import com.fjuul.sdk.entities.SigningKey;
 import com.fjuul.sdk.http.services.ISigningService;
 import com.fjuul.sdk.http.utils.RequestSigner;
 
@@ -26,7 +26,7 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
     private final Pattern signatureHeaderKeyIdPattern = Pattern.compile("keyId=\"(.+?)\"");
 
     public SigningAuthInterceptor(@NonNull Keystore keystore, @NonNull RequestSigner requestSigner,
-                                  @NonNull ISigningService signingService) {
+        @NonNull ISigningService signingService) {
         this.keystore = keystore;
         this.requestSigner = requestSigner;
         this.signingService = signingService;

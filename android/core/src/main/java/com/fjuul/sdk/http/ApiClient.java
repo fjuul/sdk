@@ -1,7 +1,7 @@
 package com.fjuul.sdk.http;
 
-import com.fjuul.sdk.entities.PersistentStorage;
 import com.fjuul.sdk.entities.Keystore;
+import com.fjuul.sdk.entities.PersistentStorage;
 import com.fjuul.sdk.entities.UserCredentials;
 import com.fjuul.sdk.http.interceptors.ApiKeyAttachingInterceptor;
 import com.fjuul.sdk.http.interceptors.BearerAuthInterceptor;
@@ -49,8 +49,7 @@ public class ApiClient {
         private String baseUrl;
         private String apiKey;
         protected @NonNull Context appContext;
-        protected @Nullable
-        Keystore keystore;
+        protected @Nullable Keystore keystore;
         protected @Nullable UserCredentials userCredentials;
 
         /**
@@ -77,8 +76,7 @@ public class ApiClient {
 
         protected void setupDefaultKeystore() {
             if (appContext != null && userCredentials != null) {
-                this.keystore =
-                    new Keystore(new PersistentStorage(appContext), userCredentials.getToken());
+                this.keystore = new Keystore(new PersistentStorage(appContext), userCredentials.getToken());
             }
         }
 

@@ -16,8 +16,8 @@ import org.robolectric.annotation.Config;
 
 import com.fjuul.sdk.analytics.entities.DailyStats;
 import com.fjuul.sdk.entities.InMemoryStorage;
-import com.fjuul.sdk.entities.SigningKey;
 import com.fjuul.sdk.entities.Keystore;
+import com.fjuul.sdk.entities.SigningKey;
 import com.fjuul.sdk.entities.UserCredentials;
 import com.fjuul.sdk.errors.ApiErrors;
 import com.fjuul.sdk.fixtures.http.TestApiClient;

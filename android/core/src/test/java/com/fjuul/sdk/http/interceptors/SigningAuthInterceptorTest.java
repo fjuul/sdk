@@ -23,8 +23,8 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import com.fjuul.sdk.entities.InMemoryStorage;
-import com.fjuul.sdk.entities.SigningKey;
 import com.fjuul.sdk.entities.Keystore;
+import com.fjuul.sdk.entities.SigningKey;
 import com.fjuul.sdk.http.services.UserSigningService;
 import com.fjuul.sdk.http.utils.RequestSigner;
 

@@ -6,15 +6,15 @@ import com.fjuul.sdk.android.exampleapp.data.LoginDataSource
 import com.fjuul.sdk.android.exampleapp.data.LoginRepository
 
 /**
- * ViewModel provider factory to instantiate LoginViewModel.
- * Required given LoginViewModel has a non-empty constructor
+ * ViewModel provider factory to instantiate OnboardingViewModel.
+ * Required given OnboardingViewModel has a non-empty constructor
  */
-class LoginViewModelFactory : ViewModelProvider.Factory {
+class OnboardingViewModelFactory : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
-            return LoginViewModel(
+        if (modelClass.isAssignableFrom(OnboardingViewModel::class.java)) {
+            return OnboardingViewModel(
                     loginRepository = LoginRepository(
                             dataSource = LoginDataSource()
                     )

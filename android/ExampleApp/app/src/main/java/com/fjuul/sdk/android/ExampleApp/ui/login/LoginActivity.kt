@@ -19,36 +19,39 @@ import com.fjuul.sdk.android.exampleapp.R
 
 class LoginActivity : AppCompatActivity() {
 
-    private lateinit var loginViewModel: LoginViewModel
+    private lateinit var onboardingViewModel: OnboardingViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_login)
 
-        val username = findViewById<EditText>(R.id.username)
-        val password = findViewById<EditText>(R.id.password)
+        val apiKeyInput = findViewById<EditText>(R.id.api_key_input)
+        val password = findViewById<EditText>(R.id.user_token)
         val login = findViewById<Button>(R.id.login)
         val loading = findViewById<ProgressBar>(R.id.loading)
+        val createUserButton = findViewById<Button>(R.id.create_user_button);
 
-        loginViewModel = ViewModelProviders.of(this, LoginViewModelFactory())
-                .get(LoginViewModel::class.java)
 
-        loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
+
+        onboardingViewModel = ViewModelProviders.of(this, OnboardingViewModelFactory())
+                .get(OnboardingViewModel::class.java)
+
+        onboardingViewModel.onboardingFormState.observe(this@LoginActivity, Observer {
             val loginState = it ?: return@Observer
 
             // disable login button unless both username / password is valid
             login.isEnabled = loginState.isDataValid
 
             if (loginState.usernameError != null) {
-                username.error = getString(loginState.usernameError)
+                apiKeyInput.error = getString(loginState.usernameError)
             }
             if (loginState.passwordError != null) {
                 password.error = getString(loginState.passwordError)
             }
         })
 
-        loginViewModel.loginResult.observe(this@LoginActivity, Observer {
+        onboardingViewModel.loginResult.observe(this@LoginActivity, Observer {
             val loginResult = it ?: return@Observer
 
             loading.visibility = View.GONE
@@ -64,17 +67,18 @@ class LoginActivity : AppCompatActivity() {
             finish()
         })
 
-        username.afterTextChanged {
-            loginViewModel.loginDataChanged(
-                    username.text.toString(),
+        apiKeyInput.afterTextChanged {
+            createUserButton.isEnabled = it.isNotEmpty()
+            onboardingViewModel.loginDataChanged(
+                    apiKeyInput.text.toString(),
                     password.text.toString()
             )
         }
 
         password.apply {
             afterTextChanged {
-                loginViewModel.loginDataChanged(
-                        username.text.toString(),
+                onboardingViewModel.loginDataChanged(
+                        apiKeyInput.text.toString(),
                         password.text.toString()
                 )
             }
@@ -82,8 +86,8 @@ class LoginActivity : AppCompatActivity() {
             setOnEditorActionListener { _, actionId, _ ->
                 when (actionId) {
                     EditorInfo.IME_ACTION_DONE ->
-                        loginViewModel.login(
-                                username.text.toString(),
+                        onboardingViewModel.login(
+                                apiKeyInput.text.toString(),
                                 password.text.toString()
                         )
                 }
@@ -92,7 +96,7 @@ class LoginActivity : AppCompatActivity() {
 
             login.setOnClickListener {
                 loading.visibility = View.VISIBLE
-                loginViewModel.login(username.text.toString(), password.text.toString())
+                onboardingViewModel.login(apiKeyInput.text.toString(), password.text.toString())
             }
         }
     }

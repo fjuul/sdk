@@ -20,9 +20,9 @@ struct RootView: View {
         NavigationView {
             VStack {
                 if viewRouter.presentedView == .onboarding {
-                    OnboardingView(viewRouter: viewRouter)
+                    OnboardingScreen(viewRouter: viewRouter)
                 } else if viewRouter.presentedView == .moduleSelection {
-                    ModuleSelectionView()
+                    ModuleSelectionScreens()
                 }
             }
         }

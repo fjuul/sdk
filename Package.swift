@@ -11,14 +11,9 @@ let package = Package(
         .iOS(.v10)
     ],
     products: [
-        .library(
-            name: "FjuulCore",
-            targets: ["FjuulCore"]
-        ),
-        .library(
-            name: "FjuulAnalytics",
-            targets: ["FjuulAnalytics"]
-        )
+        .library(name: "FjuulCore", targets: ["FjuulCore"]),
+        .library(name: "FjuulAnalytics", targets: ["FjuulAnalytics"]),
+        .library(name: "FjuulUser", targets: ["FjuulUser"])
     ],
     dependencies: [
         .package(url: "https://github.com/Alamofire/Alamofire.git", .upToNextMajor(from: "5.2.0")),
@@ -44,6 +39,16 @@ let package = Package(
             name: "FjuulAnalyticsTests",
             dependencies: [.product(name: "OHHTTPStubsSwift", package: "OHHTTPStubs"), "FjuulAnalytics"],
             path: "ios/Analytics/Tests"
+        ),
+        .target(
+            name: "FjuulUser",
+            dependencies: ["FjuulCore"],
+            path: "ios/User/Sources"
+        ),
+        .testTarget(
+            name: "FjuulUserTests",
+            dependencies: [.product(name: "OHHTTPStubsSwift", package: "OHHTTPStubs"), "FjuulUser"],
+            path: "ios/User/Tests"
         )
     ],
     swiftLanguageVersions: [.v5]

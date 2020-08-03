@@ -25,12 +25,12 @@ public class AnalyticsApi {
     ///   - date: The day to request daily stats for; this is the date in the users local timezone.
     ///   - completion: The code to be executed once the request has finished.
     public func dailyStats(date: Date, completion: @escaping (Result<DailyStats, Error>) -> Void) {
-        let path = "/daily-stats/\(apiClient.userToken)/\(DateFormatters.yyyyMMdd.string(from: date))"
+        let path = "/daily-stats/\(apiClient.userToken)/\(DateFormatters.yyyyMMddLocale.string(from: date))"
         guard let url = baseUrl?.appendingPathComponent(path) else {
             return completion(.failure(FjuulError.invalidConfig))
         }
         apiClient.signedSession.request(url, method: .get).apiResponse { response in
-            let decodedResponse = response.tryMap { try Decoders.yyyyMMdd.decode(DailyStats.self, from: $0) }
+            let decodedResponse = response.tryMap { try Decoders.yyyyMMddLocale.decode(DailyStats.self, from: $0) }
             completion(decodedResponse.result)
         }
     }
@@ -47,11 +47,11 @@ public class AnalyticsApi {
             return completion(.failure(FjuulError.invalidConfig))
         }
         let parameters = [
-            "from": DateFormatters.yyyyMMdd.string(from: from),
-            "to": DateFormatters.yyyyMMdd.string(from: to),
+            "from": DateFormatters.yyyyMMddLocale.string(from: from),
+            "to": DateFormatters.yyyyMMddLocale.string(from: to),
         ]
         apiClient.signedSession.request(url, method: .get, parameters: parameters).apiResponse { response in
-            let decodedResponse = response.tryMap { try Decoders.yyyyMMdd.decode([DailyStats].self, from: $0) }
+            let decodedResponse = response.tryMap { try Decoders.yyyyMMddLocale.decode([DailyStats].self, from: $0) }
             completion(decodedResponse.result)
         }
     }

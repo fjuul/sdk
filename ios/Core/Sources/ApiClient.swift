@@ -4,12 +4,40 @@ import Alamofire
 /// The `ApiClient` is the central unified entrypoint for all of the functionality provided by the Fjuul SDK.
 public class ApiClient {
 
+    /// Creates an unauthenticated request and attaches the provided API key.
+    /// This is a helper method currently only required for user creation.
+    /// **This is for internal use only.**
+    /// - Parameters:
+    ///   - convertible:     `URLConvertible` value to be used as the `URLRequest`'s `URL`.
+    ///   - apiKey:           The API key to use for the request.
+    ///   - method:          `HTTPMethod` for the `URLRequest`. `.get` by default.
+    ///   - parameters:      `Parameters` (a.k.a. `[String: Any]`) value to be encoded into the `URLRequest`. `nil` by
+    ///                      default.
+    ///   - encoding:        `ParameterEncoding` to be used to encode the `parameters` value into the `URLRequest`.
+    ///                      `URLEncoding.default` by default.
+    /// - Returns: The created `DataRequest`.
+    public static func requestUnauthenticated(_ convertible: URLConvertible,
+                                              apiKey: String,
+                                              method: HTTPMethod = .get,
+                                              parameters: Parameters? = nil,
+                                              encoding: ParameterEncoding = URLEncoding.default) -> DataRequest {
+
+        let apiKeyAdapter = ApiKeyAdapter(apiKey: apiKey)
+        let compositeInterceptor = Interceptor(
+            adapters: [apiKeyAdapter],
+            retriers: [],
+            interceptors: []
+        )
+        return AF.request(convertible, method: method, parameters: parameters, encoding: encoding, interceptor: compositeInterceptor)
+
+    }
+
     /// An HTTP session which applies bearer authentication to all requests.
-    /// This is for internal use only.
+    /// **This is for internal use only.**
     public let bearerAuthenticatedSession: Session
 
     /// An HTTP session which applies HMAC authentication to all requests.
-    /// This is for internal use only.
+    /// **This is for internal use only.**
     public let signedSession: Session
 
     /// The API base URL this API client was initialized with.

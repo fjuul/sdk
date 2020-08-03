@@ -5,10 +5,10 @@ extension DataRequest {
 
     @discardableResult
     public func apiResponse(queue: DispatchQueue = .main,
-                             dataPreprocessor: DataPreprocessor = DataResponseSerializer.defaultDataPreprocessor,
-                             emptyResponseCodes: Set<Int> = DataResponseSerializer.defaultEmptyResponseCodes,
-                             emptyRequestMethods: Set<HTTPMethod> = DataResponseSerializer.defaultEmptyRequestMethods,
-                             completionHandler: @escaping (DataResponse<Data, Error>) -> Void) -> Self {
+                            dataPreprocessor: DataPreprocessor = DataResponseSerializer.defaultDataPreprocessor,
+                            emptyResponseCodes: Set<Int> = DataResponseSerializer.defaultEmptyResponseCodes,
+                            emptyRequestMethods: Set<HTTPMethod> = DataResponseSerializer.defaultEmptyRequestMethods,
+                            completionHandler: @escaping (DataResponse<Data, Error>) -> Void) -> Self {
 
         let serializer = DataResponseSerializer(
             dataPreprocessor: dataPreprocessor,

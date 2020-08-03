@@ -8,9 +8,9 @@ public struct Decoders {
         return decoder
     }()
 
-    public static let yyyyMMdd: JSONDecoder = {
+    public static let yyyyMMddLocale: JSONDecoder = {
         let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .formatted(DateFormatters.yyyyMMdd)
+        decoder.dateDecodingStrategy = .formatted(DateFormatters.yyyyMMddLocale)
         return decoder
     }()
 

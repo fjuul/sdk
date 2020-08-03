@@ -28,7 +28,7 @@ class LoginActivity : AppCompatActivity() {
 
         val apiKeyInput = findViewById<EditText>(R.id.api_key_input)
         val password = findViewById<EditText>(R.id.user_token)
-        val login = findViewById<Button>(R.id.login)
+        val login = findViewById<Button>(R.id.continue_btn)
         val loading = findViewById<ProgressBar>(R.id.loading)
         val createUserButton = findViewById<Button>(R.id.create_user_button);
 
@@ -43,11 +43,11 @@ class LoginActivity : AppCompatActivity() {
             // disable login button unless both username / password is valid
             login.isEnabled = loginState.isDataValid
 
-            if (loginState.usernameError != null) {
-                apiKeyInput.error = getString(loginState.usernameError)
+            if (loginState.tokenError != null) {
+                apiKeyInput.error = getString(loginState.tokenError)
             }
-            if (loginState.passwordError != null) {
-                password.error = getString(loginState.passwordError)
+            if (loginState.secretError != null) {
+                password.error = getString(loginState.secretError)
             }
         })
 

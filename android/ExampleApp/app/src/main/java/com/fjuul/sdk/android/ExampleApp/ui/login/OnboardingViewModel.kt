@@ -30,9 +30,9 @@ class OnboardingViewModel(private val loginRepository: LoginRepository) : ViewMo
 
     fun loginDataChanged(username: String, password: String) {
         if (!isUserNameValid(username)) {
-            _loginForm.value = OnboardingFormState(usernameError = R.string.invalid_username)
+            _loginForm.value = OnboardingFormState(tokenError = R.string.invalid_token)
         } else if (!isPasswordValid(password)) {
-            _loginForm.value = OnboardingFormState(passwordError = R.string.invalid_password)
+            _loginForm.value = OnboardingFormState(secretError = R.string.invalid_secret)
         } else {
             _loginForm.value = OnboardingFormState(isDataValid = true)
         }

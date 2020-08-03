@@ -1,5 +1,6 @@
 package com.fjuul.sdk.http.utils;
 
+import androidx.annotation.NonNull;
 import retrofit2.Response;
 
 /**
@@ -13,5 +14,5 @@ import retrofit2.Response;
  * @param <T> Type parameter of casted response type by retrofit converters
  */
 public interface IApiResponseTransformer<T> {
-    public ApiCallResult<T> transform(Response<T> response);
+    public @NonNull ApiCallResult<T> transform(@NonNull Response<T> response);
 }

@@ -1,0 +1,45 @@
+apply plugin: "maven-publish"
+
+afterEvaluate {
+    task sourcesJar(type: Jar) {
+        from android.sourceSets.main.java.srcDirs
+        archiveClassifier = 'sources'
+    }
+
+    task javadoc(type: Javadoc) {
+        source = android.sourceSets.main.java.srcDirs
+        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        archiveClassifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+
+    artifacts {
+        archives javadocJar
+        archives sourcesJar
+    }
+
+    publishing {
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/fjuul/sdk")
+                credentials {
+                    username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_ACTOR")
+                    password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+                }
+            }
+        }
+        publications {
+            FjuulSDK(MavenPublication) {
+                groupId "com.fjuul.sdk"
+                version = project.findProperty("VERSION_NAME")
+                from project.components.release
+                artifact sourcesJar
+                artifact javadocJar
+            }
+        }
+    }
+}

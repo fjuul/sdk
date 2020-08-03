@@ -1,7 +1,7 @@
 package com.fjuul.sdk.entities;
 
-// TODO: get back android's base64 module after turning this plugin to the android plugin
-import java.util.Base64;
+import android.util.Base64;
+import androidx.annotation.NonNull;
 
 // NOTE: this class was copied from the previous sdk
 public class UserCredentials {
@@ -12,15 +12,17 @@ public class UserCredentials {
         // require by Retrofit
     }
 
-    public UserCredentials(String token, String secret) {
+    public UserCredentials(@NonNull String token, @NonNull String secret) {
         this.token = token;
         this.secret = secret;
     }
 
+    @NonNull
     public String getToken() {
         return token;
     }
 
+    @NonNull
     public String getSecret() {
         return secret;
     }
@@ -30,6 +32,7 @@ public class UserCredentials {
      *
      * @return a Bearer token using the token and secret from this instance.
      */
+    @NonNull
     public String getCompleteAuthString() {
         return "Bearer " + this.encodedBase64();
     }
@@ -39,12 +42,14 @@ public class UserCredentials {
      *
      * @return the base64 encoded credentials
      */
+    @NonNull
     public String encodedBase64() {
         String together = token + ":" + secret;
-        return Base64.getEncoder().encodeToString(together.getBytes());
+        return Base64.encodeToString(together.getBytes(), Base64.NO_WRAP);
     }
 
     @Override
+    @NonNull
     public String toString() {
         return "{ token: " + token + ", secret: *** }";
     }

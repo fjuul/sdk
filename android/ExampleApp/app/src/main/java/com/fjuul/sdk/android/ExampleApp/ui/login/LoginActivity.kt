@@ -1,6 +1,7 @@
 package com.fjuul.sdk.android.exampleapp.ui.login
 
 import android.app.Activity
+import android.content.Intent
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
@@ -14,6 +15,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
+import com.fjuul.sdk.android.ExampleApp.ui.modules.ModulesActivity
 
 import com.fjuul.sdk.android.exampleapp.R
 
@@ -30,7 +32,6 @@ class LoginActivity : AppCompatActivity() {
         val tokenInput = findViewById<EditText>(R.id.user_token)
         val secretInput = findViewById<EditText>(R.id.user_secret)
         val login = findViewById<Button>(R.id.continue_btn)
-        val loading = findViewById<ProgressBar>(R.id.loading)
         val createUserButton = findViewById<Button>(R.id.create_user_button);
 
 
@@ -58,16 +59,19 @@ class LoginActivity : AppCompatActivity() {
         onboardingViewModel.loginResult.observe(this@LoginActivity, Observer {
             val loginResult = it ?: return@Observer
 
-            loading.visibility = View.GONE
-            if (loginResult.error != null) {
-                showLoginFailed(loginResult.error)
+            val intent = Intent(this, ModulesActivity::class.java).apply {
+                // putExtra...
             }
-            if (loginResult.success != null) {
-                updateUiWithUser(loginResult.success)
-            }
+            startActivity(intent)
+//            if (loginResult.error != null) {
+//                showLoginFailed(loginResult.error)
+//            }
+//            if (loginResult.success != null) {
+//                updateUiWithUser(loginResult.success)
+//            }
             setResult(Activity.RESULT_OK)
-
-            //Complete and destroy login activity once successful
+//
+//            //Complete and destroy login activity once successful
             finish()
         })
 
@@ -109,7 +113,6 @@ class LoginActivity : AppCompatActivity() {
             }
 
             login.setOnClickListener {
-                loading.visibility = View.VISIBLE
                 onboardingViewModel.login(apiKeyInput.text.toString(), tokenInput.text.toString())
             }
         }

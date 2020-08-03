@@ -12,6 +12,7 @@ let package = Package(
     ],
     products: [
         .library(name: "FjuulCore", targets: ["FjuulCore"]),
+        .library(name: "FjuulActivitySources", targets: ["FjuulActivitySources"]),
         .library(name: "FjuulAnalytics", targets: ["FjuulAnalytics"]),
         .library(name: "FjuulUser", targets: ["FjuulUser"])
     ],
@@ -29,6 +30,16 @@ let package = Package(
             name: "FjuulCoreTests",
             dependencies: [.product(name: "OHHTTPStubsSwift", package: "OHHTTPStubs"), "FjuulCore"],
             path: "ios/Core/Tests"
+        ),
+        .target(
+            name: "FjuulActivitySources",
+            dependencies: ["FjuulCore"],
+            path: "ios/ActivitySources/Sources"
+        ),
+        .testTarget(
+            name: "FjuulActivitySourcesTests",
+            dependencies: [.product(name: "OHHTTPStubsSwift", package: "OHHTTPStubs"), "FjuulActivitySources"],
+            path: "ios/ActivitySources/Tests"
         ),
         .target(
             name: "FjuulAnalytics",

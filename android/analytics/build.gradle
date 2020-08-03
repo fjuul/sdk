@@ -6,9 +6,56 @@
  * User Manual available at https://docs.gradle.org/6.0.1/userguide/java_library_plugin.html
  */
 
-plugins {
-    // Apply the java-library plugin to add support for Java Library
-    id 'java-library'
+apply plugin: 'com.android.library'
+apply from: "${rootDir}/gradle/publish.gradle"
+
+repositories {
+    // Use jcenter for resolving dependencies.
+    // You can declare any Maven/Ivy/file repository here.
+    jcenter()
+    google()
+}
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+
+    // robolectric
+    testOptions.unitTests.includeAndroidResources = true
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    // TODO: find better solution to export test code from the core module
+    // NOTE: use test files from the core module as test-fixtures
+    sourceSets {
+        // uncomment lines below to integrate core's test fixtures in android tests
+        // androidTest {
+        //     java.srcDir project(':core').file("src/androidTest/java")
+        // }
+        test {
+            java.srcDir project(':core').file("src/test/java/com/fjuul/sdk/fixtures")
+        }
+    }
 }
 
 repositories {
@@ -23,13 +70,16 @@ dependencies {
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     // implementation 'com.google.guava:guava:28.0-jre'
+    implementation "androidx.annotation:annotation:$rootProject.ext.androidXAnnotationVersion"
 
     // TODO: specify an exact version for the Core package
     api project(':core')
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
-    testImplementation 'org.mockito:mockito-core:3.3.+'
-    testImplementation 'com.squareup.okhttp3:mockwebserver:3.14.+'
-    testImplementation project(':core').sourceSets.test.output
+    testImplementation 'org.mockito:mockito-core:3.4.4'
+    testImplementation "com.squareup.okhttp3:mockwebserver:$rootProject.ext.okHttpVersion"
+
+    testImplementation 'org.robolectric:robolectric:4.3.1'
+    testImplementation 'androidx.test:core:1.2.0'
 }

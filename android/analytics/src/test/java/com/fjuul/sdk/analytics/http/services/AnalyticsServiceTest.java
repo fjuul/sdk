@@ -10,20 +10,27 @@ import org.hamcrest.core.IsInstanceOf;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import com.fjuul.sdk.analytics.entities.DailyStats;
+import com.fjuul.sdk.entities.InMemoryStorage;
+import com.fjuul.sdk.entities.Keystore;
 import com.fjuul.sdk.entities.SigningKey;
-import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.entities.UserCredentials;
 import com.fjuul.sdk.errors.ApiErrors;
-import com.fjuul.sdk.http.TestApiClient;
+import com.fjuul.sdk.fixtures.http.TestApiClient;
 import com.fjuul.sdk.http.services.ISigningService;
 import com.fjuul.sdk.http.services.UserSigningService;
 import com.fjuul.sdk.http.utils.ApiCallResult;
 
+import android.os.Build;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
 public class AnalyticsServiceTest {
     static final String SECRET_KEY = "REAL_SECRET_KEY";
     static final String KEY_ID = "signing-key-id-1234";
@@ -32,9 +39,10 @@ public class AnalyticsServiceTest {
 
     AnalyticsService analyticsService;
     MockWebServer mockWebServer;
-    SigningKeychain testKeychain;
+    Keystore testKeystore;
     TestApiClient.Builder clientBuilder;
     ISigningService userSigningService;
+    SigningKey validSigningKey;
 
     @Before
     public void setup() throws IOException {
@@ -44,7 +52,8 @@ public class AnalyticsServiceTest {
         clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.HOUR, 2);
-        testKeychain = new SigningKeychain(new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime()));
+        validSigningKey = new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime());
+        testKeystore = new Keystore(new InMemoryStorage(), USER_TOKEN);
         userSigningService = new UserSigningService(clientBuilder.build());
     }
 
@@ -55,7 +64,8 @@ public class AnalyticsServiceTest {
 
     @Test
     public void getDailyStatsTest() throws IOException {
-        clientBuilder.setSigningKeychain(testKeychain);
+        testKeystore.setKey(validSigningKey);
+        clientBuilder.setKeystore(testKeystore);
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse =
             new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK)
@@ -89,7 +99,8 @@ public class AnalyticsServiceTest {
 
     @Test
     public void getDailyStatsRangeTest() throws IOException {
-        clientBuilder.setSigningKeychain(testKeychain);
+        testKeystore.setKey(validSigningKey);
+        clientBuilder.setKeystore(testKeystore);
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK)
             .setHeader("Content-Type", "application/json")
@@ -139,8 +150,8 @@ public class AnalyticsServiceTest {
     }
 
     @Test
-    public void getDailyStats_EmptyKeychainWithUnauthorizedError_ReturnsErrorResult() throws IOException {
-        clientBuilder.setSigningKeychain(new SigningKeychain());
+    public void getDailyStats_EmptyKeystoreWithUnauthorizedError_ReturnsErrorResult() throws IOException {
+        clientBuilder.setKeystore(testKeystore);
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
             .setHeader("Content-Type", "application/json")
@@ -161,7 +172,7 @@ public class AnalyticsServiceTest {
 
     @Test
     public void getDailyStats_ResponseWithUnauthorizedError_ReturnsErrorResult() throws IOException {
-        clientBuilder.setSigningKeychain(new SigningKeychain());
+        clientBuilder.setKeystore(testKeystore);
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
             .setHeader("Content-Type", "application/json")
@@ -180,7 +191,7 @@ public class AnalyticsServiceTest {
 
     @Test
     public void getDailyStats_ResponseWithUnauthorizedErrorWithCode_ReturnsErrorResult() throws IOException {
-        clientBuilder.setSigningKeychain(new SigningKeychain());
+        clientBuilder.setKeystore(testKeystore);
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
             .setHeader("Content-Type", "application/json")
@@ -201,7 +212,7 @@ public class AnalyticsServiceTest {
 
     @Test
     public void getDailyStats_ResponseWithClockSkewError_ReturnsErrorResult() throws IOException {
-        clientBuilder.setSigningKeychain(new SigningKeychain());
+        clientBuilder.setKeystore(testKeystore);
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
             .setHeader("Content-Type", "application/json")

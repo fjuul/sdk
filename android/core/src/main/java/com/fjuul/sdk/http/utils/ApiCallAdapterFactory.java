@@ -4,15 +4,19 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
 import retrofit2.Call;
 import retrofit2.CallAdapter;
 import retrofit2.Retrofit;
 
 public class ApiCallAdapterFactory extends CallAdapter.Factory {
-    public static ApiCallAdapterFactory create(IApiResponseTransformer responseTransformer) {
+    @NonNull
+    public static ApiCallAdapterFactory create(@NonNull IApiResponseTransformer responseTransformer) {
         return new ApiCallAdapterFactory(responseTransformer);
     }
 
+    @NonNull
     public static ApiCallAdapterFactory create() {
         return new ApiCallAdapterFactory(new DefaultApiResponseTransformer());
     }
@@ -23,6 +27,7 @@ public class ApiCallAdapterFactory extends CallAdapter.Factory {
         this.responseTransformer = responseTransformer;
     }
 
+    @SuppressLint("UnknownNullness")
     @Override
     public CallAdapter<?, ?> get(Type returnType, Annotation[] annotations, Retrofit retrofit) {
         if (getRawType(returnType) != ApiCall.class) {

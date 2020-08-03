@@ -3,7 +3,6 @@ package com.fjuul.sdk.android.ExampleApp;
 
 import com.fjuul.sdk.analytics.entities.DailyStats;
 import com.fjuul.sdk.analytics.http.services.AnalyticsService;
-import com.fjuul.sdk.entities.SigningKeychain;
 import com.fjuul.sdk.entities.UserCredentials;
 import com.fjuul.sdk.http.ApiClient;
 
@@ -34,9 +33,8 @@ public class MainActivity extends AppCompatActivity {
         // NOTE: provide your credentials
         String userToken = "<TOKEN>";
         String secret = "<SECRET>";
-        ApiClient client = new ApiClient.Builder("https://dev.api.fjuul.com", "c1e51fc6-d253-4961-ab9a-5d91560bae75")
+        ApiClient client = new ApiClient.Builder(getApplicationContext(), "", "")
             .setUserCredentials(new UserCredentials(userToken, secret))
-            .setSigningKeychain(new SigningKeychain())
             .build();
         AnalyticsService analyticsService = new AnalyticsService(client);
         analyticsService

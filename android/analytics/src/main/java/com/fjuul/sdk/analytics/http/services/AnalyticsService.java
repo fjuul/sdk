@@ -10,6 +10,7 @@ import com.fjuul.sdk.http.utils.ApiCallAdapterFactory;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
+import androidx.annotation.NonNull;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;
@@ -26,7 +27,7 @@ public class AnalyticsService {
      *
      * @param client configured client with signing ability and user credentials
      */
-    public AnalyticsService(ApiClient client) {
+    public AnalyticsService(@NonNull ApiClient client) {
         this.clientBuilder = client;
         OkHttpClient httpClient = client.buildSigningClient();
         Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
@@ -45,7 +46,7 @@ public class AnalyticsService {
      *        timezone.
      * @return ApiCall for the user activity statistics for the given day.
      */
-    public ApiCall<DailyStats> getDailyStats(String date) {
+    public @NonNull ApiCall<DailyStats> getDailyStats(@NonNull String date) {
         return analyticsApiClient.getDailyStats(clientBuilder.getUserToken(), date);
     }
 
@@ -58,7 +59,7 @@ public class AnalyticsService {
      *        the date in the users local timezone.
      * @return ApiCall for the user activity statistics for the given day interval.
      */
-    public ApiCall<DailyStats[]> getDailyStats(String startDate, String endDate) {
+    public @NonNull ApiCall<DailyStats[]> getDailyStats(@NonNull String startDate, @NonNull String endDate) {
         return analyticsApiClient.getDailyStats(clientBuilder.getUserToken(), startDate, endDate);
     }
 }

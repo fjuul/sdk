@@ -2,17 +2,20 @@ package com.fjuul.sdk.errors;
 
 import java.io.IOException;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 public final class ApiErrors {
     public static class CommonError extends FjuulError {
-        public CommonError(String message) {
+        public CommonError(@NonNull String message) {
             super(message);
         }
 
-        public CommonError(String message, Throwable cause) {
+        public CommonError(@NonNull String message, @NonNull Throwable cause) {
             super(message, cause);
         }
 
-        public CommonError(Throwable cause) {
+        public CommonError(@NonNull Throwable cause) {
             super(cause);
         }
     }
@@ -22,15 +25,15 @@ public final class ApiErrors {
      * exception occurred creating the request or processing the response.
      */
     public static class InternalClientError extends CommonError {
-        public InternalClientError(IOException exception) {
+        public InternalClientError(@NonNull IOException exception) {
             super(exception.getMessage(), exception.getCause());
         }
 
-        public InternalClientError(RuntimeException exception) {
+        public InternalClientError(@NonNull RuntimeException exception) {
             super(exception.getMessage(), exception.getCause());
         }
 
-        public InternalClientError(Throwable throwable) {
+        public InternalClientError(@NonNull Throwable throwable) {
             super(throwable);
         }
     }
@@ -47,11 +50,11 @@ public final class ApiErrors {
 
         private ErrorCode errorCode;
 
-        public ErrorCode getErrorCode() {
+        public @Nullable ErrorCode getErrorCode() {
             return errorCode;
         }
 
-        public UnauthorizedError(String message, ErrorCode errorCode) {
+        public UnauthorizedError(@NonNull String message, @Nullable ErrorCode errorCode) {
             super(message);
             this.errorCode = errorCode;
         }

@@ -84,7 +84,7 @@ class LoginFragment : Fragment() {
                 secret = secretInput.text.toString()
             )
 
-            val action = LoginFragmentDirections.actionLoginFragmentToModulesActivity()
+            val action = LoginFragmentDirections.actionLoginFragmentToModulesFragment()
             findNavController().navigate(action)
         })
 

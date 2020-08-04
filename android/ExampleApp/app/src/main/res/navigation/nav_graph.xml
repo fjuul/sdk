@@ -4,18 +4,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/loginFragment">
-    <activity
-        android:id="@+id/modulesActivity"
-        android:name="com.fjuul.sdk.android.exampleapp.ui.modules.ModulesActivity"
-        android:label="ModulesActivity" />
-    <fragment android:id="@+id/placeholder2" />
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.fjuul.sdk.android.exampleapp.ui.login.LoginFragment"
-        android:label="fragment_login"
+        android:label="Onboarding"
         tools:layout="@layout/fragment_login" >
         <action
-            android:id="@+id/action_loginFragment_to_modulesActivity"
-            app:destination="@id/modulesActivity" />
+            android:id="@+id/action_loginFragment_to_modulesFragment"
+            app:destination="@id/modulesFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/modulesFragment"
+        android:name="com.fjuul.sdk.android.exampleapp.ui.modules.ModulesFragment"
+        android:label="Modules"
+        tools:layout="@layout/fragment_modules" />
 </navigation>

@@ -7,6 +7,7 @@ import com.fjuul.sdk.android.exampleapp.data.LoginRepository
 import com.fjuul.sdk.android.exampleapp.data.Result
 
 import com.fjuul.sdk.android.exampleapp.R
+import com.fjuul.sdk.android.exampleapp.data.SdkEnvironment
 
 class OnboardingViewModel(private val loginRepository: LoginRepository) : ViewModel() {
 

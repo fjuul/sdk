@@ -15,6 +15,7 @@ import android.widget.*
 import com.fjuul.sdk.android.exampleapp.ui.modules.ModulesActivity
 
 import com.fjuul.sdk.android.exampleapp.R
+import com.fjuul.sdk.android.exampleapp.data.SdkEnvironment
 
 class LoginActivity : AppCompatActivity() {
 

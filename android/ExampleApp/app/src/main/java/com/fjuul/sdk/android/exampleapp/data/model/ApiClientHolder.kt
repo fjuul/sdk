@@ -5,10 +5,8 @@ import com.fjuul.sdk.entities.UserCredentials
 import com.fjuul.sdk.http.ApiClient
 
 object ApiClientHolder {
-    private var sdkClient: ApiClient? = null
-        get() {
-            return sdkClient
-        }
+    var sdkClient: ApiClient? = null
+        private set
 
     fun setup(context: Context, env: SdkEnvironment, apiKey: String, token: String, secret: String) {
         sdkClient = ApiClient.Builder(context, getBaseUrlByEnv(env), apiKey)

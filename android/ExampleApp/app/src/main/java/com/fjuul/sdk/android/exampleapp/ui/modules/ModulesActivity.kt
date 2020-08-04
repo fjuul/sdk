@@ -1,4 +1,4 @@
-package com.fjuul.sdk.android.ExampleApp.ui.modules
+package com.fjuul.sdk.android.exampleapp.ui.modules
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle

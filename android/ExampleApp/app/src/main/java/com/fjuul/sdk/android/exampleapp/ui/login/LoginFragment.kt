@@ -1,44 +1,61 @@
 package com.fjuul.sdk.android.exampleapp.ui.login
 
-import android.app.Activity
-import android.content.Intent
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import androidx.annotation.StringRes
-import androidx.appcompat.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.widget.*
-import com.fjuul.sdk.android.exampleapp.ui.modules.ModulesActivity
-
+import android.widget.Button
+import android.widget.EditText
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.fjuul.sdk.android.exampleapp.R
 import com.fjuul.sdk.android.exampleapp.data.SdkEnvironment
 import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
 
-class LoginActivity : AppCompatActivity() {
-
+class LoginFragment : Fragment() {
     private lateinit var onboardingViewModel: OnboardingViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+    }
 
-        setContentView(R.layout.activity_login)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_login, container, false)
+    }
 
-        val apiKeyInput = findViewById<EditText>(R.id.api_key_input)
-        val tokenInput = findViewById<EditText>(R.id.user_token)
-        val secretInput = findViewById<EditText>(R.id.user_secret)
-        val login = findViewById<Button>(R.id.continue_btn)
-        val createUserButton = findViewById<Button>(R.id.create_user_button);
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val apiKeyInput = view.findViewById<EditText>(R.id.api_key_input)
+        val tokenInput = view.findViewById<EditText>(R.id.user_token)
+        val secretInput = view.findViewById<EditText>(R.id.user_secret)
+        val login = view.findViewById<Button>(R.id.continue_btn)
+        val createUserButton = view.findViewById<Button>(R.id.create_user_button)
+        val radioGroup = view.findViewById<RadioGroup>(R.id.env_radio_group)
 
 
+        radioGroup.setOnCheckedChangeListener { group, checkedId ->
+            when (checkedId) {
+                R.id.dev_env_radio -> onboardingViewModel.envModeChanged(SdkEnvironment.DEV)
+                R.id.test_env_radio -> onboardingViewModel.envModeChanged(SdkEnvironment.TEST)
+                R.id.prod_env_radio -> onboardingViewModel.envModeChanged(SdkEnvironment.PROD)
+            }
+        }
 
         onboardingViewModel = ViewModelProviders.of(this, OnboardingViewModelFactory())
-                .get(OnboardingViewModel::class.java)
+            .get(OnboardingViewModel::class.java)
 
-        onboardingViewModel.onboardingFormState.observe(this@LoginActivity, Observer {
+        onboardingViewModel.onboardingFormState.observe(viewLifecycleOwner, Observer {
             val loginState = it ?: return@Observer
 
             // disable login button unless both username / password is valid
@@ -55,31 +72,31 @@ class LoginActivity : AppCompatActivity() {
             }
         })
 
-        onboardingViewModel.submittedFormState.observe(this@LoginActivity, Observer {
+        onboardingViewModel.submittedFormState.observe(viewLifecycleOwner, Observer {
             val loginResult = it ?: return@Observer
 
             ApiClientHolder.setup(
-                context = applicationContext,
+                context = this.requireActivity().applicationContext,
                 env = it.environment!!,
                 apiKey = apiKeyInput.text.toString(),
                 token = tokenInput.text.toString(),
                 secret = secretInput.text.toString()
             )
 
-            val intent = Intent(this, ModulesActivity::class.java).apply {
-                // putExtra if need
-            }
-            startActivity(intent)
-            setResult(Activity.RESULT_OK)
-            finish()
+//            val intent = Intent(this, ModulesActivity::class.java).apply {
+//                // putExtra if need
+//            }
+//            startActivity(intent)
+//            setResult(Activity.RESULT_OK)
+//            finish()
         })
 
         apiKeyInput.afterTextChanged {
             createUserButton.isEnabled = it.isNotEmpty()
             onboardingViewModel.loginDataChanged(
-                    apiKeyInput.text.toString(),
-                    tokenInput.text.toString(),
-                    secretInput.text.toString()
+                apiKeyInput.text.toString(),
+                tokenInput.text.toString(),
+                secretInput.text.toString()
             )
         }
 
@@ -94,9 +111,9 @@ class LoginActivity : AppCompatActivity() {
         secretInput.apply {
             afterTextChanged {
                 onboardingViewModel.loginDataChanged(
-                        apiKeyInput.text.toString(),
-                        tokenInput.text.toString(),
-                        secretInput.text.toString()
+                    apiKeyInput.text.toString(),
+                    tokenInput.text.toString(),
+                    secretInput.text.toString()
                 )
             }
 
@@ -114,42 +131,15 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    fun onRadioButtonClicked(view: View) {
-        if (view is RadioButton) {
-            // Is the button now checked?
-            val checked = view.isChecked
-
-            // Check which radio button was clicked
-            when (view.getId()) {
-                R.id.dev_env_radio ->
-                    if (checked) {
-                        onboardingViewModel.envModeChanged(SdkEnvironment.DEV);
-                    }
-                R.id.test_env_radio ->
-                    if (checked) {
-                        onboardingViewModel.envModeChanged(SdkEnvironment.TEST);
-                    }
-                R.id.prod_env_radio ->
-                    if (checked) {
-                        onboardingViewModel.envModeChanged(SdkEnvironment.PROD);
-                    }
-            }
+    companion object {
+        /**
+         * Use this factory method to create a new instance of
+         * this fragment using the provided parameters.
+         */
+        @JvmStatic
+        fun newInstance() = LoginFragment().apply {
+                arguments = Bundle()
         }
-    }
-
-    private fun updateUiWithUser(model: LoggedInUserView) {
-        val welcome = getString(R.string.welcome)
-        val displayName = model.displayName
-        // TODO : initiate successful logged in experience
-        Toast.makeText(
-                applicationContext,
-                "$welcome $displayName",
-                Toast.LENGTH_LONG
-        ).show()
-    }
-
-    private fun showLoginFailed(@StringRes errorString: Int) {
-        Toast.makeText(applicationContext, errorString, Toast.LENGTH_SHORT).show()
     }
 }
 

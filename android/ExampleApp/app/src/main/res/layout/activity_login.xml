@@ -102,24 +102,27 @@
         app:layout_constraintTop_toBottomOf="@+id/environment_label">
 
         <RadioButton
-            android:id="@+id/devEnvRadio"
+            android:id="@+id/dev_env_radio"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:onClick="onRadioButtonClicked"
             android:text="dev" />
 
         <RadioButton
-            android:id="@+id/testEnvRadio"
+            android:id="@+id/test_env_radio"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:onClick="onRadioButtonClicked"
             android:text="test" />
 
         <RadioButton
-            android:id="@+id/testProdRadio"
+            android:id="@+id/prod_env_radio"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:onClick="onRadioButtonClicked"
             android:text="⚠ prod" />
 
     </RadioGroup>

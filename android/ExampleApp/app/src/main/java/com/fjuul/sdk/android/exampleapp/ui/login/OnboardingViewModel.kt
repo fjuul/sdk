@@ -43,4 +43,12 @@ class OnboardingViewModel(private val loginRepository: LoginRepository) : ViewMo
             }
         }
     }
+
+    fun envModeChanged(environment: SdkEnvironment) {
+        if (_loginForm.value != null) {
+            _loginForm.value = _loginForm.value!!.copy(environment = environment)
+        } else {
+            _loginForm.value = OnboardingFormState(environment = environment)
+        }
+    }
 }

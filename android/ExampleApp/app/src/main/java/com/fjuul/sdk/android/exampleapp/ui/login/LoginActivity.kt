@@ -11,10 +11,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ProgressBar
-import android.widget.Toast
+import android.widget.*
 import com.fjuul.sdk.android.exampleapp.ui.modules.ModulesActivity
 
 import com.fjuul.sdk.android.exampleapp.R
@@ -43,7 +40,7 @@ class LoginActivity : AppCompatActivity() {
             val loginState = it ?: return@Observer
 
             // disable login button unless both username / password is valid
-            login.isEnabled = loginState.isDataValid
+            login.isEnabled = loginState.isDataValid && loginState.environment != null
 
             if (loginState.apiKeyError != null) {
                 apiKeyInput.error = getString(loginState.apiKeyError)
@@ -114,6 +111,29 @@ class LoginActivity : AppCompatActivity() {
 
             login.setOnClickListener {
                 onboardingViewModel.login(apiKeyInput.text.toString(), tokenInput.text.toString())
+            }
+        }
+    }
+
+    fun onRadioButtonClicked(view: View) {
+        if (view is RadioButton) {
+            // Is the button now checked?
+            val checked = view.isChecked
+
+            // Check which radio button was clicked
+            when (view.getId()) {
+                R.id.dev_env_radio ->
+                    if (checked) {
+                        onboardingViewModel.envModeChanged(SdkEnvironment.DEV);
+                    }
+                R.id.test_env_radio ->
+                    if (checked) {
+                        onboardingViewModel.envModeChanged(SdkEnvironment.TEST);
+                    }
+                R.id.prod_env_radio ->
+                    if (checked) {
+                        onboardingViewModel.envModeChanged(SdkEnvironment.PROD);
+                    }
             }
         }
     }

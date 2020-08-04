@@ -16,6 +16,7 @@ import com.fjuul.sdk.android.exampleapp.ui.modules.ModulesActivity
 
 import com.fjuul.sdk.android.exampleapp.R
 import com.fjuul.sdk.android.exampleapp.data.SdkEnvironment
+import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
 
 class LoginActivity : AppCompatActivity() {
 
@@ -54,22 +55,22 @@ class LoginActivity : AppCompatActivity() {
             }
         })
 
-        onboardingViewModel.loginResult.observe(this@LoginActivity, Observer {
+        onboardingViewModel.submittedFormState.observe(this@LoginActivity, Observer {
             val loginResult = it ?: return@Observer
 
+            ApiClientHolder.setup(
+                context = applicationContext,
+                env = it.environment!!,
+                apiKey = apiKeyInput.text.toString(),
+                token = tokenInput.text.toString(),
+                secret = secretInput.text.toString()
+            )
+
             val intent = Intent(this, ModulesActivity::class.java).apply {
-                // putExtra...
+                // putExtra if need
             }
             startActivity(intent)
-//            if (loginResult.error != null) {
-//                showLoginFailed(loginResult.error)
-//            }
-//            if (loginResult.success != null) {
-//                updateUiWithUser(loginResult.success)
-//            }
             setResult(Activity.RESULT_OK)
-//
-//            //Complete and destroy login activity once successful
             finish()
         })
 
@@ -102,16 +103,13 @@ class LoginActivity : AppCompatActivity() {
             setOnEditorActionListener { _, actionId, _ ->
                 when (actionId) {
                     EditorInfo.IME_ACTION_DONE ->
-                        onboardingViewModel.login(
-                                apiKeyInput.text.toString(),
-                                tokenInput.text.toString()
-                        )
+                        onboardingViewModel.submit()
                 }
                 false
             }
 
             login.setOnClickListener {
-                onboardingViewModel.login(apiKeyInput.text.toString(), tokenInput.text.toString())
+                onboardingViewModel.submit()
             }
         }
     }

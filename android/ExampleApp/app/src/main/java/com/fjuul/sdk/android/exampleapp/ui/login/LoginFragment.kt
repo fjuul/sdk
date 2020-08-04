@@ -14,6 +14,7 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.findNavController
 import com.fjuul.sdk.android.exampleapp.R
 import com.fjuul.sdk.android.exampleapp.data.SdkEnvironment
 import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
@@ -83,12 +84,8 @@ class LoginFragment : Fragment() {
                 secret = secretInput.text.toString()
             )
 
-//            val intent = Intent(this, ModulesActivity::class.java).apply {
-//                // putExtra if need
-//            }
-//            startActivity(intent)
-//            setResult(Activity.RESULT_OK)
-//            finish()
+            val action = LoginFragmentDirections.actionLoginFragmentToModulesActivity()
+            findNavController().navigate(action)
         })
 
         apiKeyInput.afterTextChanged {

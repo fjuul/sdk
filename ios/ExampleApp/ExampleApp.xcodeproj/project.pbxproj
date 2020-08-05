@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		B348CE8624D844D3001DCE14 /* FjuulActivitySources in Frameworks */ = {isa = PBXBuildFile; productRef = B348CE8524D844D3001DCE14 /* FjuulActivitySources */; };
+		B348CE8824D85551001DCE14 /* ActivitySourcesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B348CE8724D85551001DCE14 /* ActivitySourcesScreen.swift */; };
+		B348CE8A24D85711001DCE14 /* ActivitySourceObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B348CE8924D85711001DCE14 /* ActivitySourceObservable.swift */; };
 		B3548D5924CAD2C1002F26B9 /* FjuulUser in Frameworks */ = {isa = PBXBuildFile; productRef = B3548D5824CAD2C1002F26B9 /* FjuulUser */; };
 		B3548D5F24CF0912002F26B9 /* UserProfileForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3548D5E24CF0912002F26B9 /* UserProfileForm.swift */; };
 		B3548D6224CF0F62002F26B9 /* CreateUserScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3548D6024CF0F62002F26B9 /* CreateUserScreen.swift */; };
@@ -44,6 +46,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B348CE8724D85551001DCE14 /* ActivitySourcesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivitySourcesScreen.swift; sourceTree = "<group>"; };
+		B348CE8924D85711001DCE14 /* ActivitySourceObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivitySourceObservable.swift; sourceTree = "<group>"; };
 		B3548D5E24CF0912002F26B9 /* UserProfileForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileForm.swift; sourceTree = "<group>"; };
 		B3548D6024CF0F62002F26B9 /* CreateUserScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreateUserScreen.swift; sourceTree = "<group>"; };
 		B3548D6124CF0F62002F26B9 /* DailyStatsScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DailyStatsScreen.swift; sourceTree = "<group>"; };
@@ -106,8 +110,9 @@
 		B3548D6A24CF1E0F002F26B9 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				B3548D6B24CF1E25002F26B9 /* UserProfileObservable.swift */,
+				B348CE8924D85711001DCE14 /* ActivitySourceObservable.swift */,
 				B3548D6D24CF1FC4002F26B9 /* DailyStatsObservable.swift */,
+				B3548D6B24CF1E25002F26B9 /* UserProfileObservable.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -186,6 +191,7 @@
 		B3FBCDA724B8AB1200184A88 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
+				B348CE8724D85551001DCE14 /* ActivitySourcesScreen.swift */,
 				B3548D6024CF0F62002F26B9 /* CreateUserScreen.swift */,
 				B3548D6124CF0F62002F26B9 /* DailyStatsScreen.swift */,
 				B3548D6424CF0F7B002F26B9 /* ModuleSelectionScreens.swift */,
@@ -338,6 +344,8 @@
 				B3548D6C24CF1E25002F26B9 /* UserProfileObservable.swift in Sources */,
 				B3FBCDB824B8BE2F00184A88 /* RootView.swift in Sources */,
 				B3548D6224CF0F62002F26B9 /* CreateUserScreen.swift in Sources */,
+				B348CE8824D85551001DCE14 /* ActivitySourcesScreen.swift in Sources */,
+				B348CE8A24D85711001DCE14 /* ActivitySourceObservable.swift in Sources */,
 				B3548D6524CF0F7B002F26B9 /* ModuleSelectionScreens.swift in Sources */,
 				B3548D5F24CF0912002F26B9 /* UserProfileForm.swift in Sources */,
 			);

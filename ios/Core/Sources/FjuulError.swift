@@ -11,7 +11,18 @@ public enum FjuulError: Error {
         case clockSkew = "clock_skew"
     }
 
+    public enum ActivitySourceConnectionFailureReason {
+        // TODO actually introduce different failure cases for different failures
+        case generic
+        case sourceAlreadyConnected
+    }
+
     case invalidConfig
     case authenticationFailure(reason: AuthenticationFailureReason)
+
+    // TODO this breaks module encapsulation as Core should not have knowledge of ActivitySources internals,
+    // however unfortunately it is not possible to extend FjuulError (enum) from another module and still use
+    // this as single entrypoint for all possible Errors.
+    case activitySourceConnectionFailure(reason: ActivitySourceConnectionFailureReason)
 
 }

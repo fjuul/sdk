@@ -6,6 +6,9 @@ struct ActivitySourcesScreen: View {
 
     var body: some View {
         Form {
+            // TODO the proper implementation for this would be to check for each source if it is included in
+            // currentConnections, as this could potentially be multiple at the same time in the future
+            Text("current source: \(observable.currentConnections.first?.tracker ?? "none")")
             Button(action: {
                 self.observable.connect(activitySource: "fitbit")
             }) {
@@ -30,6 +33,11 @@ struct ActivitySourcesScreen: View {
                 self.observable.connect(activitySource: "suunto")
             }) {
                 Text("Connect Suunto")
+            }
+            Button(action: {
+                self.observable.connect(activitySource: "thisdoesnotexist")
+            }) {
+                Text("Connect Unknown")
             }
         }
         .navigationBarTitle("Activity Sources", displayMode: .inline)

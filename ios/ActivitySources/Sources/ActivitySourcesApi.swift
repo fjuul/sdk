@@ -4,7 +4,7 @@ import FjuulCore
 
 public enum ConnectionResult {
     case externalAuthenticationFlowRequired(authenticationUrl: String)
-    case connected
+    case connected(trackerConnection: TrackerConnection)
 }
 
 /// The `ActivitySourcesApi` encapsulates the management of a users activity sources.
@@ -24,7 +24,7 @@ public class ActivitySourcesApi {
         return URL(string: self.apiClient.baseUrl)?.appendingPathComponent("sdk/activity-sources/v1")
     }
 
-    // TODO this should take a higher-level input, not a string source name
+    // TODO this should probably take a higher-level input, not a string source name
     public func connect(activitySource: String, completion: @escaping (Result<ConnectionResult, Error>) -> Void) {
         let path = "/\(apiClient.userToken)/connections/\(activitySource)"
         guard let url = baseUrl?.appendingPathComponent(path) else {
@@ -40,8 +40,9 @@ public class ActivitySourcesApi {
                             throw FjuulError.activitySourceConnectionFailure(reason: .generic)
                         }
                         return .externalAuthenticationFlowRequired(authenticationUrl: authenticationUrl)
-                    // TODO map to Connection entity and attach that to .connected case
-                    case 201: return .connected
+                    case 201:
+                        let trackerConnection = try Decoders.iso8601Full.decode(TrackerConnection.self, from: result)
+                        return .connected(trackerConnection: trackerConnection)
                     default: throw FjuulError.activitySourceConnectionFailure(reason: .generic)
                     }
                 }
@@ -52,6 +53,31 @@ public class ActivitySourcesApi {
                     return err
                 }
             completion(mappedResponse.result)
+        }
+    }
+
+    public func disconnect(trackerConnection: TrackerConnection, completion: @escaping (Result<Void, Error>) -> Void) {
+        let path = "/\(apiClient.userToken)/connections/\(trackerConnection.id)"
+        guard let url = baseUrl?.appendingPathComponent(path) else {
+            return completion(.failure(FjuulError.invalidConfig))
+        }
+        apiClient.signedSession.request(url, method: .delete).apiResponse { response in
+            switch response.result {
+            case .success: return completion(.success(()))
+            case .failure(let err): return completion(.failure(err))
+            }
+        }
+    }
+
+    public func getCurrentConnections(completion: @escaping (Result<[TrackerConnection], Error>) -> Void) {
+        let path = "/\(apiClient.userToken)/connections"
+        guard let url = baseUrl?.appendingPathComponent(path) else {
+            return completion(.failure(FjuulError.invalidConfig))
+        }
+        let parameters = ["show": "current"]
+        apiClient.signedSession.request(url, method: .get, parameters: parameters).apiResponse { response in
+            let decodedResponse = response.tryMap { try Decoders.iso8601Full.decode([TrackerConnection].self, from: $0) }
+            completion(decodedResponse.result)
         }
     }
 

@@ -10,10 +10,16 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ListView
 import android.widget.TextView
+import androidx.navigation.fragment.findNavController
 import com.fjuul.sdk.android.exampleapp.R
 
+// TODO: move these to own file
+enum class ModuleItemName (val value: String) {
+    PROFILE("Profile"),
+    DAILY_STATS("Daily Stats")
+}
 sealed class ModulesListItem()
-data class ModuleItem(val name: String) : ModulesListItem()
+data class ModuleItem(val name: ModuleItemName) : ModulesListItem()
 data class ModulesSection(val name: String) : ModulesListItem()
 
 class ModulesFragment : Fragment() {
@@ -36,16 +42,16 @@ class ModulesFragment : Fragment() {
         modulesListView = view.findViewById<ListView>(R.id.modules_list)
         val listItems = arrayListOf<ModulesListItem>(
             ModulesSection("User"),
-            ModuleItem("Profile"),
+            ModuleItem(ModuleItemName.PROFILE),
             ModulesSection("Analytics"),
-            ModuleItem("Daily stats"))
+            ModuleItem(ModuleItemName.DAILY_STATS))
         val adapter = ModulesListAdapter(requireContext(), listItems)
         modulesListView.adapter = adapter
         modulesListView.setOnItemClickListener { parent, view, position, id ->
             val pressedItem = adapter.getItem(position)
-            if (pressedItem is ModuleItem && pressedItem.name == "DailyStats") {
-                // navigate to analytics fragment
-                Log.d(TAG, "onViewCreated: navigate to analytics")
+            if (pressedItem is ModuleItem && pressedItem.name == ModuleItemName.DAILY_STATS) {
+                val action = ModulesFragmentDirections.actionModulesFragmentToDailyStatsFragment()
+                findNavController().navigate(action)
             }
         }
     }
@@ -83,7 +89,7 @@ class ModulesListAdapter(private val context: Context,
         if (item is ModuleItem) {
             rowView = inflater.inflate(android.R.layout.simple_list_item_1, parent, false)
             val textView = rowView.findViewById<TextView>(android.R.id.text1)
-            textView.text = item.name
+            textView.text = item.name.value
         } else {
             rowView = inflater.inflate(R.layout.section_list_item, parent, false)
             val textView = rowView.findViewById<TextView>(R.id.section_text)

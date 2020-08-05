@@ -7,14 +7,14 @@ struct ActivitySourcesScreen: View {
     var body: some View {
         Form {
             Button(action: {
-                self.observable.connect(activitySource: "garmin")
-            }) {
-                Text("Connect Garmin")
-            }
-            Button(action: {
                 self.observable.connect(activitySource: "fitbit")
             }) {
                 Text("Connect Fitbit")
+            }
+            Button(action: {
+                self.observable.connect(activitySource: "garmin")
+            }) {
+                Text("Connect Garmin")
             }
             Button(action: {
                 self.observable.connect(activitySource: "googlefit_backend")
@@ -32,6 +32,7 @@ struct ActivitySourcesScreen: View {
                 Text("Connect Suunto")
             }
         }
+        .navigationBarTitle("Activity Sources", displayMode: .inline)
         .alert(item: $observable.error) { holder in
             Alert(title: Text(holder.error.localizedDescription))
         }

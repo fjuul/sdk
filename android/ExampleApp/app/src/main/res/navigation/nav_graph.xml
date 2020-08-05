@@ -17,5 +17,14 @@
         android:id="@+id/modulesFragment"
         android:name="com.fjuul.sdk.android.exampleapp.ui.modules.ModulesFragment"
         android:label="Modules"
-        tools:layout="@layout/fragment_modules" />
+        tools:layout="@layout/fragment_modules" >
+        <action
+            android:id="@+id/action_modulesFragment_to_dailyStatsFragment"
+            app:destination="@id/dailyStatsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/dailyStatsFragment"
+        android:name="com.fjuul.sdk.android.exampleapp.ui.daily_stats.DailyStatsFragment"
+        android:label="Daily Stats"
+        tools:layout="@layout/fragment_daily_stats" />
 </navigation>

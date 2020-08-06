@@ -16,14 +16,29 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import com.fjuul.sdk.android.exampleapp.R
+import com.fjuul.sdk.android.exampleapp.data.AppStorage
 import com.fjuul.sdk.android.exampleapp.data.SdkEnvironment
 import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
 
 class LoginFragment : Fragment() {
     private lateinit var onboardingViewModel: OnboardingViewModel
+    private lateinit var appStorage: AppStorage;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        appStorage = AppStorage(requireContext())
+        appStorage.apply {
+            if (userToken != null && userSecret != null && apiKey != null && environment != null) {
+                ApiClientHolder.setup(
+                    context = requireContext(),
+                    token = userToken!!,
+                    secret = userSecret!!,
+                    apiKey = apiKey!!,
+                    env = environment!!
+                )
+                findNavController().navigate(LoginFragmentDirections.actionLoginFragmentToModulesFragment())
+            }
+        }
     }
 
     override fun onCreateView(
@@ -75,6 +90,13 @@ class LoginFragment : Fragment() {
 
         onboardingViewModel.submittedFormState.observe(viewLifecycleOwner, Observer {
             val loginResult = it ?: return@Observer
+
+            appStorage.apply {
+                apiKey = apiKeyInput.text.toString()
+                userToken = tokenInput.text.toString()
+                userSecret = secretInput.text.toString()
+                environment = it.environment!!
+            }
 
             ApiClientHolder.setup(
                 context = this.requireActivity().applicationContext,

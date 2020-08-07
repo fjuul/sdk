@@ -10,7 +10,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
-import android.widget.RadioButton
 import android.widget.RadioGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -55,7 +54,7 @@ class LoginFragment : Fragment() {
         val apiKeyInput = view.findViewById<EditText>(R.id.api_key_input)
         val tokenInput = view.findViewById<EditText>(R.id.user_token)
         val secretInput = view.findViewById<EditText>(R.id.user_secret)
-        val login = view.findViewById<Button>(R.id.continue_btn)
+        val continueButton = view.findViewById<Button>(R.id.continue_btn)
         val createUserButton = view.findViewById<Button>(R.id.create_user_button)
         val radioGroup = view.findViewById<RadioGroup>(R.id.env_radio_group)
 
@@ -75,7 +74,7 @@ class LoginFragment : Fragment() {
             val loginState = it ?: return@Observer
 
             // disable login button unless both username / password is valid
-            login.isEnabled = loginState.isDataValid && loginState.environment != null
+            continueButton.isEnabled = loginState.isDataValid && loginState.environment != null
 
             if (loginState.apiKeyError != null) {
                 apiKeyInput.error = getString(loginState.apiKeyError)
@@ -144,7 +143,7 @@ class LoginFragment : Fragment() {
                 false
             }
 
-            login.setOnClickListener {
+            continueButton.setOnClickListener {
                 onboardingViewModel.submit()
             }
         }

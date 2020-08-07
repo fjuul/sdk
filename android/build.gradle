@@ -15,6 +15,7 @@ plugins {
 
 ext {
     okHttpVersion = '3.12.12'
+    retrofitVersion = '2.9.0'
     compileSdkVersion = 29
     buildToolsVersion = "29.0.3"
     minSdkVersion = 19

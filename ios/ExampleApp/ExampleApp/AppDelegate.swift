@@ -21,4 +21,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // were specific to the discarded scenes, as they will not return.
     }
 
+    // MARK: Tracker Connection Deeplink Handling
+
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        // Note: handling this is entirely optional, as the connection is already successfully established at this point
+        // (unless the user has cancelled the process and this indicates an unsuccessful connection - however this logic
+        // here has no effect on the outcome of the connection, and there is no guarantee the user will return to the app
+        // through the deeplink).
+        if url.scheme == "fjuulsdk-exampleapp" {
+            guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true) else { return false }
+            let activitySource = components.queryItems?.first(where: { $0.name == "service" })?.value ?? "unknown"
+            let success = components.queryItems?.first(where: { $0.name == "success" })?.value ?? "unknown"
+            print("returned from connecting to: \(activitySource) with status: \(success)")
+            return true
+        }
+        return false
+    }
+
 }

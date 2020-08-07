@@ -10,15 +10,26 @@ import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
 import java.time.LocalDate
 
 class DailyStatsViewModel(): ViewModel() {
-    private val _data = MutableLiveData<Array<DailyStats>>(arrayOf())
+    private val analyticsService = AnalyticsService(ApiClientHolder.sdkClient)
     private val _startDate = MutableLiveData<LocalDate>(LocalDate.now())
     private val _endDate = MutableLiveData<LocalDate>(LocalDate.now())
 
-    private val analyticsService = AnalyticsService(ApiClientHolder.sdkClient!!)
+    private val _data = MutableLiveData<Array<DailyStats>>(arrayOf())
 
     val data: LiveData<Array<DailyStats>> = _data
     val startDate: LiveData<LocalDate> = _startDate
     val endDate: LiveData<LocalDate> = _endDate
+
+    fun requestData() {
+        analyticsService.getDailyStats(_startDate.value.toString(), _endDate.value.toString())
+            .enqueue { _, result ->
+                if (result.isError) {
+                    _data.postValue(arrayOf())
+                } else {
+                    _data.postValue(result.value!!)
+                }
+            }
+    }
 
     fun setupDateRange(startDate: LocalDate? = null, endDate: LocalDate? = null) {
         if (startDate != null) {
@@ -27,14 +38,7 @@ class DailyStatsViewModel(): ViewModel() {
         if (endDate != null) {
             _endDate.value = endDate
         }
-        analyticsService.getDailyStats(_startDate.value.toString(), _endDate.value.toString())
-            .enqueue { call, result ->
-                if (result.isError) {
-                    _data.value = arrayOf()
-                } else {
-                    _data.value = result.value!!
-                }
-            }
+        requestData()
     }
 }
 

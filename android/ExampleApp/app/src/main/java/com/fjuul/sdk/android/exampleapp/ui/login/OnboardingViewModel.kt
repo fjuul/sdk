@@ -21,20 +21,20 @@ class OnboardingViewModel(private val loginRepository: LoginRepository) : ViewMo
     }
 
     fun loginDataChanged(apiKey: String, token: String, secret: String) {
-        when {
-            apiKey.isEmpty() -> {
-                _loginForm.value = _loginForm.value!!.copy(apiKeyError = R.string.invalid_api_key);
-            }
-            token.isEmpty() -> {
-                _loginForm.value = _loginForm.value!!.copy(tokenError = R.string.invalid_token)
-            }
-            secret.isEmpty() -> {
-                _loginForm.value = _loginForm.value!!.copy(secretError = R.string.invalid_secret)
-            }
-            else -> {
-                _loginForm.value = _loginForm.value!!.copy(isDataValid = true)
-            }
+        var loginForm = _loginForm.value!!.copy(apiKeyError = null, tokenError = null, secretError = null, isDataValid = false)
+        if (apiKey.isEmpty()) {
+            loginForm = loginForm.copy(apiKeyError = R.string.invalid_api_key);
         }
+        if (token.isEmpty()) {
+            loginForm = loginForm.copy(tokenError = R.string.invalid_token)
+        }
+        if (secret.isEmpty()) {
+            loginForm = loginForm.copy(secretError = R.string.invalid_secret)
+        }
+        if (loginForm.apiKeyError == null && loginForm.tokenError == null && loginForm.secretError == null) {
+            loginForm = loginForm.copy(isDataValid = true)
+        }
+        _loginForm.value = loginForm
     }
 
     fun envModeChanged(environment: SdkEnvironment) {

@@ -27,7 +27,11 @@ class DailyStatsListAdapter(private val context: Context, var dataSource: Array<
         val item = getItem(position)
         var rowView = inflater.inflate(android.R.layout.simple_list_item_1, parent, false)
         val textView = rowView.findViewById<TextView>(android.R.id.text1)
-        textView.text = """date: ${item.date.toString()}; moderate: ${item.moderate.metMinutes}"""
+        textView.text = """
+|date: ${item.date.toString()};
+|low: ${item.low.metMinutes} metMinutes;
+|moderate: ${item.moderate.metMinutes} metMinutes;
+|high: metMinutes ${item.high.metMinutes}""".trimMargin()
         return rowView
     }
 }

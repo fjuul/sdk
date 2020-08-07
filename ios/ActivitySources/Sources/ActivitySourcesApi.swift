@@ -62,10 +62,8 @@ public class ActivitySourcesApi {
             return completion(.failure(FjuulError.invalidConfig))
         }
         apiClient.signedSession.request(url, method: .delete).apiResponse { response in
-            switch response.result {
-            case .success: return completion(.success(()))
-            case .failure(let err): return completion(.failure(err))
-            }
+            let decodedResponse = response.map { _ -> Void in () }
+            completion(decodedResponse.result)
         }
     }
 

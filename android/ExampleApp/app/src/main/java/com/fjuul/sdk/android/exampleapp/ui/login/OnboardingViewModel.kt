@@ -4,10 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.fjuul.sdk.android.exampleapp.R
-import com.fjuul.sdk.android.exampleapp.data.LoginRepository
 import com.fjuul.sdk.android.exampleapp.data.SdkEnvironment
 
-class OnboardingViewModel(private val loginRepository: LoginRepository) : ViewModel() {
+class OnboardingViewModel() : ViewModel() {
 
     private val _loginForm = MutableLiveData<OnboardingFormState>(OnboardingFormState())
     val onboardingFormState: LiveData<OnboardingFormState> = _loginForm

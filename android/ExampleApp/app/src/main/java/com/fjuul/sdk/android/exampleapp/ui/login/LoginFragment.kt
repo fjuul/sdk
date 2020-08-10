@@ -3,7 +3,6 @@ package com.fjuul.sdk.android.exampleapp.ui.login
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +10,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
 import android.widget.RadioGroup
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
@@ -21,7 +21,7 @@ import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
 
 class LoginFragment : Fragment() {
     private lateinit var onboardingViewModel: OnboardingViewModel
-    private lateinit var appStorage: AppStorage;
+    private lateinit var appStorage: AppStorage
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +41,8 @@ class LoginFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
@@ -58,7 +59,6 @@ class LoginFragment : Fragment() {
         val createUserButton = view.findViewById<Button>(R.id.create_user_button)
         val radioGroup = view.findViewById<RadioGroup>(R.id.env_radio_group)
 
-
         radioGroup.setOnCheckedChangeListener { group, checkedId ->
             when (checkedId) {
                 R.id.dev_env_radio -> onboardingViewModel.envModeChanged(SdkEnvironment.DEV)
@@ -70,44 +70,50 @@ class LoginFragment : Fragment() {
         onboardingViewModel = ViewModelProviders.of(this, OnboardingViewModelFactory())
             .get(OnboardingViewModel::class.java)
 
-        onboardingViewModel.onboardingFormState.observe(viewLifecycleOwner, Observer {
-            val loginState = it ?: return@Observer
+        onboardingViewModel.onboardingFormState.observe(
+            viewLifecycleOwner,
+            Observer {
+                val loginState = it ?: return@Observer
 
-            // disable login button unless both username / password is valid
-            continueButton.isEnabled = loginState.isDataValid && loginState.environment != null
+                // disable login button unless both username / password is valid
+                continueButton.isEnabled = loginState.isDataValid && loginState.environment != null
 
-            if (loginState.apiKeyError != null) {
-                apiKeyInput.error = getString(loginState.apiKeyError)
+                if (loginState.apiKeyError != null) {
+                    apiKeyInput.error = getString(loginState.apiKeyError)
+                }
+                if (loginState.tokenError != null) {
+                    tokenInput.error = getString(loginState.tokenError)
+                }
+                if (loginState.secretError != null) {
+                    secretInput.error = getString(loginState.secretError)
+                }
             }
-            if (loginState.tokenError != null) {
-                tokenInput.error = getString(loginState.tokenError)
+        )
+
+        onboardingViewModel.submittedFormState.observe(
+            viewLifecycleOwner,
+            Observer {
+                val loginResult = it ?: return@Observer
+
+                appStorage.apply {
+                    apiKey = apiKeyInput.text.toString()
+                    userToken = tokenInput.text.toString()
+                    userSecret = secretInput.text.toString()
+                    environment = it.environment!!
+                }
+
+                ApiClientHolder.setup(
+                    context = this.requireActivity().applicationContext,
+                    env = it.environment!!,
+                    apiKey = apiKeyInput.text.toString(),
+                    token = tokenInput.text.toString(),
+                    secret = secretInput.text.toString()
+                )
+
+                val action = LoginFragmentDirections.actionLoginFragmentToModulesFragment()
+                findNavController().navigate(action)
             }
-            if (loginState.secretError != null) {
-                secretInput.error = getString(loginState.secretError)
-            }
-        })
-
-        onboardingViewModel.submittedFormState.observe(viewLifecycleOwner, Observer {
-            val loginResult = it ?: return@Observer
-
-            appStorage.apply {
-                apiKey = apiKeyInput.text.toString()
-                userToken = tokenInput.text.toString()
-                userSecret = secretInput.text.toString()
-                environment = it.environment!!
-            }
-
-            ApiClientHolder.setup(
-                context = this.requireActivity().applicationContext,
-                env = it.environment!!,
-                apiKey = apiKeyInput.text.toString(),
-                token = tokenInput.text.toString(),
-                secret = secretInput.text.toString()
-            )
-
-            val action = LoginFragmentDirections.actionLoginFragmentToModulesFragment()
-            findNavController().navigate(action)
-        })
+        )
 
         apiKeyInput.afterTextChanged {
             createUserButton.isEnabled = it.isNotEmpty()
@@ -156,7 +162,7 @@ class LoginFragment : Fragment() {
          */
         @JvmStatic
         fun newInstance() = LoginFragment().apply {
-                arguments = Bundle()
+            arguments = Bundle()
         }
     }
 }

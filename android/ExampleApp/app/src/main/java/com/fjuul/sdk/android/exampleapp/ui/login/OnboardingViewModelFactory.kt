@@ -15,9 +15,9 @@ class OnboardingViewModelFactory : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(OnboardingViewModel::class.java)) {
             return OnboardingViewModel(
-                    loginRepository = LoginRepository(
-                            dataSource = LoginDataSource()
-                    )
+                loginRepository = LoginRepository(
+                    dataSource = LoginDataSource()
+                )
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

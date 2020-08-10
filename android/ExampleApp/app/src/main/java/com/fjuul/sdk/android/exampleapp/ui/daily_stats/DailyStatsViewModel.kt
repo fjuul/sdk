@@ -9,7 +9,7 @@ import com.fjuul.sdk.analytics.http.services.AnalyticsService
 import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
 import java.time.LocalDate
 
-class DailyStatsViewModel(): ViewModel() {
+class DailyStatsViewModel() : ViewModel() {
     private val analyticsService = AnalyticsService(ApiClientHolder.sdkClient)
     private val _startDate = MutableLiveData<LocalDate>(LocalDate.now())
     private val _endDate = MutableLiveData<LocalDate>(LocalDate.now())
@@ -56,4 +56,3 @@ class DailyStatsViewModelFactory : ViewModelProvider.Factory {
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
-

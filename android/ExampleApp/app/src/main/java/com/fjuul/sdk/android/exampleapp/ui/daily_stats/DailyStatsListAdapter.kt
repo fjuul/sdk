@@ -8,7 +8,8 @@ import android.widget.BaseAdapter
 import android.widget.TextView
 import com.fjuul.sdk.analytics.entities.DailyStats
 
-class DailyStatsListAdapter(private val context: Context, var dataSource: Array<DailyStats>): BaseAdapter() {
+class DailyStatsListAdapter(private val context: Context, var dataSource: Array<DailyStats>) :
+    BaseAdapter() {
     private val inflater = LayoutInflater.from(context)
 
     override fun getCount(): Int {
@@ -27,8 +28,9 @@ class DailyStatsListAdapter(private val context: Context, var dataSource: Array<
         val item = getItem(position)
         var rowView = inflater.inflate(android.R.layout.simple_list_item_1, parent, false)
         val textView = rowView.findViewById<TextView>(android.R.id.text1)
-        textView.text = """
-|date: ${item.date.toString()};
+        textView.text =
+            """
+|date: ${item.date};
 |low: ${item.low.metMinutes} metMinutes;
 |moderate: ${item.moderate.metMinutes} metMinutes;
 |high: metMinutes ${item.high.metMinutes}""".trimMargin()

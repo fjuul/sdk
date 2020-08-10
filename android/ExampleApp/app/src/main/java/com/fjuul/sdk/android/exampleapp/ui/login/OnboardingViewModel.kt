@@ -3,9 +3,8 @@ package com.fjuul.sdk.android.exampleapp.ui.login
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.fjuul.sdk.android.exampleapp.data.LoginRepository
-
 import com.fjuul.sdk.android.exampleapp.R
+import com.fjuul.sdk.android.exampleapp.data.LoginRepository
 import com.fjuul.sdk.android.exampleapp.data.SdkEnvironment
 
 class OnboardingViewModel(private val loginRepository: LoginRepository) : ViewModel() {
@@ -23,7 +22,7 @@ class OnboardingViewModel(private val loginRepository: LoginRepository) : ViewMo
     fun loginDataChanged(apiKey: String, token: String, secret: String) {
         var loginForm = _loginForm.value!!.copy(apiKeyError = null, tokenError = null, secretError = null, isDataValid = false)
         if (apiKey.isEmpty()) {
-            loginForm = loginForm.copy(apiKeyError = R.string.invalid_api_key);
+            loginForm = loginForm.copy(apiKeyError = R.string.invalid_api_key)
         }
         if (token.isEmpty()) {
             loginForm = loginForm.copy(tokenError = R.string.invalid_token)

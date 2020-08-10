@@ -2,19 +2,18 @@ package com.fjuul.sdk.android.exampleapp.ui.modules
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ListView
 import android.widget.TextView
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.fjuul.sdk.android.exampleapp.R
 
 // TODO: move these to own file
-enum class ModuleItemName (val value: String) {
+enum class ModuleItemName(val value: String) {
     PROFILE("Profile"),
     DAILY_STATS("Daily Stats")
 }
@@ -30,7 +29,8 @@ class ModulesFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
@@ -44,7 +44,8 @@ class ModulesFragment : Fragment() {
             ModulesSection("User"),
             ModuleItem(ModuleItemName.PROFILE),
             ModulesSection("Analytics"),
-            ModuleItem(ModuleItemName.DAILY_STATS))
+            ModuleItem(ModuleItemName.DAILY_STATS)
+        )
         val adapter = ModulesListAdapter(requireContext(), listItems)
         modulesListView.adapter = adapter
         modulesListView.setOnItemClickListener { parent, view, position, id ->
@@ -66,8 +67,10 @@ class ModulesFragment : Fragment() {
     }
 }
 
-class ModulesListAdapter(private val context: Context,
-                         private val dataSource: ArrayList<ModulesListItem>) : BaseAdapter() {
+class ModulesListAdapter(
+    private val context: Context,
+    private val dataSource: ArrayList<ModulesListItem>
+) : BaseAdapter() {
     private val inflater = LayoutInflater.from(context)
 
     override fun getCount(): Int {
@@ -85,7 +88,7 @@ class ModulesListAdapter(private val context: Context,
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         // Get view for row item
         val item = getItem(position)
-        var rowView: View;
+        var rowView: View
         if (item is ModuleItem) {
             rowView = inflater.inflate(android.R.layout.simple_list_item_1, parent, false)
             val textView = rowView.findViewById<TextView>(android.R.id.text1)
@@ -97,5 +100,4 @@ class ModulesListAdapter(private val context: Context,
         }
         return rowView
     }
-
 }

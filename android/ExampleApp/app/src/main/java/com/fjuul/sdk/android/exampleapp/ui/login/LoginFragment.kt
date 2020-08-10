@@ -77,16 +77,6 @@ class LoginFragment : Fragment() {
 
                 // disable login button unless both username / password is valid
                 continueButton.isEnabled = loginState.isDataValid && loginState.environment != null
-
-                if (loginState.apiKeyError != null) {
-                    apiKeyInput.error = getString(loginState.apiKeyError)
-                }
-                if (loginState.tokenError != null) {
-                    tokenInput.error = getString(loginState.tokenError)
-                }
-                if (loginState.secretError != null) {
-                    secretInput.error = getString(loginState.secretError)
-                }
             }
         )
 

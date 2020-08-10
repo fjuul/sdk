@@ -42,6 +42,24 @@ spotless {
         greclipse()
         indentWithSpaces(4)
     }
+
+    // only for the example application
+    kotlin {
+        target fileTree('./ExampleApp') {
+            include '**/*.kt'
+        }
+        // version and userData are both optional
+        // NOTE: keep synced with editorconfig!
+        def styles = [
+            indent_size: '4',
+            indent_style: 'space',
+            'continuation_indent_size': '2',
+            'insert_final_newline': 'true',
+            trim_trailing_whitespace: 'true',
+            end_of_line: 'lf'
+        ]
+        ktlint('0.37.2').userData(styles)
+    }
 }
 
 configure(subprojects) {

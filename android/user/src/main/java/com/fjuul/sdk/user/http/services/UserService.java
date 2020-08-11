@@ -22,6 +22,7 @@ import retrofit2.converter.moshi.MoshiConverterFactory;
  */
 public class UserService {
     private UserApi userApiClient;
+    private UserApi signingUserApiClient;
     private ApiClient clientBuilder;
 
     /**
@@ -31,30 +32,54 @@ public class UserService {
      */
     public UserService(@NonNull ApiClient client) {
         this.clientBuilder = client;
-        OkHttpClient httpClient = client.buildSigningClient();
+    }
+
+    private Retrofit createRetrofit(OkHttpClient httpClient) {
         Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(client.getBaseUrl())
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(clientBuilder.getBaseUrl())
             .client(httpClient)
             .addCallAdapterFactory(ApiCallAdapterFactory.create())
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build();
-        userApiClient = retrofit.create(UserApi.class);
+        return retrofit;
+    }
+
+    private UserApi getOrCreateUserApi() {
+        if (this.userApiClient != null) {
+            return userApiClient;
+        }
+        synchronized (this) {
+            Retrofit retrofit = createRetrofit(clientBuilder.buildClient());
+            this.userApiClient = retrofit.create(UserApi.class);
+            return this.userApiClient;
+        }
+    }
+
+    private UserApi getOrCreateSigningUserApi() {
+        if (this.signingUserApiClient != null) {
+            return signingUserApiClient;
+        }
+        synchronized (this.signingUserApiClient) {
+            Retrofit retrofit = createRetrofit(clientBuilder.buildSigningClient());
+            this.signingUserApiClient = retrofit.create(UserApi.class);
+            return this.signingUserApiClient;
+        }
     }
 
     @NonNull
     public ApiCall<UserCreationResult> createUser(@NonNull UserProfile.PartialBuilder builder) {
         UserProfile partialProfile = builder.buildPartialProfile();
-        return userApiClient.create(partialProfile);
+        return getOrCreateUserApi().create(partialProfile);
     }
 
     @NonNull
     public ApiCall<UserProfile> getProfile() {
-        return userApiClient.getProfile(clientBuilder.getUserToken());
+        return getOrCreateSigningUserApi().getProfile(clientBuilder.getUserToken());
     }
 
     @NonNull
     public ApiCall<UserProfile> updateProfile(@NonNull UserProfile.PartialBuilder builder) {
         UserProfile partialProfile = builder.buildPartialProfile();
-        return userApiClient.updateProfile(clientBuilder.getUserToken(),partialProfile);
+        return getOrCreateSigningUserApi().updateProfile(clientBuilder.getUserToken(),partialProfile);
     }
 }

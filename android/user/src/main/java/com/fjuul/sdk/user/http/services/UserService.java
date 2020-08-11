@@ -5,12 +5,15 @@ import androidx.annotation.NonNull;
 import com.fjuul.sdk.http.ApiClient;
 import com.fjuul.sdk.http.utils.ApiCall;
 import com.fjuul.sdk.http.utils.ApiCallAdapterFactory;
+import com.fjuul.sdk.user.adapters.LocalDateJsonAdapter;
+import com.fjuul.sdk.user.adapters.TimeZoneJsonAdapter;
 import com.fjuul.sdk.user.entities.UserCreationResult;
 import com.fjuul.sdk.user.entities.UserProfile;
 import com.fjuul.sdk.user.http.apis.UserApi;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 import okhttp3.OkHttpClient;
@@ -35,7 +38,11 @@ public class UserService {
     }
 
     private Retrofit createRetrofit(OkHttpClient httpClient) {
-        Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
+        Moshi moshi = new Moshi.Builder()
+            .add(Date.class, new Rfc3339DateJsonAdapter())
+            .add(new LocalDateJsonAdapter())
+            .add(new TimeZoneJsonAdapter())
+            .build();
         Retrofit retrofit = new Retrofit.Builder().baseUrl(clientBuilder.getBaseUrl())
             .client(httpClient)
             .addCallAdapterFactory(ApiCallAdapterFactory.create())

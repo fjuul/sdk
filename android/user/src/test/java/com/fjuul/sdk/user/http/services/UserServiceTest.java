@@ -2,6 +2,10 @@ package com.fjuul.sdk.user.http.services;
 
 import android.os.Build;
 
+import com.fjuul.sdk.entities.InMemoryStorage;
+import com.fjuul.sdk.entities.Keystore;
+import com.fjuul.sdk.entities.SigningKey;
+import com.fjuul.sdk.entities.UserCredentials;
 import com.fjuul.sdk.errors.ApiErrors;
 import com.fjuul.sdk.fixtures.http.TestApiClient;
 import com.fjuul.sdk.http.utils.ApiCallResult;
@@ -48,7 +52,6 @@ public class UserServiceTest {
     public abstract static class GivenRobolectricContext {
     }
 
-    @RunWith(RobolectricTestRunner.class)
     public static class CreateUserTest extends GivenRobolectricContext {
         UserService userService;
         MockWebServer mockWebServer;
@@ -154,6 +157,150 @@ public class UserServiceTest {
             assertThat(error, instanceOf(ApiErrors.BadRequestError.class));
             assertEquals("should have error message", "Bad Request: Validation error", error.getMessage());
         }
+    }
 
+    public static class GetProfileTest extends GivenRobolectricContext {
+        UserService userService;
+        MockWebServer mockWebServer;
+        TestApiClient.Builder clientBuilder;
+        Keystore testKeystore;
+        SigningKey validSigningKey;
+
+        @Before
+        public void setup() throws IOException {
+            mockWebServer = new MockWebServer();
+            mockWebServer.start();
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR, 2);
+            validSigningKey = new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime());
+            testKeystore = new Keystore(new InMemoryStorage(), USER_TOKEN);
+            clientBuilder = new TestApiClient.Builder(mockWebServer);
+        }
+
+        @After
+        public void teardown() throws IOException {
+            mockWebServer.shutdown();
+        }
+
+        @Test
+        public void getProfile_WithoutUserCredentials_ThrowsError() throws IOException, InterruptedException {
+            userService = new UserService(clientBuilder.build());
+            try {
+                ApiCallResult<UserProfile> result = userService.getProfile().execute();
+                assertTrue("should throws exception", false);
+            } catch (Exception exc) {
+                assertThat(exc, instanceOf(IllegalStateException.class));
+                assertEquals("should have error message", "The builder needed user credentials to build a signing client", exc.getMessage());
+            }
+        }
+
+        @Test
+        public void getProfile_WithValidUserCredentials_RespondsWithProfile() {
+            clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
+            testKeystore.setKey(validSigningKey);
+            clientBuilder.setKeystore(testKeystore);
+            userService = new UserService(clientBuilder.build());
+            MockResponse mockResponse =
+                new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK)
+                    .setHeader("Content-Type", "application/json")
+                    .setBody("{\n" +
+                        "  \"token\": \"2e573e83-88f0-476f-bb16-a076efe53659\",\n" +
+                        "  \"height\": 186,\n" +
+                        "  \"weight\": 75,\n" +
+                        "  \"gender\": \"male\",\n" +
+                        "  \"birthDate\": \"1980-12-31\",\n" +
+                        "  \"locale\": \"en\",\n" +
+                        "  \"timezone\": \"Europe/Moscow\"\n" +
+                        "}");
+            mockWebServer.enqueue(mockResponse);
+            ApiCallResult<UserProfile> result = userService.getProfile().execute();
+            assertFalse("success result", result.isError());
+            UserProfile profile = result.getValue();
+            assertEquals("should have user profile", "2e573e83-88f0-476f-bb16-a076efe53659", profile.getToken());
+            assertEquals(186f, profile.getHeight(), 0.0001);
+            assertEquals(75f, profile.getWeight(), 0.0001);
+            assertEquals(Gender.male, profile.getGender());
+            assertEquals(LocalDate.of(1980, 12, 31), profile.getBirthDate());
+            assertEquals(TimeZone.getTimeZone("Europe/Moscow"), profile.getTimezone());
+            assertEquals("en", profile.getLocale());
+        }
+    }
+
+    public static class UpdateProfileTest extends GivenRobolectricContext {
+        UserService userService;
+        MockWebServer mockWebServer;
+        TestApiClient.Builder clientBuilder;
+        Keystore testKeystore;
+        SigningKey validSigningKey;
+
+        @Before
+        public void setup() throws IOException {
+            mockWebServer = new MockWebServer();
+            mockWebServer.start();
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR, 2);
+            validSigningKey = new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime());
+            testKeystore = new Keystore(new InMemoryStorage(), USER_TOKEN);
+            clientBuilder = new TestApiClient.Builder(mockWebServer);
+        }
+
+        @After
+        public void teardown() throws IOException {
+            mockWebServer.shutdown();
+        }
+
+        @Test
+        public void updateProfile_WithoutUserCredentials_ThrowsError() throws IOException, InterruptedException {
+            userService = new UserService(clientBuilder.build());
+            try {
+                UserProfile.PartialBuilder profileBuilder = new UserProfile.PartialBuilder();
+                profileBuilder.setHeight(120);
+                ApiCallResult<UserProfile> result = userService.updateProfile(profileBuilder).execute();
+                assertTrue("should throws exception", false);
+            } catch (Exception exc) {
+                assertThat(exc, instanceOf(IllegalStateException.class));
+                assertEquals("should have error message", "The builder needed user credentials to build a signing client", exc.getMessage());
+            }
+        }
+
+        @Test
+        public void updateProfile_ValidUserParams_RespondsWithProfile() throws InterruptedException {
+            clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
+            testKeystore.setKey(validSigningKey);
+            clientBuilder.setKeystore(testKeystore);
+            userService = new UserService(clientBuilder.build());
+            MockResponse mockResponse =
+                new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK)
+                    .setHeader("Content-Type", "application/json")
+                    .setBody("{\n" +
+                        "  \"token\": \"2e573e83-88f0-476f-bb16-a076efe53659\",\n" +
+                        "  \"height\": 120,\n" +
+                        "  \"weight\": 75,\n" +
+                        "  \"gender\": \"male\",\n" +
+                        "  \"birthDate\": \"1980-12-31\",\n" +
+                        "  \"locale\": \"en\",\n" +
+                        "  \"timezone\": \"Europe/Moscow\"\n" +
+                        "}");
+            mockWebServer.enqueue(mockResponse);
+            UserProfile.PartialBuilder profileBuilder = new UserProfile.PartialBuilder();
+            profileBuilder.setHeight(120);
+            ApiCallResult<UserProfile> result = userService.updateProfile(profileBuilder).execute();
+
+            RecordedRequest request = mockWebServer.takeRequest();
+            assertEquals(
+                "transforms only given user params to json",
+                "{\"height\":120.0}",
+                request.getBody().readUtf8());
+
+            assertFalse("success result", result.isError());
+            UserProfile profile = result.getValue();
+            assertEquals("should have user profile", "2e573e83-88f0-476f-bb16-a076efe53659", profile.getToken());
+            assertEquals(120f, profile.getHeight(), 0.0001);
+            assertEquals(75f, profile.getWeight(), 0.0001);
+            assertEquals(Gender.male, profile.getGender());
+            assertEquals(LocalDate.of(1980, 12, 31), profile.getBirthDate());
+            assertEquals(TimeZone.getTimeZone("Europe/Moscow"), profile.getTimezone());
+            assertEquals("en", profile.getLocale());
+        }
     }
 }

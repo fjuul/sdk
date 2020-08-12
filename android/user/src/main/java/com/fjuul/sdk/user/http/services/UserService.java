@@ -1,6 +1,9 @@
 package com.fjuul.sdk.user.http.services;
 
+import android.os.LocaleList;
+
 import androidx.annotation.NonNull;
+import androidx.core.os.LocaleListCompat;
 
 import com.fjuul.sdk.http.ApiClient;
 import com.fjuul.sdk.http.utils.ApiCall;
@@ -14,6 +17,8 @@ import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
@@ -81,6 +86,12 @@ public class UserService {
      */
     @NonNull
     public ApiCall<UserCreationResult> createUser(@NonNull UserProfile.PartialBuilder builder) {
+        if (builder.getTimezone() == null) {
+            builder.setTimezone(TimeZone.getDefault());
+        }
+        if (builder.getLocale() == null) {
+            builder.setLocale(LocaleListCompat.getAdjustedDefault().get(0).getLanguage());
+        }
         return getOrCreateUserApi().create(builder);
     }
 

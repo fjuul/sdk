@@ -13,7 +13,6 @@ import com.fjuul.sdk.user.http.apis.UserApi;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
-import java.time.LocalDate;
 import java.util.Date;
 
 import okhttp3.OkHttpClient;

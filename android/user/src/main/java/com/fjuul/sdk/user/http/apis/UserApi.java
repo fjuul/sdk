@@ -19,9 +19,9 @@ public interface UserApi {
 
     @PUT("/sdk/users/v1/{userToken}")
     @NonNull
-    ApiCall<UserProfile> updateProfile(@Path("userToken") @NonNull String userToken, @NonNull @Body UserProfile profile);
+    ApiCall<UserProfile> updateProfile(@Path("userToken") @NonNull String userToken, @NonNull @Body UserProfile.PartialBuilder profileBuilder);
 
     @POST("/sdk/users/v1")
     @NonNull
-    ApiCall<UserCreationResult> create(@NonNull @Body UserProfile profile);
+    ApiCall<UserCreationResult> create(@NonNull @Body UserProfile.PartialBuilder profileBuilder);
 }

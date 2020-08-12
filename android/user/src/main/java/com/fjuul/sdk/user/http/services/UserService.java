@@ -75,8 +75,7 @@ public class UserService {
 
     @NonNull
     public ApiCall<UserCreationResult> createUser(@NonNull UserProfile.PartialBuilder builder) {
-        UserProfile partialProfile = builder.buildPartialProfile();
-        return getOrCreateUserApi().create(partialProfile);
+        return getOrCreateUserApi().create(builder);
     }
 
     @NonNull
@@ -86,7 +85,6 @@ public class UserService {
 
     @NonNull
     public ApiCall<UserProfile> updateProfile(@NonNull UserProfile.PartialBuilder builder) {
-        UserProfile partialProfile = builder.buildPartialProfile();
-        return getOrCreateSigningUserApi().updateProfile(clientBuilder.getUserToken(),partialProfile);
+        return getOrCreateSigningUserApi().updateProfile(clientBuilder.getUserToken(), builder);
     }
 }

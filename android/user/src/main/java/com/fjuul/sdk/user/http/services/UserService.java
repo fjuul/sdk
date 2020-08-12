@@ -66,7 +66,7 @@ public class UserService {
         if (this.signingUserApiClient != null) {
             return signingUserApiClient;
         }
-        synchronized (this.signingUserApiClient) {
+        synchronized (this) {
             Retrofit retrofit = createRetrofit(clientBuilder.buildSigningClient());
             this.signingUserApiClient = retrofit.create(UserApi.class);
             return this.signingUserApiClient;

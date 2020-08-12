@@ -25,6 +25,14 @@ class LoginFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        // Inflate the layout for this fragment
         appStorage = AppStorage(requireContext())
         appStorage.apply {
             if (userToken != null && userSecret != null && apiKey != null && environment != null) {
@@ -38,14 +46,6 @@ class LoginFragment : Fragment() {
                 findNavController().navigate(LoginFragmentDirections.actionLoginFragmentToModulesFragment())
             }
         }
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_login, container, false)
     }
 
@@ -112,6 +112,11 @@ class LoginFragment : Fragment() {
                 tokenInput.text.toString(),
                 secretInput.text.toString()
             )
+        }
+
+        createUserButton.setOnClickListener {
+            val action = LoginFragmentDirections.actionLoginFragmentToCreateUserFragment(apiKeyInput.text.toString())
+            findNavController().navigate(action)
         }
 
         tokenInput.afterTextChanged {

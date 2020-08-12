@@ -12,6 +12,9 @@
         <action
             android:id="@+id/action_loginFragment_to_modulesFragment"
             app:destination="@id/modulesFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_createUserFragment"
+            app:destination="@id/createUserFragment" />
     </fragment>
     <fragment
         android:id="@+id/modulesFragment"
@@ -27,4 +30,17 @@
         android:name="com.fjuul.sdk.android.exampleapp.ui.daily_stats.DailyStatsFragment"
         android:label="Daily Stats"
         tools:layout="@layout/fragment_daily_stats" />
+    <fragment
+        android:id="@+id/createUserFragment"
+        android:name="com.fjuul.sdk.android.exampleapp.ui.create_user.CreateUserFragment"
+        android:label="fragment_create_user"
+        tools:layout="@layout/fragment_create_user" >
+        <action
+            android:id="@+id/action_createUserFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/loginFragment" />
+        <argument
+            android:name="API_KEY"
+            app:argType="string" />
+    </fragment>
 </navigation>

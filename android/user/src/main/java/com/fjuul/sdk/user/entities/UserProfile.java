@@ -64,8 +64,8 @@ public class UserProfile {
         // TODO: add predicate to validate fields ?
         @Nullable private LocalDate birthDate;
         @Nullable private Gender gender;
-        @Nullable private float height;
-        @Nullable private float weight;
+        @Nullable private Float height;
+        @Nullable private Float weight;
         @Nullable private TimeZone timezone;
         @Nullable private String locale;
 

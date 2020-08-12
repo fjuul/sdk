@@ -2,6 +2,8 @@ package com.fjuul.sdk.user.http.services;
 
 import android.os.Build;
 
+import androidx.core.os.LocaleListCompat;
+
 import com.fjuul.sdk.entities.InMemoryStorage;
 import com.fjuul.sdk.entities.Keystore;
 import com.fjuul.sdk.entities.SigningKey;
@@ -26,6 +28,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.time.LocalDate;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import okhttp3.Request;
@@ -117,6 +120,56 @@ public class UserServiceTest {
         }
 
         @Test
+        public void createUser_EmptyTimezoneAndLocale_RespondWithCreationResult() throws InterruptedException {
+            userService = new UserService(clientBuilder.build());
+            Locale defaultLocale = LocaleListCompat.getAdjustedDefault().get(0);
+            TimeZone defaultTZ = TimeZone.getDefault();
+            MockResponse mockResponse =
+                new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK)
+                    .setHeader("Content-Type", "application/json")
+                    .setBody("{\n" +
+                        "  \"user\": {\n" +
+                        "    \"token\": \"2e573e83-88f0-476f-bb16-a076efe53659\",\n" +
+                        "    \"height\": 180,\n" +
+                        "    \"weight\": 68,\n" +
+                        "    \"gender\": \"female\",\n" +
+                        "    \"birthDate\": \"1980-06-01\",\n" +
+                        "    \"timezone\": " + String.format("\"%s\",\n", defaultTZ.getID()) +
+                        "    \"locale\": " + String.format("\"%s\"\n", defaultLocale.getLanguage()) +
+                        "  },\n" +
+                        "  \"secret\": \"user_secret\"\n" +
+                        "}");
+            mockWebServer.enqueue(mockResponse);
+
+            UserProfile.PartialBuilder userBuilder = new UserProfile.PartialBuilder();
+            userBuilder.setHeight(180);
+            userBuilder.setWeight(68);
+            userBuilder.setGender(Gender.female);
+            userBuilder.setBirthDate(LocalDate.of(1980, 06, 01));
+            ApiCallResult<UserCreationResult> result = userService.createUser(userBuilder).execute();
+            RecordedRequest request = mockWebServer.takeRequest();
+
+            assertEquals(
+                "transforms user params to json",
+                String.format(
+                    "{\"birthDate\":\"1980-06-01\",\"gender\":\"female\",\"height\":180.0,\"locale\":\"%s\",\"timezone\":\"%s\",\"weight\":68.0}",
+                    defaultLocale.getLanguage(),
+                    defaultTZ.getID()),
+                request.getBody().readUtf8());
+
+            assertFalse("success result", result.isError());
+            assertEquals("should have user secret", "user_secret", result.getValue().getSecret());
+            UserProfile profile = result.getValue().getUser();
+            assertEquals("should have user profile", "2e573e83-88f0-476f-bb16-a076efe53659", profile.getToken());
+            assertEquals(180f, profile.getHeight(), 0.0001);
+            assertEquals(68f, profile.getWeight(), 0.0001);
+            assertEquals(Gender.female, profile.getGender());
+            assertEquals(LocalDate.of(1980, 06, 01), profile.getBirthDate());
+            assertEquals(defaultTZ, profile.getTimezone());
+            assertEquals(defaultLocale.getLanguage(), profile.getLocale());
+        }
+
+        @Test
         public void createUser_InvalidParams_RespondWithError() throws IOException, InterruptedException {
             userService = new UserService(clientBuilder.build());
             MockResponse mockResponse =
@@ -126,12 +179,12 @@ public class UserServiceTest {
                         "  \"message\":\"Bad Request: Validation error\",\n" +
                         "  \"errors\":[\n" +
                         "    {\n" +
-                        "      \"property\":\"timezone\",\n" +
+                        "      \"property\":\"weight\",\n" +
                         "      \"children\":[\n" +
                         "\n" +
                         "      ],\n" +
                         "      \"constraints\":{\n" +
-                        "        \"isNotEmpty\":\"timezone should not be empty\"\n" +
+                        "        \"isNotEmpty\":\"weight should not be empty\"\n" +
                         "      }\n" +
                         "    }\n" +
                         "  ]\n" +
@@ -140,16 +193,16 @@ public class UserServiceTest {
 
             UserProfile.PartialBuilder userBuilder = new UserProfile.PartialBuilder();
             userBuilder.setHeight(180);
-            userBuilder.setWeight(68);
             userBuilder.setGender(Gender.female);
             userBuilder.setBirthDate(LocalDate.of(1980, 06, 01));
+            userBuilder.setTimezone(TimeZone.getTimeZone("Europe/Helsinki"));
             userBuilder.setLocale("fi");
             ApiCallResult<UserCreationResult> result = userService.createUser(userBuilder).execute();
             RecordedRequest request = mockWebServer.takeRequest();
 
             assertEquals(
                 "transforms user params to json",
-                "{\"birthDate\":\"1980-06-01\",\"gender\":\"female\",\"height\":180.0,\"locale\":\"fi\",\"weight\":68.0}",
+                "{\"birthDate\":\"1980-06-01\",\"gender\":\"female\",\"height\":180.0,\"locale\":\"fi\",\"timezone\":\"Europe/Helsinki\"}",
                 request.getBody().readUtf8());
 
             assertTrue("unsuccessful result", result.isError());

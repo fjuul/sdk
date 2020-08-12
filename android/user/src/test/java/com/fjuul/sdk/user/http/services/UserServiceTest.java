@@ -2,12 +2,14 @@ package com.fjuul.sdk.user.http.services;
 
 import android.os.Build;
 
+import com.fjuul.sdk.errors.ApiErrors;
 import com.fjuul.sdk.fixtures.http.TestApiClient;
 import com.fjuul.sdk.http.utils.ApiCallResult;
 import com.fjuul.sdk.user.entities.Gender;
 import com.fjuul.sdk.user.entities.UserCreationResult;
 import com.fjuul.sdk.user.entities.UserProfile;
 
+import org.hamcrest.core.IsInstanceOf;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,8 +29,11 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(Enclosed.class)
 @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
@@ -107,5 +112,48 @@ public class UserServiceTest {
             assertEquals(TimeZone.getTimeZone("Europe/Helsinki"), profile.getTimezone());
             assertEquals("fi", profile.getLocale());
         }
+
+        @Test
+        public void createUser_InvalidParams_RespondWithError() throws IOException, InterruptedException {
+            userService = new UserService(clientBuilder.build());
+            MockResponse mockResponse =
+                new MockResponse().setResponseCode(HttpURLConnection.HTTP_BAD_REQUEST)
+                    .setHeader("Content-Type", "application/json")
+                    .setBody("{\n" +
+                        "  \"message\":\"Bad Request: Validation error\",\n" +
+                        "  \"errors\":[\n" +
+                        "    {\n" +
+                        "      \"property\":\"timezone\",\n" +
+                        "      \"children\":[\n" +
+                        "\n" +
+                        "      ],\n" +
+                        "      \"constraints\":{\n" +
+                        "        \"isNotEmpty\":\"timezone should not be empty\"\n" +
+                        "      }\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}");
+            mockWebServer.enqueue(mockResponse);
+
+            UserProfile.PartialBuilder userBuilder = new UserProfile.PartialBuilder();
+            userBuilder.setHeight(180);
+            userBuilder.setWeight(68);
+            userBuilder.setGender(Gender.female);
+            userBuilder.setBirthDate(LocalDate.of(1980, 06, 01));
+            userBuilder.setLocale("fi");
+            ApiCallResult<UserCreationResult> result = userService.createUser(userBuilder).execute();
+            RecordedRequest request = mockWebServer.takeRequest();
+
+            assertEquals(
+                "transforms user params to json",
+                "{\"birthDate\":\"1980-06-01\",\"gender\":\"female\",\"height\":180.0,\"locale\":\"fi\",\"weight\":68.0}",
+                request.getBody().readUtf8());
+
+            assertTrue("unsuccessful result", result.isError());
+            ApiErrors.CommonError error = result.getError();
+            assertThat(error, instanceOf(ApiErrors.BadRequestError.class));
+            assertEquals("should have error message", "Bad Request: Validation error", error.getMessage());
+        }
+
     }
 }

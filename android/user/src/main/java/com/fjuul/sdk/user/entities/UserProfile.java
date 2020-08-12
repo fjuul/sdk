@@ -89,13 +89,18 @@ public class UserProfile {
             this.timezone = timezone;
         }
 
+        @Nullable
+        public TimeZone getTimezone() {
+            return timezone;
+        }
+
         public void setLocale(@Nullable String locale) {
             this.locale = locale;
         }
 
-        @NonNull
-        public UserProfile buildPartialProfile() {
-            return new UserProfile(birthDate, gender, height, weight, timezone, locale);
+        @Nullable
+        public String getLocale() {
+            return locale;
         }
     }
 }

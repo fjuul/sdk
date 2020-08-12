@@ -21,7 +21,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;
 
 /**
- * TODO: javadoc
+ * The `UserService` encapsulates access to a users profile data.
  */
 public class UserService {
     private UserApi userApiClient;
@@ -31,7 +31,9 @@ public class UserService {
     /**
      * Create instance of the user api service.
      *
-     * @param client configured client with signing ability and user credentials
+     * @param client configured client. No need to setup the user credentials for a user creation.
+     *               When user credentials is obtained then recreate an instance of UserService with
+     *               a new client configured with the user credentials.
      */
     public UserService(@NonNull ApiClient client) {
         this.clientBuilder = client;
@@ -73,16 +75,32 @@ public class UserService {
         }
     }
 
+    /**
+     * Builds the call to create a new user with the given profile params.
+     * @param builder profile builder with all required params.
+     * @return ApiCall for the user creation.
+     */
     @NonNull
     public ApiCall<UserCreationResult> createUser(@NonNull UserProfile.PartialBuilder builder) {
         return getOrCreateUserApi().create(builder);
     }
 
+    /**
+     * Builds the call to get a user profile by the user credentials specified at the client
+     * configuration.
+     * @return ApiCall for the user profile.
+     */
     @NonNull
     public ApiCall<UserProfile> getProfile() {
         return getOrCreateSigningUserApi().getProfile(clientBuilder.getUserToken());
     }
 
+    /**
+     * Builds the call to update a user profile with the given params.
+     * @param builder profile builder with parameters. This method supports a partial update so it
+     *                will be enough to assign only parameters those need to update.
+     * @return ApiCall for the update of user profile.
+     */
     @NonNull
     public ApiCall<UserProfile> updateProfile(@NonNull UserProfile.PartialBuilder builder) {
         return getOrCreateSigningUserApi().updateProfile(clientBuilder.getUserToken(), builder);

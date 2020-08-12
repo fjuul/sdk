@@ -69,22 +69,37 @@ public class UserProfile {
         @Nullable private TimeZone timezone;
         @Nullable private String locale;
 
+        /**
+         * @param birthDate required parameter for the user creation.
+         */
         public void setBirthDate(@Nullable LocalDate birthDate) {
             this.birthDate = birthDate;
         }
 
+        /**
+         * @param gender required parameter for the user creation.
+         */
         public void setGender(@Nullable Gender gender) {
             this.gender = gender;
         }
 
+        /**
+         * @param height required parameter for the user creation.
+         */
         public void setHeight(float height) {
             this.height = height;
         }
 
+        /**
+         * @param weight required parameter for the user creation.
+         */
         public void setWeight(float weight) {
             this.weight = weight;
         }
 
+        /**
+         * @param timezone local timezone of a user. If this is omitted, then default timezone will be used.
+         */
         public void setTimezone(@Nullable TimeZone timezone) {
             this.timezone = timezone;
         }
@@ -94,6 +109,10 @@ public class UserProfile {
             return timezone;
         }
 
+        /**
+         * @param locale language tag (code, e.g. 'fr', 'de', 'ru') of preferable locale for a user.
+         *               If this is omitted, then first preferable locale will be taken.
+         */
         public void setLocale(@Nullable String locale) {
             this.locale = locale;
         }

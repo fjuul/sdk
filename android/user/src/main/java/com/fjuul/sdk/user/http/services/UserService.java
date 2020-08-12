@@ -1,7 +1,5 @@
 package com.fjuul.sdk.user.http.services;
 
-import android.os.LocaleList;
-
 import androidx.annotation.NonNull;
 import androidx.core.os.LocaleListCompat;
 
@@ -17,7 +15,6 @@ import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
 import java.util.Date;
-import java.util.Locale;
 import java.util.TimeZone;
 
 import okhttp3.OkHttpClient;

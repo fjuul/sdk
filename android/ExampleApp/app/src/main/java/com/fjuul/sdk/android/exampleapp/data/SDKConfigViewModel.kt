@@ -43,10 +43,10 @@ class SDKConfigViewModel(private val appStorage: AppStorage) : ViewModel() {
     private val _userSecret = MutableLiveData<String>(appStorage.userSecret)
     val userSecret: LiveData<String> = _userSecret
 
-    fun setUserCredentials(credentials: UserCredentials) {
-        _userToken.value = credentials.token
+    fun postUserCredentials(credentials: UserCredentials) {
+        _userToken.postValue(credentials.token)
         appStorage.userToken = credentials.token
-        _userSecret.value = credentials.secret
+        _userSecret.postValue(credentials.secret)
         appStorage.userSecret = credentials.secret
     }
 }

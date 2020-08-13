@@ -75,6 +75,8 @@ class LoginFragment : Fragment() {
             SdkEnvironment.TEST -> view.findViewById<RadioButton>(R.id.test_env_radio).isChecked = true
             SdkEnvironment.PROD -> view.findViewById<RadioButton>(R.id.prod_env_radio).isChecked = true
         }
+        tokenInput.setText(sdkConfigViewModel.userToken.value)
+        secretInput.setText(sdkConfigViewModel.userSecret.value)
 
         sdkConfigViewModel.sdkConfig().observe(viewLifecycleOwner, Observer {
             createUserButton.isEnabled = !it.first.isNullOrEmpty() && it.second != null

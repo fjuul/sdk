@@ -50,12 +50,12 @@ public class ApiCall<T> {
         delegate.enqueue(new Callback<T>() {
             @Override
             public void onResponse(Call<T> call, Response<T> response) {
-                callback.onResult(new ApiCall<>(call, responseTransformer), responseTransformer.transform(response));
+                callback.onResult(ApiCall.this, responseTransformer.transform(response));
             }
 
             @Override
             public void onFailure(Call<T> call, Throwable t) {
-                callback.onResult(new ApiCall(call, responseTransformer),
+                callback.onResult(ApiCall.this,
                     ApiCallResult.error(new ApiErrors.InternalClientError(t)));
             }
         });

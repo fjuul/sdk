@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.fjuul.sdk.http.ApiClient
+import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
 import com.fjuul.sdk.http.utils.ApiCall
 import com.fjuul.sdk.user.entities.Gender
 import com.fjuul.sdk.user.entities.UserCreationResult
@@ -56,12 +56,10 @@ class UserFormViewModel: ViewModel() {
     }
 
     @Throws(Error::class)
-    fun createUser(context: Context, apiKey: String): ApiCall<UserCreationResult> {
-        // TODO: pass base url
-        // TODO: thow error if no builder
+    fun createUser(context: Context, apiKey: String, sdkEnvironment: SdkEnvironment): ApiCall<UserCreationResult> {
         val partialProfile = _profileBuilder ?: throw Error("empty profile params")
-        val client = ApiClient.Builder(context, "https://dev.api.fjuul.com", apiKey).build()
-        return UserService(client).createUser(partialProfile)
+        ApiClientHolder.setup(context, sdkEnvironment, apiKey)
+        return UserService(ApiClientHolder.sdkClient).createUser(partialProfile)
     }
 
     //TODO: add method to fill live data by user-profile

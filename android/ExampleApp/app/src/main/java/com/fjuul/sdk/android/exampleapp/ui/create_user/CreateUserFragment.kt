@@ -12,18 +12,26 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.navArgs
 import com.fjuul.sdk.android.exampleapp.R
+import com.fjuul.sdk.android.exampleapp.data.AppStorage
+import com.fjuul.sdk.android.exampleapp.data.SDKConfigViewModel
+import com.fjuul.sdk.android.exampleapp.data.SDKConfigViewModelFactory
 import com.fjuul.sdk.android.exampleapp.data.UserFormViewModel
 import com.fjuul.sdk.android.exampleapp.ui.login.afterTextChanged
+import com.fjuul.sdk.entities.UserCredentials
 import com.fjuul.sdk.user.entities.Gender
 import java.time.LocalDate
 
 class CreateUserFragment : Fragment() {
     val args: CreateUserFragmentArgs by navArgs()
     private val model: UserFormViewModel by viewModels()
+    private val sdkConfigViewModel: SDKConfigViewModel by activityViewModels {
+        SDKConfigViewModelFactory(AppStorage(requireContext()))
+    }
 
     private lateinit var genderDropdown: AutoCompleteTextView
     private lateinit var birthdateInput: View
@@ -100,18 +108,20 @@ class CreateUserFragment : Fragment() {
 
         submitButton.setOnClickListener {
             try {
-                model.createUser(requireContext(), "Zzzz").enqueue { call, result ->
+                val (token, env) = sdkConfigViewModel.sdkConfig().value!!
+                model.createUser(requireContext(), token!!, env!!).enqueue { _, result ->
                     if (result.isError) {
-                        AlertDialog.Builder(requireContext()).setMessage(result.error?.message).show()
+                        AlertDialog.Builder(requireContext()).setMessage(result.error?.message)
+                            .show()
+                        return@enqueue
                     }
-                    // fill app storage
-                    //
-                    // result.
+                    val creationResult = result.value!!
+                    val token = creationResult.user.token
+                    sdkConfigViewModel.postUserCredentials(UserCredentials(token, creationResult.secret))
                 }
             } catch (error: Error) {
                 AlertDialog.Builder(requireContext()).setMessage(error.message).show()
             }
-
         }
     }
 

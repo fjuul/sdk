@@ -15,8 +15,6 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
 import com.fjuul.sdk.android.exampleapp.R
 import com.fjuul.sdk.android.exampleapp.data.AppStorage
@@ -26,8 +24,6 @@ import com.fjuul.sdk.android.exampleapp.data.SdkEnvironment
 import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
 
 class LoginFragment : Fragment() {
-    private lateinit var onboardingViewModel: OnboardingViewModel
-    private lateinit var appStorage: AppStorage
     private val sdkConfigViewModel: SDKConfigViewModel by activityViewModels {
         SDKConfigViewModelFactory(AppStorage(requireContext()))
     }
@@ -42,19 +38,6 @@ class LoginFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        appStorage = AppStorage(requireContext())
-        appStorage.apply {
-            if (userToken != null && userSecret != null && apiKey != null && environment != null) {
-                ApiClientHolder.setup(
-                    context = requireContext(),
-                    token = userToken!!,
-                    secret = userSecret!!,
-                    apiKey = apiKey!!,
-                    env = environment!!
-                )
-                findNavController().navigate(LoginFragmentDirections.actionLoginFragmentToModulesFragment())
-            }
-        }
         return inflater.inflate(R.layout.fragment_login, container, false)
     }
 
@@ -81,69 +64,21 @@ class LoginFragment : Fragment() {
         sdkConfigViewModel.sdkConfig().observe(viewLifecycleOwner, Observer {
             createUserButton.isEnabled = !it.first.isNullOrEmpty() && it.second != null
         })
+        sdkConfigViewModel.sdkUserConfigState().observe(viewLifecycleOwner, Observer {
+            val (apiKey, env, token, secret) = it
+            continueButton.isEnabled = apiKey != null && env != null && !token.isNullOrBlank() && !secret.isNullOrBlank()
+        })
 
         radioGroup.setOnCheckedChangeListener { group, checkedId ->
             when (checkedId) {
-                R.id.dev_env_radio -> {
-                    onboardingViewModel.envModeChanged(SdkEnvironment.DEV)
-                    sdkConfigViewModel.setEnvironment(SdkEnvironment.DEV)
-                }
-                R.id.test_env_radio -> {
-                    onboardingViewModel.envModeChanged(SdkEnvironment.TEST)
-                    sdkConfigViewModel.setEnvironment(SdkEnvironment.TEST)
-                }
-                R.id.prod_env_radio -> {
-                    onboardingViewModel.envModeChanged(SdkEnvironment.PROD)
-                    sdkConfigViewModel.setEnvironment(SdkEnvironment.PROD)
-                }
+                R.id.dev_env_radio -> sdkConfigViewModel.setEnvironment(SdkEnvironment.DEV)
+                R.id.test_env_radio -> sdkConfigViewModel.setEnvironment(SdkEnvironment.TEST)
+                R.id.prod_env_radio -> sdkConfigViewModel.setEnvironment(SdkEnvironment.PROD)
             }
         }
 
-        onboardingViewModel = ViewModelProviders.of(this, OnboardingViewModelFactory())
-            .get(OnboardingViewModel::class.java)
-
-        onboardingViewModel.onboardingFormState.observe(
-            viewLifecycleOwner,
-            Observer {
-                val loginState = it ?: return@Observer
-
-                // disable login button unless both username / password is valid
-                continueButton.isEnabled = loginState.isDataValid && loginState.environment != null
-            }
-        )
-
-        onboardingViewModel.submittedFormState.observe(
-            viewLifecycleOwner,
-            Observer {
-                val loginResult = it ?: return@Observer
-
-                appStorage.apply {
-                    apiKey = apiKeyInput.text.toString()
-                    userToken = tokenInput.text.toString()
-                    userSecret = secretInput.text.toString()
-                    environment = it.environment!!
-                }
-
-                ApiClientHolder.setup(
-                    context = this.requireActivity().applicationContext,
-                    env = it.environment!!,
-                    apiKey = apiKeyInput.text.toString(),
-                    token = tokenInput.text.toString(),
-                    secret = secretInput.text.toString()
-                )
-
-                val action = LoginFragmentDirections.actionLoginFragmentToModulesFragment()
-                findNavController().navigate(action)
-            }
-        )
-
         apiKeyInput.afterTextChanged {
             sdkConfigViewModel.setApiKey(it)
-            onboardingViewModel.loginDataChanged(
-                apiKeyInput.text.toString(),
-                tokenInput.text.toString(),
-                secretInput.text.toString()
-            )
         }
 
         createUserButton.setOnClickListener {
@@ -152,32 +87,26 @@ class LoginFragment : Fragment() {
         }
 
         tokenInput.afterTextChanged {
-            onboardingViewModel.loginDataChanged(
-                apiKeyInput.text.toString(),
-                tokenInput.text.toString(),
-                secretInput.text.toString()
-            )
+            sdkConfigViewModel.setUserToken(it)
         }
 
         secretInput.apply {
             afterTextChanged {
-                onboardingViewModel.loginDataChanged(
-                    apiKeyInput.text.toString(),
-                    tokenInput.text.toString(),
-                    secretInput.text.toString()
-                )
-            }
-
-            setOnEditorActionListener { _, actionId, _ ->
-                when (actionId) {
-                    EditorInfo.IME_ACTION_DONE ->
-                        onboardingViewModel.submit()
-                }
-                false
+                sdkConfigViewModel.setUserSecret(it)
             }
 
             continueButton.setOnClickListener {
-                onboardingViewModel.submit()
+                val (env, apiKey, token, secret) = sdkConfigViewModel.sdkUserConfigState().value!!
+                ApiClientHolder.setup(
+                    context = requireContext(),
+                    env = env!!,
+                    apiKey = apiKey!!,
+                    token = token!!,
+                    secret = secret!!
+                )
+
+                val action = LoginFragmentDirections.actionLoginFragmentToModulesFragment()
+                findNavController().navigate(action)
             }
         }
     }

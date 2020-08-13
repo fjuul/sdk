@@ -27,6 +27,7 @@ class SDKConfigViewModel(private val appStorage: AppStorage) : ViewModel() {
 
     fun sdkConfig(): LiveData<Pair<String?, SdkEnvironment?>> {
         val liveDataMerger = MediatorLiveData<Pair<String?, SdkEnvironment?>>()
+        liveDataMerger.value = Pair(apiKey.value, environment.value)
         liveDataMerger.addSource(apiKey) {
              liveDataMerger.value = (liveDataMerger.value ?: Pair(null, null)).copy(first = it)
         }

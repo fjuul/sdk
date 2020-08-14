@@ -62,6 +62,7 @@ class UserFormViewModel : ViewModel() {
 
     fun setTimezone(timezone: String) {
         _timezone.value = timezone
+        // touch builder to initialize it
         profileBuilder
     }
 

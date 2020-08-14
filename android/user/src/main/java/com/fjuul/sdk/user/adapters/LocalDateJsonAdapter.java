@@ -7,18 +7,19 @@ import com.squareup.moshi.FromJson;
 import com.squareup.moshi.ToJson;
 
 import android.annotation.SuppressLint;
-import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 
 public class LocalDateJsonAdapter {
     @SuppressLint("NewApi")
-    @Nullable
     @FromJson
-    public LocalDate fromJson(String dateString) throws IOException {
+    @NonNull
+    public LocalDate fromJson(@NonNull String dateString) throws IOException {
         return LocalDate.parse(dateString);
     }
 
     @ToJson
-    public String toJson(@Nullable LocalDate value) throws IOException {
+    @NonNull
+    public String toJson(@NonNull LocalDate value) throws IOException {
         return value.toString();
     }
 }

@@ -6,17 +6,18 @@ import java.util.TimeZone;
 import com.squareup.moshi.FromJson;
 import com.squareup.moshi.ToJson;
 
-import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 
 public class TimeZoneJsonAdapter {
-    @Nullable
     @FromJson
-    public TimeZone fromJson(String timezone) throws IOException {
+    @NonNull
+    public TimeZone fromJson(@NonNull String timezone) throws IOException {
         return TimeZone.getTimeZone(timezone);
     }
 
     @ToJson
-    public String toJson(@Nullable TimeZone value) throws IOException {
+    @NonNull
+    public String toJson(@NonNull TimeZone value) throws IOException {
         return value.getID();
     }
 }

@@ -125,9 +125,8 @@ public class ApiClient {
     }
 
     public @NonNull OkHttpClient buildClient() {
-        OkHttpClient client = new OkHttpClient().newBuilder()
-            .addInterceptor(new ApiKeyAttachingInterceptor(apiKey))
-            .build();
+        OkHttpClient client =
+            new OkHttpClient().newBuilder().addInterceptor(new ApiKeyAttachingInterceptor(apiKey)).build();
         return client;
     }
 

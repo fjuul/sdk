@@ -1,12 +1,11 @@
 package com.fjuul.sdk.http.utils;
 
-import android.os.Handler;
-import android.os.Looper;
-
 import java.io.IOException;
 
 import com.fjuul.sdk.errors.ApiErrors;
 
+import android.os.Handler;
+import android.os.Looper;
 import androidx.annotation.NonNull;
 import okhttp3.Request;
 import okio.Timeout;
@@ -53,7 +52,8 @@ public class ApiCall<T> {
         delegate.enqueue(new Callback<T>() {
             // Since we use custom Call adapter, a retrofit executor doesn't run a callback in the
             // main thread as it stated in the docs.
-            // see https://square.github.io/retrofit/2.x/retrofit/retrofit2/Retrofit.Builder.html#callbackExecutor-java.util.concurrent.Executor-
+            // see
+            // https://square.github.io/retrofit/2.x/retrofit/retrofit2/Retrofit.Builder.html#callbackExecutor-java.util.concurrent.Executor-
             Handler mainHandler = new Handler(Looper.getMainLooper());
 
             @Override
@@ -66,8 +66,7 @@ public class ApiCall<T> {
             @Override
             public void onFailure(Call<T> call, Throwable t) {
                 mainHandler.post(() -> {
-                    callback.onResult(ApiCall.this,
-                        ApiCallResult.error(new ApiErrors.InternalClientError(t)));
+                    callback.onResult(ApiCall.this, ApiCallResult.error(new ApiErrors.InternalClientError(t)));
                 });
             }
         });

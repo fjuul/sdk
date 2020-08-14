@@ -1,12 +1,12 @@
 package com.fjuul.sdk.user.adapters;
 
-import androidx.annotation.Nullable;
+import java.io.IOException;
+import java.util.TimeZone;
 
 import com.squareup.moshi.FromJson;
 import com.squareup.moshi.ToJson;
 
-import java.io.IOException;
-import java.util.TimeZone;
+import androidx.annotation.Nullable;
 
 public class TimeZoneJsonAdapter {
     @Nullable

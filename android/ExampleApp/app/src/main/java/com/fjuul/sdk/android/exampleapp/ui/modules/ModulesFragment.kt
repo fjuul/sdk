@@ -52,7 +52,7 @@ class ModulesFragment : Fragment() {
         modulesListView.setOnItemClickListener { parent, view, position, id ->
             val pressedItem = adapter.getItem(position)
             if (pressedItem is ModuleItem) {
-                when(pressedItem.name) {
+                when (pressedItem.name) {
                     ModuleItemName.DAILY_STATS -> {
                         val action = ModulesFragmentDirections.actionModulesFragmentToDailyStatsFragment()
                         findNavController().navigate(action)

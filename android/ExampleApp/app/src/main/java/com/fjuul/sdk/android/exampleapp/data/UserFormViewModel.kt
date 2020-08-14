@@ -15,7 +15,7 @@ import java.lang.Error
 import java.time.LocalDate
 import java.util.TimeZone
 
-class UserFormViewModel: ViewModel() {
+class UserFormViewModel : ViewModel() {
     private var _profileBuilder: UserProfile.PartialBuilder? = null
     private val profileBuilder: UserProfile.PartialBuilder
         private get() {

@@ -1,21 +1,27 @@
 package com.fjuul.sdk.user.entities;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import java.time.LocalDate;
 import java.util.TimeZone;
 
-public class UserProfile {
-    @NonNull private String token;
-    @NonNull private LocalDate birthDate;
-    @NonNull private Gender gender;
-    @NonNull private float height;
-    @NonNull private float weight;
-    @NonNull private TimeZone timezone;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
-    private UserProfile(@NonNull LocalDate birthDate, @NonNull Gender gender, float height,
-                        float weight, @NonNull TimeZone timezone, @NonNull String locale) {
+public class UserProfile {
+    @NonNull
+    private String token;
+    @NonNull
+    private LocalDate birthDate;
+    @NonNull
+    private Gender gender;
+    @NonNull
+    private float height;
+    @NonNull
+    private float weight;
+    @NonNull
+    private TimeZone timezone;
+
+    private UserProfile(@NonNull LocalDate birthDate, @NonNull Gender gender, float height, float weight,
+        @NonNull TimeZone timezone, @NonNull String locale) {
         this.token = token;
         this.birthDate = birthDate;
         this.gender = gender;
@@ -25,7 +31,8 @@ public class UserProfile {
         this.locale = locale;
     }
 
-    @NonNull private String locale;
+    @NonNull
+    private String locale;
 
     @NonNull
     public String getToken() {
@@ -62,12 +69,18 @@ public class UserProfile {
 
     public static final class PartialBuilder {
         // TODO: add predicate to validate fields ?
-        @Nullable private LocalDate birthDate;
-        @Nullable private Gender gender;
-        @Nullable private Float height;
-        @Nullable private Float weight;
-        @Nullable private TimeZone timezone;
-        @Nullable private String locale;
+        @Nullable
+        private LocalDate birthDate;
+        @Nullable
+        private Gender gender;
+        @Nullable
+        private Float height;
+        @Nullable
+        private Float weight;
+        @Nullable
+        private TimeZone timezone;
+        @Nullable
+        private String locale;
 
         /**
          * @param birthDate required parameter for the user creation.
@@ -110,8 +123,8 @@ public class UserProfile {
         }
 
         /**
-         * @param locale language tag (code, e.g. 'fr', 'de', 'ru') of preferable locale for a user.
-         *               If this is omitted, then first preferable locale will be taken.
+         * @param locale language tag (code, e.g. 'fr', 'de', 'ru') of preferable locale for a user. If this is omitted,
+         *        then first preferable locale will be taken.
          */
         public void setLocale(@Nullable String locale) {
             this.locale = locale;

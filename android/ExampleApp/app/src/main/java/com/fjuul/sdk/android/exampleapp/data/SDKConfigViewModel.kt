@@ -35,7 +35,7 @@ class SDKConfigViewModel(private val appStorage: AppStorage) : ViewModel() {
         val liveDataMerger = MediatorLiveData<Pair<String?, SdkEnvironment?>>()
         liveDataMerger.value = Pair(apiKey.value, environment.value)
         liveDataMerger.addSource(apiKey) {
-             liveDataMerger.value = (liveDataMerger.value ?: Pair(null, null)).copy(first = it)
+            liveDataMerger.value = (liveDataMerger.value ?: Pair(null, null)).copy(first = it)
         }
         liveDataMerger.addSource(environment) {
             liveDataMerger.value = (liveDataMerger.value ?: Pair(null, null)).copy(second = it)
@@ -48,7 +48,7 @@ class SDKConfigViewModel(private val appStorage: AppStorage) : ViewModel() {
 
     fun setUserToken(token: String) {
         _userToken.value = token
-        appStorage.userToken =  token
+        appStorage.userToken = token
     }
 
     private val _userSecret = MutableLiveData<String>(appStorage.userSecret)
@@ -85,6 +85,6 @@ class SDKConfigViewModel(private val appStorage: AppStorage) : ViewModel() {
     }
 }
 
-class SDKConfigViewModelFactory(private val appStorage: AppStorage): ViewModelProvider.NewInstanceFactory() {
+class SDKConfigViewModelFactory(private val appStorage: AppStorage) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T = SDKConfigViewModel(appStorage) as T
 }

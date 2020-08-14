@@ -54,7 +54,8 @@ class UserProfileFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
@@ -93,9 +94,12 @@ class UserProfileFragment : Fragment() {
         }
 
         // birthdate
-        model.birthDate.observe(viewLifecycleOwner, Observer { date ->
-            birthdateText.text = date?.toString()
-        })
+        model.birthDate.observe(
+            viewLifecycleOwner,
+            Observer { date ->
+                birthdateText.text = date?.toString()
+            }
+        )
         birthdateInput.setOnClickListener {
             val date = model.birthDate?.value ?: LocalDate.of(1980, 10, 20)
             DatePickerDialog(
@@ -185,7 +189,8 @@ class UserProfileFragment : Fragment() {
         val GENDERS = arrayOf(
             GenderPicker.MALE.displayName,
             GenderPicker.FEMALE.displayName,
-            GenderPicker.OTHER.displayName)
+            GenderPicker.OTHER.displayName
+        )
     }
 
     private fun prefillWithUserProfile(profile: UserProfile) {

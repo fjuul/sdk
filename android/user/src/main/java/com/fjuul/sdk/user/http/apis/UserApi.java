@@ -1,11 +1,10 @@
 package com.fjuul.sdk.user.http.apis;
 
-import androidx.annotation.NonNull;
-
 import com.fjuul.sdk.http.utils.ApiCall;
 import com.fjuul.sdk.user.entities.UserCreationResult;
 import com.fjuul.sdk.user.entities.UserProfile;
 
+import androidx.annotation.NonNull;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
@@ -19,7 +18,8 @@ public interface UserApi {
 
     @PUT("/sdk/users/v1/{userToken}")
     @NonNull
-    ApiCall<UserProfile> updateProfile(@Path("userToken") @NonNull String userToken, @NonNull @Body UserProfile.PartialBuilder profileBuilder);
+    ApiCall<UserProfile> updateProfile(@Path("userToken") @NonNull String userToken,
+        @NonNull @Body UserProfile.PartialBuilder profileBuilder);
 
     @POST("/sdk/users/v1")
     @NonNull

@@ -8,7 +8,7 @@ import com.fjuul.sdk.user.entities.UserProfile
 import com.fjuul.sdk.user.http.services.UserService
 import java.lang.Error
 
-class AuthorizedUserDataViewModel: ViewModel() {
+class AuthorizedUserDataViewModel : ViewModel() {
     private val _profile = MutableLiveData<UserProfile?>()
     val profile: LiveData<UserProfile?> = _profile
 

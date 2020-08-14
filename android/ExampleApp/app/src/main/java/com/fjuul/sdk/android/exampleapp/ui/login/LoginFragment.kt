@@ -6,7 +6,6 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
 import android.widget.RadioButton
@@ -64,13 +63,19 @@ class LoginFragment : Fragment() {
         tokenInput.setText(sdkConfigViewModel.userToken.value)
         secretInput.setText(sdkConfigViewModel.userSecret.value)
 
-        sdkConfigViewModel.sdkConfig().observe(viewLifecycleOwner, Observer {
-            createUserButton.isEnabled = !it.first.isNullOrEmpty() && it.second != null
-        })
-        sdkConfigViewModel.sdkUserConfigState().observe(viewLifecycleOwner, Observer {
-            val (apiKey, env, token, secret) = it
-            continueButton.isEnabled = apiKey != null && env != null && !token.isNullOrBlank() && !secret.isNullOrBlank()
-        })
+        sdkConfigViewModel.sdkConfig().observe(
+            viewLifecycleOwner,
+            Observer {
+                createUserButton.isEnabled = !it.first.isNullOrEmpty() && it.second != null
+            }
+        )
+        sdkConfigViewModel.sdkUserConfigState().observe(
+            viewLifecycleOwner,
+            Observer {
+                val (apiKey, env, token, secret) = it
+                continueButton.isEnabled = apiKey != null && env != null && !token.isNullOrBlank() && !secret.isNullOrBlank()
+            }
+        )
 
         radioGroup.setOnCheckedChangeListener { group, checkedId ->
             when (checkedId) {
@@ -115,8 +120,6 @@ class LoginFragment : Fragment() {
                         AlertDialog.Builder(requireContext()).setMessage(error?.message ?: "Unknown Error").show()
                     }
                 }
-
-
             }
         }
     }

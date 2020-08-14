@@ -36,8 +36,8 @@
     <fragment
         android:id="@+id/userProfileFragment"
         android:name="com.fjuul.sdk.android.exampleapp.ui.user_profile.UserProfileFragment"
-        android:label="fragment_create_user"
-        tools:layout="@layout/fragment_user_profile" >
+        android:label="User Profile"
+        tools:layout="@layout/fragment_user_profile">
         <action
             android:id="@+id/action_createUserFragment_to_loginFragment"
             app:destination="@id/loginFragment"
@@ -47,7 +47,7 @@
             app:destination="@id/modulesFragment" />
         <argument
             android:name="flow"
-            app:argType="com.fjuul.sdk.android.exampleapp.ui.user_profile.UserProfileNavigationFlow"
-            android:defaultValue="CREATE" />
+            android:defaultValue="CREATE"
+            app:argType="com.fjuul.sdk.android.exampleapp.ui.user_profile.UserProfileNavigationFlow" />
     </fragment>
 </navigation>

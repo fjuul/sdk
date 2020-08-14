@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
+import com.fjuul.sdk.http.ApiClient
 import com.fjuul.sdk.http.utils.ApiCall
 import com.fjuul.sdk.user.entities.Gender
 import com.fjuul.sdk.user.entities.UserCreationResult
@@ -12,6 +13,7 @@ import com.fjuul.sdk.user.entities.UserProfile
 import com.fjuul.sdk.user.http.services.UserService
 import java.lang.Error
 import java.time.LocalDate
+import java.util.TimeZone
 
 class UserFormViewModel: ViewModel() {
     private var _profileBuilder: UserProfile.PartialBuilder? = null
@@ -55,6 +57,22 @@ class UserFormViewModel: ViewModel() {
         profileBuilder?.setGender(gender)
     }
 
+    private val _timezone = MutableLiveData<String>()
+    val timezone: LiveData<String> = _timezone
+
+    fun setTimezone(timezone: String) {
+        _timezone.value = timezone
+        profileBuilder
+    }
+
+    private val _locale = MutableLiveData<String>()
+    val locale: LiveData<String> = _locale
+
+    fun setLocale(locale: String) {
+        _locale.value = locale
+        profileBuilder?.locale = locale
+    }
+
     @Throws(Error::class)
     fun createUser(context: Context, apiKey: String, sdkEnvironment: SdkEnvironment): ApiCall<UserCreationResult> {
         val partialProfile = _profileBuilder ?: throw Error("empty profile params")
@@ -62,5 +80,16 @@ class UserFormViewModel: ViewModel() {
         return UserService(ApiClientHolder.sdkClient).createUser(partialProfile)
     }
 
-    //TODO: add method to fill live data by user-profile
+    @Throws(Error::class)
+    fun updateUser(client: ApiClient): ApiCall<UserProfile> {
+        val partialProfile = _profileBuilder ?: throw Error("empty profile params")
+        val timezoneId = timezone.value
+        if (timezoneId != null) {
+            if (!TimeZone.getAvailableIDs().contains(timezoneId)) {
+                throw Error("Invalid timezone")
+            }
+            profileBuilder.timezone = TimeZone.getTimeZone(timezoneId)
+        }
+        return UserService(client).updateProfile(partialProfile)
+    }
 }

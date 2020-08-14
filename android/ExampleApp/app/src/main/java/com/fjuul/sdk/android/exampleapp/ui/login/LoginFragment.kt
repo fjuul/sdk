@@ -12,12 +12,14 @@ import android.widget.EditText
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.fjuul.sdk.android.exampleapp.R
 import com.fjuul.sdk.android.exampleapp.data.AppStorage
+import com.fjuul.sdk.android.exampleapp.data.AuthorizedUserDataViewModel
 import com.fjuul.sdk.android.exampleapp.data.SDKConfigViewModel
 import com.fjuul.sdk.android.exampleapp.data.SDKConfigViewModelFactory
 import com.fjuul.sdk.android.exampleapp.data.SdkEnvironment
@@ -27,6 +29,7 @@ class LoginFragment : Fragment() {
     private val sdkConfigViewModel: SDKConfigViewModel by activityViewModels {
         SDKConfigViewModelFactory(AppStorage(requireContext()))
     }
+    private val authorizedUserDataViewModel: AuthorizedUserDataViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,9 +107,16 @@ class LoginFragment : Fragment() {
                     token = token!!,
                     secret = secret!!
                 )
+                authorizedUserDataViewModel.fetchUserProfile(ApiClientHolder.sdkClient) { success, error ->
+                    if (success) {
+                        val action = LoginFragmentDirections.actionLoginFragmentToModulesFragment()
+                        findNavController().navigate(action)
+                    } else {
+                        AlertDialog.Builder(requireContext()).setMessage(error?.message ?: "Unknown Error").show()
+                    }
+                }
 
-                val action = LoginFragmentDirections.actionLoginFragmentToModulesFragment()
-                findNavController().navigate(action)
+
             }
         }
     }

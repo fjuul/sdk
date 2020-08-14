@@ -39,8 +39,5 @@
             android:id="@+id/action_createUserFragment_to_loginFragment"
             app:destination="@id/loginFragment"
             app:popUpTo="@id/loginFragment" />
-        <argument
-            android:name="API_KEY"
-            app:argType="string" />
     </fragment>
 </navigation>

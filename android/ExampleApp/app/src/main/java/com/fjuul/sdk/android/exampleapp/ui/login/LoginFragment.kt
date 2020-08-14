@@ -82,7 +82,7 @@ class LoginFragment : Fragment() {
         }
 
         createUserButton.setOnClickListener {
-            val action = LoginFragmentDirections.actionLoginFragmentToCreateUserFragment(apiKeyInput.text.toString())
+            val action = LoginFragmentDirections.actionLoginFragmentToCreateUserFragment()
             findNavController().navigate(action)
         }
 

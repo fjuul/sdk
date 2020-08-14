@@ -73,10 +73,10 @@ class CreateUserFragment : Fragment() {
 
         // birthdate
         model.birthDate.observe(viewLifecycleOwner, Observer { date ->
-            birthdateText.text = date.toString()
+            birthdateText.text = date?.toString()
         })
         birthdateInput.setOnClickListener {
-            val date = model.birthDate.value!!
+            val date = model.birthDate?.value ?: LocalDate.of(1980, 10, 20)
             DatePickerDialog(
                 requireContext(),
                 DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->

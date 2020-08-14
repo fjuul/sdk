@@ -23,7 +23,7 @@ class UserFormViewModel: ViewModel() {
             return _profileBuilder!!
         }
 
-    private val _birthDate = MutableLiveData<LocalDate>(LocalDate.of(1980, 10, 20))
+    private val _birthDate = MutableLiveData<LocalDate>()
     val birthDate: LiveData<LocalDate> = _birthDate
 
     fun setBirthDate(date: LocalDate) {

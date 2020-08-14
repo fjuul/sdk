@@ -142,60 +142,61 @@
             android:background="?android:attr/listDivider"
             app:layout_constraintTop_toBottomOf="@id/weight_block" />
 
-        <LinearLayout
-            android:id="@+id/gender_block"
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/GenderExposedDropdownMenu"
+            app:boxBackgroundColor="@color/cardview_light_background"
+            android:id="@+id/genderTextField"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingStart="?android:attr/listPreferredItemPaddingStart"
-            android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/weight_divider">
+            app:layout_constraintTop_toBottomOf="@id/weight_divider"
+            android:ems="10"
+            android:gravity="center_vertical"
+            android:inputType="none">
 
-            <TextView
-                android:id="@+id/gender_label"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:ems="10"
-                android:gravity="center_vertical"
-                android:minHeight="?android:attr/listPreferredItemHeightSmall"
-                android:text="Gender"
-                android:textAppearance="?android:attr/textAppearanceListItemSmall"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/GenderExposedDropdownMenu"
-                android:layout_width="0dp"
+            <AutoCompleteTextView
+                android:id="@+id/gender_filled_exposed_dropdown"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:ems="10"
-                android:gravity="center_vertical"
-                android:inputType="none">
+                android:hint="Gender"
+                android:inputType="none"
+                android:focusable="false"
+                android:clickable="false"
+                />
+        </com.google.android.material.textfield.TextInputLayout>
 
-                <AutoCompleteTextView
-                    android:id="@+id/gender_filled_exposed_dropdown"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:focusable="false"
-                    android:clickable="false"
-                    />
-
-            </com.google.android.material.textfield.TextInputLayout>
-        </LinearLayout>
-
-        <View
-            android:id="@+id/gender_divider"
+        <com.google.android.material.textfield.TextInputLayout
+            app:layout_constraintTop_toBottomOf="@id/genderTextField"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:boxBackgroundColor="@color/cardview_light_background"
+            android:id="@+id/timezoneTextField"
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="5dp"
-            android:background="?android:attr/listDivider"
-            app:layout_constraintTop_toBottomOf="@id/gender_block" />
+            android:layout_height="wrap_content"
+            android:hint="Timezone">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            app:layout_constraintTop_toBottomOf="@id/timezoneTextField"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:boxBackgroundColor="@color/cardview_light_background"
+            android:id="@+id/localeTextField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Locale">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <Button
             android:id="@+id/create_user_submit_button"
@@ -207,8 +208,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             android:layout_marginBottom="30dp"/>
-
-        <!-- TODO: add timezone and locale inputs -->
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -1,4 +1,4 @@
-package com.fjuul.sdk.android.exampleapp.ui.create_user
+package com.fjuul.sdk.android.exampleapp.ui.user_profile
 
 import android.app.DatePickerDialog
 import android.os.Bundle
@@ -16,19 +16,17 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.fjuul.sdk.android.exampleapp.R
 import com.fjuul.sdk.android.exampleapp.data.AppStorage
 import com.fjuul.sdk.android.exampleapp.data.SDKConfigViewModel
 import com.fjuul.sdk.android.exampleapp.data.SDKConfigViewModelFactory
 import com.fjuul.sdk.android.exampleapp.data.UserFormViewModel
-import com.fjuul.sdk.android.exampleapp.ui.login.LoginFragmentDirections
 import com.fjuul.sdk.android.exampleapp.ui.login.afterTextChanged
 import com.fjuul.sdk.entities.UserCredentials
 import com.fjuul.sdk.user.entities.Gender
 import java.time.LocalDate
 
-class CreateUserFragment : Fragment() {
+class UserProfileFragment : Fragment() {
     private val model: UserFormViewModel by viewModels()
     private val sdkConfigViewModel: SDKConfigViewModel by activityViewModels {
         SDKConfigViewModelFactory(AppStorage(requireContext()))
@@ -50,7 +48,7 @@ class CreateUserFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_create_user, container, false)
+        return inflater.inflate(R.layout.fragment_user_profile, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -119,7 +117,7 @@ class CreateUserFragment : Fragment() {
                     val creationResult = result.value!!
                     val token = creationResult.user.token
                     sdkConfigViewModel.postUserCredentials(UserCredentials(token, creationResult.secret))
-                    val action = CreateUserFragmentDirections.actionCreateUserFragmentToLoginFragment()
+                    val action = UserProfileFragmentDirections.actionCreateUserFragmentToLoginFragment()
                     findNavController().navigate(action)
                 }
             } catch (error: Error) {
@@ -131,7 +129,7 @@ class CreateUserFragment : Fragment() {
     companion object {
         @JvmStatic
         fun newInstance() =
-            CreateUserFragment().apply {
+            UserProfileFragment().apply {
                 arguments = Bundle()
             }
 

@@ -14,7 +14,7 @@
             app:destination="@id/modulesFragment" />
         <action
             android:id="@+id/action_loginFragment_to_createUserFragment"
-            app:destination="@id/createUserFragment" />
+            app:destination="@id/userProfileFragment" />
     </fragment>
     <fragment
         android:id="@+id/modulesFragment"
@@ -24,6 +24,9 @@
         <action
             android:id="@+id/action_modulesFragment_to_dailyStatsFragment"
             app:destination="@id/dailyStatsFragment" />
+        <action
+            android:id="@+id/action_modulesFragment_to_userProfileFragment"
+            app:destination="@id/userProfileFragment" />
     </fragment>
     <fragment
         android:id="@+id/dailyStatsFragment"
@@ -31,13 +34,20 @@
         android:label="Daily Stats"
         tools:layout="@layout/fragment_daily_stats" />
     <fragment
-        android:id="@+id/createUserFragment"
-        android:name="com.fjuul.sdk.android.exampleapp.ui.create_user.CreateUserFragment"
+        android:id="@+id/userProfileFragment"
+        android:name="com.fjuul.sdk.android.exampleapp.ui.user_profile.UserProfileFragment"
         android:label="fragment_create_user"
-        tools:layout="@layout/fragment_create_user" >
+        tools:layout="@layout/fragment_user_profile" >
         <action
             android:id="@+id/action_createUserFragment_to_loginFragment"
             app:destination="@id/loginFragment"
             app:popUpTo="@id/loginFragment" />
+        <action
+            android:id="@+id/action_userProfileFragment_to_modulesFragment"
+            app:destination="@id/modulesFragment" />
+        <argument
+            android:name="flow"
+            app:argType="com.fjuul.sdk.android.exampleapp.ui.user_profile.UserProfileNavigationFlow"
+            android:defaultValue="CREATE" />
     </fragment>
 </navigation>

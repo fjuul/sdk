@@ -53,14 +53,15 @@ dependencies {
     // NOTE: we use okhttp version which supports of api 19
     // TODO: remove this version constraint when we'll change min api level to 21
     def okHttpVersion = rootProject.ext.okHttpVersion
+    def retrofitVersion = rootProject.ext.retrofitVersion
     api ("com.squareup.okhttp3:okhttp"){
         version {
             strictly okHttpVersion // API 19 support
         }
     }
     api "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
-    api 'com.squareup.retrofit2:retrofit:2.9.0'
-    api 'com.squareup.retrofit2:converter-moshi:2.9.0'
+    api "com.squareup.retrofit2:retrofit:$retrofitVersion"
+    api "com.squareup.retrofit2:converter-moshi:$retrofitVersion"
     api 'com.squareup.moshi:moshi:1.9.3'
     api 'com.squareup.moshi:moshi-adapters:1.9.3'
 

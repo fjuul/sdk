@@ -16,5 +16,5 @@ public interface AnalyticsApi {
     @GET("/sdk/analytics/v1/daily-stats/{userToken}")
     @NonNull
     ApiCall<DailyStats[]> getDailyStats(@Path("userToken") @NonNull String userToken,
-        @Query("startDate") @NonNull String startDate, @Query("endDate") @NonNull String endDate);
+        @Query("from") @NonNull String startDate, @Query("to") @NonNull String endDate);
 }

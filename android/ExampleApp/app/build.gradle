@@ -37,6 +37,16 @@ android {
     }
 }
 
+task publishFjuulSDKToMavenLocal(type: Exec) {
+    workingDir "$rootDir/../"
+    def publishingCommand = './gradlew publishToMavenLocal -PVERSION_NAME=105.1.1'
+    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+        commandLine 'cmd', '/c', publishingCommand
+    } else {
+        commandLine 'sh', '-c', publishingCommand
+    }
+}
+
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"

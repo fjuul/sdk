@@ -14,6 +14,13 @@ public class TrackerConnection {
 
     @Nullable private Date endedAt;
 
+    public TrackerConnection(String id, String tracker, Date createdAt, Date endedAt) {
+        this.id = id;
+        this.tracker = tracker;
+        this.createdAt = createdAt;
+        this.endedAt = endedAt;
+    }
+
     @NonNull
     public String getId() {
         return id;

@@ -10,6 +10,7 @@ import com.fjuul.sdk.entities.InMemoryStorage;
 import com.fjuul.sdk.entities.Keystore;
 import com.fjuul.sdk.entities.SigningKey;
 import com.fjuul.sdk.entities.UserCredentials;
+import com.fjuul.sdk.errors.ApiErrors;
 import com.fjuul.sdk.fixtures.http.TestApiClient;
 import com.fjuul.sdk.http.utils.ApiCallResult;
 
@@ -148,6 +149,68 @@ public class ActivitySourcesServiceTest {
             assertThat(result.getError(), instanceOf(SourceAlreadyConnectedError.class));
             SourceAlreadyConnectedError error = (SourceAlreadyConnectedError) result.getError();
             assertEquals("should have error message", "tracker \"android_googlefit\" already connected", error.getMessage());
+        }
+    }
+
+    public static class DisconnectTracker extends GivenRobolectricContext {
+        ActivitySourcesService sourcesService;
+        MockWebServer mockWebServer;
+        TestApiClient.Builder clientBuilder;
+        Keystore testKeystore;
+        SigningKey validSigningKey;
+
+        @Before
+        public void setup() throws IOException {
+            mockWebServer = new MockWebServer();
+            mockWebServer.start();
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR, 2);
+            validSigningKey = new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime());
+            testKeystore = new Keystore(new InMemoryStorage(), USER_TOKEN);
+            clientBuilder = new TestApiClient.Builder(mockWebServer);
+        }
+
+        @After
+        public void teardown() throws IOException {
+            mockWebServer.shutdown();
+        }
+
+        @Test
+        public void disconnect_WithHttpNoContentResponseCode_RespondWithoutError() throws IOException, InterruptedException {
+            clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
+            testKeystore.setKey(validSigningKey);
+            clientBuilder.setKeystore(testKeystore);
+            sourcesService = new ActivitySourcesService(clientBuilder.build());
+            MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_NO_CONTENT);
+            mockWebServer.enqueue(mockResponse);
+
+            TrackerConnection testConnection = new TrackerConnection("connection_id", "garmin", new Date(), new Date());
+
+            ApiCallResult<Void> result = sourcesService.disconnect(testConnection).execute();
+            RecordedRequest request = mockWebServer.takeRequest();
+
+            assertFalse("successful result", result.isError());
+        }
+
+        @Test
+        public void disconnect_WithHttpNotFoundResponseCode_RespondWithError() throws IOException, InterruptedException {
+            clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
+            testKeystore.setKey(validSigningKey);
+            clientBuilder.setKeystore(testKeystore);
+            sourcesService = new ActivitySourcesService(clientBuilder.build());
+            MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_NOT_FOUND)
+                .setHeader("Content-Type", "application/json")
+                .setBody("{ \"message\": \"tracker \\\"connection_id\\\" not found\" }");
+            mockWebServer.enqueue(mockResponse);
+
+            TrackerConnection testConnection = new TrackerConnection("connection_id", "garmin", new Date(), new Date());
+
+            ApiCallResult<Void> result = sourcesService.disconnect(testConnection).execute();
+            RecordedRequest request = mockWebServer.takeRequest();
+
+            assertTrue("unsuccessful result", result.isError());
+            ApiErrors.CommonError error = result.getError();
+            assertEquals("should have error message", "tracker \"connection_id\" not found", error.getMessage());
         }
     }
 }

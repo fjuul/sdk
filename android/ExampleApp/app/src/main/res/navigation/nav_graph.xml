@@ -27,6 +27,9 @@
         <action
             android:id="@+id/action_modulesFragment_to_userProfileFragment"
             app:destination="@id/userProfileFragment" />
+        <action
+            android:id="@+id/action_modulesFragment_to_activitySourcesFragment"
+            app:destination="@id/activitySourcesFragment" />
     </fragment>
     <fragment
         android:id="@+id/dailyStatsFragment"
@@ -50,4 +53,9 @@
             android:defaultValue="CREATE"
             app:argType="com.fjuul.sdk.android.exampleapp.ui.user_profile.UserProfileNavigationFlow" />
     </fragment>
+    <fragment
+        android:id="@+id/activitySourcesFragment"
+        android:name="com.fjuul.sdk.android.exampleapp.ui.activity_sources.ActivitySourcesFragment"
+        android:label="fragment_activity_sources"
+        tools:layout="@layout/fragment_activity_sources" />
 </navigation>

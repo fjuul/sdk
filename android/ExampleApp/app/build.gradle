@@ -79,6 +79,7 @@ dependencies {
 
     implementation 'com.fjuul.sdk:analytics:+'
     implementation 'com.fjuul.sdk:user:+'
+    implementation 'com.fjuul.sdk:activitysources:+'
 
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.0.9'
 

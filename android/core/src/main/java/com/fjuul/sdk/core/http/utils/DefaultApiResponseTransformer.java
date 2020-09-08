@@ -9,6 +9,8 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import retrofit2.Response;
 
 public class DefaultApiResponseTransformer<T> implements IApiResponseTransformer<T> {
@@ -17,15 +19,7 @@ public class DefaultApiResponseTransformer<T> implements IApiResponseTransformer
         if (response.isSuccessful()) {
             return ApiCallResult.value(response.body());
         }
-        ErrorJSONBodyResponse responseBody;
-        Moshi moshi = new Moshi.Builder().build();
-        try {
-            JsonAdapter<ErrorJSONBodyResponse> jsonAdapter = moshi.adapter(ErrorJSONBodyResponse.class);
-            responseBody = jsonAdapter.fromJson(response.errorBody().source());
-        } catch (IOException exc) {
-            responseBody = null;
-        }
-
+        ErrorJSONBodyResponse responseBody = extractErrorJsonBodyResponse(response);
         String errorMessage =
             responseBody != null && responseBody.getMessage() != null ? responseBody.getMessage() : "Unknown Error";
         ApiExceptions.CommonException exception;
@@ -45,5 +39,18 @@ public class DefaultApiResponseTransformer<T> implements IApiResponseTransformer
         }
         // TODO: add additional checks (forbidden)
         return ApiCallResult.error(exception);
+    }
+
+    @Nullable
+    protected ErrorJSONBodyResponse extractErrorJsonBodyResponse(@NonNull Response response) {
+        ErrorJSONBodyResponse responseBody;
+        Moshi moshi = new Moshi.Builder().build();
+        try {
+            JsonAdapter<ErrorJSONBodyResponse> jsonAdapter = moshi.adapter(ErrorJSONBodyResponse.class);
+            responseBody = jsonAdapter.fromJson(response.errorBody().source());
+        } catch (IOException exc) {
+            responseBody = null;
+        }
+        return responseBody;
     }
 }

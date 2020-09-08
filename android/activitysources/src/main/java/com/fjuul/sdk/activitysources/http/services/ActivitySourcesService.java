@@ -1,7 +1,6 @@
 package com.fjuul.sdk.activitysources.http.services;
 
 import java.util.Date;
-import java.util.TimeZone;
 
 import com.fjuul.sdk.activitysources.entities.ConnectionResult;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
@@ -14,7 +13,6 @@ import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
 import androidx.annotation.NonNull;
-import androidx.core.os.LocaleListCompat;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;
@@ -50,7 +48,7 @@ public class ActivitySourcesService {
      * 1) requirement for external authentication: the implementor needs to take this URL and call it
      * via an external web browser (not a web view!). This initiates the oauth handshake. If successfully
      * concluded the user is redirected into the app to a URL that looks like this:
-     * `fjuulsdk://external_connect?service=[tracker]&success=[true|false]`. Depending on the outcome
+     * {@literal `fjuulsdk://external_connect?service=[tracker]&success=[true|false]`}. Depending on the outcome
      * the flag `success` is set to true or false. The "protocol" depends on the tenant the user belongs
      * to.<br>
      * 2) no need for authentication: connection to the given tracker was created.
@@ -81,7 +79,8 @@ public class ActivitySourcesService {
      * Build the call to fetch all user's active connections
      * @return ApiCall for the fetching connections
      */
-    @NonNull ApiCall<TrackerConnection[]> getCurrentConnections() {
+    @NonNull
+    public ApiCall<TrackerConnection[]> getCurrentConnections() {
         return apiClient.getConnections(clientBuilder.getUserToken(), "current");
     }
 }

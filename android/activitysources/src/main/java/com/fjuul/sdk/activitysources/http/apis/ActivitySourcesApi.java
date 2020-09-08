@@ -4,12 +4,14 @@ import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.http.utils.ApiCall;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import okhttp3.ResponseBody;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface ActivitySourcesApi {
     @POST("/sdk/activity-sources/v1/{userToken}/connections/{activitySource}")
@@ -23,5 +25,5 @@ public interface ActivitySourcesApi {
 
     @GET("/sdk/activity-sources/v1/{userToken}/connections")
     @NonNull
-    ApiCall<TrackerConnection[]> getCurrentConnections(@Path("userToken") @NonNull String userToken);
+    ApiCall<TrackerConnection[]> getConnections(@Path("userToken") @NonNull String userToken, @Query("show") @Nullable String show);
 }

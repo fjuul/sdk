@@ -77,7 +77,11 @@ public class ActivitySourcesService {
         return apiClient.disconnect(clientBuilder.getUserToken(), connection.getId());
     }
 
+    /**
+     * Build the call to fetch all user's active connections
+     * @return ApiCall for the fetching connections
+     */
     @NonNull ApiCall<TrackerConnection[]> getCurrentConnections() {
-        return apiClient.getCurrentConnections(clientBuilder.getUserToken());
+        return apiClient.getConnections(clientBuilder.getUserToken(), "current");
     }
 }

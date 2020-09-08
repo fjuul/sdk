@@ -213,4 +213,72 @@ public class ActivitySourcesServiceTest {
             assertEquals("should have error message", "tracker \"connection_id\" not found", error.getMessage());
         }
     }
+
+    public static class GetCurrentConnections extends GivenRobolectricContext {
+        ActivitySourcesService sourcesService;
+        MockWebServer mockWebServer;
+        TestApiClient.Builder clientBuilder;
+        Keystore testKeystore;
+        SigningKey validSigningKey;
+
+        @Before
+        public void setup() throws IOException {
+            mockWebServer = new MockWebServer();
+            mockWebServer.start();
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR, 2);
+            validSigningKey = new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime());
+            testKeystore = new Keystore(new InMemoryStorage(), USER_TOKEN);
+            clientBuilder = new TestApiClient.Builder(mockWebServer);
+        }
+
+        @After
+        public void teardown() throws IOException {
+            mockWebServer.shutdown();
+        }
+
+        @Test
+        public void getCurrentConnections_WithHttpOkResponseCode_RespondWithArrayOfConnections() throws IOException, InterruptedException {
+            clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
+            testKeystore.setKey(validSigningKey);
+            clientBuilder.setKeystore(testKeystore);
+            sourcesService = new ActivitySourcesService(clientBuilder.build());
+            MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK)
+                .setHeader("Content-Type", "application/json")
+                .setBody("[\n" +
+                    "    {\n" +
+                    "        \"id\": \"0c98f062-055e-42fe-9c30-3a9645716d6f\",\n" +
+                    "        \"tracker\": \"fitbit\",\n" +
+                    "        \"createdAt\": \"2020-05-18T15:08:06.602Z\",\n" +
+                    "        \"endedAt\": null\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "        \"id\": \"09f6e64b-63cc-41a2-8a4a-076bbd981077\",\n" +
+                    "        \"tracker\": \"suunto\",\n" +
+                    "        \"createdAt\": \"2020-05-18T15:30:53.978Z\",\n" +
+                    "        \"endedAt\": null\n" +
+                    "    }\n" +
+                    "]");
+            mockWebServer.enqueue(mockResponse);
+
+            ApiCallResult<TrackerConnection[]> result = sourcesService.getCurrentConnections().execute();
+            RecordedRequest request = mockWebServer.takeRequest();
+
+            assertFalse("successful result", result.isError());
+            TrackerConnection[] connections = result.getValue();
+            assertEquals("should have tracker name", "fitbit", connections[0].getTracker());
+            assertEquals("should have tracker id", "0c98f062-055e-42fe-9c30-3a9645716d6f", connections[0].getId());
+            assertEquals(
+                "should have createdAt", Date.from(ZonedDateTime.parse("2020-05-18T15:08:06.602Z").toInstant()),
+                connections[0].getCreatedAt());
+            assertNull("should not have endedAt", connections[0].getEndedAt());
+
+            assertEquals("should have tracker name", "suunto", connections[1].getTracker());
+            assertEquals("should have tracker id", "09f6e64b-63cc-41a2-8a4a-076bbd981077", connections[1].getId());
+            assertEquals(
+                "should have createdAt", Date.from(ZonedDateTime.parse("2020-05-18T15:30:53.978Z").toInstant()),
+                connections[1].getCreatedAt());
+            assertNull("should not have endedAt", connections[1].getEndedAt());
+        }
+    }
 }

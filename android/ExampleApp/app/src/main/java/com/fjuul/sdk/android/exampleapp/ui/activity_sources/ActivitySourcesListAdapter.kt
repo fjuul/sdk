@@ -11,7 +11,9 @@ import com.fjuul.sdk.android.exampleapp.R
 enum class ActivitySourcesItem(val label: String) {
     FITBIT("Fitbit"),
     GARMIN("Garmin"),
-    POLAR("Polar")
+    POLAR("Polar"),
+    GOOGLE_FIT_BE("Google Fit (BE)"),
+    DISCONNECT("Disconnect all"),
 }
 
 class ActivitySourcesListAdapter(

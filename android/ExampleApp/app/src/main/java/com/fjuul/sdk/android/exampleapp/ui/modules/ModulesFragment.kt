@@ -16,6 +16,7 @@ import com.fjuul.sdk.android.exampleapp.ui.user_profile.UserProfileNavigationFlo
 // TODO: move these to own file
 enum class ModuleItemName(val value: String) {
     PROFILE("Profile"),
+    ACTIVITY_SOURCES("Activity Sources"),
     DAILY_STATS("Daily Stats")
 }
 sealed class ModulesListItem()
@@ -44,6 +45,7 @@ class ModulesFragment : Fragment() {
         val listItems = arrayListOf<ModulesListItem>(
             ModulesSection("User"),
             ModuleItem(ModuleItemName.PROFILE),
+            ModuleItem(ModuleItemName.ACTIVITY_SOURCES),
             ModulesSection("Analytics"),
             ModuleItem(ModuleItemName.DAILY_STATS)
         )
@@ -59,6 +61,10 @@ class ModulesFragment : Fragment() {
                     }
                     ModuleItemName.PROFILE -> {
                         val action = ModulesFragmentDirections.actionModulesFragmentToUserProfileFragment(UserProfileNavigationFlow.UPDATE)
+                        findNavController().navigate(action)
+                    }
+                    ModuleItemName.ACTIVITY_SOURCES -> {
+                        val action = ModulesFragmentDirections.actionModulesFragmentToActivitySourcesFragment()
                         findNavController().navigate(action)
                     }
                 }

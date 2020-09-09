@@ -56,6 +56,6 @@
     <fragment
         android:id="@+id/activitySourcesFragment"
         android:name="com.fjuul.sdk.android.exampleapp.ui.activity_sources.ActivitySourcesFragment"
-        android:label="fragment_activity_sources"
+        android:label="Activity Sources"
         tools:layout="@layout/fragment_activity_sources" />
 </navigation>

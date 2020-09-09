@@ -30,18 +30,10 @@
                 android:ems="10"
                 android:gravity="center_vertical"
                 android:minHeight="?android:attr/listPreferredItemHeightSmall"
-                android:text="Current activity source: "
+                android:text="Current source(s): "
                 android:textAppearance="?android:attr/textAppearanceListItemSmall"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
-
-            <View
-                android:id="@+id/divider_current_source"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="5dp"
-                android:background="?android:attr/listDivider"
-                app:layout_constraintTop_toBottomOf="@id/from_text_inputs" />
         </LinearLayout>
 
         <ListView

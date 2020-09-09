@@ -1,11 +1,12 @@
 package com.fjuul.sdk.activitysources.http;
 
-import androidx.annotation.NonNull;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.util.Date;
 
 import com.fjuul.sdk.activitysources.entities.ConnectionResult;
 import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthenticationFlowRequired;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
-import com.fjuul.sdk.activitysources.errors.ActivitySourcesApiErrors;
 import com.fjuul.sdk.activitysources.errors.ActivitySourcesApiErrors.SourceAlreadyConnectedError;
 import com.fjuul.sdk.http.responses.ErrorJSONBodyResponse;
 import com.fjuul.sdk.http.utils.ApiCallResult;
@@ -14,10 +15,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.util.Date;
-
+import androidx.annotation.NonNull;
 import okhttp3.ResponseBody;
 import retrofit2.Response;
 
@@ -40,7 +38,8 @@ public class ActivitySourcesApiResponseTransformer extends DefaultApiResponseTra
             ResponseBody responseBody = (ResponseBody) response.body();
             if (response.code() == HttpURLConnection.HTTP_OK) {
                 try {
-                    ExternalAuthenticationFlowRequired trackerAuthentication = externalAuthenticationJsonAdapter.fromJson(responseBody.source());
+                    ExternalAuthenticationFlowRequired trackerAuthentication =
+                        externalAuthenticationJsonAdapter.fromJson(responseBody.source());
                     return ApiCallResult.value(trackerAuthentication);
                 } catch (IOException exc) {
                     throw new RuntimeException(exc);
@@ -55,8 +54,10 @@ public class ActivitySourcesApiResponseTransformer extends DefaultApiResponseTra
                 }
             } else if (response.code() == HttpURLConnection.HTTP_CONFLICT) {
                 ErrorJSONBodyResponse errorBody = extractErrorJsonBodyResponse(response);
-                final String errorMessage = errorBody != null && errorBody.getMessage() != null &&
-                    !errorBody.getMessage().isEmpty() ? errorBody.getMessage() : "Tracker already connected";
+                final String errorMessage =
+                    errorBody != null && errorBody.getMessage() != null && !errorBody.getMessage().isEmpty()
+                        ? errorBody.getMessage()
+                        : "Tracker already connected";
                 return ApiCallResult.error(new SourceAlreadyConnectedError(errorMessage));
             }
         }

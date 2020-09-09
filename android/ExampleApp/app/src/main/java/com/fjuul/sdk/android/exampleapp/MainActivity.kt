@@ -25,7 +25,8 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         if (intent?.data?.host?.contains("external_connect") == true &&
-            intent?.data?.getQueryParameter("success") == "true") {
+            intent?.data?.getQueryParameter("success") == "true"
+        ) {
             val navigationController = nav_host_fragment.findNavController()
             if (navigationController.currentDestination?.id == R.id.activitySourcesFragment) {
                 (nav_host_fragment.childFragmentManager.fragments[0] as ActivitySourcesFragment).refreshCurrentConnections()

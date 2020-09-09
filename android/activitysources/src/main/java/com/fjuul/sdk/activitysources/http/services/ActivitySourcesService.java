@@ -43,14 +43,13 @@ public class ActivitySourcesService {
     }
 
     /**
-     * Builds the call to create a connection to the given activity source.
-     * Returning connection result (ConnectionResult) has 2 cases:<br>
-     * 1) requirement for external authentication: the implementor needs to take this URL and call it
-     * via an external web browser (not a web view!). This initiates the oauth handshake. If successfully
-     * concluded the user is redirected into the app to a URL that looks like this:
-     * {@literal `fjuulsdk://external_connect?service=[tracker]&success=[true|false]`}. Depending on the outcome
-     * the flag `success` is set to true or false. The "protocol" depends on the tenant the user belongs
-     * to.<br>
+     * Builds the call to create a connection to the given activity source. Returning connection result
+     * (ConnectionResult) has 2 cases:<br>
+     * 1) requirement for external authentication: the implementor needs to take this URL and call it via an external
+     * web browser (not a web view!). This initiates the oauth handshake. If successfully concluded the user is
+     * redirected into the app to a URL that looks like this:
+     * {@literal `fjuulsdk://external_connect?service=[tracker]&success=[true|false]`}. Depending on the outcome the
+     * flag `success` is set to true or false. The "protocol" depends on the tenant the user belongs to.<br>
      * 2) no need for authentication: connection to the given tracker was created.
      *
      * In case of attempt to connect to the already connected tracker, the api call result will have error
@@ -62,21 +61,23 @@ public class ActivitySourcesService {
      */
     @NonNull
     public ApiCall<ConnectionResult> connect(@NonNull String activitySource) {
-        return (ApiCall)apiClient.connect(clientBuilder.getUserToken(), activitySource);
+        return (ApiCall) apiClient.connect(clientBuilder.getUserToken(), activitySource);
     }
 
     /**
      * Build the call to deactivate the given tracker connection.
+     *
      * @param connection tracker connection to deactivate
      * @return ApiCall for the deactivation.
      */
     @NonNull
-    public ApiCall<Void> disconnect(TrackerConnection connection) {
+    public ApiCall<Void> disconnect(@NonNull TrackerConnection connection) {
         return apiClient.disconnect(clientBuilder.getUserToken(), connection.getId());
     }
 
     /**
      * Build the call to fetch all user's active connections
+     *
      * @return ApiCall for the fetching connections
      */
     @NonNull

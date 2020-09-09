@@ -10,7 +10,6 @@ import com.squareup.moshi.Moshi;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import retrofit2.Response;
 
 public class DefaultApiResponseTransformer<T> implements IApiResponseTransformer<T> {

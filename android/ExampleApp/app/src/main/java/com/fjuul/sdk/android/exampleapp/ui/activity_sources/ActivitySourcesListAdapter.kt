@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
-import com.fjuul.sdk.android.exampleapp.R
 
 enum class ActivitySourcesItem(val label: String) {
     FITBIT("Fitbit"),

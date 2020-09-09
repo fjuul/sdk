@@ -3,13 +3,13 @@ package com.fjuul.sdk.android.exampleapp.ui.activity_sources
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.fjuul.sdk.activitysources.entities.ConnectionResult
@@ -26,7 +26,8 @@ class ActivitySourcesFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
@@ -41,34 +42,43 @@ class ActivitySourcesFragment : Fragment() {
 
         model.fetchCurrentConnections()
 
-        model.currentConnections.observe(viewLifecycleOwner, Observer { connections ->
-            currentSourceText.text = "Current source(s): ${connections.joinToString(", ") { it.tracker }}"
-        })
+        model.currentConnections.observe(
+            viewLifecycleOwner,
+            Observer { connections ->
+                currentSourceText.text = "Current source(s): ${connections.joinToString(", ") { it.tracker }}"
+            }
+        )
 
-        model.errorMessage.observe(viewLifecycleOwner, Observer {
-            if (it == null) {
-                return@Observer
-            }
-            AlertDialog.Builder(requireContext())
-                .setTitle("Error")
-                .setMessage(it)
-                .show()
-            model.resetErrorMessage()
-        })
-        model.newConnectionResult.observe(viewLifecycleOwner, Observer { connectionResult ->
-            if (connectionResult == null) {
-                return@Observer
-            }
-            when (connectionResult) {
-                is ConnectionResult.Connected -> {
-                    model.fetchCurrentConnections()
+        model.errorMessage.observe(
+            viewLifecycleOwner,
+            Observer {
+                if (it == null) {
+                    return@Observer
                 }
-                is ConnectionResult.ExternalAuthenticationFlowRequired -> {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(connectionResult.url))
-                    startActivity(intent)
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Error")
+                    .setMessage(it)
+                    .show()
+                model.resetErrorMessage()
+            }
+        )
+        model.newConnectionResult.observe(
+            viewLifecycleOwner,
+            Observer { connectionResult ->
+                if (connectionResult == null) {
+                    return@Observer
+                }
+                when (connectionResult) {
+                    is ConnectionResult.Connected -> {
+                        model.fetchCurrentConnections()
+                    }
+                    is ConnectionResult.ExternalAuthenticationFlowRequired -> {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(connectionResult.url))
+                        startActivity(intent)
+                    }
                 }
             }
-        })
+        )
 
         val adapter = ActivitySourcesListAdapter(
             requireContext(),

@@ -16,7 +16,8 @@ public abstract class ConnectionResult {
     }
 
     public static class Connected extends ConnectionResult {
-        @NonNull private TrackerConnection trackerConnection;
+        @NonNull
+        private TrackerConnection trackerConnection;
 
         public Connected(@NonNull TrackerConnection trackerConnection) {
             this.trackerConnection = trackerConnection;

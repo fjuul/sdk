@@ -1,20 +1,24 @@
 package com.fjuul.sdk.activitysources.entities;
 
+import java.util.Date;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.util.Date;
-
 public class TrackerConnection {
-    @NonNull private String id;
+    @NonNull
+    private String id;
 
-    @NonNull private String tracker;
+    @NonNull
+    private String tracker;
 
-    @NonNull private Date createdAt;
+    @NonNull
+    private Date createdAt;
 
-    @Nullable private Date endedAt;
+    @Nullable
+    private Date endedAt;
 
-    public TrackerConnection(String id, String tracker, Date createdAt, Date endedAt) {
+    public TrackerConnection(@NonNull String id, @NonNull String tracker, @NonNull Date createdAt, @NonNull Date endedAt) {
         this.id = id;
         this.tracker = tracker;
         this.createdAt = createdAt;

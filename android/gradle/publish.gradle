@@ -1,6 +1,12 @@
 apply plugin: "maven-publish"
 
 afterEvaluate {
+    // do not attach R and BuildConfig to a publication
+    generateReleaseBuildConfig.enabled = false
+    generateDebugBuildConfig.enabled = false
+    generateReleaseResValues.enabled = false
+    generateDebugResValues.enabled = false
+
     task sourcesJar(type: Jar) {
         from android.sourceSets.main.java.srcDirs
         archiveClassifier = 'sources'

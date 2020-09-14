@@ -85,7 +85,7 @@ public class UserService {
         if (builder.getTimezone() == null) {
             builder.setTimezone(TimeZone.getDefault());
         }
-        if (builder.getLocale() == null) {
+        if (builder.getLocale() == null || builder.getLocale().isEmpty()) {
             builder.setLocale(LocaleListCompat.getAdjustedDefault().get(0).getLanguage());
         }
         return getOrCreateUserApi().create(builder);

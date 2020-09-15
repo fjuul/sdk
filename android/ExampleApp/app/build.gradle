@@ -78,6 +78,7 @@ dependencies {
     androidTestImplementation "androidx.navigation:navigation-testing:$nav_version"
 
     implementation 'com.fjuul.sdk:analytics:+'
+    implementation 'com.fjuul.sdk:user:+'
 
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.0.9'
 

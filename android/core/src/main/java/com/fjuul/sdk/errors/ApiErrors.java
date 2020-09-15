@@ -67,4 +67,10 @@ public final class ApiErrors {
             this.errorCode = errorCode;
         }
     }
+
+    public static class BadRequestError extends CommonError {
+        public BadRequestError(@NonNull String message) {
+            super(message);
+        }
+    }
 }

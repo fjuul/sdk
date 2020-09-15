@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.fjuul.sdk.android.exampleapp.R
+import com.fjuul.sdk.android.exampleapp.ui.user_profile.UserProfileNavigationFlow
 
 // TODO: move these to own file
 enum class ModuleItemName(val value: String) {
@@ -50,9 +51,17 @@ class ModulesFragment : Fragment() {
         modulesListView.adapter = adapter
         modulesListView.setOnItemClickListener { parent, view, position, id ->
             val pressedItem = adapter.getItem(position)
-            if (pressedItem is ModuleItem && pressedItem.name == ModuleItemName.DAILY_STATS) {
-                val action = ModulesFragmentDirections.actionModulesFragmentToDailyStatsFragment()
-                findNavController().navigate(action)
+            if (pressedItem is ModuleItem) {
+                when (pressedItem.name) {
+                    ModuleItemName.DAILY_STATS -> {
+                        val action = ModulesFragmentDirections.actionModulesFragmentToDailyStatsFragment()
+                        findNavController().navigate(action)
+                    }
+                    ModuleItemName.PROFILE -> {
+                        val action = ModulesFragmentDirections.actionModulesFragmentToUserProfileFragment(UserProfileNavigationFlow.UPDATE)
+                        findNavController().navigate(action)
+                    }
+                }
             }
         }
     }

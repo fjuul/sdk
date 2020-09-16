@@ -61,6 +61,8 @@ public class GoogleFitActivitySource {
         }
     }
 
+    // TODO: add method checking if google is installed in the system
+
     private GoogleSignInOptions buildGoogleSignInOptions(boolean offlineAccess) {
         GoogleSignInOptions.Builder builder = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestScopes(new Scope(Scopes.FITNESS_ACTIVITY_READ), new Scope(Scopes.FITNESS_LOCATION_READ), new Scope(Scopes.FITNESS_BODY_READ));

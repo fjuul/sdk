@@ -53,6 +53,7 @@ public class GoogleFitActivitySource {
             }
             System.out.println("NEW SERVER AUTH CODE: " + account.getServerAuthCode());
             // TODO: send auth code to the back-end
+            callback.onResult(null, false);
         } catch (ApiException exc) {
             System.out.println("SIGN IN ERROR: " + exc.getStatusCode());
             exc.printStackTrace();

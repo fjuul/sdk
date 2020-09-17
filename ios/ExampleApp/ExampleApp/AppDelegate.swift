@@ -1,10 +1,31 @@
 import UIKit
 import FjuulCore
+import FjuulActivitySources
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
+    // TODO: Create ActivitySource from Factory
+//    private var activitySource = ActivitySourceHealthKit()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+//        activitySource.mount()
+
+        let environment = ApiEnvironment(rawValue: UserDefaults.standard.integer(forKey: "environment"))!
+
+        // TODO: Update code for initialize SDK client in example app
+        ApiClientHolder.default.apiClient = ApiClient(
+            baseUrl: environment.baseUrl,
+            apiKey: UserDefaults.standard.string(forKey: "apiKey")!,
+            credentials: UserCredentials(
+                token: UserDefaults.standard.string(forKey: "token")!,
+                secret: UserDefaults.standard.string(forKey: "secret")!
+            )
+        )
+
+        ApiClientHolder.default.apiClient?.activitySources.mountHK { result in
+            print(result)
+        }
+
         return true
     }
 

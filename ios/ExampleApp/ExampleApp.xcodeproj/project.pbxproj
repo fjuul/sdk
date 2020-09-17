@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4C7B5446250CE66E007C70C7 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C7B5445250CE66E007C70C7 /* HealthKit.framework */; };
 		B348CE8624D844D3001DCE14 /* FjuulActivitySources in Frameworks */ = {isa = PBXBuildFile; productRef = B348CE8524D844D3001DCE14 /* FjuulActivitySources */; };
 		B348CE8824D85551001DCE14 /* ActivitySourcesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B348CE8724D85551001DCE14 /* ActivitySourcesScreen.swift */; };
 		B348CE8A24D85711001DCE14 /* ActivitySourceObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B348CE8924D85711001DCE14 /* ActivitySourceObservable.swift */; };
@@ -46,6 +47,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4C7B5444250CE66E007C70C7 /* ExampleApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ExampleApp.entitlements; sourceTree = "<group>"; };
+		4C7B5445250CE66E007C70C7 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
 		B348CE8724D85551001DCE14 /* ActivitySourcesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivitySourcesScreen.swift; sourceTree = "<group>"; };
 		B348CE8924D85711001DCE14 /* ActivitySourceObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivitySourceObservable.swift; sourceTree = "<group>"; };
 		B3548D5E24CF0912002F26B9 /* UserProfileForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileForm.swift; sourceTree = "<group>"; };
@@ -81,6 +84,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B3548D5924CAD2C1002F26B9 /* FjuulUser in Frameworks */,
+				4C7B5446250CE66E007C70C7 /* HealthKit.framework in Frameworks */,
 				B3C683E8248F99730025056E /* FjuulAnalytics in Frameworks */,
 				B348CE8624D844D3001DCE14 /* FjuulActivitySources in Frameworks */,
 			);
@@ -139,6 +143,7 @@
 		B3BB7F0F23993EC800A7BEF2 /* ExampleApp */ = {
 			isa = PBXGroup;
 			children = (
+				4C7B5444250CE66E007C70C7 /* ExampleApp.entitlements */,
 				B3548D6A24CF1E0F002F26B9 /* Models */,
 				B3FBCDA724B8AB1200184A88 /* Screens */,
 				B3FBCDA524B8AB1200184A88 /* Utils */,
@@ -164,6 +169,7 @@
 		B3BB7F252399407C00A7BEF2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				4C7B5445250CE66E007C70C7 /* HealthKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -499,6 +505,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = ExampleApp/ExampleApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"ExampleApp/Preview Content\"";
 				DEVELOPMENT_TEAM = DA87GRNST5;
@@ -519,6 +526,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = ExampleApp/ExampleApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"ExampleApp/Preview Content\"";
 				DEVELOPMENT_TEAM = DA87GRNST5;

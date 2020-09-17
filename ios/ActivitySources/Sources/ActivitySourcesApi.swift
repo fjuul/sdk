@@ -78,7 +78,13 @@ public class ActivitySourcesApi {
             completion(decodedResponse.result)
         }
     }
-
+    
+    public func mountHK(completion: @escaping (Result<String, Error>) -> Void) {
+        let hkSource = ActivitySourceHealthKit()
+        hkSource.mount()
+        
+        completion(.success("OK!"))
+    }
 }
 
 private var AssociatedObjectHandle: UInt8 = 0

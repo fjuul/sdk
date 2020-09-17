@@ -39,6 +39,12 @@ struct ActivitySourcesScreen: View {
             }) {
                 Text("Connect Unknown")
             }
+            
+            Button(action: {
+                self.observable.connect(activitySource: "healthkit")
+            }) {
+                Text("Connect Healthkit")
+            }
         }
         .navigationBarTitle("Activity Sources", displayMode: .inline)
         .alert(item: $observable.error) { holder in

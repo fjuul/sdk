@@ -1,0 +1,248 @@
+import Foundation
+import HealthKit
+
+//let energyType: HKQuantityType = HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!
+//let hrType: HKQuantityType = HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!
+//let cyclingDistanceType: HKQuantityType = HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!
+//let runningDistanceType: HKQuantityType = HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!
+//let stepCountType: HKQuantityType = HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!
+
+class ActivitySourceHealthKit {
+    internal let healthKitStore: HKHealthStore = HKHealthStore()
+
+    init() {}
+    
+    private var readableTypes: Set<HKSampleType> {
+        return intradayReadableTypes.union(samplesReadableTypes)
+    }
+    
+    private var intradayReadableTypes: Set<HKSampleType> {
+        // TODO: types should be based on config
+        return [
+            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!,
+            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!,
+            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!,
+        ]
+    }
+    
+    private var samplesReadableTypes: Set<HKSampleType> {
+        // TODO: types should be based on config
+        return [
+            HKWorkoutType.workoutType(),
+            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!,
+            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!
+        ]
+    }
+
+    // TODO: Check with team, but probably that the best place for set activitySource on server side
+    func mount() {
+        guard HKHealthStore.isHealthDataAvailable() else {
+            return
+        }
+
+        self.authorizeHealthKitAccess { (success, error) in
+          if success {
+            self.observe()
+          } else {
+            if error != nil {
+              print("\(String(describing: error))")
+            }
+          }
+        }
+    }
+
+    func unmount() {}
+    func sync() {
+        // TODO: figure out how get sampleType from query
+        // TODO: sync types based on config
+        self.fetchIntradayUpdates(sampleType: HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!)
+    }
+    func mountBackgroundDelivery() {}
+    func unmountBackgroundDelivery() {}
+
+    func authorizeHealthKitAccess(_ completion: ((_ success:Bool, _ error:Error?) -> Void)!) {
+        healthKitStore.requestAuthorization(toShare: nil, read: readableTypes) { (success, error) in
+            if success {
+                print("requestAuthorization: success")
+            } else {
+                print("requestAuthorization: failure")
+            }
+
+            completion(success, error)
+        }
+    }
+    
+    private func observe() {
+        for sampleType in self.intradayReadableTypes {
+            var query: HKObserverQuery = HKObserverQuery(sampleType: sampleType, predicate: nil, updateHandler: self.observerCompletionHandler)
+            
+            healthKitStore.execute(query)
+            healthKitStore.enableBackgroundDelivery(for: sampleType, frequency: .immediate, withCompletion: {(succeeded: Bool, error: Error?) in
+               if succeeded{
+                   print("Enabled background delivery for type \(sampleType)")
+               } else {
+                   if let theError = error{
+                       print("Failed to enable background delivery of weight changes. ")
+                       print("Error = \(theError)")
+                   }
+               }
+           })
+        }
+    }
+
+    private func observerCompletionHandler(query: HKObserverQuery!, completionHandler: HKObserverQueryCompletionHandler!, error: Error?) {
+        print("Changed data in Health App")
+        print(query.sampleType)
+        
+        // TODO: figure out how get sampleType from query
+        self.fetchIntradayUpdates(sampleType: HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!)
+        
+        completionHandler()
+    }
+    
+    private func fetchIntradayUpdates(sampleType: HKQuantityType) {
+        let calendar = Calendar.current
+        var interval = DateComponents()
+        interval.minute = 1
+        
+        // TODO: Calculate correctly anchor
+        let anchorDate = calendar.date(byAdding: .hour, value: -1, to: Date())!
+        
+        // Exclude manually added data
+        let predicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
+        
+        let query = HKStatisticsCollectionQuery(quantityType: sampleType,
+                                                quantitySamplePredicate: predicate,
+                                                options: [.cumulativeSum],
+                                                anchorDate: anchorDate,
+                                                intervalComponents: interval)
+        // Set the results handler
+        query.initialResultsHandler = {
+            query, results, error in
+
+            guard let statsCollection = results else {
+                // Perform proper error handling here
+                fatalError("*** An error occurred while calculating the statistics: \(error?.localizedDescription) ***")
+            }
+
+            let endDate = Date()
+
+            statsCollection.enumerateStatistics(from: anchorDate, to: endDate) { [unowned self] statistics, stop in
+                if let quantity = statistics.sumQuantity() {
+                    let date = statistics.startDate
+                    let value = quantity.doubleValue(for: HKUnit.kilocalorie())
+
+                    print("date: \(date), value: \(value)")
+                }
+            }
+        }
+
+        healthKitStore.execute(query)
+    }
+    
+    // TODO: Big question, are we need HKAnchoredObjectQuery or will be right use HKSampleQuery?
+    private func fetchSampleUpdates(sampleType: HKQuantityType) {
+        let calendar = Calendar.current
+        var interval = DateComponents()
+        interval.minute = 1
+        
+        // TODO: Calculate right anchor from persisted store
+        var anchorDate = HKQueryAnchor.init(fromValue: 0)
+        
+        // Exclude manually added data
+        let predicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
+        
+        let query = HKAnchoredObjectQuery(type: sampleType,
+                                              predicate: predicate,
+                                              anchor: anchorDate,
+                                              limit: HKObjectQueryNoLimit) { (query, samplesOrNil, deletedObjectsOrNil, newAnchor, errorOrNil) in
+            guard let samples = samplesOrNil, let deletedObjects = deletedObjectsOrNil else {
+                print("*** An error occurred during the initial query: \(errorOrNil!.localizedDescription) ***")
+            }
+            
+            // TODO: find batches for re-upload?
+            for sampleItem in samples {
+                print("Sample item: \(sampleItem)")
+            }
+
+            // TODO: find batches for re-upload?
+            for deletedSampleItem in deletedObjects {
+                print("deleted: \(deletedSampleItem)")
+            }
+            
+            // TODO: Save the new anchor to the persisted store
+            // anchor = newAnchor!
+        }
+        healthKitStore.execute(query)
+    }
+    
+//    func observe() {
+//        self.authorizeHealthKitAccess { (success, error) in
+//          guard success else { return }
+//
+//          let calendar = Calendar.current
+//          // TODO: Need discuss with team, probably 30 days back will be limit
+//          let earliestPermittedSampleDate = self.healthKitStore.earliestPermittedSampleDate()
+//          let startDate = earliestPermittedSampleDate > calendar.startOfDay(for: Date()) ? earliestPermittedSampleDate : calendar.startOfDay(for: Date())
+//
+//          let sampleDataPredicate = HKQuery.predicateForSamples(withStart: startDate,
+//                                                                      end: Date.distantFuture,
+//                                                                      options: [])
+//
+//            // Enumerate each type, and setup an anchoredObjectQuery, which enables delivery of sample updates for each type.
+//            for type in self.readableTypes {
+//                // TODO: First Or create anchor with persisted store
+//                var anchor: HKQueryAnchor? = nil
+//
+//                let query = HKAnchoredObjectQuery(type: type, predicate: sampleDataPredicate, anchor: anchor, limit: HKObjectQueryNoLimit) { (query, samplesOrNil, _, newAnchor, _) in
+//                    self.updateHealthRecord(type: type, samplesOrNil: samplesOrNil)
+//                    anchor = newAnchor
+//                }
+//
+//                query.updateHandler = { (query, samplesOrNil, _, newAnchor, _) in
+//                    self.updateHealthRecord(type: type, samplesOrNil: samplesOrNil)
+//                    anchor = newAnchor
+//                }
+//
+//                // Run the query.
+//                self.healthKitStore.execute(query)
+//            }
+//        }
+//    }
+//
+//    fileprivate func enableBackgroundDelivery() {
+//        for type in readableTypes {
+//            // TODO: Update frequency after finish testing
+//            healthKitStore.enableBackgroundDelivery(for: type, frequency: .immediate, withCompletion: { (success, _) in
+//                debugPrint("enabled background delivery \(success) for \(type)")
+//            })
+//        }
+//    }
+    
+//    func registerWorkoutObserver() {
+//        var query: HKObserverQuery = HKObserverQuery(sampleType: HKQuantityType.workoutType(), predicate: nil, updateHandler: self.observerCompletionHandler)
+//
+//        healthKitStore.execute(query)
+//
+//        // TODO: Update frequency after finish testing
+//        healthKitStore.enableBackgroundDelivery(for: HKQuantityType.workoutType(), frequency: .immediate, withCompletion: {(succeeded: Bool, error: Error?) in
+//           if succeeded{
+//               print("Enabled background delivery for type \("workoutType")")
+//           } else {
+//               if let theError = error{
+//                   print("Failed to enable background delivery of weight changes. ")
+//                   print("Error = \(theError)")
+//               }
+//           }
+//       })
+//    }
+    
+//    func workoutChangedHandler(query: HKObserverQuery!, completionHandler: HKObserverQueryCompletionHandler!, error: Error?) {
+//        print("Changed workouts in Health App")
+//        print(query)
+//
+//        // TODO: Register tasks in queue
+//
+//        completionHandler()
+//    }
+}

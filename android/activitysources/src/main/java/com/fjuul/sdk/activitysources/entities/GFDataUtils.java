@@ -19,6 +19,7 @@ public class GFDataUtils {
         while (leftBorderRange.before(end)) {
             Date finalLeftBorderRange = leftBorderRange;
             Date finalRightBorderRange = rightBorderRange;
+            // TODO: use immutable list for grouped points
             List<T> groupedPoints = points.stream().filter((dataPoint) -> {
                 return dataPoint.start.compareTo(finalLeftBorderRange) >= 0 && dataPoint.start.compareTo(finalRightBorderRange) == -1;
             }).collect(Collectors.toList());

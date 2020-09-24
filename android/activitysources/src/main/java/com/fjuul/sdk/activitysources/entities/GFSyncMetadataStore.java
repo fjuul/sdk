@@ -13,10 +13,15 @@ import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 public class GFSyncMetadataStore {
+
+    private static final float TOTAL_CALORIES_ACCURACY = 0.00001f;
+
     private IStorage storage;
     private String userToken;
     private SimpleDateFormat dateFormatter;
@@ -40,16 +45,18 @@ public class GFSyncMetadataStore {
             .nullSafe();
     }
 
+    public boolean isNeededToSyncCaloriesBatch(@NonNull GFDataPointsBatch<GFCalorieDataPoint> caloriesBatch) {
+        final GFSyncCaloriesMetadata storedMetadata = getSyncMetadataOfCalories(caloriesBatch.getStartTime(), caloriesBatch.getEndTime());
+        if (storedMetadata == null) {
+            return true;
+        }
+        final GFSyncCaloriesMetadata newMetadata = buildSyncCaloriesMetadata(caloriesBatch);
+        return areSyncCaloriesMetadataDifferent(storedMetadata, newMetadata);
+    }
+
     @SuppressLint("NewApi")
     public void saveSyncMetadataOfCalories(@NonNull GFDataPointsBatch<GFCalorieDataPoint> caloriesBatch) {
-        // TODO: move the sum calculation to batch class (or GFDataUtils)
-        float totalKcals = 0;
-        for (GFCalorieDataPoint calorie : caloriesBatch.getPoints()) {
-            totalKcals += calorie.getValue();
-        }
-        int count = caloriesBatch.getPoints().size();
-        Date editedAt = Date.from(clock.instant());
-        GFSyncCaloriesMetadata metadata = new GFSyncCaloriesMetadata(count, totalKcals, editedAt);
+        GFSyncCaloriesMetadata metadata = buildSyncCaloriesMetadata(caloriesBatch);
         String jsonValue = syncCaloriesMetadataJsonAdapter.toJson(metadata);
         String key = buildLookupKey(caloriesBatch.getStartTime(), caloriesBatch.getEndTime());
         storage.set(key, jsonValue);
@@ -67,6 +74,25 @@ public class GFSyncMetadataStore {
         } catch (IOException e) {
             return null;
         }
+    }
+
+    private boolean areSyncCaloriesMetadataDifferent(GFSyncCaloriesMetadata oldMetadata, GFSyncCaloriesMetadata newMetadata) {
+        return oldMetadata.getCount() != newMetadata.getCount() ||
+            Math.abs(oldMetadata.getTotalKcals() - newMetadata.getTotalKcals()) >= TOTAL_CALORIES_ACCURACY;
+    }
+
+    @SuppressLint("NewApi")
+    @NonNull
+    private GFSyncCaloriesMetadata buildSyncCaloriesMetadata(GFDataPointsBatch<GFCalorieDataPoint> batch) {
+        // TODO: move the sum calculation to batch class (or GFDataUtils)
+        float totalKcals = 0;
+        for (GFCalorieDataPoint calorie : batch.getPoints()) {
+            totalKcals += calorie.getValue();
+        }
+        int count = batch.getPoints().size();
+        Date editedAt = Date.from(clock.instant());
+        GFSyncCaloriesMetadata metadata = new GFSyncCaloriesMetadata(count, totalKcals, editedAt);
+        return metadata;
     }
 
     private String buildLookupKey(Date startTime, Date endTime) {

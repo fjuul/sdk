@@ -1,5 +1,7 @@
 package com.fjuul.sdk.activitysources.entities;
 
+import android.annotation.SuppressLint;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -10,23 +12,35 @@ import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.Clock;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class GFSyncMetadataStore {
     private IStorage storage;
     private String userToken;
-    private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-ddTHH:mm");
+    private SimpleDateFormat dateFormatter;
     private JsonAdapter<GFSyncCaloriesMetadata> syncCaloriesMetadataJsonAdapter;
+    private Clock clock;
 
-    public GFSyncMetadataStore(IStorage storage, String userToken) {
+    @SuppressLint("NewApi")
+    public GFSyncMetadataStore(@NonNull IStorage storage, @NonNull String userToken) {
+        this(storage, userToken, Clock.systemUTC());
+    }
+
+    public GFSyncMetadataStore(@NonNull IStorage storage, @NonNull String userToken, @NonNull Clock clock) {
         this.storage = storage;
         this.userToken = userToken;
+        this.clock = clock;
+        dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+        dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         this.syncCaloriesMetadataJsonAdapter = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter())
             .build()
             .adapter(GFSyncCaloriesMetadata.class)
             .nullSafe();
     }
 
+    @SuppressLint("NewApi")
     public void saveSyncMetadataOfCalories(@NonNull GFDataPointsBatch<GFCalorieDataPoint> caloriesBatch) {
         // TODO: move the sum calculation to batch class (or GFDataUtils)
         float totalKcals = 0;
@@ -34,7 +48,8 @@ public class GFSyncMetadataStore {
             totalKcals += calorie.getValue();
         }
         int count = caloriesBatch.getPoints().size();
-        GFSyncCaloriesMetadata metadata = new GFSyncCaloriesMetadata(count, totalKcals, new Date());
+        Date editedAt = Date.from(clock.instant());
+        GFSyncCaloriesMetadata metadata = new GFSyncCaloriesMetadata(count, totalKcals, editedAt);
         String jsonValue = syncCaloriesMetadataJsonAdapter.toJson(metadata);
         String key = buildLookupKey(caloriesBatch.getStartTime(), caloriesBatch.getEndTime());
         storage.set(key, jsonValue);

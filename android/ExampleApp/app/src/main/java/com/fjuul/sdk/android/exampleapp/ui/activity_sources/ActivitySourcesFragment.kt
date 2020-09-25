@@ -1,8 +1,10 @@
 package com.fjuul.sdk.android.exampleapp.ui.activity_sources
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,12 +14,20 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
 import com.fjuul.sdk.activitysources.entities.ConnectionResult
+import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource
+import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService
 import com.fjuul.sdk.android.exampleapp.R
+import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
+import java.util.Calendar
+import java.util.Date
 
 class ActivitySourcesFragment : Fragment() {
     private lateinit var currentSourceText: TextView
     private lateinit var sourcesList: ListView
+    private lateinit var activitySourcesManager: ActivitySourcesManager
+    private lateinit var googleFitActivitySource: GoogleFitActivitySource
 
     private val model: ActivitySourcesViewModel by viewModels()
 
@@ -34,20 +44,56 @@ class ActivitySourcesFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_activity_sources, container, false)
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        Log.d(
+            "ACTIVITY_SOURCES",
+            "onActivityResult: ${requestCode}, ${resultCode}, intent: ${data}"
+        )
+        if (requestCode == GOOGLE_SIGN_IN_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                activitySourcesManager.handleGoogleSignInResult(GoogleFitActivitySource(true), data) { error, success ->
+                    println("Error: $error; success: $success")
+                }
+            }
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         currentSourceText = view.findViewById(R.id.current_activity_source_text)
         sourcesList = view.findViewById(R.id.activity_sources_list)
+        googleFitActivitySource = GoogleFitActivitySource(true)
 
         model.fetchCurrentConnections()
 
         model.currentConnections.observe(
             viewLifecycleOwner,
             Observer { connections ->
-                currentSourceText.text = "Current source(s): ${connections.joinToString(", ") { it.tracker }}"
+                currentSourceText.text =
+                    "Current source(s): ${connections.joinToString(", ") { it.tracker }}"
             }
         )
+
+        val granted = googleFitActivitySource.arePermissionsGranted(requireContext())
+        println("GRANTED $granted")
+
+        activitySourcesManager = ActivitySourcesManager(ActivitySourcesService(ApiClientHolder.sdkClient))
+        val gfManager = activitySourcesManager.createGoogleFitDataManager(requireContext())
+        val startTimeCalendar = Calendar.getInstance()
+        startTimeCalendar.add(Calendar.DAY_OF_YEAR, -1)
+        startTimeCalendar.set(Calendar.MINUTE, 0)
+        startTimeCalendar.set(Calendar.SECOND, 0)
+        startTimeCalendar.set(Calendar.MILLISECOND, 0)
+
+        val endTimeCalendar = Calendar.getInstance()
+        endTimeCalendar.set(Calendar.MINUTE, 0)
+        endTimeCalendar.set(Calendar.SECOND, 0)
+        endTimeCalendar.set(Calendar.MILLISECOND, 0)
+        println("DATES ${startTimeCalendar.time} and ${endTimeCalendar.time}")
+        // gfManager.getCalories(startTimeCalendar.time, endTimeCalendar.time)
+        gfManager.syncCalories(startTimeCalendar.time, endTimeCalendar.time)
 
         model.errorMessage.observe(
             viewLifecycleOwner,
@@ -87,6 +133,7 @@ class ActivitySourcesFragment : Fragment() {
                 ActivitySourcesItem.GARMIN,
                 ActivitySourcesItem.POLAR,
                 ActivitySourcesItem.GOOGLE_FIT_BE,
+                ActivitySourcesItem.GOOGLE_FIT_ADVANCED,
                 ActivitySourcesItem.DISCONNECT
             )
         )
@@ -97,6 +144,11 @@ class ActivitySourcesFragment : Fragment() {
                 ActivitySourcesItem.POLAR -> "polar"
                 ActivitySourcesItem.GARMIN -> "garmin"
                 ActivitySourcesItem.GOOGLE_FIT_BE -> "googlefit_backend"
+                ActivitySourcesItem.GOOGLE_FIT_ADVANCED -> {
+                    val signInIntent = activitySourcesManager.connect(googleFitActivitySource, requireActivity())
+                    startActivityForResult(signInIntent, GOOGLE_SIGN_IN_REQUEST_CODE)
+                    return@setOnItemClickListener
+                }
                 else -> {
                     model.disconnect()
                     return@setOnItemClickListener
@@ -111,6 +163,8 @@ class ActivitySourcesFragment : Fragment() {
     }
 
     companion object {
+        const val GOOGLE_SIGN_IN_REQUEST_CODE = 61076
+
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
             ActivitySourcesFragment().apply {

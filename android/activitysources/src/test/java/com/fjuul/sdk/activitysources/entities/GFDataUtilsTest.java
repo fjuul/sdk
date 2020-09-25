@@ -1,15 +1,22 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import org.hamcrest.core.IsEqual;
+import android.os.Build;
+
+import androidx.core.util.Pair;
+
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,7 +28,12 @@ import static org.junit.Assert.*;
 @RunWith(Enclosed.class)
 public class GFDataUtilsTest {
     public static final String dataSourceId = "derived:com.google.calories.expended:com.google.android.gms:from_activities";
-    public static class GroupCaloriesIntoBatchesByDurationTest {
+
+    @RunWith(RobolectricTestRunner.class)
+    @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+    public abstract static class GivenRobolectricContext { }
+
+    public static class GroupCaloriesIntoBatchesByDurationTest extends GivenRobolectricContext {
         GFDataUtils gfDataUtils;
         List<GFCalorieDataPoint> calories = Stream.of(
             new GFCalorieDataPoint(5.2751f, Date.from(Instant.parse("2020-01-01T10:05:00Z")), dataSourceId),
@@ -29,10 +41,6 @@ public class GFDataUtilsTest {
             new GFCalorieDataPoint(8.2698f, Date.from(Instant.parse("2020-01-01T10:31:00Z")), dataSourceId),
             new GFCalorieDataPoint(2.5421f, Date.from(Instant.parse("2020-01-01T10:34:00Z")), dataSourceId)
         ).collect(Collectors.toList());
-
-        @Before
-        public void beforeTests() {
-        }
 
         @Test
         public void groupPointsIntoBatchesByDuration_bigDurationCoversAllPoints_returnOneBatchWithAllPoints() {
@@ -178,8 +186,82 @@ public class GFDataUtilsTest {
                 Date.from(Instant.parse("2020-01-01T11:00:00Z")),
                 equalTo(batches.get(0).getEndTime()));
         }
+    }
 
-        // case 3: when endDate is smaller than startDate + duration
+    public static class AdjustInputDatesForGFRequest extends GivenRobolectricContext {
+        Clock fixedClock;
+
+        @Before
+        public void beforeTests() {
+            String instantExpected = "2020-09-15T21:30:00Z";
+            fixedClock = Clock.fixed(Instant.parse(instantExpected), ZoneId.of("UTC"));
+        }
+
+        @Test
+        public void adjustInputDatesForGFRequest_whenStartAndEndArePastTime_returnStartOfDayOfStartAndEndOfDayOfEnd() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Australia/Sydney"), fixedClock);
+            LocalDate start = LocalDate.parse("2020-09-01");
+            LocalDate end = LocalDate.parse("2020-09-05");
+            Pair<Date, Date> pair = gfDataUtils.adjustInputDatesForGFRequest(start, end);
+            assertThat("start should be a start of the day of start date",
+                pair.first,
+                equalTo(Date.from(Instant.parse("2020-08-31T14:00:00Z"))));
+            assertThat("end should be a end of the day of endDate date",
+                pair.second,
+                equalTo(Date.from(Instant.parse("2020-09-05T13:59:59Z").plusMillis(999))));
+        }
+
+        @Test
+        public void adjustInputDatesForGFRequest_whenStartIsPastAndEndIsToday_returnStartOfDayOfStartAndEndTimeNearToCurrentMoment() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Australia/Sydney"), fixedClock);
+            LocalDate start = LocalDate.parse("2020-09-01");
+            LocalDate end = LocalDate.parse("2020-09-16");
+            Pair<Date, Date> pair = gfDataUtils.adjustInputDatesForGFRequest(start, end);
+            assertThat("start should be a start of the day of start date",
+                pair.first,
+                equalTo(Date.from(Instant.parse("2020-08-31T14:00:00Z"))));
+            assertThat("end should be the current moment",
+                pair.second,
+                equalTo(Date.from(Instant.parse("2020-09-15T21:30:00Z"))));
+        }
+    }
+
+    public static class AdjustInputDatesForBatches extends GivenRobolectricContext {
+        Clock fixedClock;
+
+        @Before
+        public void beforeTests() {
+            String instantExpected = "2020-09-15T21:17:00Z";
+            fixedClock = Clock.fixed(Instant.parse(instantExpected), ZoneId.of("UTC"));
+        }
+
+        @Test
+        public void adjustInputDatesForBatches_whenStartAndEndArePastTime_returnStartOfDayOfStartAndStartOfDayFollowingEndDate() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Australia/Sydney"), fixedClock);
+            LocalDate start = LocalDate.parse("2020-09-01");
+            LocalDate end = LocalDate.parse("2020-09-05");
+            Pair<Date, Date> pair = gfDataUtils.adjustInputDatesForBatches(start, end);
+            assertThat("start should be a start of the day of start date",
+                pair.first,
+                equalTo(Date.from(Instant.parse("2020-08-31T14:00:00Z"))));
+            assertThat("end should be a start of the day following end date",
+                pair.second,
+                equalTo(Date.from(Instant.parse("2020-09-05T14:00:00Z"))));
+        }
+
+        @Test
+        public void adjustInputDatesForBatches_whenStartIsPastAndEndIsToday_returnStartOfDayOfStartAndEndTimeRoundedByDuration() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Australia/Sydney"), fixedClock);
+            LocalDate start = LocalDate.parse("2020-09-01");
+            LocalDate end = LocalDate.parse("2020-09-16");
+            Pair<Date, Date> pair = gfDataUtils.adjustInputDatesForBatches(start, end);
+            assertThat("start should be a start of the day of start date",
+                pair.first,
+                equalTo(Date.from(Instant.parse("2020-08-31T14:00:00Z"))));
+            assertThat("end should be rounded to the current moment by duration",
+                pair.second,
+                equalTo(Date.from(Instant.parse("2020-09-15T21:30:00Z"))));
+        }
     }
 
 }

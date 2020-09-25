@@ -14,6 +14,9 @@ import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.HistoryClient;
 import com.google.android.gms.tasks.Task;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public final class ActivitySourcesManager {
     private ActivitySourcesService sourcesService;
 
@@ -43,8 +46,18 @@ public final class ActivitySourcesManager {
             if (authCode == null) {
                 callback.onResult(new Error("No server auth code for the requested offline access"), false);
             }
-            // TODO: use sourcesService to send auth code to the back-end
-            callback.onResult(null, false);
+            Map<String, String> queryParams = new HashMap<>();
+            queryParams.put("code", authCode);
+            sourcesService.connect("googlefit", queryParams).enqueue((call, result) -> {
+                if (result.isError()) {
+                    callback.onResult(result.getError(), false);
+                }
+                ConnectionResult connectionResult = result.getValue();
+                // NOTE: android-sdk shouldn't support an external connection to google-fit
+                if (connectionResult instanceof ConnectionResult.Connected) {
+                    callback.onResult(null, true);
+                }
+            });
         } catch (ApiException exc) {
             callback.onResult(new Error("ApiException: " + exc.getMessage()), false);
         }

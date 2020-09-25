@@ -5,18 +5,23 @@ import com.fjuul.sdk.http.utils.ApiCall;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import java.util.Map;
+
 import okhttp3.ResponseBody;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import retrofit2.http.QueryMap;
 
 public interface ActivitySourcesApi {
     @POST("/sdk/activity-sources/v1/{userToken}/connections/{activitySource}")
     @NonNull
     ApiCall<ResponseBody> connect(@Path("userToken") @NonNull String userToken,
-        @Path("activitySource") @NonNull String activitySource);
+        @Path("activitySource") @NonNull String activitySource,
+        @QueryMap Map<String, String> queryMap);
 
     @DELETE("/sdk/activity-sources/v1/{userToken}/connections/{connectionId}")
     @NonNull

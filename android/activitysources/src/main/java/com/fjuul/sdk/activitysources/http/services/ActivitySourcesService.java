@@ -1,6 +1,8 @@
 package com.fjuul.sdk.activitysources.http.services;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.fjuul.sdk.activitysources.entities.ConnectionResult;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
@@ -66,7 +68,12 @@ public class ActivitySourcesService {
      */
     @NonNull
     public ApiCall<ConnectionResult> connect(@NonNull String activitySource) {
-        return (ApiCall) apiClient.connect(clientBuilder.getUserToken(), activitySource);
+        return (ApiCall) apiClient.connect(clientBuilder.getUserToken(), activitySource, new HashMap<>());
+    }
+
+    @NonNull
+    public ApiCall<ConnectionResult> connect(@NonNull String activitySource, Map<String, String> queryParams) {
+        return (ApiCall) apiClient.connect(clientBuilder.getUserToken(), activitySource, queryParams);
     }
 
     /**

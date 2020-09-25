@@ -24,6 +24,11 @@ public class ActivitySourcesService {
     private ActivitySourcesApi apiClient;
     private ApiClient clientBuilder;
 
+    @NonNull
+    public String getUserToken() {
+        return clientBuilder.getUserToken();
+    }
+
     /**
      * Create instance of the activity sources api service.
      *

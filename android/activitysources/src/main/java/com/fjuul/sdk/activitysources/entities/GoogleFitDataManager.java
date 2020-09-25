@@ -2,86 +2,46 @@ package com.fjuul.sdk.activitysources.entities;
 
 import android.annotation.SuppressLint;
 
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.fitness.HistoryClient;
-import com.google.android.gms.fitness.data.Bucket;
-import com.google.android.gms.fitness.data.DataPoint;
-import com.google.android.gms.fitness.data.DataSet;
-import com.google.android.gms.fitness.data.DataType;
-import com.google.android.gms.fitness.data.Field;
-import com.google.android.gms.fitness.request.DataReadRequest;
-import com.google.android.gms.fitness.result.DataReadResponse;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
-
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class GoogleFitDataManager {
     private static final String TAG = "GoogleFitDataManager";
 
-    private GoogleSignInAccount account;
-    private HistoryClient historyClient;
+    private GFHistoryClientWrapper client;
     private GFDataUtils gfUtils;
+    private GFSyncMetadataStore gfSyncMetadataStore;
 
-    public GoogleFitDataManager(HistoryClient client, GoogleSignInAccount account, GFDataUtils gfUtils) {
-        this.account = account;
-        this.historyClient = client;
+    public GoogleFitDataManager(GFHistoryClientWrapper client, GFDataUtils gfUtils, GFSyncMetadataStore gfSyncMetadataStore) {
+        this.client = client;
         this.gfUtils = gfUtils;
+        this.gfSyncMetadataStore = gfSyncMetadataStore;
     }
 
     @SuppressLint("NewApi")
     public void syncCalories(Date start, Date end) {
-        getCalories(start, end).continueWith((getCaloriesTask) -> {
+        client.getCalories(start, end).continueWith((getCaloriesTask) -> {
             if (!getCaloriesTask.isSuccessful()) {
                 throw  new Error("Couldn't get calories from GoogleFit Api");
             }
             List<GFCalorieDataPoint> calories = getCaloriesTask.getResult();
-            this.gfUtils.groupPointsIntoBatchesByDuration(start, end, calories, Duration.ofMinutes(30));
-
-            // TODO: dirty checks for calories data
+            List<GFDataPointsBatch<GFCalorieDataPoint>> batches = this.gfUtils.groupPointsIntoBatchesByDuration(start, end, calories, Duration.ofMinutes(30));
+            Stream<GFDataPointsBatch<GFCalorieDataPoint>> notEmptyBatches = batches.stream().filter(b -> !b.getPoints().isEmpty());
+            List<GFDataPointsBatch<GFCalorieDataPoint>> notSyncedBatches = notEmptyBatches
+                .filter(this.gfSyncMetadataStore::isNeededToSyncCaloriesBatch)
+                .collect(Collectors.toList());
+            if (notSyncedBatches.isEmpty()) {
+                // TODO: invoke callback with no result (or empty metadata) ?
+                return null;
+            }
+            // TODO: combine all batches's calories into one list of GFCalorieDataPoint
+            // TODO: send the data to the back-end side => add service for that (consider retry here)
+            notSyncedBatches.forEach(batch -> this.gfSyncMetadataStore.saveSyncMetadataOfCalories(batch));
+            // TODO: pass metadata to the callback ???
             return null;
         });
-    }
-
-    public Task<List<GFCalorieDataPoint>> getCalories(Date start, Date end) {
-        return readCaloriesHistory(start, end).continueWithTask(this::convertToCalories);
-    }
-
-    private Task<List<GFCalorieDataPoint>> convertToCalories(Task<DataReadResponse> task) {
-        ArrayList<GFCalorieDataPoint> calorieDataPoints = new ArrayList<>();
-        DataReadResponse dataReadResult = task.getResult();
-        for (Bucket bucket : dataReadResult.getBuckets()) {
-            Date start = new Date(bucket.getStartTime(TimeUnit.MILLISECONDS));
-//            Log.d(TAG, "Bucket start time: " + new Date(bucket.getStartTime(TimeUnit.MILLISECONDS)));
-//            Log.d(TAG, "Bucket end time: " + new Date(bucket.getEndTime(TimeUnit.MILLISECONDS)));
-            DataSet dataSet = bucket.getDataSets().get(0);
-            DataPoint calorieDataPoint = dataSet.getDataPoints().get(0);
-            String dataSourceId = calorieDataPoint.getOriginalDataSource().getStreamIdentifier();
-            for (Field field : DataType.TYPE_CALORIES_EXPENDED.getFields()) {
-                if (Field.FIELD_CALORIES.equals(field)) {
-                    float kcals = calorieDataPoint.getValue(field).asFloat();
-                    GFCalorieDataPoint calorie = new GFCalorieDataPoint(kcals, start, dataSourceId);
-                    calorieDataPoints.add(calorie);
-                }
-            }
-        }
-        return Tasks.forResult(calorieDataPoints);
-    }
-
-    private Task<DataReadResponse> readCaloriesHistory(Date start, Date end) {
-        DataReadRequest readRequest = buildCaloriesDataReadRequest(start, end);
-        return historyClient.readData(readRequest);
-    }
-
-    private DataReadRequest buildCaloriesDataReadRequest(Date start, Date end) {
-        return new DataReadRequest.Builder()
-            .aggregate(DataType.AGGREGATE_CALORIES_EXPENDED)
-            .bucketByTime(1, TimeUnit.MINUTES)
-            .setTimeRange(start.getTime(), end.getTime(), TimeUnit.MILLISECONDS)
-            .build();
     }
 }

@@ -43,7 +43,7 @@ public class GFDataUtilsTest {
         ).collect(Collectors.toList());
 
         @Test
-        public void groupPointsIntoBatchesByDuration_bigDurationCoversAllPoints_returnOneBatchWithAllPoints() {
+        public void groupPointsIntoBatchesByDuration_bigDurationCoversAllPoints_returnsOneBatchWithAllPoints() {
             Date start = Date.from(Instant.parse("2020-01-01T10:00:00Z"));
             Date end = Date.from(Instant.parse("2020-01-01T11:00:00Z"));
             Duration duration = Duration.ofHours(1);
@@ -56,7 +56,7 @@ public class GFDataUtilsTest {
         }
 
         @Test
-        public void groupPointsIntoBatchesByDuration_smallerDurationSplitsPoints_returnTwoBatchesWithPoints() {
+        public void groupPointsIntoBatchesByDuration_smallerDurationSplitsPoints_returnsTwoBatchesWithPoints() {
             Date start = Date.from(Instant.parse("2020-01-01T10:00:00Z"));
             Date end = Date.from(Instant.parse("2020-01-01T11:00:00Z"));
             Duration duration = Duration.ofMinutes(30);
@@ -80,7 +80,7 @@ public class GFDataUtilsTest {
         }
 
         @Test
-        public void groupPointsIntoBatchesByDuration_smallerDurationWithoutMatches_returnBatchesWithBlank() {
+        public void groupPointsIntoBatchesByDuration_smallerDurationWithoutMatches_returnsBatchesWithBlank() {
             Date start = Date.from(Instant.parse("2020-01-01T10:00:00Z"));
             Date end = Date.from(Instant.parse("2020-01-01T11:00:00Z"));
             Duration duration = Duration.ofMinutes(20);
@@ -107,7 +107,7 @@ public class GFDataUtilsTest {
         }
 
         @Test
-        public void groupPointsIntoBatchesByDuration_leftBorderIsInclusiveAndRightBorderIsExclusive_returnBatches() {
+        public void groupPointsIntoBatchesByDuration_leftBorderIsInclusiveAndRightBorderIsExclusive_returnsBatches() {
             List<GFCalorieDataPoint> calories = Stream.of(
                 new GFCalorieDataPoint(5.2751f, Date.from(Instant.parse("2020-01-01T10:05:00Z")), dataSourceId),
                 new GFCalorieDataPoint(2.5421f, Date.from(Instant.parse("2020-01-01T10:30:00Z")), dataSourceId)
@@ -135,7 +135,7 @@ public class GFDataUtilsTest {
         }
 
         @Test
-        public void groupPointsIntoBatchesByDuration_durationСrossesEndTime_returnBatchWithEndTime() {
+        public void groupPointsIntoBatchesByDuration_durationСrossesEndTime_returnsBatchWithEndTime() {
             List<GFCalorieDataPoint> calories = Stream.of(
                 new GFCalorieDataPoint(5.2751f, Date.from(Instant.parse("2020-01-01T10:05:00Z")), dataSourceId),
                 new GFCalorieDataPoint(2.5421f, Date.from(Instant.parse("2020-01-01T10:30:00Z")), dataSourceId)
@@ -166,7 +166,7 @@ public class GFDataUtilsTest {
         }
 
         @Test
-        public void groupPointsIntoBatchesByDuration_singleDurationСrossesEndTime_returnOneBatchWithCorrectEndTimeOfDuration() {
+        public void groupPointsIntoBatchesByDuration_singleDurationСrossesEndTime_returnsOneBatchWithCorrectEndTimeOfDuration() {
             List<GFCalorieDataPoint> calories = Stream.of(
                 new GFCalorieDataPoint(5.2751f, Date.from(Instant.parse("2020-01-01T10:05:00Z")), dataSourceId),
                 new GFCalorieDataPoint(2.5421f, Date.from(Instant.parse("2020-01-01T10:30:00Z")), dataSourceId)
@@ -198,7 +198,7 @@ public class GFDataUtilsTest {
         }
 
         @Test
-        public void adjustInputDatesForGFRequest_whenStartAndEndArePastTime_returnStartOfDayOfStartAndEndOfDayOfEnd() {
+        public void adjustInputDatesForGFRequest_whenStartAndEndArePastTime_returnsStartOfDayOfStartAndEndOfDayOfEnd() {
             GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Australia/Sydney"), fixedClock);
             LocalDate start = LocalDate.parse("2020-09-01");
             LocalDate end = LocalDate.parse("2020-09-05");
@@ -212,7 +212,7 @@ public class GFDataUtilsTest {
         }
 
         @Test
-        public void adjustInputDatesForGFRequest_whenStartIsPastAndEndIsToday_returnStartOfDayOfStartAndEndTimeNearToCurrentMoment() {
+        public void adjustInputDatesForGFRequest_whenStartIsPastAndEndIsToday_returnsStartOfDayOfStartAndEndTimeNearToCurrentMoment() {
             GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Australia/Sydney"), fixedClock);
             LocalDate start = LocalDate.parse("2020-09-01");
             LocalDate end = LocalDate.parse("2020-09-16");
@@ -220,6 +220,34 @@ public class GFDataUtilsTest {
             assertThat("start should be a start of the day of start date",
                 pair.first,
                 equalTo(Date.from(Instant.parse("2020-08-31T14:00:00Z"))));
+            assertThat("end should be the current moment",
+                pair.second,
+                equalTo(Date.from(Instant.parse("2020-09-15T21:30:00Z"))));
+        }
+
+        @Test
+        public void adjustInputDatesForGFRequest_whenStartAndEndIsTheSameDayInThePast_returnsStartAndEndOfTheDay() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Australia/Sydney"), fixedClock);
+            LocalDate start = LocalDate.parse("2020-09-10");
+            LocalDate end = LocalDate.parse("2020-09-10");
+            Pair<Date, Date> pair = gfDataUtils.adjustInputDatesForGFRequest(start, end);
+            assertThat("start should be a start of the day of start date",
+                pair.first,
+                equalTo(Date.from(Instant.parse("2020-09-09T14:00:00Z"))));
+            assertThat("end should be an end of the end date",
+                pair.second,
+                equalTo(Date.from(Instant.parse("2020-09-10T13:59:59Z").plusMillis(999))));
+        }
+
+        @Test
+        public void adjustInputDatesForGFRequest_whenStartAndEndIsToday_returnsStartOfTodayAndCurrentMoment() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Australia/Sydney"), fixedClock);
+            LocalDate start = LocalDate.parse("2020-09-16");
+            LocalDate end = LocalDate.parse("2020-09-16");
+            Pair<Date, Date> pair = gfDataUtils.adjustInputDatesForGFRequest(start, end);
+            assertThat("start should be a start of the day of start date",
+                pair.first,
+                equalTo(Date.from(Instant.parse("2020-09-15T14:00:00Z"))));
             assertThat("end should be the current moment",
                 pair.second,
                 equalTo(Date.from(Instant.parse("2020-09-15T21:30:00Z"))));
@@ -236,7 +264,7 @@ public class GFDataUtilsTest {
         }
 
         @Test
-        public void adjustInputDatesForBatches_whenStartAndEndArePastTime_returnStartOfDayOfStartAndStartOfDayFollowingEndDate() {
+        public void adjustInputDatesForBatches_whenStartAndEndArePastTime_returnsStartOfDayOfStartAndStartOfDayFollowingEndDate() {
             GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Australia/Sydney"), fixedClock);
             LocalDate start = LocalDate.parse("2020-09-01");
             LocalDate end = LocalDate.parse("2020-09-05");
@@ -250,7 +278,7 @@ public class GFDataUtilsTest {
         }
 
         @Test
-        public void adjustInputDatesForBatches_whenStartIsPastAndEndIsToday_returnStartOfDayOfStartAndEndTimeRoundedByDuration() {
+        public void adjustInputDatesForBatches_whenStartIsPastAndEndIsToday_returnsStartOfDayOfStartAndEndTimeRoundedByDuration() {
             GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Australia/Sydney"), fixedClock);
             LocalDate start = LocalDate.parse("2020-09-01");
             LocalDate end = LocalDate.parse("2020-09-16");
@@ -258,6 +286,34 @@ public class GFDataUtilsTest {
             assertThat("start should be a start of the day of start date",
                 pair.first,
                 equalTo(Date.from(Instant.parse("2020-08-31T14:00:00Z"))));
+            assertThat("end should be rounded to the current moment by duration",
+                pair.second,
+                equalTo(Date.from(Instant.parse("2020-09-15T21:30:00Z"))));
+        }
+
+        @Test
+        public void adjustInputDatesForBatches_whenStartAndEndIsTheSameDayInThePast_returnsStartOfTheDayAndStartOfTheNextDay() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Australia/Sydney"), fixedClock);
+            LocalDate start = LocalDate.parse("2020-09-10");
+            LocalDate end = LocalDate.parse("2020-09-10");
+            Pair<Date, Date> pair = gfDataUtils.adjustInputDatesForBatches(start, end);
+            assertThat("start should be a start of the day of start date",
+                pair.first,
+                equalTo(Date.from(Instant.parse("2020-09-09T14:00:00Z"))));
+            assertThat("end should be a start of a day after the end date",
+                pair.second,
+                equalTo(Date.from(Instant.parse("2020-09-10T14:00:00Z"))));
+        }
+
+        @Test
+        public void adjustInputDatesForBatches_whenStartAndEndIsToday_returnsStartOfTheDayAndCurrentMomentRoundedByDuration() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Australia/Sydney"), fixedClock);
+            LocalDate start = LocalDate.parse("2020-09-16");
+            LocalDate end = LocalDate.parse("2020-09-16");
+            Pair<Date, Date> pair = gfDataUtils.adjustInputDatesForBatches(start, end);
+            assertThat("start should be a start of the day of start date",
+                pair.first,
+                equalTo(Date.from(Instant.parse("2020-09-15T14:00:00Z"))));
             assertThat("end should be rounded to the current moment by duration",
                 pair.second,
                 equalTo(Date.from(Instant.parse("2020-09-15T21:30:00Z"))));

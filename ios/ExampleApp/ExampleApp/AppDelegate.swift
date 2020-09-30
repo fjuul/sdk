@@ -15,10 +15,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // TODO: Update code for initialize SDK client in example app
         ApiClientHolder.default.apiClient = ApiClient(
             baseUrl: environment.baseUrl,
-            apiKey: UserDefaults.standard.string(forKey: "apiKey")!,
+            apiKey: UserDefaults.standard.string(forKey: "apiKey") ?? "",
             credentials: UserCredentials(
-                token: UserDefaults.standard.string(forKey: "token")!,
-                secret: UserDefaults.standard.string(forKey: "secret")!
+                token: UserDefaults.standard.string(forKey: "token") ?? "",
+                secret: UserDefaults.standard.string(forKey: "secret") ?? ""
             )
         )
 

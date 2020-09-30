@@ -13,24 +13,26 @@ class ActivitySourceHealthKit {
     init() {}
     
     private var readableTypes: Set<HKSampleType> {
-        return intradayReadableTypes.union(samplesReadableTypes)
+        return samplesReadableTypes.union(intradayReadableTypes)
     }
     
-    private var intradayReadableTypes: Set<HKSampleType> {
+    private var intradayReadableTypes: Set<HKQuantityType> {
         // TODO: types should be based on config
         return [
-            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!,
-            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!,
-            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!,
+//            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!,
+//            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!,
+//            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!,
+//            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!
         ]
     }
     
     private var samplesReadableTypes: Set<HKSampleType> {
         // TODO: types should be based on config
         return [
-            HKWorkoutType.workoutType(),
-            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!,
-            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!
+//            HKWorkoutType.workoutType(),
+//            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!,
+            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!,
+//            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!,
         ]
     }
 
@@ -55,7 +57,7 @@ class ActivitySourceHealthKit {
     func sync() {
         // TODO: figure out how get sampleType from query
         // TODO: sync types based on config
-        self.fetchIntradayUpdates(sampleType: HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!)
+//        self.fetchIntradayUpdates(sampleType: HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!)
     }
     func mountBackgroundDelivery() {}
     func unmountBackgroundDelivery() {}
@@ -74,7 +76,33 @@ class ActivitySourceHealthKit {
     
     private func observe() {
         for sampleType in self.intradayReadableTypes {
-            var query: HKObserverQuery = HKObserverQuery(sampleType: sampleType, predicate: nil, updateHandler: self.observerCompletionHandler)
+            var query: HKObserverQuery = HKObserverQuery(sampleType: sampleType, predicate: nil, updateHandler: { query, completionHandler, error in
+                defer { completionHandler() }
+                guard error != nil else { return }
+                
+                self.fetchIntradayUpdates(sampleType: sampleType)
+            })
+            
+            healthKitStore.execute(query)
+            healthKitStore.enableBackgroundDelivery(for: sampleType, frequency: .immediate, withCompletion: {(succeeded: Bool, error: Error?) in
+               if succeeded{
+                   print("Enabled background delivery for type \(sampleType)")
+               } else {
+                   if let theError = error{
+                       print("Failed to enable background delivery of weight changes. ")
+                       print("Error = \(theError)")
+                   }
+               }
+           })
+        }
+        
+        for sampleType in self.samplesReadableTypes {
+            var query: HKObserverQuery = HKObserverQuery(sampleType: sampleType, predicate: nil, updateHandler: { query, completionHandler, error in
+                defer { completionHandler() }
+                guard error == nil else { return }
+
+                self.fetchSampleUpdates(sampleType: sampleType)
+            })
             
             healthKitStore.execute(query)
             healthKitStore.enableBackgroundDelivery(for: sampleType, frequency: .immediate, withCompletion: {(succeeded: Bool, error: Error?) in
@@ -99,7 +127,7 @@ class ActivitySourceHealthKit {
         
         completionHandler()
     }
-    
+
     private func fetchIntradayUpdates(sampleType: HKQuantityType) {
         let calendar = Calendar.current
         var interval = DateComponents()
@@ -109,10 +137,14 @@ class ActivitySourceHealthKit {
         let anchorDate = calendar.date(byAdding: .hour, value: -1, to: Date())!
         
         // Exclude manually added data
-        let predicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
+        let wasUserEnteredPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
+        let fromDate = Calendar.current.date(byAdding: .day, value: -30, to: Date())
+        let startDatePredicate = HKQuery.predicateForSamples(withStart: fromDate, end: Date(), options: .strictStartDate)
         
+        let compound = NSCompoundPredicate(andPredicateWithSubpredicates: [startDatePredicate, wasUserEnteredPredicate])
+
         let query = HKStatisticsCollectionQuery(quantityType: sampleType,
-                                                quantitySamplePredicate: predicate,
+                                                quantitySamplePredicate: compound,
                                                 options: [.cumulativeSum],
                                                 anchorDate: anchorDate,
                                                 intervalComponents: interval)
@@ -141,23 +173,27 @@ class ActivitySourceHealthKit {
     }
     
     // TODO: Big question, are we need HKAnchoredObjectQuery or will be right use HKSampleQuery?
-    private func fetchSampleUpdates(sampleType: HKQuantityType) {
-        let calendar = Calendar.current
-        var interval = DateComponents()
-        interval.minute = 1
-        
+    private func fetchSampleUpdates(sampleType: HKSampleType) {
         // TODO: Calculate right anchor from persisted store
         var anchorDate = HKQueryAnchor.init(fromValue: 0)
-        
+        if let data = UserDefaults.standard.object(forKey: "\(sampleType)-Anchor-v1") as? Data {
+            anchorDate = (NSKeyedUnarchiver.unarchiveObject(with: data) as? HKQueryAnchor)!
+            print(anchorDate)
+        }
+
         // Exclude manually added data
-        let predicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
-        
+        let wasUserEnteredPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
+        let fromDate = Calendar.current.date(byAdding: .day, value: -30, to: Date())
+        let startDatePredicate = HKQuery.predicateForSamples(withStart: fromDate, end: Date(), options: .strictStartDate)
+        let compound = NSCompoundPredicate(andPredicateWithSubpredicates: [startDatePredicate, wasUserEnteredPredicate])
+
         let query = HKAnchoredObjectQuery(type: sampleType,
-                                              predicate: predicate,
+                                              predicate: compound,
                                               anchor: anchorDate,
                                               limit: HKObjectQueryNoLimit) { (query, samplesOrNil, deletedObjectsOrNil, newAnchor, errorOrNil) in
             guard let samples = samplesOrNil, let deletedObjects = deletedObjectsOrNil else {
                 print("*** An error occurred during the initial query: \(errorOrNil!.localizedDescription) ***")
+                return
             }
             
             // TODO: find batches for re-upload?
@@ -169,6 +205,9 @@ class ActivitySourceHealthKit {
             for deletedSampleItem in deletedObjects {
                 print("deleted: \(deletedSampleItem)")
             }
+            
+            let data : Data = NSKeyedArchiver.archivedData(withRootObject: newAnchor as Any)
+            UserDefaults.standard.set(data, forKey: "\(sampleType)-Anchor-v1")
             
             // TODO: Save the new anchor to the persisted store
             // anchor = newAnchor!

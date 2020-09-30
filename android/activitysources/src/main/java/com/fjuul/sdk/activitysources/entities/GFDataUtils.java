@@ -78,6 +78,21 @@ public class GFDataUtils {
 
         Date endDate = Collections.min(Arrays.asList(nextDayAfterEnd, roundedCurrentDate));
         return new Pair(startDate, endDate);
+    }
 
+    @SuppressLint("NewApi")
+    public List<Pair<Date, Date>> splitDateRangeIntoChunks(Date start, Date end, Duration duration) {
+        if (start.equals(end)) {
+            return Arrays.asList(new Pair<>(start, end));
+        }
+        Date leftBorder = start;
+        List<Pair<Date, Date>> dateRanges = new ArrayList<>();
+        while (leftBorder.before(end)) {
+            final Date nextStep = Date.from(leftBorder.toInstant().plusMillis(duration.toMillis()));
+            final Date rightBorder = Collections.min(Arrays.asList(nextStep, end));
+            dateRanges.add(new Pair<>(leftBorder, rightBorder));
+            leftBorder = rightBorder;
+        }
+        return dateRanges;
     }
 }

@@ -320,4 +320,94 @@ public class GFDataUtilsTest {
         }
     }
 
+    public static class SplitDateRangeIntoChunksTest extends GivenRobolectricContext {
+        @Test
+        public void splitDateRangeIntoChunks_whenStartAndEndIsTheSameTime_returnsPairOfTheDate() {
+            GFDataUtils gfDataUtils = new GFDataUtils();
+            final Date date = Date.from(Instant.parse("2020-08-31T14:00:00Z"));
+            final Duration duration = Duration.ofHours(12);
+            List<Pair<Date, Date>> chunks = gfDataUtils.splitDateRangeIntoChunks(date, date, duration);
+            assertEquals("should return only one pair",
+                1,
+                chunks.size());
+            assertThat("first entry should be the time",
+                chunks.get(0).first,
+                equalTo(date)
+            );
+            assertThat("second entry should be the time",
+                chunks.get(0).second,
+                equalTo(date)
+            );
+        }
+
+        @Test
+        public void splitDateRangeIntoChunks_whenEndIsLessThanStartPlusDuration_returnsPairOfStartAndEnd() {
+            GFDataUtils gfDataUtils = new GFDataUtils();
+            final Date start = Date.from(Instant.parse("2020-08-31T14:00:00Z"));
+            final Date end = Date.from(Instant.parse("2020-08-31T17:00:00Z"));
+            final Duration duration = Duration.ofHours(12);
+            List<Pair<Date, Date>> chunks = gfDataUtils.splitDateRangeIntoChunks(start, end, duration);
+            assertEquals("should return only one pair",
+                1,
+                chunks.size());
+            assertThat("first entry should be the start",
+                chunks.get(0).first,
+                equalTo(start)
+            );
+            assertThat("second entry should be the end",
+                chunks.get(0).second,
+                equalTo(end)
+            );
+        }
+
+        @Test
+        public void splitDateRangeIntoChunks_whenEndCoversStartPlusDuration_returnsPairOfStartAndEnd() {
+            GFDataUtils gfDataUtils = new GFDataUtils();
+            final Date start = Date.from(Instant.parse("2020-08-31T14:00:00Z"));
+            final Date end = Date.from(Instant.parse("2020-09-01T02:00:00Z"));
+            final Duration duration = Duration.ofHours(12);
+            List<Pair<Date, Date>> chunks = gfDataUtils.splitDateRangeIntoChunks(start, end, duration);
+            assertEquals("should return only one pair",
+                1,
+                chunks.size());
+            assertThat("first entry should be the start",
+                chunks.get(0).first,
+                equalTo(start)
+            );
+            assertThat("second entry should be the end",
+                chunks.get(0).second,
+                equalTo(end)
+            );
+        }
+
+        @Test
+        public void splitDateRangeIntoChunks_whenEndIsMoreThanStartPlusDuration_returnsPairs() {
+            GFDataUtils gfDataUtils = new GFDataUtils();
+            final Date start = Date.from(Instant.parse("2020-08-31T14:00:00Z"));
+            final Date end = Date.from(Instant.parse("2020-09-01T09:00:00Z"));
+            final Duration duration = Duration.ofHours(12);
+            List<Pair<Date, Date>> chunks = gfDataUtils.splitDateRangeIntoChunks(start, end, duration);
+            assertEquals("should return 2 pairs",
+                2,
+                chunks.size());
+            assertThat("first entry should be the start",
+                chunks.get(0).first,
+                equalTo(start)
+            );
+            assertThat("second entry should be the start + duration",
+                chunks.get(0).second,
+                equalTo(Date.from(Instant.parse("2020-09-01T02:00:00Z")))
+            );
+
+            assertThat("first entry of the next pair should be the start + duration",
+                chunks.get(1).first,
+                equalTo(Date.from(Instant.parse("2020-09-01T02:00:00Z")))
+            );
+            assertThat("second entry of the next pair should be the end",
+                chunks.get(1).second,
+                equalTo(end)
+            );
+        }
+    }
+
 }

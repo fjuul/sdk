@@ -68,10 +68,11 @@ public final class ActivitySourcesManager {
         // NOTE: we set offlineAccess to false here because GoogleFitDataManager works only with local fitness data
         if (GoogleFitActivitySource.arePermissionsGranted(account, false)) {
             HistoryClient client = Fitness.getHistoryClient(context, account);
-            GFHistoryClientWrapper clientWrapper = new GFHistoryClientWrapper(client);
+            GFDataUtils gfUtils = new GFDataUtils();
+            GFHistoryClientWrapper clientWrapper = new GFHistoryClientWrapper(client, gfUtils);
             String userToken = sourcesService.getUserToken();
             GFSyncMetadataStore gfSyncMetadataStore = new GFSyncMetadataStore(new PersistentStorage(context), userToken);
-            return new GoogleFitDataManager(clientWrapper, new GFDataUtils(), gfSyncMetadataStore);
+            return new GoogleFitDataManager(clientWrapper, gfUtils, gfSyncMetadataStore);
         } else {
             throw new IllegalStateException("Not all permissions were granted");
         }

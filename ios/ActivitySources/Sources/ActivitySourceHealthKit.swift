@@ -19,7 +19,7 @@ class ActivitySourceHealthKit {
     private var intradayReadableTypes: Set<HKQuantityType> {
         // TODO: types should be based on config
         return [
-//            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!,
+            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!,
 //            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!,
 //            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!,
 //            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!
@@ -31,7 +31,7 @@ class ActivitySourceHealthKit {
         return [
 //            HKWorkoutType.workoutType(),
 //            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!,
-            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!,
+//            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!,
 //            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!,
         ]
     }
@@ -79,14 +79,15 @@ class ActivitySourceHealthKit {
             var query: HKObserverQuery = HKObserverQuery(sampleType: sampleType, predicate: nil, updateHandler: { query, completionHandler, error in
                 defer { completionHandler() }
                 guard error != nil else { return }
-                
+
                 self.fetchIntradayUpdates(sampleType: sampleType)
             })
             
             healthKitStore.execute(query)
             healthKitStore.enableBackgroundDelivery(for: sampleType, frequency: .immediate, withCompletion: {(succeeded: Bool, error: Error?) in
                if succeeded{
-                   print("Enabled background delivery for type \(sampleType)")
+                    print("Enabled background delivery for type \(sampleType)")
+                    self.fetchIntradayUpdates(sampleType: sampleType)
                } else {
                    if let theError = error{
                        print("Failed to enable background delivery of weight changes. ")
@@ -127,21 +128,113 @@ class ActivitySourceHealthKit {
         
         completionHandler()
     }
-
+    
     private func fetchIntradayUpdates(sampleType: HKQuantityType) {
-        let calendar = Calendar.current
-        var interval = DateComponents()
-        interval.minute = 1
         
-        // TODO: Calculate correctly anchor
-        let anchorDate = calendar.date(byAdding: .hour, value: -1, to: Date())!
+        let batchStartDates = self.getBatchSegments(sampleType: sampleType)
+        self.fetchIntradayStatisticsCollections(sampleType: sampleType, batchDates: batchStartDates)
+    }
+    
+    private func getBatchSegments(sampleType: HKQuantityType) -> Set<Date> {
+        var BatchStartDates: Set<Date> = []
+        let anchorKey = "\(sampleType)-Intrada"
+
+        // TODO: Calculate right anchor from persisted store
+        var anchorDate = HKQueryAnchor.init(fromValue: 0)
+        if let data = UserDefaults.standard.object(forKey: anchorKey) as? Data {
+            anchorDate = (NSKeyedUnarchiver.unarchiveObject(with: data) as? HKQueryAnchor)!
+            print(anchorDate)
+        }
         
         // Exclude manually added data
         let wasUserEnteredPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
         let fromDate = Calendar.current.date(byAdding: .day, value: -30, to: Date())
         let startDatePredicate = HKQuery.predicateForSamples(withStart: fromDate, end: Date(), options: .strictStartDate)
-        
         let compound = NSCompoundPredicate(andPredicateWithSubpredicates: [startDatePredicate, wasUserEnteredPredicate])
+        
+        let query = HKAnchoredObjectQuery(type: sampleType,
+                                              predicate: compound,
+                                              anchor: anchorDate,
+                                              limit: HKObjectQueryNoLimit) { (query, samplesOrNil, deletedObjectsOrNil, newAnchor, errorOrNil) in
+            guard let samples = samplesOrNil, let deletedObjects = deletedObjectsOrNil else {
+                print("*** An error occurred during the initial query: \(errorOrNil!.localizedDescription) ***")
+                return
+            }
+            
+            // TODO: find batches for re-upload?
+            for sampleItem in samples {
+                BatchStartDates.insert(self.beginning(of: .hour, date: sampleItem.startDate)!)
+            }
+            // TODO: find batches for re-upload?
+            for deletedSampleItem in deletedObjects {
+                print("deleted: \(deletedSampleItem)")
+            }
+            // TODO: Save the new anchor to the persisted store
+            let data : Data = NSKeyedArchiver.archivedData(withRootObject: newAnchor as Any)
+            UserDefaults.standard.set(data, forKey: anchorKey)
+            print("BatchStartDates: \(BatchStartDates)")
+        }
+        healthKitStore.execute(query)
+        
+        return BatchStartDates
+    }
+    
+    private func beginning(of component: Calendar.Component, date: Date?) -> Date? {
+        let calendar = Calendar.current
+        if component == .day {
+            return calendar.startOfDay(for: date!)
+        }
+
+        var components: Set<Calendar.Component> {
+            switch component {
+            case .second:
+                return [.year, .month, .day, .hour, .minute, .second]
+
+            case .minute:
+                return [.year, .month, .day, .hour, .minute]
+
+            case .hour:
+                return [.year, .month, .day, .hour]
+
+            case .weekOfYear, .weekOfMonth:
+                return [.yearForWeekOfYear, .weekOfYear]
+
+            case .month:
+                return [.year, .month]
+
+            case .year:
+                return [.year]
+
+            default:
+                return []
+            }
+        }
+
+        guard !components.isEmpty else { return nil }
+        return calendar.date(from: calendar.dateComponents(components, from: date!))
+    }
+
+
+    private func fetchIntradayStatisticsCollections(sampleType: HKQuantityType, batchDates: Set<Date>) {
+        let calendar = Calendar.current
+        var interval = DateComponents()
+        interval.minute = 1
+        
+        // TODO: Calculate correctly anchor
+        let anchorDate = calendar.date(byAdding: .hour, value: -2, to: Date())!
+        
+        // Exclude manually added data
+        let wasUserEnteredPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
+        
+        let fromDate = Calendar.current.date(byAdding: .minute, value: -120, to: Date())
+        let endDate = Calendar.current.date(byAdding: .minute, value: -60, to: Date())
+        let startDatePredicate = HKQuery.predicateForSamples(withStart: fromDate, end: endDate, options: .strictStartDate)
+        
+        let fromDate2 = Calendar.current.date(byAdding: .minute, value: -5, to: Date())
+        let startDatePredicate2 = HKQuery.predicateForSamples(withStart: fromDate2, end: Date(), options: .strictStartDate)
+        
+        
+        let compound = NSCompoundPredicate(orPredicateWithSubpredicates: [startDatePredicate, startDatePredicate2]) //wasUserEnteredPredicate,
 
         let query = HKStatisticsCollectionQuery(quantityType: sampleType,
                                                 quantitySamplePredicate: compound,

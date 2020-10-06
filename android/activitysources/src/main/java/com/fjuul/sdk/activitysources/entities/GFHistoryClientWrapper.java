@@ -53,10 +53,9 @@ public final class GFHistoryClientWrapper {
 
     @SuppressLint("NewApi")
     public Task<List<GFCalorieDataPoint>> getCalories(Date start, Date end) {
-        // NOTE: GF can silently fail on a request if response data is too large,
-        // more details at https://stackoverflow.com/a/55806509/6685359
+
         // TODO: adjust size of chunks (duration) for the best performance
-        ExecutorService gfTaskWatcherExecutor = Executors.newFixedThreadPool(GF_TASK_WATCHER_THREAD_POOL_SIZE);
+        ExecutorService gfTaskWatcherExecutor = createGfTaskWatcherExecutor();
         List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
 
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
@@ -90,7 +89,7 @@ public final class GFHistoryClientWrapper {
 
     @SuppressLint("NewApi")
     public Task<List<GFStepsDataPoint>> getSteps(Date start, Date end) {
-        ExecutorService gfTaskWatcherExecutor = Executors.newFixedThreadPool(GF_TASK_WATCHER_THREAD_POOL_SIZE);
+        ExecutorService gfTaskWatcherExecutor = createGfTaskWatcherExecutor();
         List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofDays(12));
 
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
@@ -128,7 +127,7 @@ public final class GFHistoryClientWrapper {
 
     @SuppressLint("NewApi")
     public Task<List<GFHRDataPoint>> getHRs(Date start, Date end) {
-        ExecutorService gfTaskWatcherExecutor = Executors.newFixedThreadPool(GF_TASK_WATCHER_THREAD_POOL_SIZE);
+        ExecutorService gfTaskWatcherExecutor = createGfTaskWatcherExecutor();
         List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
 
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
@@ -337,5 +336,9 @@ public final class GFHistoryClientWrapper {
             .bucketByTime(1, TimeUnit.MINUTES)
             .setTimeRange(start.getTime(), end.getTime(), TimeUnit.MILLISECONDS)
             .build();
+    }
+
+    private ExecutorService createGfTaskWatcherExecutor() {
+        return Executors.newFixedThreadPool(GF_TASK_WATCHER_THREAD_POOL_SIZE);
     }
 }

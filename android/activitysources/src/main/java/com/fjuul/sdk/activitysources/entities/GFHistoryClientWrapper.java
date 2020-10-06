@@ -4,11 +4,15 @@ import android.annotation.SuppressLint;
 import android.util.Log;
 
 import androidx.core.util.Pair;
+import androidx.core.util.Supplier;
 
+import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions;
+import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.MaxRetriesExceededException;
 import com.google.android.gms.fitness.HistoryClient;
 import com.google.android.gms.fitness.data.Bucket;
 import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
+import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.request.DataReadRequest;

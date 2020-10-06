@@ -88,34 +88,87 @@ public final class GFHistoryClientWrapper {
         return getCaloriesTask;
     }
 
+    @SuppressLint("NewApi")
+    public Task<List<GFStepsDataPoint>> getSteps(Date start, Date end) {
+        ExecutorService gfTaskWatcherExecutor = Executors.newFixedThreadPool(GF_TASK_WATCHER_THREAD_POOL_SIZE);
+        List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofDays(12));
+
+        CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        CancellationToken cancellationToken = cancellationTokenSource.getToken();
+        List<Task<List<GFStepsDataPoint>>> tasks = dateChunks.stream().map(dateRange -> {
+            return runReadStepsTask(dateRange, gfTaskWatcherExecutor, cancellationTokenSource, cancellationToken);
+        }).collect(Collectors.toList());
+
+        Task<List<GFStepsDataPoint>> getStepsTask = Tasks.whenAll(tasks).continueWithTask(executor, commonResult -> {
+            if (commonResult.isCanceled()) {
+                return Tasks.forException(new Exception("Pooling task was canceled"));
+            } else if (commonResult.getException() != null) {
+                Optional<Task<List<GFStepsDataPoint>>> failedTaskOpt = tasks.stream()
+                    .filter(t -> t.getException() != null)
+                    .findFirst();
+                tasks.stream().filter(t -> t.getException() != null).forEach((t) -> {
+                    Log.d(TAG, "getSteps: EXCEPTION " + t.getException());
+                });
+                Exception exception = failedTaskOpt.map(Task::getException).orElse(commonResult.getException());
+                Log.d(TAG, "getSteps: EXCEPTION: " + exception);
+                return Tasks.forException(exception);
+            }
+            List<GFStepsDataPoint> flattenList = tasks.stream()
+                .flatMap(t -> t.getResult().stream())
+                .collect(Collectors.toList());
+            return Tasks.forResult(flattenList);
+        })
+            .addOnCompleteListener(executor, (task) -> {
+//            Log.d(TAG, "getCalories: shutdown!");
+                // TODO: check if it was really shutdown after a while
+                gfTaskWatcherExecutor.shutdownNow();
+            });
+        return getStepsTask;
+    }
+
     private Task<List<GFCalorieDataPoint>> runReadCaloriesTask(Pair<Date, Date> dateRange, ExecutorService gfTaskWatcherExecutor, CancellationTokenSource cancellationTokenSource, CancellationToken cancellationToken) {
-        TaskCompletionSource<List<GFCalorieDataPoint>> taskCompletionSource = new TaskCompletionSource<>(cancellationToken);
+        Supplier<Task<List<GFCalorieDataPoint>>> taskSupplier = () -> {
+            return readCaloriesHistory(dateRange.first, dateRange.second)
+                .onSuccessTask(executor, this::convertToCalories);
+        };
+        return runGFTaskUnderWatch(taskSupplier, gfTaskWatcherExecutor, cancellationTokenSource, cancellationToken);
+    }
+
+    private Task<List<GFStepsDataPoint>> runReadStepsTask(Pair<Date, Date> dateRange, ExecutorService gfTaskWatcherExecutor, CancellationTokenSource cancellationTokenSource, CancellationToken cancellationToken) {
+        Supplier<Task<List<GFStepsDataPoint>>> taskSupplier = () -> {
+            return readStepsHistory(dateRange.first, dateRange.second)
+                .onSuccessTask(executor, this::convertToSteps);
+        };
+        return runGFTaskUnderWatch(taskSupplier, gfTaskWatcherExecutor, cancellationTokenSource, cancellationToken);
+    }
+
+    private <T> Task<T> runGFTaskUnderWatch(Supplier<Task<T>> taskSupplier, ExecutorService gfTaskWatcherExecutor, CancellationTokenSource cancellationTokenSource, CancellationToken cancellationToken) {
+        TaskCompletionSource<T> taskCompletionSource = new TaskCompletionSource<>(cancellationToken);
         gfTaskWatcherExecutor.execute(() -> {
             if (cancellationToken.isCancellationRequested()) {
                 return;
             }
             for (int tryNumber = 1; tryNumber <= RETRIES_COUNT && !cancellationToken.isCancellationRequested(); tryNumber++) {
-//                Log.d(TAG, String.format("runReadCaloriesTask: awaiting #%d for %s", tryNumber, dateRange.toString()));
+                Log.d(TAG, String.format("runGFTaskUnderWatch: awaiting #%d", tryNumber));
                 try {
-                    Task<List<GFCalorieDataPoint>> originalTask = readCaloriesHistory(dateRange.first, dateRange.second)
-                        .onSuccessTask(executor, this::convertToCalories);
-                    List<GFCalorieDataPoint> result = Tasks.await(originalTask, GF_QUERY_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-//                    Log.d(TAG, String.format("runReadCaloriesTask: completed #%d for %s (size: %d)", tryNumber, dateRange.toString(),result.size()));
+                    Task<T> originalTask = taskSupplier.get();
+                    T result = Tasks.await(originalTask, GF_QUERY_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+                    Log.d(TAG, String.format("runGFTaskUnderWatch: completed #%d", tryNumber));
                     taskCompletionSource.trySetResult(result);
                     return;
                 } catch (
                     // TODO: catch unauthorized exception
                     java.util.concurrent.ExecutionException | InterruptedException | java.util.concurrent.TimeoutException exc) {
-//                    Log.d(TAG, String.format("runReadCaloriesTask: failed #%d for %s", tryNumber, dateRange.toString()));
+                    Log.d(TAG, String.format("runReadCaloriesTask: failed #%d", tryNumber));
                     continue;
                 }
             }
             if (cancellationToken.isCancellationRequested()) {
-                taskCompletionSource.trySetException(new Exception("One of the previous tasks was canceled"));
+                taskCompletionSource.trySetException(new GoogleFitActivitySourceExceptions.CommonException("One of the previous tasks was canceled"));
             } else {
-                Log.d(TAG, "runReadCaloriesTask: Too many retries");
-                // TODO: introduce new error class for the max retries exceeded case
-                taskCompletionSource.trySetException(new Exception("Too many retries for date range " + dateRange));
+//                Log.d(TAG, "runGFTaskUnderWatch: Too many retries");
+                // TODO: introduce new class for gf task parameters
+                taskCompletionSource.trySetException(new MaxRetriesExceededException("Too many retries"));
                 cancellationTokenSource.cancel();
             }
         });
@@ -126,7 +179,13 @@ public final class GFHistoryClientWrapper {
         ArrayList<GFCalorieDataPoint> calorieDataPoints = new ArrayList<>();
         for (Bucket bucket : dataReadResponse.getBuckets()) {
             Date start = new Date(bucket.getStartTime(TimeUnit.MILLISECONDS));
+            if (bucket.getDataSets().isEmpty()) {
+                continue;
+            }
             DataSet dataSet = bucket.getDataSets().get(0);
+            if (dataSet.isEmpty()) {
+                continue;
+            }
             DataPoint calorieDataPoint = dataSet.getDataPoints().get(0);
             String dataSourceId = calorieDataPoint.getOriginalDataSource().getStreamIdentifier();
             for (Field field : DataType.TYPE_CALORIES_EXPENDED.getFields()) {
@@ -140,8 +199,41 @@ public final class GFHistoryClientWrapper {
         return Tasks.forResult(calorieDataPoints);
     }
 
+    private Task<List<GFStepsDataPoint>> convertToSteps(DataReadResponse dataReadResponse) {
+        ArrayList<GFStepsDataPoint> stepsDataPoints = new ArrayList<>();
+        try {
+            for (Bucket bucket : dataReadResponse.getBuckets()) {
+                Date start = new Date(bucket.getStartTime(TimeUnit.MILLISECONDS));
+                if (bucket.getDataSets().isEmpty()) {
+                    continue;
+                }
+                DataSet dataSet = bucket.getDataSets().get(0);
+                if (dataSet.isEmpty()) {
+                    continue;
+                }
+                DataPoint stepsDataPoint = dataSet.getDataPoints().get(0);
+                String dataSourceId = stepsDataPoint.getOriginalDataSource().getStreamIdentifier();
+                for (Field field : DataType.TYPE_STEP_COUNT_DELTA.getFields()) {
+                    if (Field.FIELD_STEPS.equals(field)) {
+                        int steps = stepsDataPoint.getValue(field).asInt();
+                        GFStepsDataPoint convertedStepsDataPoint = new GFStepsDataPoint(steps, start, dataSourceId);
+                        stepsDataPoints.add(convertedStepsDataPoint);
+                    }
+                }
+            }
+        } catch (Throwable exc) {
+            exc.printStackTrace();
+        }
+        return Tasks.forResult(stepsDataPoints);
+    }
+
     private Task<DataReadResponse> readCaloriesHistory(Date start, Date end) {
         DataReadRequest readRequest = buildCaloriesDataReadRequest(start, end);
+        return client.readData(readRequest);
+    }
+
+    private Task<DataReadResponse> readStepsHistory(Date start, Date end) {
+        DataReadRequest readRequest = buildStepsDataReadReadRequest(start, end);
         return client.readData(readRequest);
     }
 
@@ -149,6 +241,20 @@ public final class GFHistoryClientWrapper {
         return new DataReadRequest.Builder()
             .aggregate(DataType.AGGREGATE_CALORIES_EXPENDED)
             .bucketByTime(1, TimeUnit.MINUTES)
+            .setTimeRange(start.getTime(), end.getTime(), TimeUnit.MILLISECONDS)
+            .build();
+    }
+
+    private DataReadRequest buildStepsDataReadReadRequest(Date start, Date end) {
+        final DataSource estimatedStepsDataSource = new DataSource.Builder()
+            .setAppPackageName("com.google.android.gms")
+            .setDataType(DataType.AGGREGATE_STEP_COUNT_DELTA)
+            .setType(DataSource.TYPE_DERIVED)
+            .setStreamName("estimated_steps")
+            .build();
+        return new DataReadRequest.Builder()
+            .aggregate(estimatedStepsDataSource)
+            .bucketByTime(15, TimeUnit.MINUTES)
             .setTimeRange(start.getTime(), end.getTime(), TimeUnit.MILLISECONDS)
             .build();
     }

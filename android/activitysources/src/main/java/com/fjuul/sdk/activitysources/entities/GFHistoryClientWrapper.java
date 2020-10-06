@@ -34,6 +34,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+// NOTE: GF can silently fail on a request if response data is too large, more details at https://stackoverflow.com/a/55806509/6685359
+// Also there may be a case when GoogleFit service can't response to the requester on the first attempts due to failed delivery.
+// Therefore the wrapper divide one big request into smaller ones and use a fixed thread pool to watch for the fired requests with a timeout and retries.
+
 public final class GFHistoryClientWrapper {
     private static final String TAG = "GFHistoryClientWrapper";
     private static final int RETRIES_COUNT = 5;

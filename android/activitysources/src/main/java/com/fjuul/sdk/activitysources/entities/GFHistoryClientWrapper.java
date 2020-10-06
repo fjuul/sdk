@@ -68,26 +68,7 @@ public final class GFHistoryClientWrapper {
             return runReadCaloriesTask(dateRange, gfTaskWatcherExecutor, cancellationTokenSource, cancellationToken);
         }).collect(Collectors.toList());
 
-        Task<List<GFCalorieDataPoint>> getCaloriesTask = Tasks.whenAll(tasks).continueWithTask(executor, commonResult -> {
-            if (commonResult.isCanceled()) {
-                return Tasks.forException(new Exception("Pooling task was canceled"));
-            } else if (commonResult.getException() != null) {
-                Optional<Task<List<GFCalorieDataPoint>>> failedTaskOpt = tasks.stream()
-                    .filter(t -> t.getException() != null)
-                    .findFirst();
-                Exception exception = failedTaskOpt.map(Task::getException).orElse(commonResult.getException());
-                Tasks.forException(exception);
-            }
-            List<GFCalorieDataPoint> flattenList = tasks.stream()
-                .flatMap(t -> t.getResult().stream())
-                .collect(Collectors.toList());
-            return Tasks.forResult(flattenList);
-        })
-            .addOnCompleteListener(executor, (task) -> {
-//            Log.d(TAG, "getCalories: shutdown!");
-            // TODO: check if it was really shutdown after a while
-            gfTaskWatcherExecutor.shutdownNow();
-        });
+        Task<List<GFCalorieDataPoint>> getCaloriesTask = concludeWatchedTasksResults(tasks, gfTaskWatcherExecutor);
         return getCaloriesTask;
     }
 
@@ -102,30 +83,7 @@ public final class GFHistoryClientWrapper {
             return runReadStepsTask(dateRange, gfTaskWatcherExecutor, cancellationTokenSource, cancellationToken);
         }).collect(Collectors.toList());
 
-        Task<List<GFStepsDataPoint>> getStepsTask = Tasks.whenAll(tasks).continueWithTask(executor, commonResult -> {
-            if (commonResult.isCanceled()) {
-                return Tasks.forException(new Exception("Pooling task was canceled"));
-            } else if (commonResult.getException() != null) {
-                Optional<Task<List<GFStepsDataPoint>>> failedTaskOpt = tasks.stream()
-                    .filter(t -> t.getException() != null)
-                    .findFirst();
-                tasks.stream().filter(t -> t.getException() != null).forEach((t) -> {
-                    Log.d(TAG, "getSteps: EXCEPTION " + t.getException());
-                });
-                Exception exception = failedTaskOpt.map(Task::getException).orElse(commonResult.getException());
-                Log.d(TAG, "getSteps: EXCEPTION: " + exception);
-                return Tasks.forException(exception);
-            }
-            List<GFStepsDataPoint> flattenList = tasks.stream()
-                .flatMap(t -> t.getResult().stream())
-                .collect(Collectors.toList());
-            return Tasks.forResult(flattenList);
-        })
-            .addOnCompleteListener(executor, (task) -> {
-//            Log.d(TAG, "getCalories: shutdown!");
-                // TODO: check if it was really shutdown after a while
-                gfTaskWatcherExecutor.shutdownNow();
-            });
+        Task<List<GFStepsDataPoint>> getStepsTask = concludeWatchedTasksResults(tasks, gfTaskWatcherExecutor);
         return getStepsTask;
     }
 
@@ -140,30 +98,7 @@ public final class GFHistoryClientWrapper {
             return runReadHRTask(dateRange, gfTaskWatcherExecutor, cancellationTokenSource, cancellationToken);
         }).collect(Collectors.toList());
 
-        Task<List<GFHRDataPoint>> getHRTask = Tasks.whenAll(tasks).continueWithTask(executor, commonResult -> {
-            if (commonResult.isCanceled()) {
-                return Tasks.forException(new Exception("Pooling task was canceled"));
-            } else if (commonResult.getException() != null) {
-                Optional<Task<List<GFHRDataPoint>>> failedTaskOpt = tasks.stream()
-                    .filter(t -> t.getException() != null)
-                    .findFirst();
-                tasks.stream().filter(t -> t.getException() != null).forEach((t) -> {
-                    Log.d(TAG, "getSteps: EXCEPTION " + t.getException());
-                });
-                Exception exception = failedTaskOpt.map(Task::getException).orElse(commonResult.getException());
-                Log.d(TAG, "getSteps: EXCEPTION: " + exception);
-                return Tasks.forException(exception);
-            }
-            List<GFHRDataPoint> flattenList = tasks.stream()
-                .flatMap(t -> t.getResult().stream())
-                .collect(Collectors.toList());
-            return Tasks.forResult(flattenList);
-        })
-            .addOnCompleteListener(executor, (task) -> {
-//            Log.d(TAG, "getCalories: shutdown!");
-                // TODO: check if it was really shutdown after a while
-                gfTaskWatcherExecutor.shutdownNow();
-            });
+        Task<List<GFHRDataPoint>> getHRTask = concludeWatchedTasksResults(tasks, gfTaskWatcherExecutor);
         return getHRTask;
     }
 
@@ -222,6 +157,31 @@ public final class GFHistoryClientWrapper {
             }
         });
         return taskCompletionSource.getTask();
+    }
+
+    @SuppressLint("NewApi")
+    private <V, T extends List<V>> Task<T> concludeWatchedTasksResults(List<Task<T>> tasks, ExecutorService gfTaskWatcherExecutor) {
+        Task<T> collectResultsTask = Tasks.whenAll(tasks).continueWithTask(executor, commonResult -> {
+            if (commonResult.isCanceled()) {
+                return Tasks.forException(new Exception("Pooling task was canceled"));
+            } else if (commonResult.getException() != null) {
+                Optional<Task<T>> failedTaskOpt = tasks.stream()
+                    .filter(t -> t.getException() != null && t.getException() instanceof GoogleFitActivitySourceExceptions.CommonException)
+                    .findFirst();
+                Exception exception = failedTaskOpt.map(Task::getException).orElse(commonResult.getException());
+                return Tasks.forException(exception);
+            }
+            T flattenResults = (T) tasks.stream()
+                .flatMap(t -> t.getResult().stream())
+                .collect(Collectors.toList());
+            return Tasks.forResult(flattenResults);
+        });
+        Task<T> taskWithShutdown = collectResultsTask.addOnCompleteListener(executor, (task) -> {
+            // Log.d(TAG, "concludeWatchedTasksResults: shutdown!");
+            // TODO: check if it was really shutdown after a while
+            gfTaskWatcherExecutor.shutdownNow();
+        });
+        return taskWithShutdown;
     }
 
     private Task<List<GFCalorieDataPoint>> convertToCalories(DataReadResponse dataReadResponse) {

@@ -5,7 +5,6 @@ import android.content.Intent;
 
 import androidx.annotation.NonNull;
 
-import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions;
 import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.entities.PersistentStorage;
@@ -14,6 +13,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.HistoryClient;
+import com.google.android.gms.fitness.SessionsClient;
 import com.google.android.gms.tasks.Task;
 
 import java.util.HashMap;
@@ -69,9 +69,10 @@ public final class ActivitySourcesManager {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         // NOTE: we set offlineAccess to false here because GoogleFitDataManager works only with local fitness data
         if (GoogleFitActivitySource.arePermissionsGranted(account, false)) {
-            HistoryClient client = Fitness.getHistoryClient(context, account);
+            HistoryClient historyClient = Fitness.getHistoryClient(context, account);
+            SessionsClient sessionsClient = Fitness.getSessionsClient(context, account);
             GFDataUtils gfUtils = new GFDataUtils();
-            GFHistoryClientWrapper clientWrapper = new GFHistoryClientWrapper(client, gfUtils);
+            GFClientWrapper clientWrapper = new GFClientWrapper(historyClient, sessionsClient, gfUtils);
             String userToken = sourcesService.getUserToken();
             GFSyncMetadataStore gfSyncMetadataStore = new GFSyncMetadataStore(new PersistentStorage(context), userToken);
             return new GoogleFitDataManager(clientWrapper, gfUtils, gfSyncMetadataStore);

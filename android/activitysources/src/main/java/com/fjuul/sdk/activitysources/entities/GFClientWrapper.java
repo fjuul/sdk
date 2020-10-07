@@ -8,15 +8,20 @@ import androidx.core.util.Supplier;
 
 import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions;
 import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.MaxRetriesExceededException;
+import com.google.android.gms.fitness.FitnessActivities;
 import com.google.android.gms.fitness.HistoryClient;
+import com.google.android.gms.fitness.SessionsClient;
 import com.google.android.gms.fitness.data.Bucket;
 import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
+import com.google.android.gms.fitness.data.Session;
 import com.google.android.gms.fitness.request.DataReadRequest;
+import com.google.android.gms.fitness.request.SessionReadRequest;
 import com.google.android.gms.fitness.result.DataReadResponse;
+import com.google.android.gms.fitness.result.SessionReadResponse;
 import com.google.android.gms.tasks.CancellationToken;
 import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.gms.tasks.Task;
@@ -34,22 +39,29 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+// NOTE: a package below it's not supposed to be used as public api but I didn't find another way to
+// get integer based constant of ActivityType by the string presentation which is returned by default
+// along with a session.
+import com.google.android.gms.internal.fitness.zzjr;
+
 // NOTE: GF can silently fail on a request if response data is too large, more details at https://stackoverflow.com/a/55806509/6685359
 // Also there may be a case when GoogleFit service can't response to the requester on the first attempts due to failed delivery.
 // Therefore the wrapper divide one big request into smaller ones and use a fixed thread pool to watch for the fired requests with a timeout and retries.
 
-public final class GFHistoryClientWrapper {
-    private static final String TAG = "GFHistoryClientWrapper";
+public final class GFClientWrapper {
+    private static final String TAG = "GFClientWrapper";
     private static final int RETRIES_COUNT = 5;
     private static final int GF_TASK_WATCHER_THREAD_POOL_SIZE = 5;
     private static final long GF_QUERY_TIMEOUT_SECONDS = 60l;
 
-    private HistoryClient client;
+    private HistoryClient historyClient;
+    private SessionsClient sessionsClient;
     private GFDataUtils gfUtils;
     private Executor executor;
 
-    public GFHistoryClientWrapper(HistoryClient client, GFDataUtils gfUtils) {
-        this.client = client;
+    public GFClientWrapper(HistoryClient historyClient, SessionsClient sessionsClient, GFDataUtils gfUtils) {
+        this.historyClient = historyClient;
+        this.sessionsClient = sessionsClient;
         this.gfUtils = gfUtils;
         // TODO: choose the best executor for this wrapper needs (gf data converting)
         executor = Executors.newCachedThreadPool();
@@ -102,10 +114,85 @@ public final class GFHistoryClientWrapper {
         return getHRTask;
     }
 
+    @SuppressLint("NewApi")
+    public Task<Void> getSessions(Date start, Date end) {
+        ExecutorService gfTaskWatcherExecutor = createGfTaskWatcherExecutor();
+        List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+        CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        CancellationToken cancellationToken = cancellationTokenSource.getToken();
+
+//        List<Task<List<GFHRDataPoint>>> tasks = dateChunks.stream().map(dateRange -> {
+//            return runReadHRTask(dateRange, gfTaskWatcherExecutor, cancellationTokenSource, cancellationToken);
+//        }).collect(Collectors.toList());
+
+
+        Task<SessionReadResponse> readSessionTask = sessionsClient.readSession(buildSessionsDataReadRequest(start, end));
+        readSessionTask.continueWith(gfTaskWatcherExecutor, (task) -> {
+            Log.d(TAG, "getSessions: session task success = " + task.isSuccessful());
+            if (!task.isSuccessful()) {
+                Log.d(TAG, "getSessions: session task exception = " + task.getException());
+            }
+            SessionReadResponse response = task.getResult();
+            Log.d(TAG, "getSessions: sessions count: " + response.getSessions().size());
+            List<Session> sessions = response.getSessions();
+            for (Session session : sessions) {
+                Date startSession = new Date(session.getStartTime(TimeUnit.MILLISECONDS));
+                Date endSession = new Date(session.getEndTime(TimeUnit.MILLISECONDS));
+//                session.
+//                FitnessActivities.getMimeType()
+//                session.e
+//                session.getActivity()
+                Log.d(TAG, "getSessions: " + String.format("id: %s, start: %s, end: %s, activity: %s, name: %s,",
+                    session.getIdentifier(),
+                    startSession,
+                    endSession,
+                    session.getActivity(),
+                    session.getName()
+                    ));
+
+                Log.d(TAG, "getSessions: ACTIVITY_TYPE: " + zzjr.zzo(session.getActivity()));
+
+//                try {
+//                    DataReadRequest sessionCaloriedReadRequest = new DataReadRequest.Builder()
+//                        .aggregate(DataType.AGGREGATE_CALORIES_EXPENDED)
+//                        .bucketByTime(1, TimeUnit.MINUTES)
+//                        .setTimeRange(session.getStartTime(TimeUnit.MILLISECONDS), session.getEndTime(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS)
+//                        .build();
+//                    historyClient.readData(sessionCaloriedReadRequest);
+//                } catch (Throwable t) {
+//                    t.printStackTrace();
+//                }
+
+                List<DataSet> dataSets = response.getDataSet(session);
+                for (DataSet dataSet : dataSets) {
+                    if (dataSet.isEmpty()) {
+                        continue;
+                    }
+                    if (dataSet.getDataType().equals(DataType.TYPE_CALORIES_EXPENDED)) {
+                        for (DataPoint dataPoint : dataSet.getDataPoints()) {
+                            GFCalorieDataPoint caloroie = convertDataPointToCalorie(dataPoint);
+                            Log.d(TAG, "getSessions: CALORIE " + caloroie);
+                        }
+                    }
+                    if (dataSet.getDataType().equals(DataType.TYPE_HEART_RATE_BPM)) {
+                        for (DataPoint dataPoint : dataSet.getDataPoints()) {
+                            GFHRDataPoint hr = convertDataPointToHR(dataPoint);
+                            Log.d(TAG, "getSessions: HR" + hr);
+                        }
+                    }
+//                    if (dataSet.getDataType().equals(DataType.TYPE_ACTIVITY_SEGMENT));
+                }
+
+            }
+            return null;
+        });
+        return null;
+    }
+
     private Task<List<GFCalorieDataPoint>> runReadCaloriesTask(Pair<Date, Date> dateRange, ExecutorService gfTaskWatcherExecutor, CancellationTokenSource cancellationTokenSource, CancellationToken cancellationToken) {
         Supplier<Task<List<GFCalorieDataPoint>>> taskSupplier = () -> {
             return readCaloriesHistory(dateRange.first, dateRange.second)
-                .onSuccessTask(executor, this::convertToCalories);
+                .onSuccessTask(executor, this::convertDataReadResponseToCalories);
         };
         return runGFTaskUnderWatch(taskSupplier, gfTaskWatcherExecutor, cancellationTokenSource, cancellationToken);
     }
@@ -125,6 +212,10 @@ public final class GFHistoryClientWrapper {
         };
         return runGFTaskUnderWatch(taskSupplier, gfTaskWatcherExecutor, cancellationTokenSource, cancellationToken);
     }
+
+//    private Task<List<Object>> runReadSessions(Pair<Date, Date> dateRange, ExecutorService gfTaskWatcherExecutor, CancellationTokenSource cancellationTokenSource, CancellationToken cancellationToken) {
+//
+//    }
 
     private <T> Task<T> runGFTaskUnderWatch(Supplier<Task<T>> taskSupplier, ExecutorService gfTaskWatcherExecutor, CancellationTokenSource cancellationTokenSource, CancellationToken cancellationToken) {
         TaskCompletionSource<T> taskCompletionSource = new TaskCompletionSource<>(cancellationToken);
@@ -184,7 +275,7 @@ public final class GFHistoryClientWrapper {
         return taskWithShutdown;
     }
 
-    private Task<List<GFCalorieDataPoint>> convertToCalories(DataReadResponse dataReadResponse) {
+    private Task<List<GFCalorieDataPoint>> convertDataReadResponseToCalories(DataReadResponse dataReadResponse) {
         ArrayList<GFCalorieDataPoint> calorieDataPoints = new ArrayList<>();
         for (Bucket bucket : dataReadResponse.getBuckets()) {
             Date start = new Date(bucket.getStartTime(TimeUnit.MILLISECONDS));
@@ -206,6 +297,19 @@ public final class GFHistoryClientWrapper {
             }
         }
         return Tasks.forResult(calorieDataPoints);
+    }
+
+    private GFCalorieDataPoint convertDataPointToCalorie(DataPoint dataPoint) {
+        String dataSourceId = dataPoint.getOriginalDataSource().getStreamIdentifier();
+        Date start = new Date(dataPoint.getStartTime(TimeUnit.MILLISECONDS));
+        for (Field field : DataType.TYPE_CALORIES_EXPENDED.getFields()) {
+            if (Field.FIELD_CALORIES.equals(field)) {
+                float kcals = dataPoint.getValue(field).asFloat();
+                GFCalorieDataPoint calorie = new GFCalorieDataPoint(kcals, start, dataSourceId);
+                return calorie;
+            }
+        }
+        return null;
     }
 
     private Task<List<GFStepsDataPoint>> convertToSteps(DataReadResponse dataReadResponse) {
@@ -256,20 +360,38 @@ public final class GFHistoryClientWrapper {
         return Tasks.forResult(hrDataPoints);
     }
 
+    private GFHRDataPoint convertDataPointToHR(DataPoint dataPoint) {
+        String dataSourceId = dataPoint.getOriginalDataSource().getStreamIdentifier();
+        Date start = new Date(dataPoint.getStartTime(TimeUnit.MILLISECONDS));
+        for (Field field : DataType.TYPE_HEART_RATE_BPM.getFields()) {
+            if (Field.FIELD_BPM.equals(field)) {
+                float bpm = dataPoint.getValue(field).asFloat();
+                GFHRDataPoint hrDataPoint = new GFHRDataPoint(bpm, start, dataSourceId);
+                return hrDataPoint;
+            }
+        }
+        return null;
+    }
+
     private Task<DataReadResponse> readCaloriesHistory(Date start, Date end) {
         DataReadRequest readRequest = buildCaloriesDataReadRequest(start, end);
-        return client.readData(readRequest);
+        return historyClient.readData(readRequest);
     }
 
     private Task<DataReadResponse> readStepsHistory(Date start, Date end) {
         DataReadRequest readRequest = buildStepsDataReadRequest(start, end);
-        return client.readData(readRequest);
+        return historyClient.readData(readRequest);
     }
 
     private Task<DataReadResponse> readHRHistory(Date start, Date end) {
         DataReadRequest readRequest = buildHRDataReadRequest(start, end);
-        return client.readData(readRequest);
+        return historyClient.readData(readRequest);
 
+    }
+
+    private Task<SessionReadResponse> readSessions(Date start, Date end) {
+        SessionReadRequest readRequest = buildSessionsDataReadRequest(start, end);
+        return sessionsClient.readSession(readRequest);
     }
 
     private DataReadRequest buildCaloriesDataReadRequest(Date start, Date end) {
@@ -299,6 +421,16 @@ public final class GFHistoryClientWrapper {
             .aggregate(DataType.TYPE_HEART_RATE_BPM)
             .bucketByTime(1, TimeUnit.MINUTES)
             .setTimeRange(start.getTime(), end.getTime(), TimeUnit.MILLISECONDS)
+            .build();
+    }
+
+    private SessionReadRequest buildSessionsDataReadRequest(Date start, Date end) {
+        return new SessionReadRequest.Builder()
+            .setTimeInterval(start.getTime(), end.getTime(), TimeUnit.MILLISECONDS)
+            .readSessionsFromAllApps()
+            .read(DataType.TYPE_HEART_RATE_BPM)
+            .read(DataType.TYPE_STEP_COUNT_DELTA)
+            .read(DataType.TYPE_SPEED)
             .build();
     }
 

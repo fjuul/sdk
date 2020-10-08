@@ -3,6 +3,8 @@ name: Test iOS
 on:
   pull_request:
     paths:
+      - Package.swift
+      - Package.resolved
       - ios/**
       - .github/workflows/**
 
@@ -25,5 +27,5 @@ jobs:
           -workspace ios/SDK.xcworkspace \
           -scheme ExampleApp \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=13.6' \
+          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=13.7' \
           test | xcpretty

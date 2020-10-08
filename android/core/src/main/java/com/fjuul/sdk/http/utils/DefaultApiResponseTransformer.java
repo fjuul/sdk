@@ -37,10 +37,12 @@ public class DefaultApiResponseTransformer<T> implements IApiResponseTransformer
                 code = null;
             }
             error = new ApiErrors.UnauthorizedError(errorMessage, code);
+        } else if (response.code() == HttpURLConnection.HTTP_BAD_REQUEST) {
+            error = new ApiErrors.BadRequestError(errorMessage);
         } else {
             error = new ApiErrors.CommonError(errorMessage);
         }
-        // TODO: add additional checks (bad_request, forbidden)
+        // TODO: add additional checks (forbidden)
         return ApiCallResult.error(error);
     }
 }

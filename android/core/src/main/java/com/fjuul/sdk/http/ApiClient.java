@@ -124,6 +124,12 @@ public class ApiClient {
         return client;
     }
 
+    public @NonNull OkHttpClient buildClient() {
+        OkHttpClient client =
+            new OkHttpClient().newBuilder().addInterceptor(new ApiKeyAttachingInterceptor(apiKey)).build();
+        return client;
+    }
+
     // TODO: consider moving this code to the builder class (share the same instance of the interceptor/authenticator)
     protected @NonNull SigningAuthInterceptor getOrCreateSigningAuthInterceptor(
         @NonNull ISigningService signingService) {

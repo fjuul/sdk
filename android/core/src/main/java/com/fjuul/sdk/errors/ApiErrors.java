@@ -25,16 +25,24 @@ public final class ApiErrors {
      * exception occurred creating the request or processing the response.
      */
     public static class InternalClientError extends CommonError {
+        private @Nullable Exception originalException;
+
         public InternalClientError(@NonNull IOException exception) {
             super(exception.getMessage(), exception.getCause());
+            originalException = exception;
         }
 
         public InternalClientError(@NonNull RuntimeException exception) {
             super(exception.getMessage(), exception.getCause());
+            originalException = exception;
         }
 
         public InternalClientError(@NonNull Throwable throwable) {
             super(throwable);
+        }
+
+        public @Nullable Exception getOriginalException() {
+            return originalException;
         }
     }
 
@@ -57,6 +65,12 @@ public final class ApiErrors {
         public UnauthorizedError(@NonNull String message, @Nullable ErrorCode errorCode) {
             super(message);
             this.errorCode = errorCode;
+        }
+    }
+
+    public static class BadRequestError extends CommonError {
+        public BadRequestError(@NonNull String message) {
+            super(message);
         }
     }
 }

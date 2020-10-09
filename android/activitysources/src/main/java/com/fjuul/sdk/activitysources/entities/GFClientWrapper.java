@@ -1,14 +1,10 @@
 package com.fjuul.sdk.activitysources.entities;
 
 import android.annotation.SuppressLint;
-import android.os.Build;
-import android.util.Log;
 
-import androidx.annotation.RequiresApi;
 import androidx.core.util.Pair;
 import androidx.core.util.Supplier;
 
-import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions;
 import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.MaxRetriesExceededException;
 import com.google.android.gms.fitness.HistoryClient;
@@ -26,12 +22,14 @@ import com.google.android.gms.fitness.result.DataReadResponse;
 import com.google.android.gms.fitness.result.SessionReadResponse;
 import com.google.android.gms.tasks.CancellationToken;
 import com.google.android.gms.tasks.CancellationTokenSource;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -83,8 +81,9 @@ public final class GFClientWrapper {
             return runReadCaloriesTask(dateRange, gfTaskWatcher);
         }).collect(Collectors.toList());
 
-        Task<List<GFCalorieDataPoint>> getCaloriesTask = concludeWatchedTasksResults(tasks, gfTaskWatcherExecutor);
-        return getCaloriesTask;
+        Task<List<GFCalorieDataPoint>> getCaloriesTask = flatMapTasksResults(tasks);
+        return shutdownExecutorsOnComplete(getCaloriesTask, gfTaskWatcherExecutor);
+        // TODO: check if it was really shutdown after a while
     }
 
     @SuppressLint("NewApi")
@@ -98,8 +97,8 @@ public final class GFClientWrapper {
             return runReadStepsTask(dateRange, gfTaskWatcher);
         }).collect(Collectors.toList());
 
-        Task<List<GFStepsDataPoint>> getStepsTask = concludeWatchedTasksResults(tasks, gfTaskWatcherExecutor);
-        return getStepsTask;
+        Task<List<GFStepsDataPoint>> getStepsTask = flatMapTasksResults(tasks);
+        return shutdownExecutorsOnComplete(getStepsTask, gfTaskWatcherExecutor);
     }
 
     @SuppressLint("NewApi")
@@ -113,8 +112,8 @@ public final class GFClientWrapper {
             return runReadHRTask(dateRange, Duration.ofMinutes(1), gfTaskWatcherDetails);
         }).collect(Collectors.toList());
 
-        Task<List<GFHRDataPoint>> getHRTask = concludeWatchedTasksResults(tasks, gfTaskWatcherExecutor);
-        return getHRTask;
+        Task<List<GFHRDataPoint>> getHRTask = flatMapTasksResults(tasks);
+        return shutdownExecutorsOnComplete(getHRTask, gfTaskWatcherExecutor);
     }
 
     @SuppressLint("NewApi")
@@ -131,11 +130,9 @@ public final class GFClientWrapper {
             return runReadSessions(dateRange, minSessionDuration, gfReadSessionsWatcher, gfReadSessionSamplesWatcher);
         }).collect(Collectors.toList());
 
-        Task<List<GFSessionBundle>> getSessionsTask = concludeWatchedTasksResults(tasks, gfTaskWatcherExecutor).addOnCompleteListener(executor, (t) -> {
-            // TODO: check if sub-task watcher was shutdown
-            gfSubTaskWatcherExecutor.shutdownNow();
-        });
-        return getSessionsTask;
+        Task<List<GFSessionBundle>> getSessionsTask = flatMapTasksResults(tasks);
+        return shutdownExecutorsOnComplete(getSessionsTask, gfTaskWatcherExecutor, gfSubTaskWatcherExecutor);
+        // TODO: check if sub-task watcher was shutdown
     }
 
     private Task<List<GFCalorieDataPoint>> runReadCaloriesTask(Pair<Date, Date> dateRange, SupervisedExecutor gfTaskWatcher) {
@@ -206,7 +203,7 @@ public final class GFClientWrapper {
     }
 
     @SuppressLint("NewApi")
-    private <V, T extends List<V>> Task<T> concludeWatchedTasksResults(List<Task<T>> tasks, ExecutorService gfTaskWatcherExecutor) {
+    private <V, T extends List<V>> Task<T> flatMapTasksResults(List<Task<T>> tasks) {
         Task<T> collectResultsTask = Tasks.whenAll(tasks).continueWithTask(executor, commonResult -> {
             if (commonResult.isCanceled() || !commonResult.isSuccessful()) {
                 CommonException fallbackException = new CommonException("Pooling task was canceled");
@@ -218,12 +215,7 @@ public final class GFClientWrapper {
                 .collect(Collectors.toList());
             return Tasks.forResult(flattenResults);
         });
-        Task<T> taskWithShutdown = collectResultsTask.addOnCompleteListener(executor, (task) -> {
-            // Log.d(TAG, "concludeWatchedTasksResults: shutdown!");
-            // TODO: check if it was really shutdown after a while
-            gfTaskWatcherExecutor.shutdownNow();
-        });
-        return taskWithShutdown;
+        return collectResultsTask;
     }
 
     private Task<List<GFCalorieDataPoint>> convertDataReadResponseToCalories(DataReadResponse dataReadResponse) {
@@ -522,6 +514,13 @@ public final class GFClientWrapper {
 
     private ExecutorService createGfTaskWatcherExecutor() {
         return Executors.newFixedThreadPool(GF_TASK_WATCHER_THREAD_POOL_SIZE);
+    }
+
+    @SuppressLint("NewApi")
+    private <T> Task<T> shutdownExecutorsOnComplete(Task<T> task, ExecutorService... executors) {
+        return task.addOnCompleteListener(executor, (t) -> {
+            Arrays.stream(executors).forEach(executor -> executor.shutdownNow());
+        });
     }
 
     @SuppressLint("NewApi")

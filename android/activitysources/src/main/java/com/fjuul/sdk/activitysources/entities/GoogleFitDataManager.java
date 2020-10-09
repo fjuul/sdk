@@ -5,17 +5,7 @@ import android.util.Log;
 import androidx.core.util.Pair;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoField;
-import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,11 +14,11 @@ import java.util.stream.Stream;
 public final class GoogleFitDataManager {
     private static final String TAG = "GoogleFitDataManager";
 
-    private GFHistoryClientWrapper client;
+    private GFClientWrapper client;
     private GFDataUtils gfUtils;
     private GFSyncMetadataStore gfSyncMetadataStore;
 
-    public GoogleFitDataManager(GFHistoryClientWrapper client, GFDataUtils gfUtils, GFSyncMetadataStore gfSyncMetadataStore) {
+    public GoogleFitDataManager(GFClientWrapper client, GFDataUtils gfUtils, GFSyncMetadataStore gfSyncMetadataStore) {
         this.client = client;
         this.gfUtils = gfUtils;
         this.gfSyncMetadataStore = gfSyncMetadataStore;
@@ -39,10 +29,17 @@ public final class GoogleFitDataManager {
         // TODO: throw if end is future!
         Pair<Date, Date> gfQueryDates = gfUtils.adjustInputDatesForGFRequest(start, end);
         client.getCalories(gfQueryDates.first, gfQueryDates.second).continueWith((getCaloriesTask) -> {
+            Log.d(TAG, "syncCalories: DONE = " + getCaloriesTask.isSuccessful());
             if (!getCaloriesTask.isSuccessful()) {
                 // TODO: invoke callback with exception
-                throw new Error("Couldn't get calories from GoogleFit Api: " + getCaloriesTask.getException().getMessage());
+//                throw new Error("Couldn't get calories from GoogleFit Api: " + getCaloriesTask.getException().getMessage());
+                Log.d(TAG, "Couldn't get calories from GoogleFit Api: " + getCaloriesTask.getException().getMessage());
+                return null;
             }
+            for (GFCalorieDataPoint calorie : getCaloriesTask.getResult()) {
+                Log.d(TAG, "Calorie " + calorie);
+            }
+//            Log.d(TAG, "syncCalories: DONE");
             List<GFCalorieDataPoint> calories = getCaloriesTask.getResult();
             Pair<Date, Date> batchingDates = gfUtils.adjustInputDatesForBatches(start, end);
             List<GFDataPointsBatch<GFCalorieDataPoint>> batches = this.gfUtils.groupPointsIntoBatchesByDuration(batchingDates.first, batchingDates.second, calories, Duration.ofMinutes(30));
@@ -59,6 +56,63 @@ public final class GoogleFitDataManager {
                 this.gfSyncMetadataStore.saveSyncMetadataOfCalories(batch);
             });
             // TODO: pass metadata to the callback ???
+            return null;
+        });
+    }
+
+    public void syncSteps(LocalDate start, LocalDate end) {
+        Pair<Date, Date> gfQueryDates = gfUtils.adjustInputDatesForGFRequest(start, end);
+        // TODO: adjust input dates for steps!
+        client.getSteps(gfQueryDates.first, gfQueryDates.second).continueWith((getStepsTask) -> {
+            Log.d(TAG, "syncSteps: DONE = " + getStepsTask.isSuccessful());
+            if (!getStepsTask.isSuccessful()) {
+                // TODO: invoke callback with exception
+//                throw new Error("Couldn't get calories from GoogleFit Api: " + getCaloriesTask.getException().getMessage());
+                Log.d(TAG, "Couldn't get steps from GoogleFit Api: " + getStepsTask.getException().getMessage());
+                return null;
+            }
+            for (GFStepsDataPoint calorie : getStepsTask.getResult()) {
+                Log.d(TAG, "Step " + calorie);
+            }
+           return null;
+        });
+    }
+
+    public void syncHR(LocalDate start, LocalDate end) {
+        Pair<Date, Date> gfQueryDates = gfUtils.adjustInputDatesForGFRequest(start, end);
+        client.getHRs(gfQueryDates.first, gfQueryDates.second).continueWith((getHRTask) -> {
+            Log.d(TAG, "syncHR: DONE = " + getHRTask.isSuccessful());
+            if (!getHRTask.isSuccessful()) {
+                // TODO: invoke callback with exception
+//                throw new Error("Couldn't get calories from GoogleFit Api: " + getCaloriesTask.getException().getMessage());
+                Log.d(TAG, "Couldn't get HRs from GoogleFit Api: " + getHRTask.getException().getMessage());
+                return null;
+            }
+            Log.d(TAG, "syncHR: TOTAL SIZE: " + getHRTask.getResult().size());
+            return null;
+        });
+    }
+
+    public void syncSessions(LocalDate start, LocalDate end, Duration minimumSessionDuration) {
+        Pair<Date, Date> gfQueryDates = gfUtils.adjustInputDatesForGFRequest(start, end);
+        client.getSessions(gfQueryDates.first, gfQueryDates.second, minimumSessionDuration).continueWith(task -> {
+            Log.d(TAG, "syncSessions: DONE = " + task.isSuccessful());
+            if (!task.isSuccessful()) {
+                // TODO: invoke callback with exception
+//                throw new Error("Couldn't get calories from GoogleFit Api: " + getCaloriesTask.getException().getMessage());
+                Log.d(TAG, "Couldn't get Sessions from GoogleFit Api: " + task.getException().getMessage());
+                return null;
+            }
+            Log.d(TAG, "syncSessions: TOTAL SIZE: " + task.getResult().size());
+            for (GFSessionBundle s : task.getResult()) {
+                Log.d(TAG, "syncSessions: SESSION " + s);
+                for (GFPowerDataPoint power : s.getPower()) {
+                    Log.d(TAG, "syncSessions: power " + power);
+                }
+                for (GFSpeedDataPoint speed : s.getSpeed()) {
+                    Log.d(TAG, "syncSessions: speed " + speed);
+                }
+            }
             return null;
         });
     }

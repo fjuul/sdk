@@ -1,5 +1,6 @@
 package com.fjuul.sdk.android.exampleapp.ui.activity_sources
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
@@ -20,6 +21,8 @@ import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService
 import com.fjuul.sdk.android.exampleapp.R
 import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
+import java.time.Duration
+import java.time.LocalDate
 import java.util.Calendar
 import java.util.Date
 
@@ -79,6 +82,8 @@ class ActivitySourcesFragment : Fragment() {
         val granted = googleFitActivitySource.arePermissionsGranted(requireContext())
         println("GRANTED $granted")
 
+        requestPermissions(listOf<String>(Manifest.permission.ACTIVITY_RECOGNITION).toTypedArray(), 2001)
+
         activitySourcesManager = ActivitySourcesManager(ActivitySourcesService(ApiClientHolder.sdkClient))
         val gfManager = activitySourcesManager.createGoogleFitDataManager(requireContext())
         val startTimeCalendar = Calendar.getInstance()
@@ -91,9 +96,21 @@ class ActivitySourcesFragment : Fragment() {
         endTimeCalendar.set(Calendar.MINUTE, 0)
         endTimeCalendar.set(Calendar.SECOND, 0)
         endTimeCalendar.set(Calendar.MILLISECOND, 0)
-        println("DATES ${startTimeCalendar.time} and ${endTimeCalendar.time}")
+        // println("DATES ${startTimeCalendar.time} and ${endTimeCalendar.time}")
         // gfManager.getCalories(startTimeCalendar.time, endTimeCalendar.time)
-        gfManager.syncCalories(startTimeCalendar.time, endTimeCalendar.time)
+        // gfManager.syncCalories(LocalDate.now().minusDays(5), LocalDate.now().minusDays(5))
+        // gfManager.syncCalories(LocalDate.now().minusDays(4), LocalDate.now().minusDays(4))
+        // gfManager.syncCalories(LocalDate.now().minusDays(3), LocalDate.now().minusDays(3))
+        // gfManager.syncCalories(LocalDate.now().minusDays(2), LocalDate.now().minusDays(2))
+        // gfManager.syncCalories(LocalDate.now().minusDays(1), LocalDate.now().minusDays(1))
+        // gfManager.syncCalories(LocalDate.now().minusDays(30), LocalDate.now())
+
+
+        // gfManager.syncSteps(LocalDate.now().minusDays(80), LocalDate.now());
+
+        // gfManager.syncHR(LocalDate.now().minusDays(30), LocalDate.now());
+
+        gfManager.syncSessions(LocalDate.now().minusDays(10), LocalDate.now(), Duration.ofMinutes(5));
 
         model.errorMessage.observe(
             viewLifecycleOwner,

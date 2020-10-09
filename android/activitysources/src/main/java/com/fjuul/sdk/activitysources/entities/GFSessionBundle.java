@@ -12,7 +12,7 @@ public class GFSessionBundle {
 
     private Date timeEnd;
 
-    // string presentation
+    // string presentation of activity
     private transient String activityType;
 
     private int type;
@@ -22,6 +22,10 @@ public class GFSessionBundle {
     private List<GFStepsDataPoint> steps;
 
     private List<GFHRDataPoint> heartRate;
+
+    private List<GFPowerDataPoint> power;
+
+    private List<GFSpeedDataPoint> speed;
 
     public String getId() {
         return id;
@@ -59,9 +63,17 @@ public class GFSessionBundle {
         return heartRate;
     }
 
+    public List<GFPowerDataPoint> getPower() {
+        return power;
+    }
+
+    public List<GFSpeedDataPoint> getSpeed() {
+        return speed;
+    }
+
     private GFSessionBundle(String id, String name, Date timeStart, Date timeEnd, String activityType,
                            int type, List<GFCalorieDataPoint> calories, List<GFStepsDataPoint> steps,
-                           List<GFHRDataPoint> heartRate) {
+                           List<GFHRDataPoint> heartRate, List<GFPowerDataPoint> power, List<GFSpeedDataPoint> speed) {
         this.id = id;
         this.name = name;
         this.timeStart = timeStart;
@@ -71,6 +83,8 @@ public class GFSessionBundle {
         this.calories = calories;
         this.steps = steps;
         this.heartRate = heartRate;
+        this.power = power;
+        this.speed = speed;
     }
 
     @Override
@@ -85,6 +99,8 @@ public class GFSessionBundle {
             ", calories=" + calories +
             ", steps=" + steps +
             ", heartRate=" + heartRate +
+            ", power=" + power +
+            ", speed=" + speed +
             '}';
     }
 
@@ -106,6 +122,10 @@ public class GFSessionBundle {
         private List<GFStepsDataPoint> steps;
 
         private List<GFHRDataPoint> heartRate;
+
+        private List<GFPowerDataPoint> power;
+
+        private List<GFSpeedDataPoint> speed;
 
         public Builder setId(String id) {
             this.id = id;
@@ -152,9 +172,19 @@ public class GFSessionBundle {
             return this;
         }
 
+        public Builder setPower(List<GFPowerDataPoint> power) {
+            this.power = power;
+            return this;
+        }
+
+        public Builder setSpeed(List<GFSpeedDataPoint> speed) {
+            this.speed = speed;
+            return this;
+        }
+
         public GFSessionBundle build() {
             // TODO: validate fields
-            return new GFSessionBundle(id, name, timeStart, timeEnd, activityType, type, calories, steps, heartRate);
+            return new GFSessionBundle(id, name, timeStart, timeEnd, activityType, type, calories, steps, heartRate, power, speed);
         }
     }
 

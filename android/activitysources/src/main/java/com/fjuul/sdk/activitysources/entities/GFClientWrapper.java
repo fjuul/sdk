@@ -334,6 +334,30 @@ public final class GFClientWrapper {
         return null;
     }
 
+    private GFPowerDataPoint convertDataPointToPower(DataPoint dataPoint) {
+        String dataSourceId = dataPoint.getOriginalDataSource().getStreamIdentifier();
+        Date start = new Date(dataPoint.getStartTime(TimeUnit.MILLISECONDS));
+        for (Field field : DataType.TYPE_POWER_SAMPLE.getFields()) {
+            if (Field.FIELD_WATTS.equals(field)) {
+                float watts = dataPoint.getValue(field).asFloat();
+                return new GFPowerDataPoint(watts, start, dataSourceId);
+            }
+        }
+        return null;
+    }
+
+    private GFSpeedDataPoint convertDataPointToSpeed(DataPoint dataPoint) {
+        String dataSourceId = dataPoint.getOriginalDataSource().getStreamIdentifier();
+        Date start = new Date(dataPoint.getStartTime(TimeUnit.MILLISECONDS));
+        for (Field field : DataType.TYPE_SPEED.getFields()) {
+            if (Field.FIELD_SPEED.equals(field)) {
+                float metersPerSecond = dataPoint.getValue(field).asFloat();
+                return new GFSpeedDataPoint(metersPerSecond, start, dataSourceId);
+            }
+        }
+        return null;
+    }
+
     @SuppressLint("NewApi")
     private Task<List<GFSessionBundle>> bundleSessionsWithData(SessionReadResponse readResponse, Duration minSessionDuration, SupervisedExecutor gfTaskWatcher) {
         List<Session> sessions = readResponse.getSessions();
@@ -404,9 +428,11 @@ public final class GFClientWrapper {
                 List<GFStepsDataPoint> steps = convertDataSetToPoints(dataSet, this::convertDataPointToSteps);
                 sessionBundleBuilder.setSteps(steps);
             } else if (dataType.equals(DataType.TYPE_SPEED)) {
-                // todo: collect speeds
+                List<GFSpeedDataPoint> speed = convertDataSetToPoints(dataSet, this::convertDataPointToSpeed);
+                sessionBundleBuilder.setSpeed(speed);
             } else if (dataType.equals(DataType.TYPE_POWER_SAMPLE)) {
-                // todo: collect powers
+                List<GFPowerDataPoint> power = convertDataSetToPoints(dataSet, this::convertDataPointToPower);
+                sessionBundleBuilder.setPower(power);
             } else if (dataType.equals(DataType.TYPE_CALORIES_EXPENDED)) {
                 List<GFCalorieDataPoint> calories = convertDataSetToPoints(dataSet, this::convertDataPointToCalorie);
                 sessionBundleBuilder.setCalories(calories);

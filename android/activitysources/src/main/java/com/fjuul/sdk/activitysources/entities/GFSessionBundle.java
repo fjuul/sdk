@@ -1,7 +1,10 @@
 package com.fjuul.sdk.activitysources.entities;
 
+import android.annotation.SuppressLint;
+
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 public class GFSessionBundle {
     private String id;
@@ -87,6 +90,7 @@ public class GFSessionBundle {
         this.speed = speed;
     }
 
+    @SuppressLint("NewApi")
     @Override
     public String toString() {
         return "GFSessionBundle{" +
@@ -96,11 +100,11 @@ public class GFSessionBundle {
             ", timeEnd=" + timeEnd +
             ", activityType='" + activityType + '\'' +
             ", type=" + type +
-            ", calories=" + calories +
-            ", steps=" + steps +
-            ", heartRate=" + heartRate +
-            ", power=" + power +
-            ", speed=" + speed +
+            ", calories= size " + Optional.ofNullable(calories).map(List::size) +
+            ", steps= size " + Optional.ofNullable(speed).map(List::size) +
+            ", heartRate= size " + Optional.ofNullable(heartRate).map(List::size) +
+            ", power= size " + Optional.ofNullable(power).map(List::size) +
+            ", speed= size " + Optional.ofNullable(speed).map(List::size) +
             '}';
     }
 

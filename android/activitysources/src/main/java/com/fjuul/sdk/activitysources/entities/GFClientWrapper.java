@@ -34,11 +34,13 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -259,8 +261,7 @@ public final class GFClientWrapper {
         for (Field field : DataType.TYPE_CALORIES_EXPENDED.getFields()) {
             if (Field.FIELD_CALORIES.equals(field)) {
                 float kcals = dataPoint.getValue(field).asFloat();
-                GFCalorieDataPoint calorie = new GFCalorieDataPoint(kcals, start, dataSourceId);
-                return calorie;
+                return new GFCalorieDataPoint(kcals, start, dataSourceId);
             }
         }
         return null;
@@ -296,8 +297,7 @@ public final class GFClientWrapper {
         for (Field field : DataType.TYPE_STEP_COUNT_DELTA.getFields()) {
             if (Field.FIELD_STEPS.equals(field)) {
                 int steps = dataPoint.getValue(field).asInt();
-                GFStepsDataPoint stepsDataPoint = new GFStepsDataPoint(steps, start, dataSourceId);
-                return stepsDataPoint;
+                return new GFStepsDataPoint(steps, start, dataSourceId);
             }
         }
         return null;
@@ -333,8 +333,7 @@ public final class GFClientWrapper {
         for (Field field : DataType.TYPE_HEART_RATE_BPM.getFields()) {
             if (Field.FIELD_BPM.equals(field)) {
                 float bpm = dataPoint.getValue(field).asFloat();
-                GFHRDataPoint hrDataPoint = new GFHRDataPoint(bpm, start, dataSourceId);
-                return hrDataPoint;
+                return new GFHRDataPoint(bpm, start, dataSourceId);
             }
         }
         return null;
@@ -407,21 +406,29 @@ public final class GFClientWrapper {
             }
             DataType dataType = dataSet.getDataType();
             if (dataType.equals(DataType.TYPE_HEART_RATE_BPM)) {
-                List<GFHRDataPoint> hr = dataSet.getDataPoints().stream().map(this::convertDataPointToHR).collect(Collectors.toList());
+                List<GFHRDataPoint> hr = convertDataSetToPoints(dataSet, this::convertDataPointToHR);
                 sessionBundleBuilder.setHeartRate(hr);
             } else if (dataType.equals(DataType.TYPE_STEP_COUNT_DELTA)) {
-                List<GFStepsDataPoint> steps = dataSet.getDataPoints().stream().map(this::convertDataPointToSteps).collect(Collectors.toList());
+                List<GFStepsDataPoint> steps = convertDataSetToPoints(dataSet, this::convertDataPointToSteps);
                 sessionBundleBuilder.setSteps(steps);
             } else if (dataType.equals(DataType.TYPE_SPEED)) {
                 // todo: collect speeds
             } else if (dataType.equals(DataType.TYPE_POWER_SAMPLE)) {
                 // todo: collect powers
             } else if (dataType.equals(DataType.TYPE_CALORIES_EXPENDED)) {
-                List<GFCalorieDataPoint> calories = dataSet.getDataPoints().stream().map(this::convertDataPointToCalorie).collect(Collectors.toList());
+                List<GFCalorieDataPoint> calories = convertDataSetToPoints(dataSet, this::convertDataPointToCalorie);
                 sessionBundleBuilder.setCalories(calories);
             }
         }
         return sessionBundleBuilder.build();
+    }
+
+    @SuppressLint("NewApi")
+    private <T extends GFDataPoint> List<T> convertDataSetToPoints(DataSet dataSet, Function<DataPoint, T> mapper) {
+        return dataSet.getDataPoints().stream()
+            .map(mapper)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
     }
 
     private Task<DataReadResponse> readCaloriesHistory(Date start, Date end) {

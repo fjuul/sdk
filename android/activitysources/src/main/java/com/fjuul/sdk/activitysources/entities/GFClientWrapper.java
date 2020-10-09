@@ -174,14 +174,10 @@ public final class GFClientWrapper {
 
     private <T> Task<T> runGFTaskUnderWatch(Supplier<Task<T>> taskSupplier, SupervisedExecutor gfTaskWatcher) {
         ExecutorService gfTaskWatcherExecutor = gfTaskWatcher.getExecutor();
-        // TODO: try to drop explicit calls to cancellation token
         TaskCompletionSource<T> taskCompletionSource = new TaskCompletionSource<>(gfTaskWatcher.getCancellationToken());
         CancellationTokenSource cancellationTokenSource = gfTaskWatcher.getCancellationTokenSource();
         CancellationToken cancellationToken = gfTaskWatcher.getCancellationToken();
         gfTaskWatcherExecutor.execute(() -> {
-            if (cancellationToken.isCancellationRequested()) {
-                return;
-            }
             for (int tryNumber = 1; tryNumber <= RETRIES_COUNT && !cancellationToken.isCancellationRequested(); tryNumber++) {
 //                Log.d(TAG, String.format("runGFTaskUnderWatch: awaiting #%d", tryNumber));
                 try {

@@ -117,28 +117,28 @@ public final class GFClientWrapper {
     }
 
     @SuppressLint("NewApi")
-    public Task<List<GFSessionBundle>> getSessions(Date start, Date end) {
+    public Task<List<GFSessionBundle>> getSessions(Date start, Date end, Duration minSessionDuration) {
         ExecutorService gfTaskWatcherExecutor = createGfTaskWatcherExecutor();
-//        ExecutorService gfSubTaskWatcherExecutor = Executors.newFixedThreadPool(20); //  createGfTaskWatcherExecutor();
         ExecutorService gfSubTaskWatcherExecutor = createGfTaskWatcherExecutor();
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         CancellationToken cancellationToken = cancellationTokenSource.getToken();
         SupervisedExecutor gfReadSessionsWatcher = new SupervisedExecutor(gfTaskWatcherExecutor, cancellationTokenSource, cancellationToken);
         SupervisedExecutor gfReadSessionSamplesWatcher = new SupervisedExecutor(gfSubTaskWatcherExecutor, cancellationTokenSource, cancellationToken);
-        List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+        List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofDays(5));
 
         List<Task<List<GFSessionBundle>>> tasks = dateChunks.stream().map(dateRange -> {
-            return runReadSessions(dateRange, gfReadSessionsWatcher, gfReadSessionSamplesWatcher);
+            return runReadSessions(dateRange, minSessionDuration, gfReadSessionsWatcher, gfReadSessionSamplesWatcher);
         }).collect(Collectors.toList());
 
-        // TODO: shutdown sub-task watcher
-        Task<List<GFSessionBundle>> getSessionsTask = concludeWatchedTasksResults(tasks, gfTaskWatcherExecutor);
+        Task<List<GFSessionBundle>> getSessionsTask = concludeWatchedTasksResults(tasks, gfTaskWatcherExecutor).addOnCompleteListener(executor, (t) -> {
+            // TODO: check if sub-task watcher was shutdown
+            gfSubTaskWatcherExecutor.shutdownNow();
+        });
         return getSessionsTask;
     }
 
     private Task<List<GFCalorieDataPoint>> runReadCaloriesTask(Pair<Date, Date> dateRange, SupervisedExecutor gfTaskWatcher) {
         Supplier<Task<List<GFCalorieDataPoint>>> taskSupplier = () -> {
-            Log.d(TAG, "runReadCaloriesTask: date range " + dateRange);
             return readCaloriesHistory(dateRange.first, dateRange.second)
                 .onSuccessTask(executor, this::convertDataReadResponseToCalories);
         };
@@ -162,11 +162,11 @@ public final class GFClientWrapper {
         return runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
     }
 
-    private Task<List<GFSessionBundle>> runReadSessions(Pair<Date, Date> dateRange, SupervisedExecutor gfTaskWatcher, SupervisedExecutor gfSubTaskWatcher) {
+    private Task<List<GFSessionBundle>> runReadSessions(Pair<Date, Date> dateRange, Duration minSessionDuration, SupervisedExecutor gfTaskWatcher, SupervisedExecutor gfSubTaskWatcher) {
         Supplier<Task<SessionReadResponse>> taskSupplier = () -> readSessions(dateRange.first, dateRange.second);
         Task<SessionReadResponse> readRawSessionsUnderWatchTask = runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
         Task<List<GFSessionBundle>> bundledSessionsTask = readRawSessionsUnderWatchTask.onSuccessTask(gfTaskWatcher.getExecutor(), (readResponse) -> {
-            return bundleSessionsWithData(readResponse, gfSubTaskWatcher);
+            return bundleSessionsWithData(readResponse, minSessionDuration, gfSubTaskWatcher);
         });
         return bundledSessionsTask;
     }
@@ -182,18 +182,17 @@ public final class GFClientWrapper {
                 return;
             }
             for (int tryNumber = 1; tryNumber <= RETRIES_COUNT && !cancellationToken.isCancellationRequested(); tryNumber++) {
-                Log.d(TAG, String.format("runGFTaskUnderWatch: awaiting #%d", tryNumber));
+//                Log.d(TAG, String.format("runGFTaskUnderWatch: awaiting #%d", tryNumber));
                 try {
                     Task<T> originalTask = taskSupplier.get();
                     T result = Tasks.await(originalTask, GF_QUERY_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-                    Log.d(TAG, String.format("runGFTaskUnderWatch: completed #%d", tryNumber));
-//                    Log.d(TAG, "runGFTaskUnderWatch: THREAD: " + Thread.currentThread().getName());
+//                    Log.d(TAG, String.format("runGFTaskUnderWatch: completed #%d", tryNumber));
                     taskCompletionSource.trySetResult(result);
                     return;
                 } catch (
                     // TODO: catch unauthorized exception
                     java.util.concurrent.ExecutionException | InterruptedException | java.util.concurrent.TimeoutException exc) {
-                    Log.d(TAG, String.format("runGFTaskUnderWatch: failed #%d", tryNumber));
+//                    Log.d(TAG, String.format("runGFTaskUnderWatch: failed #%d", tryNumber));
                     continue;
                 }
             }
@@ -212,13 +211,9 @@ public final class GFClientWrapper {
     @SuppressLint("NewApi")
     private <V, T extends List<V>> Task<T> concludeWatchedTasksResults(List<Task<T>> tasks, ExecutorService gfTaskWatcherExecutor) {
         Task<T> collectResultsTask = Tasks.whenAll(tasks).continueWithTask(executor, commonResult -> {
-            if (commonResult.isCanceled()) {
-                return Tasks.forException(new Exception("Pooling task was canceled"));
-            } else if (commonResult.getException() != null) {
-                Optional<Task<T>> failedTaskOpt = tasks.stream()
-                    .filter(t -> t.getException() != null && t.getException() instanceof CommonException)
-                    .findFirst();
-                Exception exception = failedTaskOpt.map(Task::getException).orElse(commonResult.getException());
+            if (commonResult.isCanceled() || !commonResult.isSuccessful()) {
+                CommonException fallbackException = new CommonException("Pooling task was canceled");
+                Exception exception = extractGFExceptionFromTasks(tasks).orElse(fallbackException);;
                 return Tasks.forException(exception);
             }
             T flattenResults = (T) tasks.stream()
@@ -346,54 +341,45 @@ public final class GFClientWrapper {
     }
 
     @SuppressLint("NewApi")
-    private Task<List<GFSessionBundle>> bundleSessionsWithData(SessionReadResponse readResponse, SupervisedExecutor gfTaskWatcher) {
-        Log.d(TAG, "bundleSessionsWithData: " + readResponse.getStatus());
-        Log.d(TAG, "getSessions: sessions count: " + readResponse.getSessions().size());
+    private Task<List<GFSessionBundle>> bundleSessionsWithData(SessionReadResponse readResponse, Duration minSessionDuration, SupervisedExecutor gfTaskWatcher) {
         List<Session> sessions = readResponse.getSessions();
-
-        // TODO: filter all ongoing sessions ?
-        Stream<Session> filteredSessions = sessions.stream()
-            .filter(s -> !s.isOngoing() && s.getEndTime(TimeUnit.MINUTES) - s.getStartTime(TimeUnit.MINUTES) >= 5);
-        List<Task<GFSessionBundle>> sessionBundlesTasks = filteredSessions.map(session -> {
-            Log.d(TAG, "bundleSessionsWithData: HANDLE SESSION " + session.getIdentifier());
-
-            Date sessionStart = new Date(session.getStartTime(TimeUnit.MILLISECONDS));
-            Date sessionEnd = new Date(session.getEndTime(TimeUnit.MILLISECONDS));
-
+        Stream<Session> completedValuableSessions = sessions.stream()
+            .filter(session -> {
+                if (session.isOngoing()) {
+                    return false;
+                }
+                long sessionStartAtMS = session.getStartTime(TimeUnit.MILLISECONDS);
+                long sessionEndAtMS = session.getEndTime(TimeUnit.MILLISECONDS);
+                Duration sessionDuration = Duration.ofMillis(sessionEndAtMS - sessionStartAtMS);
+                return sessionDuration.compareTo(minSessionDuration) >= 0;
+            });
+        List<Task<GFSessionBundle>> sessionBundlesTasks = completedValuableSessions.map(session -> {
             TaskCompletionSource<GFSessionBundle> taskCompletionSource = new TaskCompletionSource<>(gfTaskWatcher.getCancellationToken());
             Supplier<Task<SessionReadResponse>> readSessionTaskSupplier = () -> {
                 SessionReadRequest detailedSessionReadRequest = buildDetailedSessionReadRequest(session);
-//                Log.d(TAG, "bundleSessionsWithData: THREAD: " + Thread.currentThread().getName());
                 return sessionsClient.readSession(detailedSessionReadRequest);
             };
             Task<SessionReadResponse> readSessionUnderWatch = runGFTaskUnderWatch(readSessionTaskSupplier, gfTaskWatcher);
-            // TODO: query calories by smaller batches
-            Tasks.whenAll(readSessionUnderWatch).addOnCompleteListener(executor, (commonResult) -> {
+            readSessionUnderWatch.addOnCompleteListener(executor, (commonResult) -> {
                 if (!commonResult.isSuccessful() || commonResult.isCanceled()) {
-                    // TODO: find a reason in sub tasks
-                    taskCompletionSource.trySetException(new Exception("FAILED TASK: couldn't complete all sub tasks"));
+                    if (readSessionUnderWatch.getException() != null) {
+                        taskCompletionSource.trySetException(readSessionUnderWatch.getException());
+                    }
                     return;
                 }
                 try {
-                    GFSessionBundle.Builder gfSessionBundleBuilder = collectSessionBundleFromSessionResponse(readSessionUnderWatch.getResult());
-//                    gfSessionBundleBuilder.setCalories(readSessionCaloriesUnderWatch.getResult());
-                    taskCompletionSource.trySetResult(gfSessionBundleBuilder.build());
+                    GFSessionBundle gfSessionBundle = collectSessionBundleFromSessionResponse(readSessionUnderWatch.getResult());
+                    taskCompletionSource.trySetResult(gfSessionBundle);
                 } catch (Exception exc) {
                     taskCompletionSource.trySetException(exc);
                 }
             });
-
-            // TODO: run read detailed session request under watch (supervisor)
-            // TODO: apply cancellation token ?
-
-            // TODO: call #getCalories method here
-            // TODO: reuse querying by small batches
             return taskCompletionSource.getTask();
         }).collect(Collectors.toList());
 
         Task<List<GFSessionBundle>> completedSessionBundlesTasks = Tasks.whenAll(sessionBundlesTasks).continueWithTask(executor, (commonResultTask) -> {
             if (commonResultTask.isCanceled() || !commonResultTask.isSuccessful()) {
-                return Tasks.forException(new Exception("CANCELED OR FAILED!"));
+                return Tasks.forException(extractGFExceptionFromTasks(sessionBundlesTasks).orElse(commonResultTask.getException()));
             }
             List<GFSessionBundle> bundleList = sessionBundlesTasks.stream().map(t -> t.getResult()).collect(Collectors.toList());
             return Tasks.forResult(bundleList);
@@ -402,7 +388,7 @@ public final class GFClientWrapper {
     }
 
     @SuppressLint("NewApi")
-    private GFSessionBundle.Builder collectSessionBundleFromSessionResponse(SessionReadResponse response) throws CommonException {
+    private GFSessionBundle collectSessionBundleFromSessionResponse(SessionReadResponse response) throws CommonException {
         if (response.getSessions().isEmpty()) {
             throw new CommonException("No session in the read response");
         }
@@ -432,13 +418,10 @@ public final class GFClientWrapper {
                 // todo: collect powers
             } else if (dataType.equals(DataType.TYPE_CALORIES_EXPENDED)) {
                 List<GFCalorieDataPoint> calories = dataSet.getDataPoints().stream().map(this::convertDataPointToCalorie).collect(Collectors.toList());
-                for (GFCalorieDataPoint calorie : calories) {
-                    Log.d(TAG, "collectSessionBundleFromSessionResponse: Calorie " + calorie);
-                }
                 sessionBundleBuilder.setCalories(calories);
             }
         }
-        return sessionBundleBuilder;
+        return sessionBundleBuilder.build();
     }
 
     private Task<DataReadResponse> readCaloriesHistory(Date start, Date end) {
@@ -514,5 +497,14 @@ public final class GFClientWrapper {
 
     private ExecutorService createGfTaskWatcherExecutor() {
         return Executors.newFixedThreadPool(GF_TASK_WATCHER_THREAD_POOL_SIZE);
+    }
+
+    @SuppressLint("NewApi")
+    private <T> Optional<Exception> extractGFExceptionFromTasks(List<Task<T>> tasks) {
+        Optional<Exception> failedTaskOpt = tasks.stream()
+            .filter(t -> t.getException() != null && t.getException() instanceof CommonException)
+            .map(Task::getException)
+            .findFirst();
+        return failedTaskOpt;
     }
 }

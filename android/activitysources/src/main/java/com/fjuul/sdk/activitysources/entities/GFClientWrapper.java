@@ -74,7 +74,6 @@ public final class GFClientWrapper {
 
     @SuppressLint("NewApi")
     public Task<List<GFCalorieDataPoint>> getCalories(Date start, Date end) {
-        // TODO: adjust size of chunks (duration) for the best performance
         ExecutorService gfTaskWatcherExecutor = createGfTaskWatcherExecutor();
         List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
 
@@ -401,9 +400,6 @@ public final class GFClientWrapper {
         sessionBundleBuilder.setActivityType(session.getActivity());
 
         for (DataSet dataSet : response.getDataSet(session)) {
-            if (dataSet.isEmpty()) {
-                continue;
-            }
             DataType dataType = dataSet.getDataType();
             if (dataType.equals(DataType.TYPE_HEART_RATE_BPM)) {
                 List<GFHRDataPoint> hr = convertDataSetToPoints(dataSet, this::convertDataPointToHR);

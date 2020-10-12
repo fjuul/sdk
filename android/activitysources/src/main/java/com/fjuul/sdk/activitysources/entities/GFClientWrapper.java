@@ -22,7 +22,6 @@ import com.google.android.gms.fitness.result.DataReadResponse;
 import com.google.android.gms.fitness.result.SessionReadResponse;
 import com.google.android.gms.tasks.CancellationToken;
 import com.google.android.gms.tasks.CancellationTokenSource;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
@@ -146,7 +145,7 @@ public final class GFClientWrapper {
     private Task<List<GFStepsDataPoint>> runReadStepsTask(Pair<Date, Date> dateRange, SupervisedExecutor gfTaskWatcher) {
         Supplier<Task<List<GFStepsDataPoint>>> taskSupplier = () -> {
             return readStepsHistory(dateRange.first, dateRange.second)
-                .onSuccessTask(executor, this::convertToSteps);
+                .onSuccessTask(executor, this::convertDataReadResponseToSteps);
         };
         return runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
     }
@@ -155,7 +154,7 @@ public final class GFClientWrapper {
     private Task<List<GFHRDataPoint>> runReadHRTask(Pair<Date, Date> dateRange, Duration bucketDuration, SupervisedExecutor gfTaskWatcher) {
         Supplier<Task<List<GFHRDataPoint>>> taskSupplier = () -> {
             return readHRHistory(dateRange.first, dateRange.second, bucketDuration)
-                .onSuccessTask(executor, this::convertToHR);
+                .onSuccessTask(executor, this::convertDataReadResponseToHR);
         };
         return runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
     }
@@ -254,7 +253,7 @@ public final class GFClientWrapper {
         return null;
     }
 
-    private Task<List<GFStepsDataPoint>> convertToSteps(DataReadResponse dataReadResponse) {
+    private Task<List<GFStepsDataPoint>> convertDataReadResponseToSteps(DataReadResponse dataReadResponse) {
         ArrayList<GFStepsDataPoint> stepsDataPoints = new ArrayList<>();
         for (Bucket bucket : dataReadResponse.getBuckets()) {
             Date start = new Date(bucket.getStartTime(TimeUnit.MILLISECONDS));
@@ -290,7 +289,7 @@ public final class GFClientWrapper {
         return null;
     }
 
-    private Task<List<GFHRDataPoint>> convertToHR(DataReadResponse dataReadResponse) {
+    private Task<List<GFHRDataPoint>> convertDataReadResponseToHR(DataReadResponse dataReadResponse) {
         ArrayList<GFHRDataPoint> hrDataPoints = new ArrayList<>();
         for (Bucket bucket : dataReadResponse.getBuckets()) {
             Date start = new Date(bucket.getStartTime(TimeUnit.MILLISECONDS));

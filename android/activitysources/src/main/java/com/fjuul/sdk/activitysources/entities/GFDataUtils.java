@@ -11,7 +11,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -63,20 +62,22 @@ public class GFDataUtils {
     }
 
     @SuppressLint("NewApi")
-    public Pair<Date, Date> adjustInputDatesForBatches(LocalDate start, LocalDate end) {
+    public Pair<Date, Date> adjustInputDatesForBatches(LocalDate start, LocalDate end, Duration batchDuration) {
         final Date startDate = Date.from(start.atStartOfDay(zoneId).toInstant());
-        final Date nextDayAfterEnd = Date.from(end.plusDays(1).atStartOfDay(zoneId).toInstant());
         Date roundedCurrentDate;
-        Instant currentInstant = Instant.now(clock);
+        final Instant currentInstant = Instant.now(clock);
         Instant roundedInstant;
-        if (ZonedDateTime.ofInstant(currentInstant, ZoneId.systemDefault()).getMinute() < 30) {
-            roundedInstant = currentInstant.truncatedTo(ChronoUnit.HOURS).plus(30, ChronoUnit.MINUTES);
+        final Instant zonedInstant = ZonedDateTime.ofInstant(currentInstant, zoneId).toInstant();
+        long millisSpentInBatch = zonedInstant.toEpochMilli() % batchDuration.toMillis();
+
+        if (millisSpentInBatch == 0) {
+            roundedInstant = zonedInstant;
         } else {
-            roundedInstant = currentInstant.truncatedTo(ChronoUnit.HOURS).plus(60, ChronoUnit.MINUTES);
+            roundedInstant = zonedInstant.minusMillis(millisSpentInBatch).plusMillis(batchDuration.toMillis());
         }
         roundedCurrentDate = Date.from(roundedInstant);
-
-        Date endDate = Collections.min(Arrays.asList(nextDayAfterEnd, roundedCurrentDate));
+        final Date nextDayAfterEnd = Date.from(end.plusDays(1).atStartOfDay(zoneId).toInstant());
+        final Date endDate = Collections.min(Arrays.asList(nextDayAfterEnd, roundedCurrentDate));
         return new Pair(startDate, endDate);
     }
 

@@ -41,7 +41,7 @@ public final class GoogleFitDataManager {
             }
 //            Log.d(TAG, "syncCalories: DONE");
             List<GFCalorieDataPoint> calories = getCaloriesTask.getResult();
-            Pair<Date, Date> batchingDates = gfUtils.adjustInputDatesForBatches(start, end);
+            Pair<Date, Date> batchingDates = gfUtils.adjustInputDatesForBatches(start, end, Duration.ofMinutes(30));
             List<GFDataPointsBatch<GFCalorieDataPoint>> batches = this.gfUtils.groupPointsIntoBatchesByDuration(batchingDates.first, batchingDates.second, calories, Duration.ofMinutes(30));
             Stream<GFDataPointsBatch<GFCalorieDataPoint>> notEmptyBatches = batches.stream().filter(b -> !b.getPoints().isEmpty());
             List<GFDataPointsBatch<GFCalorieDataPoint>> notSyncedBatches = notEmptyBatches

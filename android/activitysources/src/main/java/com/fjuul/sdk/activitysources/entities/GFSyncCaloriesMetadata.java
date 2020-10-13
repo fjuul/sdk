@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 import java.time.Clock;
 import java.util.Date;
 
-public final class GFSyncCaloriesMetadata extends GFSyncEntityMetadata<> {
+public final class GFSyncCaloriesMetadata extends GFSyncEntityMetadata {
     public static final int CURRENT_SCHEMA_VERSION = 1;
     private static final float TOTAL_CALORIES_ACCURACY = 0.001f;
     private int count;

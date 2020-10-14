@@ -5,6 +5,7 @@ import android.util.Log;
 import androidx.core.util.Pair;
 import androidx.core.util.Supplier;
 
+import com.fjuul.sdk.activitysources.utils.GoogleTaskUtils;
 import com.fjuul.sdk.http.utils.ApiCallResult;
 import com.google.android.gms.tasks.CancellationToken;
 import com.google.android.gms.tasks.CancellationTokenSource;
@@ -99,7 +100,7 @@ public final class GoogleFitDataManager {
         prepareUploadDataTask.addOnCompleteListener(localBackgroundExecutor, prepareUploadDataTaskResult -> {
             if (!prepareUploadDataTaskResult.isSuccessful() || prepareUploadDataTaskResult.isCanceled()) {
                 List<Task> tasks = Arrays.asList(finalGetCaloriesTask, finalGetStepsTask, finalGetHRTask);
-                Optional<Exception> optionalException = GFClientWrapper.extractGFExceptionFromTasks(tasks);
+                Optional<Exception> optionalException = GoogleTaskUtils.extractGFExceptionFromTasks(tasks);
                 sendDataTaskCompletionSource.trySetException(optionalException.orElse(prepareUploadDataTaskResult.getException()));
                 return;
             }

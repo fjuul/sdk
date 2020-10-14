@@ -7,6 +7,8 @@ import androidx.core.util.Supplier;
 
 import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.MaxRetriesExceededException;
+import com.fjuul.sdk.activitysources.utils.GoogleTaskUtils;
+import static com.fjuul.sdk.activitysources.utils.GoogleTaskUtils.shutdownExecutorsOnComplete;
 import com.google.android.gms.fitness.HistoryClient;
 import com.google.android.gms.fitness.SessionsClient;
 import com.google.android.gms.fitness.data.Bucket;
@@ -82,7 +84,7 @@ public final class GFClientWrapper {
         }).collect(Collectors.toList());
 
         Task<List<GFCalorieDataPoint>> getCaloriesTask = flatMapTasksResults(tasks);
-        return shutdownExecutorsOnComplete(getCaloriesTask, gfTaskWatcherExecutor);
+        return shutdownExecutorsOnComplete(executor, getCaloriesTask, gfTaskWatcherExecutor);
         // TODO: check if it was really shutdown after a while
     }
 
@@ -98,7 +100,7 @@ public final class GFClientWrapper {
         }).collect(Collectors.toList());
 
         Task<List<GFStepsDataPoint>> getStepsTask = flatMapTasksResults(tasks);
-        return shutdownExecutorsOnComplete(getStepsTask, gfTaskWatcherExecutor);
+        return shutdownExecutorsOnComplete(executor, getStepsTask, gfTaskWatcherExecutor);
     }
 
     @SuppressLint("NewApi")
@@ -113,7 +115,7 @@ public final class GFClientWrapper {
         }).collect(Collectors.toList());
 
         Task<List<GFHRDataPoint>> getHRTask = flatMapTasksResults(tasks);
-        return shutdownExecutorsOnComplete(getHRTask, gfTaskWatcherExecutor);
+        return shutdownExecutorsOnComplete(executor, getHRTask, gfTaskWatcherExecutor);
     }
 
     @SuppressLint("NewApi")
@@ -131,7 +133,7 @@ public final class GFClientWrapper {
         }).collect(Collectors.toList());
 
         Task<List<GFSessionBundle>> getSessionsTask = flatMapTasksResults(tasks);
-        return shutdownExecutorsOnComplete(getSessionsTask, gfTaskWatcherExecutor, gfSubTaskWatcherExecutor);
+        return shutdownExecutorsOnComplete(executor, getSessionsTask, gfTaskWatcherExecutor, gfSubTaskWatcherExecutor);
         // TODO: check if sub-task watcher was shutdown
     }
 
@@ -206,7 +208,7 @@ public final class GFClientWrapper {
         Task<T> collectResultsTask = Tasks.whenAll(tasks).continueWithTask(executor, commonResult -> {
             if (commonResult.isCanceled() || !commonResult.isSuccessful()) {
                 CommonException fallbackException = new CommonException("Pooling task was canceled");
-                Exception exception = extractGFExceptionFromTasks(tasks).orElse(fallbackException);;
+                Exception exception = GoogleTaskUtils.extractGFExceptionFromTasks(tasks).orElse(fallbackException);;
                 return Tasks.forException(exception);
             }
             T flattenResults = (T) tasks.stream()
@@ -388,7 +390,7 @@ public final class GFClientWrapper {
 
         Task<List<GFSessionBundle>> completedSessionBundlesTasks = Tasks.whenAll(sessionBundlesTasks).continueWithTask(executor, (commonResultTask) -> {
             if (commonResultTask.isCanceled() || !commonResultTask.isSuccessful()) {
-                return Tasks.forException(extractGFExceptionFromTasks(sessionBundlesTasks).orElse(commonResultTask.getException()));
+                return Tasks.forException(GoogleTaskUtils.extractGFExceptionFromTasks(sessionBundlesTasks).orElse(commonResultTask.getException()));
             }
             List<GFSessionBundle> bundleList = sessionBundlesTasks.stream().map(t -> t.getResult()).collect(Collectors.toList());
             return Tasks.forResult(bundleList);
@@ -513,22 +515,5 @@ public final class GFClientWrapper {
 
     private ExecutorService createGfTaskWatcherExecutor() {
         return Executors.newFixedThreadPool(GF_TASK_WATCHER_THREAD_POOL_SIZE);
-    }
-
-    @SuppressLint("NewApi")
-    private <T> Task<T> shutdownExecutorsOnComplete(Task<T> task, ExecutorService... executors) {
-        return task.addOnCompleteListener(executor, (t) -> {
-            Arrays.stream(executors).forEach(executor -> executor.shutdownNow());
-        });
-    }
-
-    // TODO: extract this method out here
-    @SuppressLint("NewApi")
-    public static <T extends Task<?>> Optional<Exception> extractGFExceptionFromTasks(List<T> tasks) {
-        Optional<Exception> failedTaskOpt = tasks.stream()
-            .filter(t -> t.getException() != null && t.getException() instanceof CommonException)
-            .map(Task::getException)
-            .findFirst();
-        return failedTaskOpt;
     }
 }

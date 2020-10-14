@@ -522,8 +522,9 @@ public final class GFClientWrapper {
         });
     }
 
+    // TODO: extract this method out here
     @SuppressLint("NewApi")
-    private <T> Optional<Exception> extractGFExceptionFromTasks(List<Task<T>> tasks) {
+    public static <T extends Task<?>> Optional<Exception> extractGFExceptionFromTasks(List<T> tasks) {
         Optional<Exception> failedTaskOpt = tasks.stream()
             .filter(t -> t.getException() != null && t.getException() instanceof CommonException)
             .map(Task::getException)

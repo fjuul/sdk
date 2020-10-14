@@ -6,6 +6,7 @@ import androidx.core.util.Pair;
 import androidx.core.util.Supplier;
 
 import com.fjuul.sdk.activitysources.utils.GoogleTaskUtils;
+import static com.fjuul.sdk.activitysources.utils.GoogleTaskUtils.runAndAwaitTaskByExecutor;
 import com.fjuul.sdk.http.utils.ApiCallResult;
 import com.google.android.gms.tasks.CancellationToken;
 import com.google.android.gms.tasks.CancellationTokenSource;
@@ -15,7 +16,6 @@ import com.google.android.gms.tasks.Tasks;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -172,29 +172,6 @@ public final class GoogleFitDataManager {
                 .collect(Collectors.toList());
             return Tasks.forResult(notSyncedBatches);
         });
-    }
-
-    // TODO: refactoring: extract this method to some thread utils class
-    static <T> Task<T> runAndAwaitTaskByExecutor(Supplier<Task<T>> taskSupplier, Executor executor, CancellationTokenSource cancellationTokenSource, CancellationToken cancellationToken) {
-        TaskCompletionSource<T> taskCompletionSource = new TaskCompletionSource<>(cancellationToken);
-        executor.execute(() -> {
-            if (cancellationToken.isCancellationRequested()) {
-//                return
-                return;
-            }
-            try {
-                T result = Tasks.await(taskSupplier.get());
-                taskCompletionSource.trySetResult(result);
-            } catch (ExecutionException e) {
-                if (e.getCause() instanceof Exception) {
-                    taskCompletionSource.trySetException((Exception)e.getCause());
-                } else {
-                    taskCompletionSource.trySetException(e);
-                }
-                cancellationTokenSource.cancel();
-            } catch (InterruptedException e) { /* task was interrupted due to cancellation */ }
-        });
-        return taskCompletionSource.getTask();
     }
 
     public void syncSessions(LocalDate start, LocalDate end, Duration minimumSessionDuration) {

@@ -191,13 +191,12 @@ public final class GFClientWrapper {
                 }
             }
             if (cancellationToken.isCancellationRequested()) {
-                taskCompletionSource.trySetException(new CommonException("One of the previous tasks was canceled"));
-            } else {
-//                Log.d(TAG, "runGFTaskUnderWatch: Too many retries");
-                // TODO: introduce new class for gf task parameters
-                taskCompletionSource.trySetException(new MaxRetriesExceededException("Too many retries"));
-                cancellationTokenSource.cancel();
+                return;
             }
+            // Log.d(TAG, "runGFTaskUnderWatch: Too many retries");
+            // TODO: introduce new class for gf task parameters
+            taskCompletionSource.trySetException(new MaxRetriesExceededException("Too many retries"));
+            cancellationTokenSource.cancel();
         });
         return taskCompletionSource.getTask();
     }

@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-final class GFIntradaySyncOptions {
+public final class GFIntradaySyncOptions {
     public static enum METRICS_TYPE {
         CALORIES,
         STEPS,
-        HR
+        HEART_RATE
     }
 
     List<METRICS_TYPE> metrics;

@@ -59,6 +59,7 @@ public final class GFClientWrapper {
     private HistoryClient historyClient;
     private SessionsClient sessionsClient;
     private GFDataUtils gfUtils;
+    // TODO: rename executor
     private Executor executor;
 
     public GFClientWrapper(HistoryClient historyClient, SessionsClient sessionsClient, GFDataUtils gfUtils) {

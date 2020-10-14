@@ -6,6 +6,7 @@ import androidx.core.util.Pair;
 import androidx.core.util.Supplier;
 
 import com.fjuul.sdk.http.utils.ApiCallResult;
+import com.google.android.gms.tasks.CancellationToken;
 import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
@@ -13,9 +14,12 @@ import com.google.android.gms.tasks.Tasks;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -40,9 +44,8 @@ public final class GoogleFitDataManager {
     }
 
     @SuppressLint("NewApi")
-    Task<Void> syncIntradayMetrics(GFIntradaySyncOptions options) {
+    public void syncIntradayMetrics(GFIntradaySyncOptions options) {
         // todo: consider returning metadata of sent data
-        // todo: test cancellation for calories!
         // add cached thread executor for local operations ?
         // add single thread executor for awaiting result
         ExecutorService sequentialExecutorService = Executors.newSingleThreadExecutor();
@@ -51,22 +54,30 @@ public final class GoogleFitDataManager {
         Task<List<GFDataPointsBatch<GFCalorieDataPoint>>> getCaloriesTask = Tasks.forResult(Collections.emptyList());
         Task<List<GFDataPointsBatch<GFStepsDataPoint>>> getStepsTask = Tasks.forResult(Collections.emptyList());
         Task<List<GFDataPointsBatch<GFHRDataPoint>>> getHRTask = Tasks.forResult(Collections.emptyList());
+        CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        CancellationToken cancellationToken = cancellationTokenSource.getToken();
         for (GFIntradaySyncOptions.METRICS_TYPE metric : options.getMetrics()) {
             switch (metric) {
                 case CALORIES:
                     getCaloriesTask = runAndAwaitTaskByExecutor(
                         () -> getNotSyncedCaloriesBatches(startDate, endDate, localBackgroundExecutor),
-                        sequentialExecutorService);
+                        sequentialExecutorService,
+                        cancellationTokenSource,
+                        cancellationToken);
                     break;
                 case STEPS:
                     getStepsTask = runAndAwaitTaskByExecutor(
                         () -> getNotSyncedStepsBatches(startDate, endDate, localBackgroundExecutor),
-                        sequentialExecutorService);
+                        sequentialExecutorService,
+                        cancellationTokenSource,
+                        cancellationToken);
                     break;
-                case HR:
+                case HEART_RATE:
                     getHRTask = runAndAwaitTaskByExecutor(
                         () -> getNotSyncedHRBatches(startDate, endDate, localBackgroundExecutor),
-                        sequentialExecutorService);
+                        sequentialExecutorService,
+                        cancellationTokenSource,
+                        cancellationToken);
                     break;
             }
         }
@@ -74,10 +85,6 @@ public final class GoogleFitDataManager {
         final Task<List<GFDataPointsBatch<GFStepsDataPoint>>> finalGetStepsTask = getStepsTask;
         final Task<List<GFDataPointsBatch<GFHRDataPoint>>> finalGetHRTask = getHRTask;
         final Task<GFUploadData> prepareUploadDataTask = Tasks.whenAll(getCaloriesTask, getStepsTask, getHRTask).onSuccessTask(localBackgroundExecutor, commonResult -> {
-            // TODO: infer right exception here
-//            if (!commonResult.isSuccessful() || !commonResult.isCanceled()) {
-//                return Tasks.forException(new Exception("TASK WAS FAILED"));
-//            }
             List<GFCalorieDataPoint> calories = finalGetCaloriesTask.getResult().stream().flatMap(b -> b.getPoints().stream()).collect(Collectors.toList());
             List<GFStepsDataPoint> steps = finalGetStepsTask.getResult().stream().flatMap(b -> b.getPoints().stream()).collect(Collectors.toList());
             List<GFHRDataPoint> hr = finalGetHRTask.getResult().stream().flatMap(b -> b.getPoints().stream()).collect(Collectors.toList());
@@ -87,8 +94,15 @@ public final class GoogleFitDataManager {
             uploadData.setStepsData(steps);
             return Tasks.forResult(uploadData);
         });
+
         TaskCompletionSource<ApiCallResult<Void>> sendDataTaskCompletionSource = new TaskCompletionSource<>();
-        prepareUploadDataTask.addOnSuccessListener(localBackgroundExecutor, uploadData -> {
+        prepareUploadDataTask.addOnCompleteListener(localBackgroundExecutor, prepareUploadDataTaskResult -> {
+            if (!prepareUploadDataTaskResult.isSuccessful() || prepareUploadDataTaskResult.isCanceled()) {
+                List<Task> tasks = Arrays.asList(finalGetCaloriesTask, finalGetStepsTask, finalGetHRTask);
+                Optional<Exception> optionalException = GFClientWrapper.extractGFExceptionFromTasks(tasks);
+                sendDataTaskCompletionSource.trySetException(optionalException.orElse(prepareUploadDataTaskResult.getException()));
+                return;
+            }
 //            uploadData
             // serialize a data to json
             // TODO: send to the back-end
@@ -96,7 +110,7 @@ public final class GoogleFitDataManager {
         });
         Task<ApiCallResult<Void>> sendDataTask = sendDataTaskCompletionSource.getTask();
         Task<Void> saveSyncMetadataTask = sendDataTask.onSuccessTask(localBackgroundExecutor, apiCallResult -> {
-            if (!apiCallResult.isError()) {
+            if (apiCallResult.isError()) {
                 return Tasks.forException(new Exception("FAILED TO UPLOAD THE DATA"));
             }
             finalGetCaloriesTask.getResult().forEach(gfSyncMetadataStore::saveSyncMetadataOfCalories);
@@ -104,7 +118,13 @@ public final class GoogleFitDataManager {
             finalGetHRTask.getResult().forEach(gfSyncMetadataStore::saveSyncMetadataOfHR);
             return Tasks.forResult(null);
         });
-        return saveSyncMetadataTask;
+        saveSyncMetadataTask.addOnCompleteListener(localBackgroundExecutor, (task) -> {
+            Log.d(TAG, "syncIntradayMetrics: SUCCESS: " + task.isSuccessful());
+            Log.d(TAG, "syncIntradayMetrics: EXCEPTION: " + task.getException());
+        });
+
+
+//        return saveSyncMetadataTask;
         // todo: respond with result ?
     }
 
@@ -154,10 +174,13 @@ public final class GoogleFitDataManager {
     }
 
     // TODO: refactoring: extract this method to some thread utils class
-    static <T> Task<T> runAndAwaitTaskByExecutor(Supplier<Task<T>> taskSupplier, Executor executor) {
-        CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-        TaskCompletionSource<T> taskCompletionSource = new TaskCompletionSource<>(cancellationTokenSource.getToken());
+    static <T> Task<T> runAndAwaitTaskByExecutor(Supplier<Task<T>> taskSupplier, Executor executor, CancellationTokenSource cancellationTokenSource, CancellationToken cancellationToken) {
+        TaskCompletionSource<T> taskCompletionSource = new TaskCompletionSource<>(cancellationToken);
         executor.execute(() -> {
+            if (cancellationToken.isCancellationRequested()) {
+//                return
+                return;
+            }
             try {
                 T result = Tasks.await(taskSupplier.get());
                 taskCompletionSource.trySetResult(result);
@@ -167,88 +190,11 @@ public final class GoogleFitDataManager {
                 } else {
                     taskCompletionSource.trySetException(e);
                 }
-            } catch (InterruptedException e) {
                 cancellationTokenSource.cancel();
-            }
+            } catch (InterruptedException e) { /* task was interrupted due to cancellation */ }
         });
         return taskCompletionSource.getTask();
     }
-
-//    @SuppressLint("NewApi")
-//    public void syncCalories(LocalDate start, LocalDate end) {
-//        // TODO: throw if end is future!
-//        Pair<Date, Date> gfQueryDates = gfUtils.adjustInputDatesForGFRequest(start, end);
-//        client.getCalories(gfQueryDates.first, gfQueryDates.second).continueWith((getCaloriesTask) -> {
-//            Log.d(TAG, "syncCalories: DONE = " + getCaloriesTask.isSuccessful());
-//            if (!getCaloriesTask.isSuccessful()) {
-//                // TODO: invoke callback with exception
-////                throw new Error("Couldn't get calories from GoogleFit Api: " + getCaloriesTask.getException().getMessage());
-//                Log.d(TAG, "Couldn't get calories from GoogleFit Api: " + getCaloriesTask.getException().getMessage());
-//                return null;
-//            }
-//            for (GFCalorieDataPoint calorie : getCaloriesTask.getResult()) {
-//                Log.d(TAG, "Calorie " + calorie);
-//            }
-////            Log.d(TAG, "syncCalories: DONE");
-//            List<GFCalorieDataPoint> calories = getCaloriesTask.getResult();
-//            Duration batchDuration = Duration.ofMinutes(30);
-//            Pair<Date, Date> batchingDates = gfUtils.adjustInputDatesForBatches(start, end, batchDuration);
-//            List<GFDataPointsBatch<GFCalorieDataPoint>> batches = this.gfUtils.groupPointsIntoBatchesByDuration(batchingDates.first, batchingDates.second, calories, batchDuration);
-//            Stream<GFDataPointsBatch<GFCalorieDataPoint>> notEmptyBatches = batches.stream().filter(b -> !b.getPoints().isEmpty());
-//            List<GFDataPointsBatch<GFCalorieDataPoint>> notSyncedBatches = notEmptyBatches
-//                .filter(this.gfSyncMetadataStore::isNeededToSyncCaloriesBatch)
-//                .collect(Collectors.toList());
-//            if (notSyncedBatches.isEmpty()) {
-//                // TODO: invoke callback with no result (or empty metadata) ?
-//                return null;
-//            }
-//            // TODO: send the data to the back-end side => add service for that (consider retry here)
-//            notSyncedBatches.forEach(batch -> {
-//                this.gfSyncMetadataStore.saveSyncMetadataOfCalories(batch);
-//            });
-//            // TODO: pass metadata to the callback ???
-//            return null;
-//        });
-//    }
-//
-//    @SuppressLint("NewApi")
-//    public void syncSteps(LocalDate start, LocalDate end) {
-//        Pair<Date, Date> gfQueryDates = gfUtils.adjustInputDatesForGFRequest(start, end);
-//        client.getSteps(gfQueryDates.first, gfQueryDates.second).continueWith((getStepsTask) -> {
-//            Log.d(TAG, "syncSteps: DONE = " + getStepsTask.isSuccessful());
-//            if (!getStepsTask.isSuccessful()) {
-//                // TODO: invoke callback with exception
-////                throw new Error("Couldn't get calories from GoogleFit Api: " + getCaloriesTask.getException().getMessage());
-//                Log.d(TAG, "Couldn't get steps from GoogleFit Api: " + getStepsTask.getException().getMessage());
-//                return null;
-//            }
-//            List<GFStepsDataPoint> steps = getStepsTask.getResult();
-//            Duration batchDuration = Duration.ofHours(6);
-//            Pair<Date, Date> batchingDates = gfUtils.adjustInputDatesForBatches(start, end, batchDuration);
-//            List<GFDataPointsBatch<GFStepsDataPoint>> batches = this.gfUtils.groupPointsIntoBatchesByDuration(batchingDates.first, batchingDates.second, steps, batchDuration);
-//            Stream<GFDataPointsBatch<GFStepsDataPoint>> notEmptyBatches = batches.stream().filter(b -> !b.getPoints().isEmpty());
-//            List<GFDataPointsBatch<GFCalorieDataPoint>> notSyncedBatches = notEmptyBatches
-//                .filter(this.gfSyncMetadataStore::isNeededToSyncCaloriesBatch)
-//                .collect(Collectors.toList());
-//            Pair<Date, Date>
-//           return null;
-//        });
-//    }
-//
-//    public void syncHR(LocalDate start, LocalDate end) {
-//        Pair<Date, Date> gfQueryDates = gfUtils.adjustInputDatesForGFRequest(start, end);
-//        client.getHRs(gfQueryDates.first, gfQueryDates.second).continueWith((getHRTask) -> {
-//            Log.d(TAG, "syncHR: DONE = " + getHRTask.isSuccessful());
-//            if (!getHRTask.isSuccessful()) {
-//                // TODO: invoke callback with exception
-////                throw new Error("Couldn't get calories from GoogleFit Api: " + getCaloriesTask.getException().getMessage());
-//                Log.d(TAG, "Couldn't get HRs from GoogleFit Api: " + getHRTask.getException().getMessage());
-//                return null;
-//            }
-//            Log.d(TAG, "syncHR: TOTAL SIZE: " + getHRTask.getResult().size());
-//            return null;
-//        });
-//    }
 
     public void syncSessions(LocalDate start, LocalDate end, Duration minimumSessionDuration) {
         Pair<Date, Date> gfQueryDates = gfUtils.adjustInputDatesForGFRequest(start, end);

@@ -16,6 +16,10 @@ public enum FjuulError: Error {
         case generic
         case sourceAlreadyConnected
     }
+    
+    public enum ActivitySourceDataManageFailure {
+        case hkNotAvailableOnDevice
+    }
 
     case invalidConfig
     case authenticationFailure(reason: AuthenticationFailureReason)
@@ -24,5 +28,6 @@ public enum FjuulError: Error {
     // however unfortunately it is not possible to extend FjuulError (enum) from another module and still use
     // this as single entrypoint for all possible Errors.
     case activitySourceConnectionFailure(reason: ActivitySourceConnectionFailureReason)
+    case activitySourceFailure(reason: ActivitySourceDataManageFailure)
 
 }

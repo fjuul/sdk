@@ -1,8 +1,9 @@
 import Foundation
 
-class DiskPersistor: Persistor {
+public class DiskPersistor: Persistor {
+    public init() {}
 
-    func set<T: Encodable>(key: String, value: T?) {
+    public func set<T: Encodable>(key: String, value: T?) {
         do {
             // The Application Support directory does not exist by default, thus we need to create it here explicitly.
             // This is a no-op if the directory already exists.
@@ -24,7 +25,7 @@ class DiskPersistor: Persistor {
         }
     }
 
-    func get<T: Decodable>(key: String) -> T? {
+    public func get<T: Decodable>(key: String) -> T? {
         do {
             let path = getFullPathForKey(key)
             if !(FileManager.default.fileExists(atPath: path.path)) {

@@ -80,8 +80,10 @@ public class ActivitySourcesApi {
     }
     
     public func mountHK(completion: @escaping (Result<String, Error>) -> Void) {
-        let hkSource = ActivitySourceHealthKit()
-        hkSource.mount()
+        #if os(iOS)
+            let hkSource = ActivitySourceHealthKit()
+            hkSource.mount()
+        #endif
         
         completion(.success("OK!"))
     }

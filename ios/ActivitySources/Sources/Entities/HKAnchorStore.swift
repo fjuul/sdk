@@ -3,29 +3,25 @@ import FjuulCore
 import HealthKit
 
 public struct HKAnchorStore {
+
     private var persistor: Persistor
+    private let lookupKey = "hk-anchor-key-v2"
 
     init(persistor: Persistor) {
         self.persistor = persistor
     }
 
-    public var description: String {
-        return "Anchor: "
-    }
-
-    var anchor: HKQueryAnchor? {
+    var anchor: HKAnchorData? {
         get {
-            if let value = persistor.get(key: "valuev5") {
-                NSKeyedUnarchiver.unarchiveObject(with: value) as? HKQueryAnchor
+            if let value = persistor.get(key: lookupKey) as HKAnchorData? {
+               return value
             } else {
-                return nil
+                return HKAnchorData()
             }
         }
         set {
-            if let newAnchor = newValue {
-                let data: Data = NSKeyedArchiver.archivedData(withRootObject: newAnchor as Any)
-                persistor.set(key: "valuev5", value: data)
-            }
+            persistor.set(key: lookupKey, value: newValue)
         }
     }
+
 }

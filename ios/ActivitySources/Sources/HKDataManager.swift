@@ -5,21 +5,10 @@ import FjuulCore
 
 class HKDataManager {
     internal let healthKitStore: HKHealthStore = HKHealthStore()
-    internal let persistor: Persistor
-    internal let hkAnchorStore: HKAnchorStore
-    
-//    var anchorStored: HKQueryAnchor? {
-//        get {
-//            return persistor.get(key: "keyv3")
-//        }
-//        set {
-//            persistor.set(key: "keyv3", value: newValue)
-//        }
-//    }
+    internal var hkAnchorStore: HKAnchorStore
 
     init(persistor: Persistor) {
-        self.persistor = persistor
-        self.hkAnchorStore = HKAnchorStore(persistor: self.persistor)
+        self.hkAnchorStore = HKAnchorStore(persistor: persistor)
     }
 
     var readableTypes: Set<HKSampleType> {
@@ -39,8 +28,6 @@ class HKDataManager {
         return [
             HKWorkoutType.workoutType(),
 //            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!,
-//            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!,
-//            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!,
         ]
     }
     func authorizeHealthKitAccess(_ completion: ((_ success: Bool, _ error: Error?) -> Void)!) {
@@ -96,16 +83,8 @@ class HKDataManager {
            })
         }
     }
-    // TODO: Big question, are we need HKAnchoredObjectQuery or will be right use HKSampleQuery?
     private func fetchSampleUpdates(sampleType: HKSampleType) {
-        // TODO: Calculate right anchor from persisted store
-        var anchorDate = HKQueryAnchor.init(fromValue: 0)
-//        self.anchorStored = "xxxv1"
-        print("123123123: ", self.hkAnchorStore)
-
-        if let data = UserDefaults.standard.object(forKey: "\(sampleType)-Anchor-v1") as? Data {
-            anchorDate = (NSKeyedUnarchiver.unarchiveObject(with: data) as? HKQueryAnchor)!
-        }
+        let anchorDate = self.hkAnchorStore.anchor?.activeEnergyBurned ?? HKQueryAnchor.init(fromValue: 0)
 
         // Exclude manually added data
         let wasUserEnteredPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
@@ -125,19 +104,18 @@ class HKDataManager {
             for sampleItem in samples {
                 print("Sample item: \(sampleItem)")
             }
-            // TODO: find batches for re-upload?
-            for deletedSampleItem in deletedObjects {
-                print("deleted: \(deletedSampleItem)")
-            }
-            let data: Data = NSKeyedArchiver.archivedData(withRootObject: newAnchor as Any)
-            UserDefaults.standard.set(data, forKey: "\(sampleType)-Anchor-v1")
-            // TODO: Save the new anchor to the persisted store
-            // anchor = newAnchor!
+//            // TODO: find batches for re-upload?
+//            for deletedSampleItem in deletedObjects {
+//                print("deleted: \(deletedSampleItem)")
+//            }
+
+//            self.hkAnchorStore.anchor?.activeEnergyBurned = newAnchor
         }
         healthKitStore.execute(query)
     }
     private func fetchIntradayUpdates(sampleType: HKQuantityType) {
         self.getBatchSegments(sampleType: sampleType) { (batchStartDates) in
+            print("batchStartDates: \(batchStartDates)")
             self.fetchIntradayStatisticsCollections(sampleType: sampleType, batchDates: batchStartDates) { results in
                 let batches = HKBatchAggregator(data: results).generate()
                 print("got results, \(batches.count)")
@@ -145,15 +123,10 @@ class HKDataManager {
         }
     }
     private func getBatchSegments(sampleType: HKQuantityType, completion: @escaping (Set<Date>) -> Void) {
-        let anchorKey = "\(sampleType)-Intrada"
         var batchStartDates: Set<Date> = []
 
-        // TODO: Calculate right anchor from persisted store
-        var anchorDate = HKQueryAnchor.init(fromValue: 0)
-        if let data = UserDefaults.standard.object(forKey: anchorKey) as? Data {
-            anchorDate = (NSKeyedUnarchiver.unarchiveObject(with: data) as? HKQueryAnchor)!
-            print(anchorDate)
-        }
+        let anchorDate = self.hkAnchorStore.anchor?.activeEnergyBurned ?? HKQueryAnchor.init(fromValue: 0)
+
         // Exclude manually added data
         let wasUserEnteredPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
         let fromDate = Calendar.current.date(byAdding: .day, value: -30, to: Date())
@@ -162,24 +135,19 @@ class HKDataManager {
         let query = HKAnchoredObjectQuery(type: sampleType,
                                               predicate: compound,
                                               anchor: anchorDate,
-                                              limit: HKObjectQueryNoLimit) { (_, samplesOrNil, deletedObjectsOrNil, newAnchor, errorOrNil) in
-            guard let samples = samplesOrNil, let deletedObjects = deletedObjectsOrNil else {
+                                              limit: HKObjectQueryNoLimit) { (_, samplesOrNil, _, newAnchor, errorOrNil) in
+            guard let samples = samplesOrNil else {
+                // TODO: Perform proper error handling here
                 print("*** An error occurred during the initial query: \(errorOrNil!.localizedDescription) ***")
                 return
             }
-            // TODO: find batches for re-upload?
+            
             for sampleItem in samples {
                 batchStartDates.insert(HKDataUtils.beginningOfHour(date: sampleItem.startDate)!)
             }
-            // TODO: find batches for re-upload?
-            for deletedSampleItem in deletedObjects {
-                print("deleted: \(deletedSampleItem)")
-            }
-            // TODO: Save the new anchor to the persisted store
-//            let data : Data = NSKeyedArchiver.archivedData(withRootObject: newAnchor as Any)
-//            UserDefaults.standard.set(data, forKey: anchorKey)
+
+            self.hkAnchorStore.anchor?.activeEnergyBurned = newAnchor
             completion(batchStartDates)
-//            print("BatchStartDates: \(batchStartDates)")
         }
         healthKitStore.execute(query)
     }
@@ -196,7 +164,7 @@ class HKDataManager {
         let compound = NSCompoundPredicate(orPredicateWithSubpredicates: datePredicates)
 
         // TODO: Calculate correctly anchor
-        let anchorDate = calendar.date(byAdding: .day, value: -30, to: Date())!
+        let anchorDate = HKDataUtils.beginningOfHour(date: calendar.date(byAdding: .day, value: -30, to: Date()))!
 
         let query = HKStatisticsCollectionQuery(quantityType: sampleType,
                                                 quantitySamplePredicate: compound,
@@ -214,8 +182,9 @@ class HKDataManager {
             var result: [HKStatistics] = []
             let endDate = Date()
 
-            statsCollection.enumerateStatistics(from: anchorDate, to: endDate) { [unowned self] statistics, _stop in
-                if let quantity = statistics.sumQuantity() {
+            // TODO: Iterate based on batches, for performance improvement
+            statsCollection.enumerateStatistics(from: anchorDate, to: endDate) { statistics, _ in
+                if statistics.sumQuantity() != nil {
                     result.append(statistics)
                 }
             }
@@ -224,14 +193,14 @@ class HKDataManager {
 
         healthKitStore.execute(query)
     }
-    
+
     private func statisticsCollectionsDatePredicates(batchDates: Set<Date>) -> [NSPredicate] {
         var predicates: [NSPredicate] = []
-        
+
         batchDates.forEach { (date) in
             predicates.append(HKQuery.predicateForSamples(withStart: date, end: HKDataUtils.endOfHour(date: date)!, options: .strictStartDate))
         }
-        
+
         return predicates
     }
 

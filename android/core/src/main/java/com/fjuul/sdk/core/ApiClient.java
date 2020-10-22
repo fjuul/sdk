@@ -42,8 +42,7 @@ public class ApiClient {
     }
 
     /**
-     * Besides constructor parameters, user credentials and singing keychain must be initialized through according
-     * setters.
+     * Besides constructor parameters, user credentials and others may be initialized through the appropriate setters.
      */
     public static class Builder {
         private String baseUrl;

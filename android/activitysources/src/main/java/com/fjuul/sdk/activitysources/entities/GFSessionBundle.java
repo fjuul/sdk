@@ -101,7 +101,7 @@ public class GFSessionBundle {
             ", activityType='" + activityType + '\'' +
             ", type=" + type +
             ", calories= size " + Optional.ofNullable(calories).map(List::size) +
-            ", steps= size " + Optional.ofNullable(speed).map(List::size) +
+            ", steps= size " + Optional.ofNullable(steps).map(List::size) +
             ", heartRate= size " + Optional.ofNullable(heartRate).map(List::size) +
             ", power= size " + Optional.ofNullable(power).map(List::size) +
             ", speed= size " + Optional.ofNullable(speed).map(List::size) +

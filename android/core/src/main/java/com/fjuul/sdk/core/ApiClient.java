@@ -31,14 +31,16 @@ import okhttp3.OkHttpClient;
 public class ApiClient {
     private String baseUrl;
     private String apiKey;
+    private Context appContext;
     private IStorage storage;
     private Keystore userKeystore;
     private UserCredentials userCredentials;
     private SigningAuthInterceptor signingAuthInterceptor;
 
-    private ApiClient(String baseUrl, String apiKey, IStorage storage, Keystore userKeystore, UserCredentials credentials) {
+    private ApiClient(String baseUrl, String apiKey, Context appContext, IStorage storage, Keystore userKeystore, UserCredentials credentials) {
         this.baseUrl = baseUrl;
         this.apiKey = apiKey;
+        this.appContext = appContext;
         this.storage = storage;
         this.userKeystore = userKeystore;
         this.userCredentials = credentials;
@@ -89,7 +91,7 @@ public class ApiClient {
 
         public @NonNull ApiClient build() {
             setupDefaultStorage();
-            return new ApiClient(baseUrl, apiKey, storage, keystore, userCredentials);
+            return new ApiClient(baseUrl, apiKey, appContext, storage, keystore, userCredentials);
         }
     }
 
@@ -106,6 +108,10 @@ public class ApiClient {
 
     public @NonNull IStorage getStorage() {
         return storage;
+    }
+
+    public @NonNull Context getAppContext() {
+        return appContext;
     }
 
     public @NonNull OkHttpClient buildSigningClient(@NonNull ISigningService signingService) {

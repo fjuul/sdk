@@ -42,7 +42,7 @@ public class Keystore {
             return Optional.empty();
         }
         try {
-            SigningKey key = keyJsonAdapter.fromJson(storage.get(lookupKey));
+            SigningKey key = keyJsonAdapter.fromJson(rawKeyPresentation);
             if (key != null && key.isExpired()) {
                 return Optional.empty();
             }

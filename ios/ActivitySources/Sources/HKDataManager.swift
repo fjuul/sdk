@@ -28,11 +28,11 @@ class HKDataManager {
 //            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!
         ]
     }
-    var samplesReadableTypes: Set<HKSampleType> {
+    var samplesReadableTypes: Set<HKQuantityType> {
         // TODO: types should be based on config
         return [
-            HKWorkoutType.workoutType(),
-//            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!,
+//            HKWorkoutType.workoutType(),
+            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!,
         ]
     }
     func authorizeHealthKitAccess(_ completion: ((_ success: Bool, _ error: Error?) -> Void)!) {
@@ -70,10 +70,9 @@ class HKDataManager {
                 defer { completionHandler() }
                 guard error == nil else { return }
 
-                self.fetchSampleUpdates(sampleType: sampleType)
-                
-//                print("Emulate fetch activeEnergyBurned")
-//                self.fetchIntradayUpdates(sampleType: HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!)
+                self.fetchSampleUpdates(sampleType: sampleType) { data in
+                    print("HR Data", data)
+                }
             })
             healthKitStore.execute(query)
             healthKitStore.enableBackgroundDelivery(for: sampleType, frequency: .immediate, withCompletion: {(succeeded: Bool, error: Error?) in
@@ -88,8 +87,8 @@ class HKDataManager {
            })
         }
     }
-    private func fetchSampleUpdates(sampleType: HKSampleType) {
-        let anchorDate = self.hkAnchorStore.anchor?.activeEnergyBurned ?? HKQueryAnchor.init(fromValue: 0)
+    private func fetchSampleUpdates(sampleType: HKQuantityType, completion: @escaping ([HrDataPoint]) -> Void) {
+        let anchorDate = self.hkAnchorStore.anchor?.heartRate ?? HKQueryAnchor.init(fromValue: 0)
 
         // Exclude manually added data
         let wasUserEnteredPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
@@ -102,22 +101,28 @@ class HKDataManager {
                                               anchor: anchorDate,
                                               limit: HKObjectQueryNoLimit) { (_, samplesOrNil, deletedObjectsOrNil, newAnchor, errorOrNil) in
             guard let samples = samplesOrNil, let deletedObjects = deletedObjectsOrNil else {
-                print("*** An error occurred during the initial query: \(errorOrNil!.localizedDescription) ***")
+                // TODO: Refcatoring for bring right response (Result/Error)
                 return
             }
-            // TODO: find batches for re-upload?
-            for sampleItem in samples {
-                print("Sample item: \(sampleItem)")
-            }
-//            // TODO: find batches for re-upload?
-//            for deletedSampleItem in deletedObjects {
-//                print("deleted: \(deletedSampleItem)")
-//            }
+            
+            var hrDataPoints: [HrDataPoint] = []
 
-//            self.hkAnchorStore.anchor?.activeEnergyBurned = newAnchor
+            for sampleItem in samples {
+                let hrItem = HrDataPoint(uuid: sampleItem.uuid,
+                            value: sampleItem.quantity.doubleValue(for: HKUnit.countUnit().unitDividedByUnit(HKUnit.minuteUnit())),
+                            startDate: sampleItem.startDate,
+                            endDate: sampleItem.endDate,
+//                            source: sampleItem.sourceRevision,
+                            metadata: sampleItem.metadata)
+
+                hrDataPoints.append(hrItem)
+            }
+            self.hkAnchorStore.anchor?.heartRate = newAnchor
+            completion(hrDataPoints)
         }
         healthKitStore.execute(query)
     }
+
     private func fetchIntradayUpdates(sampleType: HKQuantityType) {
         self.getBatchSegments(sampleType: sampleType) { (batchStartDates) in
             print("batchStartDates: \(batchStartDates)")

@@ -20,7 +20,7 @@ public final class TestApiClient {
         }
 
         @Override
-        protected void setupDefaultKeystore() {
+        protected void setupDefaultStorage() {
             // NOTE: do not setup default signing keystore for the test builder
         }
     }

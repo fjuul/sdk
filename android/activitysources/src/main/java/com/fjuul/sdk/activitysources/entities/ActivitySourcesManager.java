@@ -1,13 +1,16 @@
 package com.fjuul.sdk.activitysources.entities;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.entities.PersistentStorage;
+import com.fjuul.sdk.http.ApiClient;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.api.ApiException;
@@ -16,14 +19,32 @@ import com.google.android.gms.fitness.HistoryClient;
 import com.google.android.gms.fitness.SessionsClient;
 import com.google.android.gms.tasks.Task;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class ActivitySourcesManager {
     private ActivitySourcesService sourcesService;
+    private ActivitySourcesStateStore stateStore;
+    @Nullable private List<TrackerConnection> currentConnections;
 
-    public ActivitySourcesManager(ActivitySourcesService sourcesService) {
+    @Nullable private static ActivitySourcesManager instance;
+
+    ActivitySourcesManager(ActivitySourcesService sourcesService, ActivitySourcesStateStore stateStore, List<TrackerConnection> connections) {
         this.sourcesService = sourcesService;
+        this.stateStore = stateStore;
+        this.currentConnections = connections;
+    }
+
+    @SuppressLint("NewApi")
+    public static void initialize(ApiClient client) {
+        // (get the configured api-client from context ?)
+        ActivitySourcesStateStore stateStore = new ActivitySourcesStateStore(client.getStorage(), client.getUserToken());
+        List<TrackerConnection> connections = stateStore.getConnections().orElse(null);
+        ActivitySourcesService sourcesService = new ActivitySourcesService(client);
+        instance = new ActivitySourcesManager(sourcesService, stateStore, connections);
+        // TODO: inject api-client to GF activity source
     }
 
     // TODO: add overloaded methods for all external trackers

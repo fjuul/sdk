@@ -78,13 +78,13 @@ public class ActivitySourcesApi {
             completion(decodedResponse.result)
         }
     }
-    
+
     public func mountHK(completion: @escaping (Result<String, Error>) -> Void) {
         #if os(iOS)
-            let hkSource = ActivitySourceHealthKit()
+            let hkSource = ActivitySourceHealthKit(apiClient: apiClient)
             hkSource.mount()
         #endif
-        
+
         completion(.success("OK!"))
     }
 }

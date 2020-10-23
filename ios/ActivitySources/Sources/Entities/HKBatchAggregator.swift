@@ -3,9 +3,11 @@ import HealthKit
 
 class HKBatchAggregator {
     let data: [HKStatistics]
+    let sampleType: HKQuantityType
 
-    init(data: [HKStatistics]) {
+    init(data: [HKStatistics], sampleType: HKQuantityType) {
         self.data = data
+        self.sampleType = sampleType
     }
 
     func generate() -> [BatchDataPoint] {
@@ -15,7 +17,7 @@ class HKBatchAggregator {
             let uniqueSources = Array(Set(entries.compactMap { $0.sources }.flatMap { $0 }.map { $0.bundleIdentifier }))
             let items = entries.map { statistics -> AggregatedDataPoint? in
                 if let quantity = statistics.sumQuantity() {
-                    let value = quantity.doubleValue(for: HKUnit.kilocalorie())
+                    let value = quantity.doubleValue(for: self.unit())
                     return AggregatedDataPoint(value: value, startDate: statistics.startDate)
                 }
 
@@ -26,6 +28,15 @@ class HKBatchAggregator {
         }
 
         return batches
+    }
+    
+    private func unit() -> HKUnit {
+        switch self.sampleType {
+        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
+          return HKUnit.kilocalorie()
+        default:
+          return HKUnit.count()
+        }
     }
 
     private func groupByHour() -> [Date: [HKStatistics]] {

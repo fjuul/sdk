@@ -2,12 +2,17 @@
 import Foundation
 import HealthKit
 import FjuulCore
+import Alamofire
+
+//public typealias PartialHKRequestData = Partial<HKRequestData>
 
 class HKDataManager {
     internal let healthKitStore: HKHealthStore = HKHealthStore()
+    internal let apiClient: ApiClient
     internal var hkAnchorStore: HKAnchorStore
 
-    init(persistor: Persistor) {
+    init(apiClient: ApiClient, persistor: Persistor) {
+        self.apiClient = apiClient
         self.hkAnchorStore = HKAnchorStore(persistor: persistor)
     }
 
@@ -18,7 +23,7 @@ class HKDataManager {
         // TODO: types should be based on config
         return [
             HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!,
-//            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!,
+            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!,
 //            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!,
 //            HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!
         ]
@@ -117,15 +122,37 @@ class HKDataManager {
         self.getBatchSegments(sampleType: sampleType) { (batchStartDates) in
             print("batchStartDates: \(batchStartDates)")
             self.fetchIntradayStatisticsCollections(sampleType: sampleType, batchDates: batchStartDates) { results in
-                let batches = HKBatchAggregator(data: results).generate()
-                print("got results, \(batches.count)")
+                let requestData = self.buildHKRequestData(data: results, sampleType: sampleType)
+                self.sendHKData(data: requestData) { result in
+                    switch result {
+                    case .success:
+                        print("SUCESS REQUEST")
+                    case .failure(let err):
+                        print(err)
+                    }
+                }
             }
         }
     }
+    
+    private func buildHKRequestData(data: [HKStatistics], sampleType: HKQuantityType) -> HKRequestData {
+        let batches = HKBatchAggregator(data: data, sampleType: sampleType).generate()
+        print("got results, \(sampleType) \(batches.count)")
+        
+        switch sampleType {
+        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
+           return HKRequestData(caloriesData: batches)
+        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!:
+            return HKRequestData(stepsData: batches)
+        default:
+            return HKRequestData()
+        }
+    }
+    
     private func getBatchSegments(sampleType: HKQuantityType, completion: @escaping (Set<Date>) -> Void) {
         var batchStartDates: Set<Date> = []
 
-        let anchorDate = self.hkAnchorStore.anchor?.activeEnergyBurned ?? HKQueryAnchor.init(fromValue: 0)
+        let anchorDate = self.getAnchorBySampleType(sampleType: sampleType)
 
         // Exclude manually added data
         let wasUserEnteredPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
@@ -141,15 +168,37 @@ class HKDataManager {
                 print("*** An error occurred during the initial query: \(errorOrNil!.localizedDescription) ***")
                 return
             }
-            
+
             for sampleItem in samples {
                 batchStartDates.insert(HKDataUtils.beginningOfHour(date: sampleItem.startDate)!)
             }
 
-            self.hkAnchorStore.anchor?.activeEnergyBurned = newAnchor
+            self.saveAnchorBySampleType(newAnchor: newAnchor, sampleType: sampleType)
             completion(batchStartDates)
         }
         healthKitStore.execute(query)
+    }
+
+    private func getAnchorBySampleType(sampleType: HKQuantityType) -> HKQueryAnchor {
+        switch sampleType {
+        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
+           return self.hkAnchorStore.anchor?.activeEnergyBurned ?? HKQueryAnchor.init(fromValue: 0)
+        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!:
+            return self.hkAnchorStore.anchor?.stepCount ?? HKQueryAnchor.init(fromValue: 0)
+        default:
+            return HKQueryAnchor.init(fromValue: 0)
+        }
+    }
+
+    private func saveAnchorBySampleType(newAnchor: HKQueryAnchor?, sampleType: HKQuantityType) -> Void {
+        switch sampleType {
+        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
+            self.hkAnchorStore.anchor?.activeEnergyBurned = newAnchor
+        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!:
+            self.hkAnchorStore.anchor?.stepCount = newAnchor
+        default:
+            return
+        }
     }
 
     private func fetchIntradayStatisticsCollections(sampleType: HKQuantityType, batchDates: Set<Date>, completion: @escaping ([HKStatistics]) -> Void) {
@@ -158,12 +207,12 @@ class HKDataManager {
         interval.minute = 1
 
         // Exclude manually added data
-//        let wasUserEnteredPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
+        // let wasUserEnteredPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
         let datePredicates = self.statisticsCollectionsDatePredicates(batchDates: batchDates)
 
         let compound = NSCompoundPredicate(orPredicateWithSubpredicates: datePredicates)
 
-        // TODO: Calculate correctly anchor
+        // Always start from beginning of hour
         let anchorDate = HKDataUtils.beginningOfHour(date: calendar.date(byAdding: .day, value: -30, to: Date()))!
 
         let query = HKStatisticsCollectionQuery(quantityType: sampleType,
@@ -204,14 +253,15 @@ class HKDataManager {
         return predicates
     }
 
-//    private func observerCompletionHandler(query: HKObserverQuery!, completionHandler: HKObserverQueryCompletionHandler!, error: Error?) {
-//        print("Changed data in Health App")
-//        print(query.sampleType)
-//
-//        // TODO: figure out how get sampleType from query
-//        self.fetchIntradayUpdates(sampleType: HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!)
-//
-//        completionHandler()
-//    }
+    // TODO: Continue work on that code after merge https://github.com/fjuul/sdk-server/pull/791
+    // TODO: Extract method to separate class
+    private func sendHKData(data: HKRequestData, completion: @escaping (Result<Data, Error>) -> Void) {
+        let url = "\(apiClient.baseUrl)/\(apiClient.userToken)/healthkit"
+
+        apiClient.signedSession.request(url, method: .post, parameters: data, encoder: URLEncodedFormParameterEncoder(destination: .methodDependent)).apiResponse { response in
+            return completion(response.result)
+        }
+    }
+
 }
 #endif

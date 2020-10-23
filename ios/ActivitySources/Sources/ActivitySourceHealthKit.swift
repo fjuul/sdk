@@ -3,11 +3,16 @@ import Foundation
 import FjuulCore
 
 class ActivitySourceHealthKit {
-    internal let hkDataManager: HKDataManager = HKDataManager(persistor: DiskPersistor())
+    internal let hkDataManager: HKDataManager
+    internal let persistor: Persistor
+    internal let apiClient: ApiClient
 
-    init() {}
+    init(apiClient: ApiClient, persistor: Persistor = DiskPersistor()) {
+        self.apiClient = apiClient
+        self.persistor = persistor
+        self.hkDataManager = HKDataManager(apiClient: apiClient, persistor: persistor)
+    }
 
-    // TODO: Check with team, but probably that the best place for set activitySource on server side
     func mount() {
         hkDataManager.authorizeHealthKitAccess { (success, error) in
             if success {
@@ -23,6 +28,7 @@ class ActivitySourceHealthKit {
 
     func unmount() {
     }
+    // TODO: Check are we need allow SDK consumer sync particular date?
     func sync() {
         // TODO: sync types based on config
 //        self.fetchIntradayUpdates(sampleType: HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!)

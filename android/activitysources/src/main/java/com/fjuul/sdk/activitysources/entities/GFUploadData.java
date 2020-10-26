@@ -1,27 +1,46 @@
 package com.fjuul.sdk.activitysources.entities;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.util.Collections;
 import java.util.List;
 
 public class GFUploadData {
-    List<GFCalorieDataPoint> caloriesData = Collections.emptyList();
-    List<GFStepsDataPoint> stepsData = Collections.emptyList();
-    List<GFHRSummaryDataPoint> hrData = Collections.emptyList();
-    List<GFSessionBundle> sessionsData = Collections.emptyList();
+    @NonNull List<GFCalorieDataPoint> caloriesData = Collections.emptyList();
+    @NonNull List<GFStepsDataPoint> stepsData = Collections.emptyList();
+    @NonNull List<GFHRSummaryDataPoint> hrData = Collections.emptyList();
+    @NonNull List<GFSessionBundle> sessionsData = Collections.emptyList();
 
-    public void setCaloriesData(List<GFCalorieDataPoint> caloriesData) {
+    @NonNull public List<GFCalorieDataPoint> getCaloriesData() {
+        return caloriesData;
+    }
+
+    @NonNull public List<GFStepsDataPoint> getStepsData() {
+        return stepsData;
+    }
+
+    @NonNull public List<GFHRSummaryDataPoint> getHrData() {
+        return hrData;
+    }
+
+    @NonNull public List<GFSessionBundle> getSessionsData() {
+        return sessionsData;
+    }
+
+    public void setCaloriesData(@NonNull List<GFCalorieDataPoint> caloriesData) {
         this.caloriesData = caloriesData;
     }
 
-    public void setStepsData(List<GFStepsDataPoint> stepsData) {
+    public void setStepsData(@NonNull List<GFStepsDataPoint> stepsData) {
         this.stepsData = stepsData;
     }
 
-    public void setHrData(List<GFHRSummaryDataPoint> hrData) {
+    public void setHrData(@NonNull List<GFHRSummaryDataPoint> hrData) {
         this.hrData = hrData;
     }
 
-    public void setSessionsData(List<GFSessionBundle> sessionsData) {
+    public void setSessionsData(@NonNull List<GFSessionBundle> sessionsData) {
         this.sessionsData = sessionsData;
     }
 }

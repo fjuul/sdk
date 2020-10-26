@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class GFPowerDataPoint extends GFDataPoint<Float> {
+public class GFPowerDataPoint extends GFScalarDataPoint<Float> {
     public GFPowerDataPoint(@NonNull Float value, @NonNull Date start, @NonNull String dataSource) {
         super(value, start, dataSource);
     }

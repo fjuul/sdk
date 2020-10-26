@@ -33,7 +33,7 @@ public class GFDataUtils {
     }
 
     @SuppressLint("NewApi")
-    public <V, T extends GFDataPoint<V>> List<GFDataPointsBatch<T>> groupPointsIntoBatchesByDuration(Date start, Date end, List<T> points, Duration duration) {
+    public <V, T extends GFDataPoint> List<GFDataPointsBatch<T>> groupPointsIntoBatchesByDuration(Date start, Date end, List<T> points, Duration duration) {
         Date leftBorderRange = start;
         Date rightBorderRange = Date.from(start.toInstant().plusMillis(duration.toMillis()));
         List<GFDataPointsBatch<T>> batches = new ArrayList<>();

@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class GFSpeedDataPoint extends GFDataPoint<Float> {
+public class GFSpeedDataPoint extends GFScalarDataPoint<Float> {
     public GFSpeedDataPoint(@NonNull Float value, @NonNull Date start, @NonNull String dataSource) {
         super(value, start, dataSource);
     }

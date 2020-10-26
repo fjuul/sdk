@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class GFCalorieDataPoint extends GFDataPoint<Float> {
+public class GFCalorieDataPoint extends GFScalarDataPoint<Float> {
     public GFCalorieDataPoint(@NonNull Float value, @NonNull Date start, @NonNull String dataSource) {
         super(value, start, dataSource);
     }

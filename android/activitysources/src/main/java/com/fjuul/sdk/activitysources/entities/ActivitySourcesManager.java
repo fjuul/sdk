@@ -14,12 +14,8 @@ import com.fjuul.sdk.http.ApiClient;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.fitness.Fitness;
-import com.google.android.gms.fitness.HistoryClient;
-import com.google.android.gms.fitness.SessionsClient;
 import com.google.android.gms.tasks.Task;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,14 +34,13 @@ public final class ActivitySourcesManager {
     }
 
     @SuppressLint("NewApi")
-    public static void initialize(ApiClient client) {
+    public static synchronized void initialize(ApiClient client) {
         // (get the configured api-client from context ?)
         ActivitySourcesStateStore stateStore = new ActivitySourcesStateStore(client.getStorage(), client.getUserToken());
         List<TrackerConnection> connections = stateStore.getConnections().orElse(null);
         ActivitySourcesService sourcesService = new ActivitySourcesService(client);
         GoogleFitActivitySource.initialize(client);
         instance = new ActivitySourcesManager(sourcesService, stateStore, connections);
-        // TODO: inject api-client to GF activity source
     }
 
     @NonNull
@@ -56,12 +51,13 @@ public final class ActivitySourcesManager {
         return instance;
     }
 
-    // TODO: add overloaded methods for all external trackers
+    // TODO: add a single unified connect method which works with activity source polymorphically.
 
     public Intent connect(@NonNull GoogleFitActivitySource gfActivitySource, @NonNull Context context) {
         return gfActivitySource.buildIntentRequestingPermissions(context);
     }
 
+    // TODO: use the unified callback interface
     public void handleGoogleSignInResult(@NonNull GoogleFitActivitySource gfActivitySource, @NonNull Intent intent, @NonNull GoogleFitActivitySource.HandleSignInResultCallback callback) {
         try {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(intent);

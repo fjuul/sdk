@@ -43,8 +43,17 @@ public final class ActivitySourcesManager {
         ActivitySourcesStateStore stateStore = new ActivitySourcesStateStore(client.getStorage(), client.getUserToken());
         List<TrackerConnection> connections = stateStore.getConnections().orElse(null);
         ActivitySourcesService sourcesService = new ActivitySourcesService(client);
+        GoogleFitActivitySource.initialize(client);
         instance = new ActivitySourcesManager(sourcesService, stateStore, connections);
         // TODO: inject api-client to GF activity source
+    }
+
+    @NonNull
+    public static ActivitySourcesManager getInstance() throws IllegalStateException {
+        if (instance == null) {
+            throw new IllegalStateException("You must initialize first before getting the instance");
+        }
+        return instance;
     }
 
     // TODO: add overloaded methods for all external trackers
@@ -83,22 +92,6 @@ public final class ActivitySourcesManager {
             });
         } catch (ApiException exc) {
             callback.onResult(new CommonException("ApiException: " + exc.getMessage()), false);
-        }
-    }
-
-    public GoogleFitDataManager createGoogleFitDataManager(@NonNull Context context) {
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
-        // NOTE: we set offlineAccess to false here because GoogleFitDataManager works only with local fitness data
-        if (GoogleFitActivitySource.arePermissionsGranted(account, false)) {
-            HistoryClient historyClient = Fitness.getHistoryClient(context, account);
-            SessionsClient sessionsClient = Fitness.getSessionsClient(context, account);
-            GFDataUtils gfUtils = new GFDataUtils();
-            GFClientWrapper clientWrapper = new GFClientWrapper(historyClient, sessionsClient, gfUtils);
-            String userToken = sourcesService.getUserToken();
-            GFSyncMetadataStore gfSyncMetadataStore = new GFSyncMetadataStore(new PersistentStorage(context), userToken);
-            return new GoogleFitDataManager(clientWrapper, gfUtils, gfSyncMetadataStore);
-        } else {
-            throw new IllegalStateException("Not all permissions were granted");
         }
     }
 }

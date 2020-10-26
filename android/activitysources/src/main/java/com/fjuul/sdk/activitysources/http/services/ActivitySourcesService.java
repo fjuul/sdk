@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fjuul.sdk.activitysources.adapters.GFUploadDataJsonAdapter;
 import com.fjuul.sdk.activitysources.entities.ConnectionResult;
 import com.fjuul.sdk.activitysources.entities.GFUploadData;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
@@ -40,7 +41,10 @@ public class ActivitySourcesService {
     public ActivitySourcesService(@NonNull ApiClient client) {
         this.clientBuilder = client;
         OkHttpClient httpClient = client.buildSigningClient();
-        Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
+        Moshi moshi = new Moshi.Builder()
+            .add(Date.class, new Rfc3339DateJsonAdapter())
+            .add(new GFUploadDataJsonAdapter())
+            .build();
         ActivitySourcesApiResponseTransformer responseTransformer = new ActivitySourcesApiResponseTransformer();
         Retrofit retrofit = new Retrofit.Builder().baseUrl(client.getBaseUrl())
             .client(httpClient)

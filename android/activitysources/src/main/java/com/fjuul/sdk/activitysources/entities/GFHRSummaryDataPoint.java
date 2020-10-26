@@ -8,6 +8,7 @@ import java.util.Date;
 public class GFHRSummaryDataPoint extends GFDataPoint {
     protected final float avg;
     protected final float min;
+    protected final float max;
 
     public float getAvg() {
         return avg;
@@ -20,8 +21,6 @@ public class GFHRSummaryDataPoint extends GFDataPoint {
     public float getMax() {
         return max;
     }
-
-    protected final float max;
 
     public GFHRSummaryDataPoint(float avg, float min, float max, @NonNull Date start, @NonNull String dataSource) {
         super(start, dataSource);

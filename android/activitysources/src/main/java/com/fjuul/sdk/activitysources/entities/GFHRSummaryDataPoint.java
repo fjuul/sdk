@@ -2,11 +2,25 @@ package com.fjuul.sdk.activitysources.entities;
 
 import androidx.annotation.NonNull;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class GFHRSummaryDataPoint extends GFDataPoint {
     protected final float avg;
     protected final float min;
+
+    public float getAvg() {
+        return avg;
+    }
+
+    public float getMin() {
+        return min;
+    }
+
+    public float getMax() {
+        return max;
+    }
+
     protected final float max;
 
     public GFHRSummaryDataPoint(float avg, float min, float max, @NonNull Date start, @NonNull String dataSource) {
@@ -14,5 +28,13 @@ public class GFHRSummaryDataPoint extends GFDataPoint {
         this.avg = avg;
         this.min = min;
         this.max = max;
+    }
+
+    @Override
+    public String toString() {
+
+        SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        String startFormatted = myFormat.format(start);
+        return String.format("GFHRSummaryDataPoint: avg BPM %f, min BPM %f, max BPM %f, start %s, dataSource %s", avg, min, max, startFormatted, dataSource);
     }
 }

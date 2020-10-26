@@ -2,6 +2,8 @@ package com.fjuul.sdk.activitysources.entities;
 
 import android.annotation.SuppressLint;
 
+import androidx.annotation.Nullable;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +12,8 @@ public class GFSessionBundle {
     private String id;
 
     private String name;
+
+    @Nullable private String applicationIdentifier;
 
     private Date timeStart;
 
@@ -74,11 +78,12 @@ public class GFSessionBundle {
         return speed;
     }
 
-    private GFSessionBundle(String id, String name, Date timeStart, Date timeEnd, String activityType,
+    private GFSessionBundle(String id, String name, @Nullable String applicationIdentifier, Date timeStart, Date timeEnd, String activityType,
                            int type, List<GFCalorieDataPoint> calories, List<GFStepsDataPoint> steps,
                            List<GFHRDataPoint> heartRate, List<GFPowerDataPoint> power, List<GFSpeedDataPoint> speed) {
         this.id = id;
         this.name = name;
+        this.applicationIdentifier = applicationIdentifier;
         this.timeStart = timeStart;
         this.timeEnd = timeEnd;
         this.activityType = activityType;
@@ -96,6 +101,7 @@ public class GFSessionBundle {
         return "GFSessionBundle{" +
             "id='" + id + '\'' +
             ", name='" + name + '\'' +
+            ", applicationIdentifier='" + applicationIdentifier + '\'' +
             ", timeStart=" + timeStart +
             ", timeEnd=" + timeEnd +
             ", activityType='" + activityType + '\'' +
@@ -112,6 +118,8 @@ public class GFSessionBundle {
         private String id;
 
         private String name;
+
+        @Nullable private String applicationIdentifier;
 
         private Date timeStart;
 
@@ -138,6 +146,11 @@ public class GFSessionBundle {
 
         public Builder setName(String name) {
             this.name = name;
+            return this;
+        }
+
+        public Builder setApplicationIdentifier(@Nullable String applicationIdentifier) {
+            this.applicationIdentifier = applicationIdentifier;
             return this;
         }
 
@@ -188,9 +201,7 @@ public class GFSessionBundle {
 
         public GFSessionBundle build() {
             // TODO: validate fields
-            return new GFSessionBundle(id, name, timeStart, timeEnd, activityType, type, calories, steps, heartRate, power, speed);
+            return new GFSessionBundle(id, name, applicationIdentifier, timeStart, timeEnd, activityType, type, calories, steps, heartRate, power, speed);
         }
     }
-
-    // TODO: speed samples
 }

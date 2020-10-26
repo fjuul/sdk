@@ -407,6 +407,7 @@ public final class GFClientWrapper {
         GFSessionBundle.Builder sessionBundleBuilder = new GFSessionBundle.Builder();
         sessionBundleBuilder.setId(session.getIdentifier());
         sessionBundleBuilder.setName(session.getName());
+        sessionBundleBuilder.setApplicationIdentifier(session.getAppPackageName());
         sessionBundleBuilder.setTimeStart(new Date(session.getStartTime(TimeUnit.MILLISECONDS)));
         sessionBundleBuilder.setTimeEnd(new Date(session.getEndTime(TimeUnit.MILLISECONDS)));
         sessionBundleBuilder.setType(zzjr.zzo(session.getActivity()));

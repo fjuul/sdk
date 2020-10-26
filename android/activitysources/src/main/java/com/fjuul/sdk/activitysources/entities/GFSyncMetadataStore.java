@@ -60,7 +60,7 @@ public class GFSyncMetadataStore {
         return newMetadata.equals(storedMetadata);
     }
 
-    public boolean isNeededToSyncHRBatch(@NonNull GFDataPointsBatch<GFHRDataPoint> hrBatch) {
+    public boolean isNeededToSyncHRBatch(@NonNull GFDataPointsBatch<GFHRSummaryDataPoint> hrBatch) {
         final GFSyncHRMetadata storedMetadata = getSyncMetadataOf(GFSyncHRMetadata.class, hrBatch.getStartTime(), hrBatch.getEndTime());
         if (storedMetadata == null) {
             return true;
@@ -86,7 +86,7 @@ public class GFSyncMetadataStore {
     }
 
     @SuppressLint("NewApi")
-    public void saveSyncMetadataOfHR(@NonNull GFDataPointsBatch<GFHRDataPoint> hrBatch) {
+    public void saveSyncMetadataOfHR(@NonNull GFDataPointsBatch<GFHRSummaryDataPoint> hrBatch) {
         GFSyncHRMetadata metadata = GFSyncHRMetadata.buildFromBatch(hrBatch, clock);;
         String jsonValue = syncHRMetadataJsonAdapter.toJson(metadata);
         String key = buildLookupKey(GFSyncHRMetadata.class, hrBatch.getStartTime(), hrBatch.getEndTime());

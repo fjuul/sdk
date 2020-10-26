@@ -30,9 +30,9 @@ public class GFSyncHRMetadata extends GFSyncEntityMetadata {
     }
 
     @SuppressLint("NewApi")
-    static public GFSyncHRMetadata buildFromBatch(GFDataPointsBatch<GFHRDataPoint> batch, Clock clock) {
+    static public GFSyncHRMetadata buildFromBatch(GFDataPointsBatch<GFHRSummaryDataPoint> batch, Clock clock) {
         float totalSum = batch.getPoints().stream()
-            .map(hr -> hr.getValue())
+            .map(hr -> hr.getAvg())
             .reduce(0f, (acc, el) -> acc + el);
         int count = batch.getPoints().size();
         Date editedAt = Date.from(clock.instant());

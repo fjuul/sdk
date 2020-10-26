@@ -6,7 +6,7 @@ import java.util.List;
 public class GFUploadData {
     List<GFCalorieDataPoint> caloriesData = Collections.emptyList();
     List<GFStepsDataPoint> stepsData = Collections.emptyList();
-    List<GFHRDataPoint> hrData = Collections.emptyList();
+    List<GFHRSummaryDataPoint> hrData = Collections.emptyList();
     List<GFSessionBundle> sessionsData = Collections.emptyList();
 
     public void setCaloriesData(List<GFCalorieDataPoint> caloriesData) {
@@ -17,7 +17,7 @@ public class GFUploadData {
         this.stepsData = stepsData;
     }
 
-    public void setHrData(List<GFHRDataPoint> hrData) {
+    public void setHrData(List<GFHRSummaryDataPoint> hrData) {
         this.hrData = hrData;
     }
 

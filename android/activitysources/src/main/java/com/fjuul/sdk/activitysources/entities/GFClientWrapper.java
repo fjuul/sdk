@@ -30,11 +30,9 @@ import com.google.android.gms.tasks.Tasks;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -104,17 +102,17 @@ public final class GFClientWrapper {
     }
 
     @SuppressLint("NewApi")
-    public Task<List<GFHRDataPoint>> getHRs(Date start, Date end) {
+    public Task<List<GFHRSummaryDataPoint>> getHRSummaries(Date start, Date end) {
         ExecutorService gfTaskWatcherExecutor = createGfTaskWatcherExecutor();
         List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
 
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         SupervisedExecutor gfTaskWatcherDetails = new SupervisedExecutor(gfTaskWatcherExecutor, cancellationTokenSource);
-        List<Task<List<GFHRDataPoint>>> tasks = dateChunks.stream().map(dateRange -> {
+        List<Task<List<GFHRSummaryDataPoint>>> tasks = dateChunks.stream().map(dateRange -> {
             return runReadHRTask(dateRange, Duration.ofMinutes(1), gfTaskWatcherDetails);
         }).collect(Collectors.toList());
 
-        Task<List<GFHRDataPoint>> getHRTask = flatMapTasksResults(tasks);
+        Task<List<GFHRSummaryDataPoint>> getHRTask = flatMapTasksResults(tasks);
         return shutdownExecutorsOnComplete(executor, getHRTask, gfTaskWatcherExecutor);
     }
 
@@ -154,10 +152,10 @@ public final class GFClientWrapper {
     }
 
     @SuppressLint("NewApi")
-    private Task<List<GFHRDataPoint>> runReadHRTask(Pair<Date, Date> dateRange, Duration bucketDuration, SupervisedExecutor gfTaskWatcher) {
-        Supplier<Task<List<GFHRDataPoint>>> taskSupplier = () -> {
+    private Task<List<GFHRSummaryDataPoint>> runReadHRTask(Pair<Date, Date> dateRange, Duration bucketDuration, SupervisedExecutor gfTaskWatcher) {
+        Supplier<Task<List<GFHRSummaryDataPoint>>> taskSupplier = () -> {
             return readHRHistory(dateRange.first, dateRange.second, bucketDuration)
-                .onSuccessTask(executor, this::convertDataReadResponseToHR);
+                .onSuccessTask(executor, this::convertDataReadResponseToHRSummaries);
         };
         return runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
     }
@@ -291,8 +289,8 @@ public final class GFClientWrapper {
         return null;
     }
 
-    private Task<List<GFHRDataPoint>> convertDataReadResponseToHR(DataReadResponse dataReadResponse) {
-        ArrayList<GFHRDataPoint> hrDataPoints = new ArrayList<>();
+    private Task<List<GFHRSummaryDataPoint>> convertDataReadResponseToHRSummaries(DataReadResponse dataReadResponse) {
+        ArrayList<GFHRSummaryDataPoint> hrDataPoints = new ArrayList<>();
         for (Bucket bucket : dataReadResponse.getBuckets()) {
             Date start = new Date(bucket.getStartTime(TimeUnit.MILLISECONDS));
             if (bucket.getDataSets().isEmpty()) {
@@ -304,13 +302,11 @@ public final class GFClientWrapper {
             }
             DataPoint dataPoint = dataSet.getDataPoints().get(0);
             String dataSourceId = dataPoint.getOriginalDataSource().getStreamIdentifier();
-            for (Field field : DataType.TYPE_HEART_RATE_BPM.getAggregateType().getFields()) {
-                if (Field.FIELD_AVERAGE.equals(field)) {
-                    float avgBPM = dataPoint.getValue(field).asFloat();
-                    GFHRDataPoint hrDataPoint = new GFHRDataPoint(avgBPM, start, dataSourceId);
-                    hrDataPoints.add(hrDataPoint);
-                }
-            }
+            float avgBPM = dataPoint.getValue(Field.FIELD_AVERAGE).asFloat();
+            float minBPM = dataPoint.getValue(Field.FIELD_MIN).asFloat();
+            float maxBPM = dataPoint.getValue(Field.FIELD_MAX).asFloat();
+            GFHRSummaryDataPoint hrSummary = new GFHRSummaryDataPoint(avgBPM, minBPM, maxBPM, start, dataSourceId);
+            hrDataPoints.add(hrSummary);
         }
         return Tasks.forResult(hrDataPoints);
     }

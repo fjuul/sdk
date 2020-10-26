@@ -3,7 +3,6 @@ package com.fjuul.sdk.activitysources.entities;
 import android.annotation.SuppressLint;
 import android.util.Log;
 import androidx.core.util.Pair;
-import androidx.core.util.Supplier;
 
 import com.fjuul.sdk.activitysources.utils.GoogleTaskUtils;
 import static com.fjuul.sdk.activitysources.utils.GoogleTaskUtils.runAndAwaitTaskByExecutor;
@@ -21,7 +20,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -54,7 +52,7 @@ final class GoogleFitDataManager {
         LocalDate endDate = options.getEndDate();
         Task<List<GFDataPointsBatch<GFCalorieDataPoint>>> getCaloriesTask = Tasks.forResult(Collections.emptyList());
         Task<List<GFDataPointsBatch<GFStepsDataPoint>>> getStepsTask = Tasks.forResult(Collections.emptyList());
-        Task<List<GFDataPointsBatch<GFHRDataPoint>>> getHRTask = Tasks.forResult(Collections.emptyList());
+        Task<List<GFDataPointsBatch<GFHRSummaryDataPoint>>> getHRTask = Tasks.forResult(Collections.emptyList());
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         CancellationToken cancellationToken = cancellationTokenSource.getToken();
         for (GFIntradaySyncOptions.METRICS_TYPE metric : options.getMetrics()) {
@@ -84,11 +82,11 @@ final class GoogleFitDataManager {
         }
         final Task<List<GFDataPointsBatch<GFCalorieDataPoint>>> finalGetCaloriesTask = getCaloriesTask;
         final Task<List<GFDataPointsBatch<GFStepsDataPoint>>> finalGetStepsTask = getStepsTask;
-        final Task<List<GFDataPointsBatch<GFHRDataPoint>>> finalGetHRTask = getHRTask;
+        final Task<List<GFDataPointsBatch<GFHRSummaryDataPoint>>> finalGetHRTask = getHRTask;
         final Task<GFUploadData> prepareUploadDataTask = Tasks.whenAll(getCaloriesTask, getStepsTask, getHRTask).onSuccessTask(localBackgroundExecutor, commonResult -> {
             List<GFCalorieDataPoint> calories = finalGetCaloriesTask.getResult().stream().flatMap(b -> b.getPoints().stream()).collect(Collectors.toList());
             List<GFStepsDataPoint> steps = finalGetStepsTask.getResult().stream().flatMap(b -> b.getPoints().stream()).collect(Collectors.toList());
-            List<GFHRDataPoint> hr = finalGetHRTask.getResult().stream().flatMap(b -> b.getPoints().stream()).collect(Collectors.toList());
+            List<GFHRSummaryDataPoint> hr = finalGetHRTask.getResult().stream().flatMap(b -> b.getPoints().stream()).collect(Collectors.toList());
             GFUploadData uploadData = new GFUploadData();
             uploadData.setCaloriesData(calories);
             uploadData.setHrData(hr);
@@ -184,14 +182,14 @@ final class GoogleFitDataManager {
     }
 
     @SuppressLint("NewApi")
-    private Task<List<GFDataPointsBatch<GFHRDataPoint>>> getNotSyncedHRBatches(LocalDate start, LocalDate end, Executor executor) {
+    private Task<List<GFDataPointsBatch<GFHRSummaryDataPoint>>> getNotSyncedHRBatches(LocalDate start, LocalDate end, Executor executor) {
         Pair<Date, Date> gfQueryDates = gfUtils.adjustInputDatesForGFRequest(start, end);
-        return client.getHRs(gfQueryDates.first, gfQueryDates.second).onSuccessTask(executor, (hr) -> {
+        return client.getHRSummaries(gfQueryDates.first, gfQueryDates.second).onSuccessTask(executor, (hr) -> {
             Duration batchDuration = Duration.ofMinutes(30);
             Pair<Date, Date> batchingDates = gfUtils.adjustInputDatesForBatches(start, end, batchDuration);
-            List<GFDataPointsBatch<GFHRDataPoint>> batches = this.gfUtils.groupPointsIntoBatchesByDuration(batchingDates.first, batchingDates.second, hr, batchDuration);
-            Stream<GFDataPointsBatch<GFHRDataPoint>> notEmptyBatches = batches.stream().filter(b -> !b.getPoints().isEmpty());
-            List<GFDataPointsBatch<GFHRDataPoint>> notSyncedBatches = notEmptyBatches
+            List<GFDataPointsBatch<GFHRSummaryDataPoint>> batches = this.gfUtils.groupPointsIntoBatchesByDuration(batchingDates.first, batchingDates.second, hr, batchDuration);
+            Stream<GFDataPointsBatch<GFHRSummaryDataPoint>> notEmptyBatches = batches.stream().filter(b -> !b.getPoints().isEmpty());
+            List<GFDataPointsBatch<GFHRSummaryDataPoint>> notSyncedBatches = notEmptyBatches
                 .filter(this.gfSyncMetadataStore::isNeededToSyncHRBatch)
                 .collect(Collectors.toList());
             return Tasks.forResult(notSyncedBatches);

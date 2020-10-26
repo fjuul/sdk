@@ -42,6 +42,11 @@ public class GFSessionBundle {
         return name;
     }
 
+    @Nullable
+    public String getApplicationIdentifier() {
+        return applicationIdentifier;
+    }
+
     public Date getTimeStart() {
         return timeStart;
     }

@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public final class GoogleFitDataManager {
+final class GoogleFitDataManager {
     private static final String TAG = "GoogleFitDataManager";
 
     private static final ExecutorService localBackgroundExecutor = Executors.newCachedThreadPool();
@@ -38,7 +38,7 @@ public final class GoogleFitDataManager {
     private GFSyncMetadataStore gfSyncMetadataStore;
 
 
-    public GoogleFitDataManager(GFClientWrapper client, GFDataUtils gfUtils, GFSyncMetadataStore gfSyncMetadataStore) {
+    GoogleFitDataManager(GFClientWrapper client, GFDataUtils gfUtils, GFSyncMetadataStore gfSyncMetadataStore) {
         this.client = client;
         this.gfUtils = gfUtils;
         this.gfSyncMetadataStore = gfSyncMetadataStore;
@@ -129,6 +129,30 @@ public final class GoogleFitDataManager {
         // todo: respond with result ?
     }
 
+    public void syncSessions(LocalDate start, LocalDate end, Duration minimumSessionDuration) {
+        Pair<Date, Date> gfQueryDates = gfUtils.adjustInputDatesForGFRequest(start, end);
+        client.getSessions(gfQueryDates.first, gfQueryDates.second, minimumSessionDuration).continueWith(task -> {
+            Log.d(TAG, "syncSessions: DONE = " + task.isSuccessful());
+            if (!task.isSuccessful()) {
+                // TODO: invoke callback with exception
+//                throw new Error("Couldn't get calories from GoogleFit Api: " + getCaloriesTask.getException().getMessage());
+                Log.d(TAG, "Couldn't get Sessions from GoogleFit Api: " + task.getException().getMessage());
+                return null;
+            }
+            Log.d(TAG, "syncSessions: TOTAL SIZE: " + task.getResult().size());
+            for (GFSessionBundle s : task.getResult()) {
+                Log.d(TAG, "syncSessions: SESSION " + s);
+                for (GFPowerDataPoint power : s.getPower()) {
+                    Log.d(TAG, "syncSessions: power " + power);
+                }
+                for (GFSpeedDataPoint speed : s.getSpeed()) {
+                    Log.d(TAG, "syncSessions: speed " + speed);
+                }
+            }
+            return null;
+        });
+    }
+
     @SuppressLint("NewApi")
     private Task<List<GFDataPointsBatch<GFCalorieDataPoint>>> getNotSyncedCaloriesBatches(LocalDate start, LocalDate end, Executor executor) {
         Pair<Date, Date> gfQueryDates = gfUtils.adjustInputDatesForGFRequest(start, end);
@@ -171,30 +195,6 @@ public final class GoogleFitDataManager {
                 .filter(this.gfSyncMetadataStore::isNeededToSyncHRBatch)
                 .collect(Collectors.toList());
             return Tasks.forResult(notSyncedBatches);
-        });
-    }
-
-    public void syncSessions(LocalDate start, LocalDate end, Duration minimumSessionDuration) {
-        Pair<Date, Date> gfQueryDates = gfUtils.adjustInputDatesForGFRequest(start, end);
-        client.getSessions(gfQueryDates.first, gfQueryDates.second, minimumSessionDuration).continueWith(task -> {
-            Log.d(TAG, "syncSessions: DONE = " + task.isSuccessful());
-            if (!task.isSuccessful()) {
-                // TODO: invoke callback with exception
-//                throw new Error("Couldn't get calories from GoogleFit Api: " + getCaloriesTask.getException().getMessage());
-                Log.d(TAG, "Couldn't get Sessions from GoogleFit Api: " + task.getException().getMessage());
-                return null;
-            }
-            Log.d(TAG, "syncSessions: TOTAL SIZE: " + task.getResult().size());
-            for (GFSessionBundle s : task.getResult()) {
-                Log.d(TAG, "syncSessions: SESSION " + s);
-                for (GFPowerDataPoint power : s.getPower()) {
-                    Log.d(TAG, "syncSessions: power " + power);
-                }
-                for (GFSpeedDataPoint speed : s.getSpeed()) {
-                    Log.d(TAG, "syncSessions: speed " + speed);
-                }
-            }
-            return null;
         });
     }
 }

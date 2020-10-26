@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.fjuul.sdk.activitysources.entities.ConnectionResult;
+import com.fjuul.sdk.activitysources.entities.GFUploadData;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.activitysources.http.ActivitySourcesApiResponseTransformer;
 import com.fjuul.sdk.activitysources.http.apis.ActivitySourcesApi;
@@ -88,12 +89,22 @@ public class ActivitySourcesService {
     }
 
     /**
-     * Build the call to fetch all user's active connections
+     * Build the call to fetch all user's active connections.
      *
      * @return ApiCall for the fetching connections
      */
     @NonNull
     public ApiCall<TrackerConnection[]> getCurrentConnections() {
         return apiClient.getConnections(clientBuilder.getUserToken(), "current");
+    }
+
+
+    /**
+     * Build the call to send the GoogleFit fitness data for processing.
+     * @param dataToUpload GoogleFit data to upload
+     * @return ApiCall for uploading the fitness data
+     */
+    public ApiCall<Void> uploadGoogleFitData(GFUploadData dataToUpload) {
+        return apiClient.uploadGoogleFitData(clientBuilder.getUserToken(), dataToUpload);
     }
 }

@@ -1,5 +1,6 @@
 package com.fjuul.sdk.activitysources.http.apis;
 
+import com.fjuul.sdk.activitysources.entities.GFUploadData;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.http.utils.ApiCall;
 
@@ -32,4 +33,7 @@ public interface ActivitySourcesApi {
     @NonNull
     ApiCall<TrackerConnection[]> getConnections(@Path("userToken") @NonNull String userToken,
         @Query("show") @Nullable String show);
+
+    @POST("/sdk/activity-sources/v1/{userToken}/googlefit")
+    ApiCall<Void> uploadGoogleFitData(@Path("userToken") @NonNull String userToken, GFUploadData data);
 }

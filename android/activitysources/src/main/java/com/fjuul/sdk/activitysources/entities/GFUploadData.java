@@ -3,7 +3,7 @@ package com.fjuul.sdk.activitysources.entities;
 import java.util.Collections;
 import java.util.List;
 
-class GFUploadData {
+public class GFUploadData {
     List<GFCalorieDataPoint> caloriesData = Collections.emptyList();
     List<GFStepsDataPoint> stepsData = Collections.emptyList();
     List<GFHRDataPoint> hrData = Collections.emptyList();

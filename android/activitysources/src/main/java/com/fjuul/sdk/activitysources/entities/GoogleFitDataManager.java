@@ -102,7 +102,6 @@ final class GoogleFitDataManager {
                 sendDataTaskCompletionSource.trySetException(optionalException.orElse(prepareUploadDataTaskResult.getException()));
                 return;
             }
-//            uploadData
             // serialize a data to json
             // TODO: send to the back-end
             sendDataTaskCompletionSource.trySetResult(ApiCallResult.<Void>value(null));

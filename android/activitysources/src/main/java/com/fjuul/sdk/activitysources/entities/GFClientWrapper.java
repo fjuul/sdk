@@ -244,7 +244,7 @@ public final class GFClientWrapper {
     private GFCalorieDataPoint convertDataPointToCalorie(DataPoint dataPoint) {
         String dataSourceId = dataPoint.getOriginalDataSource().getStreamIdentifier();
         Date start = new Date(dataPoint.getStartTime(TimeUnit.MILLISECONDS));
-        Date end = new Date(dataPoint.getEndTime(TimeUnit.MILLISECONDS)));
+        Date end = new Date(dataPoint.getEndTime(TimeUnit.MILLISECONDS));
         for (Field field : DataType.TYPE_CALORIES_EXPENDED.getFields()) {
             if (Field.FIELD_CALORIES.equals(field)) {
                 float kcals = dataPoint.getValue(field).asFloat();

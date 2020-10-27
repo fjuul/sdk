@@ -56,7 +56,7 @@ public class GFUploadDataJsonAdapter {
         List<GFSampleJson<GFSampleEntryJson<Integer>>> stepsData = groupAndMapGFPointsToJsonSample(sessionBundle.getSteps(), this::mapDataPointToSampleEntry);
         List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> speedData = groupAndMapGFPointsToJsonSample(sessionBundle.getSpeed(), this::mapDataPointToInstantMeasureSampleEntry);
         List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> hrData = groupAndMapGFPointsToJsonSample(sessionBundle.getHeartRate(), this::mapDataPointToInstantMeasureSampleEntry);
-        List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> powerData = groupAndMapGFPointsToJsonSample(sessionBundle.getHeartRate(), this::mapDataPointToInstantMeasureSampleEntry);
+        List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> powerData = groupAndMapGFPointsToJsonSample(sessionBundle.getPower(), this::mapDataPointToInstantMeasureSampleEntry);
         return new GFSessionJson(
             sessionBundle.getId(),
             sessionBundle.getName(),

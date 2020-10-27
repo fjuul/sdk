@@ -26,7 +26,7 @@ public abstract class GFDataPoint {
     }
 
     public GFDataPoint(@NonNull Date start, @NonNull String dataSource) {
-        this(start, null, null);
+        this(start, null, dataSource);
     }
 
     public GFDataPoint(@NonNull Date start, @Nullable Date end, @NonNull String dataSource) {

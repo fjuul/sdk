@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 
 import java.util.Date;
 
-public abstract class GFScalarDataPoint<TValue> extends GFDataPoint {
+public abstract class GFScalarDataPoint<TValue extends Number> extends GFDataPoint {
     @NonNull protected final TValue value;
 
     @NonNull public TValue getValue() {

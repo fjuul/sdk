@@ -244,10 +244,11 @@ public final class GFClientWrapper {
     private GFCalorieDataPoint convertDataPointToCalorie(DataPoint dataPoint) {
         String dataSourceId = dataPoint.getOriginalDataSource().getStreamIdentifier();
         Date start = new Date(dataPoint.getStartTime(TimeUnit.MILLISECONDS));
+        Date end = new Date(dataPoint.getEndTime(TimeUnit.MILLISECONDS)));
         for (Field field : DataType.TYPE_CALORIES_EXPENDED.getFields()) {
             if (Field.FIELD_CALORIES.equals(field)) {
                 float kcals = dataPoint.getValue(field).asFloat();
-                return new GFCalorieDataPoint(kcals, start, dataSourceId);
+                return new GFCalorieDataPoint(kcals, start, end, dataSourceId);
             }
         }
         return null;
@@ -279,11 +280,12 @@ public final class GFClientWrapper {
 
     private GFStepsDataPoint convertDataPointToSteps(DataPoint dataPoint) {
         Date start = new Date(dataPoint.getStartTime(TimeUnit.MILLISECONDS));
+        Date end = new Date(dataPoint.getEndTime(TimeUnit.MILLISECONDS));
         String dataSourceId = dataPoint.getOriginalDataSource().getStreamIdentifier();
         for (Field field : DataType.TYPE_STEP_COUNT_DELTA.getFields()) {
             if (Field.FIELD_STEPS.equals(field)) {
                 int steps = dataPoint.getValue(field).asInt();
-                return new GFStepsDataPoint(steps, start, dataSourceId);
+                return new GFStepsDataPoint(steps, start, end, dataSourceId);
             }
         }
         return null;
@@ -313,7 +315,7 @@ public final class GFClientWrapper {
 
     private GFHRDataPoint convertDataPointToHR(DataPoint dataPoint) {
         String dataSourceId = dataPoint.getOriginalDataSource().getStreamIdentifier();
-        Date start = new Date(dataPoint.getStartTime(TimeUnit.MILLISECONDS));
+        Date start = new Date(dataPoint.getTimestamp(TimeUnit.MILLISECONDS));
         for (Field field : DataType.TYPE_HEART_RATE_BPM.getFields()) {
             if (Field.FIELD_BPM.equals(field)) {
                 float bpm = dataPoint.getValue(field).asFloat();
@@ -325,7 +327,7 @@ public final class GFClientWrapper {
 
     private GFPowerDataPoint convertDataPointToPower(DataPoint dataPoint) {
         String dataSourceId = dataPoint.getOriginalDataSource().getStreamIdentifier();
-        Date start = new Date(dataPoint.getStartTime(TimeUnit.MILLISECONDS));
+        Date start = new Date(dataPoint.getTimestamp(TimeUnit.MILLISECONDS));
         for (Field field : DataType.TYPE_POWER_SAMPLE.getFields()) {
             if (Field.FIELD_WATTS.equals(field)) {
                 float watts = dataPoint.getValue(field).asFloat();
@@ -337,7 +339,7 @@ public final class GFClientWrapper {
 
     private GFSpeedDataPoint convertDataPointToSpeed(DataPoint dataPoint) {
         String dataSourceId = dataPoint.getOriginalDataSource().getStreamIdentifier();
-        Date start = new Date(dataPoint.getStartTime(TimeUnit.MILLISECONDS));
+        Date start = new Date(dataPoint.getTimestamp(TimeUnit.MILLISECONDS));
         for (Field field : DataType.TYPE_SPEED.getFields()) {
             if (Field.FIELD_SPEED.equals(field)) {
                 float metersPerSecond = dataPoint.getValue(field).asFloat();

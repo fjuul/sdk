@@ -14,7 +14,6 @@ import com.fjuul.sdk.activitysources.json.GFUploadDataJson.GFIntradaySampleEntry
 import com.fjuul.sdk.activitysources.json.GFUploadDataJson.GFSampleEntryJson;
 import com.fjuul.sdk.activitysources.json.GFUploadDataJson.GFSampleJson;
 import com.fjuul.sdk.activitysources.json.GFUploadDataJson.GFSessionJson;
-import com.squareup.moshi.FromJson;
 import com.squareup.moshi.ToJson;
 
 import java.util.List;
@@ -23,13 +22,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class GFUploadDataJsonAdapter {
-    // TODO: try to remove this stub
-    @FromJson
-    GFUploadData fromJson(GFUploadDataJson json) {
-        // we don't need to convert json to GFUploadData
-        return null;
-    }
-
     @SuppressLint("NewApi")
     @ToJson
     GFUploadDataJson toJson(GFUploadData uploadData) {

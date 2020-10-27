@@ -33,8 +33,8 @@ public class GFUploadDataJsonAdapter {
     @SuppressLint("NewApi")
     @ToJson
     GFUploadDataJson toJson(GFUploadData uploadData) {
-        List<GFSampleJson<GFIntradaySampleEntryJson>> caloriesData = groupAndMapGFPointsToJsonSample(uploadData.getCaloriesData(), this::mapDataPointToIntradayEntry);
-        List<GFSampleJson<GFIntradaySampleEntryJson>> stepsData = groupAndMapGFPointsToJsonSample(uploadData.getStepsData(), this::mapDataPointToIntradayEntry);
+        List<GFSampleJson<GFIntradaySampleEntryJson<Float>>> caloriesData = groupAndMapGFPointsToJsonSample(uploadData.getCaloriesData(), this::mapDataPointToIntradayEntry);
+        List<GFSampleJson<GFIntradaySampleEntryJson<Integer>>> stepsData = groupAndMapGFPointsToJsonSample(uploadData.getStepsData(), this::mapDataPointToIntradayEntry);
         List<GFSampleJson<GFIntradayHRSampleEntryJson>> hrData = groupAndMapGFPointsToJsonSample(uploadData.getHrData(), this::mapDataPointToIntradayHREntry);
         List<GFSessionJson> sessionsData = uploadData.getSessionsData().stream().map(this::mapSessionBundleToJson).collect(Collectors.toList());
         return new GFUploadDataJson(caloriesData, stepsData, hrData, sessionsData);
@@ -46,17 +46,17 @@ public class GFUploadDataJsonAdapter {
         List<GFSampleJson<O>> samples = groupedByDataSource.entrySet().stream().map((entry) -> {
             String dataSource = entry.getKey();
             List<O> entries = entry.getValue().stream().map(pointMapper).collect(Collectors.toList());
-            return new GFSampleJson(dataSource, entries);
+            return new GFSampleJson<>(dataSource, entries);
         }).collect(Collectors.toList());
         return samples;
     }
 
     private GFSessionJson mapSessionBundleToJson(GFSessionBundle sessionBundle) {
-        List<GFSampleJson<GFSampleEntryJson>> caloriesData = groupAndMapGFPointsToJsonSample(sessionBundle.getCalories(), this::mapDataPointToSampleEntry);
-        List<GFSampleJson<GFSampleEntryJson>> stepsData = groupAndMapGFPointsToJsonSample(sessionBundle.getSteps(), this::mapDataPointToSampleEntry);
-        List<GFSampleJson<GFInstantMeasureSampleEntryJson>> speedData = groupAndMapGFPointsToJsonSample(sessionBundle.getSpeed(), this::mapDataPointToInstantMeasureSampleEntry);
-        List<GFSampleJson<GFInstantMeasureSampleEntryJson>> hrData = groupAndMapGFPointsToJsonSample(sessionBundle.getHeartRate(), this::mapDataPointToInstantMeasureSampleEntry);
-        List<GFSampleJson<GFInstantMeasureSampleEntryJson>> powerData = groupAndMapGFPointsToJsonSample(sessionBundle.getHeartRate(), this::mapDataPointToInstantMeasureSampleEntry);
+        List<GFSampleJson<GFSampleEntryJson<Float>>> caloriesData = groupAndMapGFPointsToJsonSample(sessionBundle.getCalories(), this::mapDataPointToSampleEntry);
+        List<GFSampleJson<GFSampleEntryJson<Integer>>> stepsData = groupAndMapGFPointsToJsonSample(sessionBundle.getSteps(), this::mapDataPointToSampleEntry);
+        List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> speedData = groupAndMapGFPointsToJsonSample(sessionBundle.getSpeed(), this::mapDataPointToInstantMeasureSampleEntry);
+        List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> hrData = groupAndMapGFPointsToJsonSample(sessionBundle.getHeartRate(), this::mapDataPointToInstantMeasureSampleEntry);
+        List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> powerData = groupAndMapGFPointsToJsonSample(sessionBundle.getHeartRate(), this::mapDataPointToInstantMeasureSampleEntry);
         return new GFSessionJson(
             sessionBundle.getId(),
             sessionBundle.getName(),
@@ -72,7 +72,7 @@ public class GFUploadDataJsonAdapter {
         );
     }
 
-    private <T> GFIntradaySampleEntryJson<T> mapDataPointToIntradayEntry(GFScalarDataPoint<T> point) {
+    private <T extends Number> GFIntradaySampleEntryJson<T> mapDataPointToIntradayEntry(GFScalarDataPoint<T> point) {
         return new GFIntradaySampleEntryJson<>(point.getStart(), point.getValue());
     }
 
@@ -80,11 +80,11 @@ public class GFUploadDataJsonAdapter {
         return new GFIntradayHRSampleEntryJson(point.getStart(), point.getAvg(), point.getMin(), point.getMax());
     }
 
-    private <T> GFSampleEntryJson<T> mapDataPointToSampleEntry(GFScalarDataPoint<T> point) {
+    private <T extends Number> GFSampleEntryJson<T> mapDataPointToSampleEntry(GFScalarDataPoint<T> point) {
         return new GFSampleEntryJson<>(point.getStart(), point.getEnd(), point.getValue());
     }
 
-    private <T> GFInstantMeasureSampleEntryJson<T> mapDataPointToInstantMeasureSampleEntry(GFScalarDataPoint<T> point) {
+    private <T extends Number> GFInstantMeasureSampleEntryJson<T> mapDataPointToInstantMeasureSampleEntry(GFScalarDataPoint<T> point) {
         return new GFInstantMeasureSampleEntryJson<>(point.getStart(),point.getValue());
     }
 }

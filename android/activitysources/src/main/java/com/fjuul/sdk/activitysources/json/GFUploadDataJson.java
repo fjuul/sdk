@@ -4,13 +4,13 @@ import java.util.Date;
 import java.util.List;
 
 public class GFUploadDataJson {
-    List<GFSampleJson<GFIntradaySampleEntryJson>> caloriesData;
-    List<GFSampleJson<GFIntradaySampleEntryJson>> stepsData;
+    List<GFSampleJson<GFIntradaySampleEntryJson<Float>>> caloriesData;
+    List<GFSampleJson<GFIntradaySampleEntryJson<Integer>>> stepsData;
     List<GFSampleJson<GFIntradayHRSampleEntryJson>> hrData;
     List<GFSessionJson> sessionsData;
 
-    public GFUploadDataJson(List<GFSampleJson<GFIntradaySampleEntryJson>> caloriesData,
-                            List<GFSampleJson<GFIntradaySampleEntryJson>> stepsData,
+    public GFUploadDataJson(List<GFSampleJson<GFIntradaySampleEntryJson<Float>>> caloriesData,
+                            List<GFSampleJson<GFIntradaySampleEntryJson<Integer>>> stepsData,
                             List<GFSampleJson<GFIntradayHRSampleEntryJson>> hrData,
                             List<GFSessionJson> sessionsData) {
         this.caloriesData = caloriesData;
@@ -36,18 +36,19 @@ public class GFUploadDataJson {
         private Date timeStart;
         private Date timeEnd;
         private int type;
-        private List<GFSampleJson<GFSampleEntryJson>> calories;
-        private List<GFSampleJson<GFSampleEntryJson>> steps;
-        private List<GFSampleJson<GFInstantMeasureSampleEntryJson>> speed;
-        private List<GFSampleJson<GFInstantMeasureSampleEntryJson>> heartRate;
-        private List<GFSampleJson<GFInstantMeasureSampleEntryJson>> power;
+        private List<GFSampleJson<GFSampleEntryJson<Float>>> calories;
+        private List<GFSampleJson<GFSampleEntryJson<Integer>>> steps;
+        private List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> speed;
+        private List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> heartRate;
+        private List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> power;
 
         public GFSessionJson(String id, String name, String applicationIdentifier, Date timeStart,
-                             Date timeEnd, int type, List<GFSampleJson<GFSampleEntryJson>> calories,
-                             List<GFSampleJson<GFSampleEntryJson>> steps,
-                             List<GFSampleJson<GFInstantMeasureSampleEntryJson>> speed,
-                             List<GFSampleJson<GFInstantMeasureSampleEntryJson>> heartRate,
-                             List<GFSampleJson<GFInstantMeasureSampleEntryJson>> power) {
+                             Date timeEnd, int type,
+                             List<GFSampleJson<GFSampleEntryJson<Float>>> calories,
+                             List<GFSampleJson<GFSampleEntryJson<Integer>>> steps,
+                             List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> speed,
+                             List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> heartRate,
+                             List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> power) {
             this.id = id;
             this.name = name;
             this.applicationIdentifier = applicationIdentifier;
@@ -62,7 +63,7 @@ public class GFUploadDataJson {
         }
     }
 
-    public static class GFIntradaySampleEntryJson<TValue> {
+    public static class GFIntradaySampleEntryJson<TValue extends Number> {
         Date start;
         TValue value;
 
@@ -86,7 +87,7 @@ public class GFUploadDataJson {
         }
     }
 
-    public static class GFSampleEntryJson<TValue> {
+    public static class GFSampleEntryJson<TValue extends Number> {
         Date start;
         Date end;
         TValue value;
@@ -98,7 +99,7 @@ public class GFUploadDataJson {
         }
     }
 
-    public static class GFInstantMeasureSampleEntryJson<TValue> {
+    public static class GFInstantMeasureSampleEntryJson<TValue extends Number> {
         Date timestamp;
         TValue value;
 

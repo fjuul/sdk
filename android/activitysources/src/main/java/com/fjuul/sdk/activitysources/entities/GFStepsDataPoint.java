@@ -1,13 +1,18 @@
 package com.fjuul.sdk.activitysources.entities;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class GFStepsDataPoint extends GFScalarDataPoint<Integer> {
     public GFStepsDataPoint(@NonNull Integer value, @NonNull Date start, @NonNull String dataSource) {
-        super(value, start, dataSource);
+        this(value, start, null, dataSource);
+    }
+
+    public GFStepsDataPoint(@NonNull Integer integer, @NonNull Date start, @Nullable Date end, @NonNull String dataSource) {
+        super(integer, start, end, dataSource);
     }
 
     @NonNull

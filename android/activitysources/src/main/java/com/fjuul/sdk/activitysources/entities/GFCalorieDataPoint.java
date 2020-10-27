@@ -1,13 +1,18 @@
 package com.fjuul.sdk.activitysources.entities;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class GFCalorieDataPoint extends GFScalarDataPoint<Float> {
     public GFCalorieDataPoint(@NonNull Float value, @NonNull Date start, @NonNull String dataSource) {
-        super(value, start, dataSource);
+        this(value, start, null, dataSource);
+    }
+
+    public GFCalorieDataPoint(@NonNull Float aFloat, @NonNull Date start, @Nullable Date end, @NonNull String dataSource) {
+        super(aFloat, start, end, dataSource);
     }
 
     @NonNull

@@ -73,6 +73,9 @@ public class GFUploadDataJsonAdapter {
     }
 
     private <T extends Number> GFSampleEntryJson<T> mapDataPointToSampleEntry(GFScalarDataPoint<T> point) {
+        if (point.getEnd() == null) {
+            throw new IllegalStateException("GFScalarDataPoint must have the defined end time: " + point.toString());
+        }
         return new GFSampleEntryJson<>(point.getStart(), point.getEnd(), point.getValue());
     }
 

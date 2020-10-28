@@ -337,6 +337,14 @@ public final class GFClientWrapper {
         return null;
     }
 
+    private GFActivitySegmentDataPoint convertDataPointToActivitySegment(DataPoint dataPoint) {
+        final String dataSourceId = dataPoint.getOriginalDataSource().getStreamIdentifier();
+        final Date start = new Date(dataPoint.getStartTime(TimeUnit.MILLISECONDS));
+        final Date end = new Date(dataPoint.getEndTime(TimeUnit.MILLISECONDS));
+        final int activityType = dataPoint.getValue(Field.FIELD_ACTIVITY).asInt();
+        return new GFActivitySegmentDataPoint(activityType, start,end,dataSourceId);
+    }
+
     private GFSpeedDataPoint convertDataPointToSpeed(DataPoint dataPoint) {
         String dataSourceId = dataPoint.getOriginalDataSource().getStreamIdentifier();
         Date start = new Date(dataPoint.getTimestamp(TimeUnit.MILLISECONDS));
@@ -428,6 +436,9 @@ public final class GFClientWrapper {
             } else if (dataType.equals(DataType.TYPE_CALORIES_EXPENDED)) {
                 List<GFCalorieDataPoint> calories = convertDataSetToPoints(dataSet, this::convertDataPointToCalorie);
                 sessionBundleBuilder.setCalories(calories);
+            } else if (dataType.equals(DataType.TYPE_ACTIVITY_SEGMENT)) {
+                List<GFActivitySegmentDataPoint> activitySegments = convertDataSetToPoints(dataSet, this::convertDataPointToActivitySegment);
+                sessionBundleBuilder.setActivitySegments(activitySegments);
             }
         }
         return sessionBundleBuilder.build();
@@ -508,6 +519,7 @@ public final class GFClientWrapper {
             .read(DataType.TYPE_SPEED)
             .read(DataType.TYPE_POWER_SAMPLE)
             .read(DataType.TYPE_CALORIES_EXPENDED)
+            .read(DataType.TYPE_ACTIVITY_SEGMENT)
             .setSessionId(session.getIdentifier())
             .build();
     }

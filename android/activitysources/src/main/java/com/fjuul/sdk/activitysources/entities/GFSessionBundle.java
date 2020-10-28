@@ -24,6 +24,8 @@ public class GFSessionBundle {
 
     private int type;
 
+    private List<GFActivitySegmentDataPoint> activitySegments;
+
     private List<GFCalorieDataPoint> calories;
 
     private List<GFStepsDataPoint> steps;
@@ -63,6 +65,10 @@ public class GFSessionBundle {
         return type;
     }
 
+    public List<GFActivitySegmentDataPoint> getActivitySegments() {
+        return activitySegments;
+    }
+
     public List<GFCalorieDataPoint> getCalories() {
         return calories;
     }
@@ -83,9 +89,14 @@ public class GFSessionBundle {
         return speed;
     }
 
-    private GFSessionBundle(String id, String name, @Nullable String applicationIdentifier, Date timeStart, Date timeEnd, String activityType,
-                           int type, List<GFCalorieDataPoint> calories, List<GFStepsDataPoint> steps,
-                           List<GFHRDataPoint> heartRate, List<GFPowerDataPoint> power, List<GFSpeedDataPoint> speed) {
+    private GFSessionBundle(String id, String name, @Nullable String applicationIdentifier,
+                            Date timeStart, Date timeEnd, String activityType, int type,
+                            List<GFActivitySegmentDataPoint> activitySegments,
+                            List<GFCalorieDataPoint> calories,
+                            List<GFStepsDataPoint> steps,
+                            List<GFHRDataPoint> heartRate,
+                            List<GFPowerDataPoint> power,
+                            List<GFSpeedDataPoint> speed) {
         this.id = id;
         this.name = name;
         this.applicationIdentifier = applicationIdentifier;
@@ -93,6 +104,7 @@ public class GFSessionBundle {
         this.timeEnd = timeEnd;
         this.activityType = activityType;
         this.type = type;
+        this.activitySegments = activitySegments;
         this.calories = calories;
         this.steps = steps;
         this.heartRate = heartRate;
@@ -111,6 +123,7 @@ public class GFSessionBundle {
             ", timeEnd=" + timeEnd +
             ", activityType='" + activityType + '\'' +
             ", type=" + type +
+            ", activitySegments= size " + Optional.ofNullable(activitySegments).map(List::size) +
             ", calories= size " + Optional.ofNullable(calories).map(List::size) +
             ", steps= size " + Optional.ofNullable(steps).map(List::size) +
             ", heartRate= size " + Optional.ofNullable(heartRate).map(List::size) +
@@ -133,6 +146,8 @@ public class GFSessionBundle {
         private String activityType;
 
         private int type;
+
+        private List<GFActivitySegmentDataPoint> activitySegments;
 
         private List<GFCalorieDataPoint> calories;
 
@@ -179,6 +194,11 @@ public class GFSessionBundle {
             return this;
         }
 
+        public Builder setActivitySegments(List<GFActivitySegmentDataPoint> activitySegments) {
+            this.activitySegments = activitySegments;
+            return this;
+        }
+
         public Builder setCalories(List<GFCalorieDataPoint> calories) {
             this.calories = calories;
             return this;
@@ -205,8 +225,9 @@ public class GFSessionBundle {
         }
 
         public GFSessionBundle build() {
-            // TODO: validate fields
-            return new GFSessionBundle(id, name, applicationIdentifier, timeStart, timeEnd, activityType, type, calories, steps, heartRate, power, speed);
+            // TODO: validate fields ?
+            // TODO: provide a fallback for a nullable sample - an empty list
+            return new GFSessionBundle(id, name, applicationIdentifier, timeStart, timeEnd, activityType, type, activitySegments, calories, steps, heartRate, power, speed);
         }
     }
 }

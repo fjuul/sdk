@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 
 import androidx.annotation.Nullable;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -134,30 +135,19 @@ public class GFSessionBundle {
 
     public static class Builder {
         private String id;
-
         private String name;
-
         @Nullable private String applicationIdentifier;
-
         private Date timeStart;
-
         private Date timeEnd;
-
         private String activityType;
-
         private int type;
 
-        private List<GFActivitySegmentDataPoint> activitySegments;
-
-        private List<GFCalorieDataPoint> calories;
-
-        private List<GFStepsDataPoint> steps;
-
-        private List<GFHRDataPoint> heartRate;
-
-        private List<GFPowerDataPoint> power;
-
-        private List<GFSpeedDataPoint> speed;
+        @Nullable private List<GFActivitySegmentDataPoint> activitySegments;
+        @Nullable private List<GFCalorieDataPoint> calories;
+        @Nullable private List<GFStepsDataPoint> steps;
+        @Nullable private List<GFHRDataPoint> heartRate;
+        @Nullable private List<GFPowerDataPoint> power;
+        @Nullable private List<GFSpeedDataPoint> speed;
 
         public Builder setId(String id) {
             this.id = id;
@@ -224,10 +214,16 @@ public class GFSessionBundle {
             return this;
         }
 
+        @SuppressLint("NewApi")
         public GFSessionBundle build() {
             // TODO: validate fields ?
-            // TODO: provide a fallback for a nullable sample - an empty list
-            return new GFSessionBundle(id, name, applicationIdentifier, timeStart, timeEnd, activityType, type, activitySegments, calories, steps, heartRate, power, speed);
+            return new GFSessionBundle(id, name, applicationIdentifier, timeStart, timeEnd, activityType, type,
+                Optional.ofNullable(activitySegments).orElse(Collections.emptyList()),
+                Optional.ofNullable(calories).orElse(Collections.emptyList()),
+                Optional.ofNullable(steps).orElse(Collections.emptyList()),
+                Optional.ofNullable(heartRate).orElse(Collections.emptyList()),
+                Optional.ofNullable(power).orElse(Collections.emptyList()),
+                Optional.ofNullable(speed).orElse(Collections.emptyList()));
         }
     }
 }

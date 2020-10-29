@@ -2,6 +2,7 @@ package com.fjuul.sdk.activitysources.adapters;
 
 import android.os.Build;
 
+import com.fjuul.sdk.activitysources.entities.GFActivitySegmentDataPoint;
 import com.fjuul.sdk.activitysources.entities.GFCalorieDataPoint;
 import com.fjuul.sdk.activitysources.entities.GFHRDataPoint;
 import com.fjuul.sdk.activitysources.entities.GFHRSummaryDataPoint;
@@ -25,6 +26,8 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
 @RunWith(Enclosed.class)
@@ -94,6 +97,16 @@ public class GFUploadDataJsonAdapterTest {
                 Date.from(Instant.parse("2020-01-15T17:25:16.000Z")),
                 "raw:com.google.distance.delta:stream1")
         );
+        public static final List<GFActivitySegmentDataPoint> activitySegments = Arrays.asList(
+            new GFActivitySegmentDataPoint(3,
+                Date.from(Instant.parse("2020-10-25T21:00:00.000Z")),
+                Date.from(Instant.parse("2020-10-25T21:16:42.953Z")),
+                null),
+            new GFActivitySegmentDataPoint(7,
+                Date.from(Instant.parse("2020-10-25T21:16:42.953Z")),
+                Date.from(Instant.parse("2020-10-25T21:18:00.953Z")),
+                "derived:com.google.activity.segment:com.mc.miband1:session_activity_segment")
+        );
 
         @Before
         public void setUp() {
@@ -141,10 +154,9 @@ public class GFUploadDataJsonAdapterTest {
                 "  \"sessionsData\": [],",
                 "  \"stepsData\": []",
                 "}");
-            assertEquals(
-                "should serialize to the correct json format",
-                expectedJson,
-                json);
+            assertThat("should serialize to the correct json format",
+                json,
+                equalTo(expectedJson));
         }
 
         @Test
@@ -184,10 +196,9 @@ public class GFUploadDataJsonAdapterTest {
                     "  ]",
                     "}"
             );
-            assertEquals(
-                "should serialize to the correct json format",
-                expectedJson,
-                json);
+            assertThat("should serialize to the correct json format",
+                json,
+                equalTo(expectedJson));
         }
 
         @Test
@@ -239,10 +250,9 @@ public class GFUploadDataJsonAdapterTest {
                     "  \"stepsData\": []",
                     "}"
             );
-            assertEquals(
-                "should serialize to the correct json format",
-                expectedJson,
-                json);
+            assertThat("should serialize to the correct json format",
+                json,
+                equalTo(expectedJson));
         }
 
         @Test
@@ -256,6 +266,7 @@ public class GFUploadDataJsonAdapterTest {
                     .setTimeEnd(Date.from(Instant.parse("2020-01-16T13:00:00.000Z")))
                     .setActivityType("biking")
                     .setType(1)
+                    .setActivitySegments(activitySegments)
                     .setCalories(calories)
                     .setHeartRate(heartRate)
                     .setPower(power)
@@ -273,6 +284,27 @@ public class GFUploadDataJsonAdapterTest {
                     "  \"hrData\": [],",
                     "  \"sessionsData\": [",
                     "    {",
+                    "      \"activitySegments\": [",
+                    "        {",
+                    "          \"entries\": [",
+                    "            {",
+                    "              \"end\": \"2020-10-25T21:16:42.953Z\",",
+                    "              \"start\": \"2020-10-25T21:00:00.000Z\",",
+                    "              \"value\": 3",
+                    "            }",
+                    "          ]",
+                    "        },",
+                    "        {",
+                    "          \"dataSource\": \"derived:com.google.activity.segment:com.mc.miband1:session_activity_segment\",",
+                    "          \"entries\": [",
+                    "            {",
+                    "              \"end\": \"2020-10-25T21:18:00.953Z\",",
+                    "              \"start\": \"2020-10-25T21:16:42.953Z\",",
+                    "              \"value\": 7",
+                    "            }",
+                    "          ]",
+                    "        }",
+                    "      ],",
                     "      \"applicationIdentifier\": \"com.google.android.apps.fitness\",",
                     "      \"calories\": [",
                     "        {",
@@ -388,10 +420,10 @@ public class GFUploadDataJsonAdapterTest {
                     "  \"stepsData\": []",
                     "}"
             );
-            assertEquals(
+            assertThat(
                 "should serialize to the correct json format",
-                expectedJson,
-                json);
+                json,
+                equalTo(expectedJson));
         }
     }
 }

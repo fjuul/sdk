@@ -25,17 +25,17 @@ public class GFUploadDataJsonAdapter {
     @SuppressLint("NewApi")
     @ToJson
     GFUploadDataJson toJson(GFUploadData uploadData) {
-        List<GFSampleJson<GFIntradaySampleEntryJson<Float>>> caloriesData = groupAndMapGFPointsToJsonSample(uploadData.getCaloriesData(), this::mapDataPointToIntradayEntry);
-        List<GFSampleJson<GFIntradaySampleEntryJson<Integer>>> stepsData = groupAndMapGFPointsToJsonSample(uploadData.getStepsData(), this::mapDataPointToIntradayEntry);
-        List<GFSampleJson<GFIntradayHRSampleEntryJson>> hrData = groupAndMapGFPointsToJsonSample(uploadData.getHrData(), this::mapDataPointToIntradayHREntry);
-        List<GFSessionJson> sessionsData = uploadData.getSessionsData().stream().map(this::mapSessionBundleToJson).collect(Collectors.toList());
+        final List<GFSampleJson<GFIntradaySampleEntryJson<Float>>> caloriesData = groupAndMapGFPointsToJsonSample(uploadData.getCaloriesData(), this::mapDataPointToIntradayEntry);
+        final List<GFSampleJson<GFIntradaySampleEntryJson<Integer>>> stepsData = groupAndMapGFPointsToJsonSample(uploadData.getStepsData(), this::mapDataPointToIntradayEntry);
+        final List<GFSampleJson<GFIntradayHRSampleEntryJson>> hrData = groupAndMapGFPointsToJsonSample(uploadData.getHrData(), this::mapDataPointToIntradayHREntry);
+        final List<GFSessionJson> sessionsData = uploadData.getSessionsData().stream().map(this::mapSessionBundleToJson).collect(Collectors.toList());
         return new GFUploadDataJson(caloriesData, stepsData, hrData, sessionsData);
     }
 
     @SuppressLint("NewApi")
     private <T extends GFDataPoint, O> List<GFSampleJson<O>> groupAndMapGFPointsToJsonSample(List<T> dataPoints, Function<T, O> pointMapper) {
-        Map<String, List<T>> groupedByDataSource = dataPoints.stream().collect(Collectors.groupingBy(T::getDataSource));
-        List<GFSampleJson<O>> samples = groupedByDataSource.entrySet().stream().map((entry) -> {
+        final Map<String, List<T>> groupedByDataSource = dataPoints.stream().collect(Collectors.groupingBy(T::getDataSource));
+        final List<GFSampleJson<O>> samples = groupedByDataSource.entrySet().stream().map((entry) -> {
             String dataSource = entry.getKey();
             List<O> entries = entry.getValue().stream().map(pointMapper).collect(Collectors.toList());
             return new GFSampleJson<>(dataSource, entries);
@@ -44,11 +44,12 @@ public class GFUploadDataJsonAdapter {
     }
 
     private GFSessionJson mapSessionBundleToJson(GFSessionBundle sessionBundle) {
-        List<GFSampleJson<GFSampleEntryJson<Float>>> caloriesData = groupAndMapGFPointsToJsonSample(sessionBundle.getCalories(), this::mapDataPointToSampleEntry);
-        List<GFSampleJson<GFSampleEntryJson<Integer>>> stepsData = groupAndMapGFPointsToJsonSample(sessionBundle.getSteps(), this::mapDataPointToSampleEntry);
-        List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> speedData = groupAndMapGFPointsToJsonSample(sessionBundle.getSpeed(), this::mapDataPointToInstantMeasureSampleEntry);
-        List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> hrData = groupAndMapGFPointsToJsonSample(sessionBundle.getHeartRate(), this::mapDataPointToInstantMeasureSampleEntry);
-        List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> powerData = groupAndMapGFPointsToJsonSample(sessionBundle.getPower(), this::mapDataPointToInstantMeasureSampleEntry);
+        final List<GFSampleJson<GFSampleEntryJson<Integer>>> activitySegmentsData = groupAndMapGFPointsToJsonSample(sessionBundle.getActivitySegments(), this::mapDataPointToSampleEntry);
+        final List<GFSampleJson<GFSampleEntryJson<Float>>> caloriesData = groupAndMapGFPointsToJsonSample(sessionBundle.getCalories(), this::mapDataPointToSampleEntry);
+        final List<GFSampleJson<GFSampleEntryJson<Integer>>> stepsData = groupAndMapGFPointsToJsonSample(sessionBundle.getSteps(), this::mapDataPointToSampleEntry);
+        final List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> speedData = groupAndMapGFPointsToJsonSample(sessionBundle.getSpeed(), this::mapDataPointToInstantMeasureSampleEntry);
+        final List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> hrData = groupAndMapGFPointsToJsonSample(sessionBundle.getHeartRate(), this::mapDataPointToInstantMeasureSampleEntry);
+        final List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> powerData = groupAndMapGFPointsToJsonSample(sessionBundle.getPower(), this::mapDataPointToInstantMeasureSampleEntry);
         return new GFSessionJson(
             sessionBundle.getId(),
             sessionBundle.getName(),
@@ -56,6 +57,7 @@ public class GFUploadDataJsonAdapter {
             sessionBundle.getTimeStart(),
             sessionBundle.getTimeEnd(),
             sessionBundle.getType(),
+            activitySegmentsData,
             caloriesData,
             stepsData,
             speedData,

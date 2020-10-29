@@ -13,7 +13,7 @@ class GFSyncSessionMetadata extends GFSyncEntityMetadata {
     public static final int CURRENT_SCHEMA_VERSION = 1;
 
     @NonNull private final String id;
-    @NonNull private final String name;
+    @Nullable private final String name;
     @Nullable private final String applicationIdentifier;
     @NonNull private final Date timeStart;
     @NonNull private final Date timeEnd;
@@ -25,7 +25,7 @@ class GFSyncSessionMetadata extends GFSyncEntityMetadata {
     private final int speedCount;
     private final int powerCount;
 
-    public GFSyncSessionMetadata(@NonNull String id, @NonNull String name, @Nullable String applicationIdentifier,
+    public GFSyncSessionMetadata(@NonNull String id, @Nullable String name, @Nullable String applicationIdentifier,
                                  @NonNull Date timeStart, @NonNull Date timeEnd, int type,
                                  int activitySegmentsCount, int caloriesCount, int stepsCount,
                                  int heartRateCount, int speedCount, int powerCount, Date editedAt) {
@@ -45,7 +45,7 @@ class GFSyncSessionMetadata extends GFSyncEntityMetadata {
     }
 
     @SuppressLint("NewApi")
-    static public GFSyncSessionMetadata buildFromSessionBundle(GFSessionBundle sessionBundle, Clock clock) {
+    static public GFSyncSessionMetadata buildFromSessionBundle(@NonNull GFSessionBundle sessionBundle, @NonNull Clock clock) {
         final int activitySegmentsCount = sessionBundle.getActivitySegments().size();
         final int caloriesCount = sessionBundle.getCalories().size();
         final int stepsCount = sessionBundle.getSteps().size();
@@ -82,7 +82,7 @@ class GFSyncSessionMetadata extends GFSyncEntityMetadata {
             speedCount == that.speedCount &&
             powerCount == that.powerCount &&
             id.equals(that.id) &&
-            name.equals(that.name) &&
+            Objects.equals(name, that.name) &&
             Objects.equals(applicationIdentifier, that.applicationIdentifier) &&
             timeStart.equals(that.timeStart) &&
             timeEnd.equals(that.timeEnd);

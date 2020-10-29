@@ -1,18 +1,21 @@
 package com.fjuul.sdk.activitysources.json;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.util.Date;
 import java.util.List;
 
 public class GFUploadDataJson {
-    final List<GFSampleJson<GFIntradaySampleEntryJson<Float>>> caloriesData;
-    final List<GFSampleJson<GFIntradaySampleEntryJson<Integer>>> stepsData;
-    final List<GFSampleJson<GFIntradayHRSampleEntryJson>> hrData;
-    final List<GFSessionJson> sessionsData;
+    @NonNull final List<GFSampleJson<GFIntradaySampleEntryJson<Float>>> caloriesData;
+    @NonNull final List<GFSampleJson<GFIntradaySampleEntryJson<Integer>>> stepsData;
+    @NonNull final List<GFSampleJson<GFIntradayHRSampleEntryJson>> hrData;
+    @NonNull final List<GFSessionJson> sessionsData;
 
-    public GFUploadDataJson(List<GFSampleJson<GFIntradaySampleEntryJson<Float>>> caloriesData,
-                            List<GFSampleJson<GFIntradaySampleEntryJson<Integer>>> stepsData,
-                            List<GFSampleJson<GFIntradayHRSampleEntryJson>> hrData,
-                            List<GFSessionJson> sessionsData) {
+    public GFUploadDataJson(@NonNull List<GFSampleJson<GFIntradaySampleEntryJson<Float>>> caloriesData,
+                            @NonNull List<GFSampleJson<GFIntradaySampleEntryJson<Integer>>> stepsData,
+                            @NonNull List<GFSampleJson<GFIntradayHRSampleEntryJson>> hrData,
+                            @NonNull List<GFSessionJson> sessionsData) {
         this.caloriesData = caloriesData;
         this.stepsData = stepsData;
         this.hrData = hrData;
@@ -20,37 +23,41 @@ public class GFUploadDataJson {
     }
 
     public static class GFSampleJson<TEntry> {
-        final String dataSource;
-        final List<TEntry> entries;
+        @Nullable final String dataSource;
+        @NonNull final List<TEntry> entries;
 
-        public GFSampleJson(String dataSource, List<TEntry> entries) {
+        public GFSampleJson(@Nullable String dataSource, @NonNull List<TEntry> entries) {
             this.dataSource = dataSource;
             this.entries = entries;
         }
     }
 
     public static class GFSessionJson {
-        final private String id;
-        final private String name;
-        final private String applicationIdentifier;
-        final private Date timeStart;
-        final private Date timeEnd;
+        @NonNull final private String id;
+        @Nullable final private String name;
+        @Nullable final private String applicationIdentifier;
+        @NonNull final private Date timeStart;
+        @NonNull final private Date timeEnd;
         final private int type;
-        final private List<GFSampleJson<GFSampleEntryJson<Integer>>> activitySegments;
-        final private List<GFSampleJson<GFSampleEntryJson<Float>>> calories;
-        final private List<GFSampleJson<GFSampleEntryJson<Integer>>> steps;
-        final private List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> speed;
-        final private List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> heartRate;
-        final private List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> power;
+        @NonNull final private List<GFSampleJson<GFSampleEntryJson<Integer>>> activitySegments;
+        @NonNull final private List<GFSampleJson<GFSampleEntryJson<Float>>> calories;
+        @NonNull final private List<GFSampleJson<GFSampleEntryJson<Integer>>> steps;
+        @NonNull final private List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> speed;
+        @NonNull final private List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> heartRate;
+        @NonNull final private List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> power;
 
-        public GFSessionJson(String id, String name, String applicationIdentifier, Date timeStart,
-                             Date timeEnd, int type,
-                             List<GFSampleJson<GFSampleEntryJson<Integer>>> activitySegments,
-                             List<GFSampleJson<GFSampleEntryJson<Float>>> calories,
-                             List<GFSampleJson<GFSampleEntryJson<Integer>>> steps,
-                             List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> speed,
-                             List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> heartRate,
-                             List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> power) {
+        public GFSessionJson(@NonNull String id,
+                             @Nullable String name,
+                             @Nullable String applicationIdentifier,
+                             @NonNull Date timeStart,
+                             @NonNull Date timeEnd,
+                             int type,
+                             @NonNull List<GFSampleJson<GFSampleEntryJson<Integer>>> activitySegments,
+                             @NonNull List<GFSampleJson<GFSampleEntryJson<Float>>> calories,
+                             @NonNull List<GFSampleJson<GFSampleEntryJson<Integer>>> steps,
+                             @NonNull List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> speed,
+                             @NonNull List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> heartRate,
+                             @NonNull List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> power) {
             this.id = id;
             this.name = name;
             this.applicationIdentifier = applicationIdentifier;
@@ -67,22 +74,22 @@ public class GFUploadDataJson {
     }
 
     public static class GFIntradaySampleEntryJson<TValue extends Number> {
-        final Date start;
-        final TValue value;
+        @NonNull final Date start;
+        @NonNull final TValue value;
 
-        public GFIntradaySampleEntryJson(Date start, TValue value) {
+        public GFIntradaySampleEntryJson(@NonNull Date start, @NonNull TValue value) {
             this.start = start;
             this.value = value;
         }
     }
 
     public static class GFIntradayHRSampleEntryJson {
-        final Date start;
+        @NonNull final Date start;
         final float avg;
         final float min;
         final float max;
 
-        public GFIntradayHRSampleEntryJson(Date start, float avg, float min, float max) {
+        public GFIntradayHRSampleEntryJson(@NonNull Date start, float avg, float min, float max) {
             this.start = start;
             this.avg = avg;
             this.min = min;
@@ -91,11 +98,11 @@ public class GFUploadDataJson {
     }
 
     public static class GFSampleEntryJson<TValue extends Number> {
-        final Date start;
-        final Date end;
-        final TValue value;
+        @NonNull final Date start;
+        @NonNull final Date end;
+        @NonNull final TValue value;
 
-        public GFSampleEntryJson(Date start, Date end, TValue value) {
+        public GFSampleEntryJson(@NonNull Date start, @NonNull Date end, @NonNull TValue value) {
             this.start = start;
             this.end = end;
             this.value = value;
@@ -103,10 +110,10 @@ public class GFUploadDataJson {
     }
 
     public static class GFInstantMeasureSampleEntryJson<TValue extends Number> {
-        final Date timestamp;
-        final TValue value;
+        @NonNull final Date timestamp;
+        @NonNull final TValue value;
 
-        public GFInstantMeasureSampleEntryJson(Date timestamp, TValue value) {
+        public GFInstantMeasureSampleEntryJson(@NonNull Date timestamp, @NonNull TValue value) {
             this.timestamp = timestamp;
             this.value = value;
         }

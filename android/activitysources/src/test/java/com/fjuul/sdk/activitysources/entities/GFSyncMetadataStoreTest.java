@@ -63,7 +63,98 @@ public class GFSyncMetadataStoreTest {
             gfSyncMetadataStore.saveSyncMetadataOfCalories(caloriesBatch);
             final String expectedKey = "gf-sync-metadata.USER_TOKEN.calories.2020-09-10T10:00-2020-09-10T11:00";
             final String expectedJson = "{\"count\":3,\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"totalKcals\":14.8147}";
-            verify(mockedStorage).set(expectedKey, expectedJson);
+            verify(mockedStorage, times(1)).set(expectedKey, expectedJson);
+        }
+    }
+
+    public static class SaveSyncMetadataOfHRTest extends GivenRobolectricContext {
+        Clock fixedClock;
+        GFSyncMetadataStore gfSyncMetadataStore;
+        IStorage mockedStorage;
+
+        @Before
+        public void beforeTests() {
+            String instantExpected = "2020-09-15T21:30:00Z";
+            fixedClock = Clock.fixed(Instant.parse(instantExpected), ZoneId.of("UTC"));
+            mockedStorage = mock(IStorage.class);
+            gfSyncMetadataStore = new GFSyncMetadataStore(mockedStorage, USER_TOKEN, fixedClock);
+        }
+
+        @Test
+        public void saveSyncMetadataOfHR_createsAndSavesSyncMetadataInUTC() {
+            GFDataPointsBatch<GFHRSummaryDataPoint> hrBatch = new GFDataPointsBatch<>(
+                TestIntradaySamplesData.hrSummaryList,
+                Date.from(Instant.parse("2020-09-10T10:00:00Z")),
+                Date.from(Instant.parse("2020-09-10T11:00:00Z"))
+            );
+            gfSyncMetadataStore.saveSyncMetadataOfHR(hrBatch);
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.hr.2020-09-10T10:00-2020-09-10T11:00";
+            final String expectedJson = "{\"count\":3,\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"sumOfAverages\":212.41478}";
+            verify(mockedStorage, times(1)).set(expectedKey, expectedJson);
+        }
+    }
+
+    public static class SaveSyncMetadataOfStepsTest extends GivenRobolectricContext {
+        Clock fixedClock;
+        GFSyncMetadataStore gfSyncMetadataStore;
+        IStorage mockedStorage;
+
+        @Before
+        public void beforeTests() {
+            String instantExpected = "2020-09-15T21:30:00Z";
+            fixedClock = Clock.fixed(Instant.parse(instantExpected), ZoneId.of("UTC"));
+            mockedStorage = mock(IStorage.class);
+            gfSyncMetadataStore = new GFSyncMetadataStore(mockedStorage, USER_TOKEN, fixedClock);
+        }
+
+        @Test
+        public void saveSyncMetadataOfSteps_createsAndSavesSyncMetadataInUTC() {
+            GFDataPointsBatch<GFStepsDataPoint> stepsBatch = new GFDataPointsBatch<>(
+                TestIntradaySamplesData.stepsList,
+                Date.from(Instant.parse("2020-09-10T10:00:00Z")),
+                Date.from(Instant.parse("2020-09-10T11:00:00Z"))
+            );
+            gfSyncMetadataStore.saveSyncMetadataOfSteps(stepsBatch);
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.steps.2020-09-10T10:00-2020-09-10T11:00";
+            final String expectedJson = "{\"count\":3,\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"totalSteps\":10064}";
+            verify(mockedStorage, times(1)).set(expectedKey, expectedJson);
+        }
+    }
+
+    public static class SaveSyncMetadataOfSessionBundleTest extends GivenRobolectricContext {
+        Clock fixedClock;
+        GFSyncMetadataStore gfSyncMetadataStore;
+        IStorage mockedStorage;
+
+        @Before
+        public void beforeTests() {
+            String instantExpected = "2020-09-15T21:30:00Z";
+            fixedClock = Clock.fixed(Instant.parse(instantExpected), ZoneId.of("UTC"));
+            mockedStorage = mock(IStorage.class);
+            gfSyncMetadataStore = new GFSyncMetadataStore(mockedStorage, USER_TOKEN, fixedClock);
+        }
+
+        @Test
+        public void saveSyncMetadataOfSession_createsAndSavesSyncMetadataInUTC() {
+            final GFSessionBundle session = new GFSessionBundle.Builder().setId("679acf3c-3d38-4931-8822-0b355d8134e1")
+                .setName("short walk")
+                .setApplicationIdentifier("com.google.android.apps.fitness")
+                .setTimeStart(Date.from(Instant.parse("2020-10-16T11:20:00.000Z")))
+                .setTimeEnd(Date.from(Instant.parse("2020-10-16T13:00:00.000Z")))
+                .setActivityType("walking")
+                .setType(7)
+                .setActivitySegments(TestSessionSamplesData.activitySegments)
+                .setCalories(TestSessionSamplesData.calories)
+                .setHeartRate(TestSessionSamplesData.heartRate)
+                .setPower(TestSessionSamplesData.power)
+                .setSpeed(TestSessionSamplesData.speed)
+                .setSteps(TestSessionSamplesData.steps)
+                .build();
+            gfSyncMetadataStore.saveSyncMetadataOfSession(session);
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.sessions.679acf3c-3d38-4931-8822-0b355d8134e1";
+            final String expectedJson =
+                "{\"activitySegmentsCount\":2,\"applicationIdentifier\":\"com.google.android.apps.fitness\",\"caloriesCount\":3,\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"heartRateCount\":3,\"id\":\"679acf3c-3d38-4931-8822-0b355d8134e1\",\"name\":\"short walk\",\"powerCount\":1,\"schemaVersion\":1,\"speedCount\":2,\"stepsCount\":3,\"timeEnd\":\"2020-10-16T13:00:00.000Z\",\"timeStart\":\"2020-10-16T11:20:00.000Z\",\"type\":7}";
+            verify(mockedStorage, times(1)).set(expectedKey, expectedJson);
         }
     }
 
@@ -159,11 +250,6 @@ public class GFSyncMetadataStoreTest {
         Clock fixedClock;
         GFSyncMetadataStore gfSyncMetadataStore;
         IStorage mockedStorage;
-        final List<GFHRSummaryDataPoint> hrSummaryList = Stream.of(
-            new GFHRSummaryDataPoint(74.53277f, 74f, 76f, Date.from(Instant.parse("2020-09-10T11:00:00.000Z")), "raw:com.google.heart_rate.bpm:com.mc.miband1"),
-            new GFHRSummaryDataPoint(73.88201f, 71f, 76f, Date.from(Instant.parse("2020-09-10T11:01:00.000Z")), "raw:com.google.heart_rate.bpm:com.mc.miband1"),
-            new GFHRSummaryDataPoint(64f, 64f, 64f, Date.from(Instant.parse("2020-09-10T11:02:00.000Z")), "raw:com.google.heart_rate.bpm:com.mc.miband2")
-        ).collect(Collectors.toList());
 
         @Before
         public void beforeTests() {
@@ -176,7 +262,7 @@ public class GFSyncMetadataStoreTest {
         @Test
         public void isNeededToSyncHRBatch_whenNoStoredMetadata_returnsTrue() {
             final GFDataPointsBatch<GFHRSummaryDataPoint> hrBatch = new GFDataPointsBatch<>(
-                hrSummaryList,
+                TestIntradaySamplesData.hrSummaryList,
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
@@ -190,7 +276,7 @@ public class GFSyncMetadataStoreTest {
         @Test
         public void isNeededToSyncHRBatch_whenStoredMetadataHasDifferentSumOfAverages_returnsTrue() {
             final GFDataPointsBatch<GFHRSummaryDataPoint> hrBatch = new GFDataPointsBatch<>(
-                hrSummaryList,
+                TestIntradaySamplesData.hrSummaryList,
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
@@ -206,7 +292,7 @@ public class GFSyncMetadataStoreTest {
         @Test
         public void isNeededToSyncHRBatch_whenStoredMetadataHasDifferentPointsCount_returnsTrue() {
             final GFDataPointsBatch<GFHRSummaryDataPoint> hrBatch = new GFDataPointsBatch<>(
-                hrSummaryList,
+                TestIntradaySamplesData.hrSummaryList,
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
@@ -220,7 +306,7 @@ public class GFSyncMetadataStoreTest {
         @Test
         public void isNeededToSyncHRBatch_whenStoredMetadataHasNoSignificantDifference_returnsFalse() {
             final GFDataPointsBatch<GFHRSummaryDataPoint> hrBatch = new GFDataPointsBatch<>(
-                hrSummaryList,
+                TestIntradaySamplesData.hrSummaryList,
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
@@ -237,20 +323,6 @@ public class GFSyncMetadataStoreTest {
         Clock fixedClock;
         GFSyncMetadataStore gfSyncMetadataStore;
         IStorage mockedStorage;
-        final List<GFStepsDataPoint> stepsList = Arrays.asList(
-            new GFStepsDataPoint(3525,
-                Date.from(Instant.parse("2020-09-10T10:00:00.000Z")),
-                Date.from(Instant.parse("2020-09-10T10:10:00.000Z")),
-                "raw:com.google.step_count.delta:stream1"),
-            new GFStepsDataPoint(5957,
-                Date.from(Instant.parse("2020-09-10T10:25:01.000Z")),
-                Date.from(Instant.parse("2020-09-10T10:33:25.000Z")),
-                "raw:com.google.step_count.delta:stream2"),
-            new GFStepsDataPoint(582,
-                Date.from(Instant.parse("2020-09-10T10:35:00.000Z")),
-                Date.from(Instant.parse("2020-09-10T10:59:00.000Z")),
-                "raw:com.google.step_count.delta:stream1")
-        );
 
         @Before
         public void beforeTests() {
@@ -263,7 +335,7 @@ public class GFSyncMetadataStoreTest {
         @Test
         public void isNeededToSyncStepsBatch_whenNoStoredMetadata_returnsTrue() {
             final GFDataPointsBatch<GFStepsDataPoint> stepsBatch = new GFDataPointsBatch<>(
-                stepsList,
+                TestIntradaySamplesData.stepsList,
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
@@ -277,7 +349,7 @@ public class GFSyncMetadataStoreTest {
         @Test
         public void isNeededToSyncStepsBatch_whenStoredMetadataHasDifferentTotal_returnsTrue() {
             final GFDataPointsBatch<GFStepsDataPoint> stepsBatch = new GFDataPointsBatch<>(
-                stepsList,
+                TestIntradaySamplesData.stepsList,
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
@@ -293,7 +365,7 @@ public class GFSyncMetadataStoreTest {
         @Test
         public void isNeededToSyncStepsBatch_whenStoredMetadataHasDifferentPointsCount_returnsTrue() {
             final GFDataPointsBatch<GFStepsDataPoint> stepsBatch = new GFDataPointsBatch<>(
-                stepsList,
+                TestIntradaySamplesData.stepsList,
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
@@ -307,7 +379,7 @@ public class GFSyncMetadataStoreTest {
         @Test
         public void isNeededToSyncStepsBatch_whenStoredMetadataHasNoSignificantDifference_returnsFalse() {
             final GFDataPointsBatch<GFStepsDataPoint> stepsBatch = new GFDataPointsBatch<>(
-                stepsList,
+                TestIntradaySamplesData.stepsList,
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
@@ -321,69 +393,6 @@ public class GFSyncMetadataStoreTest {
     }
 
     public static class CheckIfNeedToSyncSessionBundle extends GivenRobolectricContext {
-        public static final List<GFHRDataPoint> heartRate = Arrays.asList(
-            new GFHRDataPoint(55f,
-                Date.from(Instant.parse("2020-01-15T17:25:05.000Z")),
-                "raw:com.google.heart_rate.bpm:stream1"),
-            new GFHRDataPoint(56f,
-                Date.from(Instant.parse("2020-01-15T17:25:08.000Z")),
-                "raw:com.google.heart_rate.bpm:stream1"),
-            new GFHRDataPoint(58f,
-                Date.from(Instant.parse("2020-01-15T17:25:10.000Z")),
-                "raw:com.google.heart_rate.bpm:stream2")
-        );
-        public static final List<GFPowerDataPoint> power = Arrays.asList(
-            new GFPowerDataPoint(10f,
-                Date.from(Instant.parse("2020-01-15T17:25:05.000Z")),
-                "raw:com.google.power.sample:stream")
-        );
-        public static final List<GFSpeedDataPoint> speed = Arrays.asList(
-            new GFSpeedDataPoint(1.594202f,
-                Date.from(Instant.parse("2020-01-15T17:25:08.000Z")),
-                "raw:com.google.distance.delta:stream1"),
-            new GFSpeedDataPoint(1.585585f,
-                Date.from(Instant.parse("2020-01-15T17:25:16.000Z")),
-                "raw:com.google.distance.delta:stream1")
-        );
-        public static final List<GFActivitySegmentDataPoint> activitySegments = Arrays.asList(
-            new GFActivitySegmentDataPoint(3,
-                Date.from(Instant.parse("2020-10-25T21:00:00.000Z")),
-                Date.from(Instant.parse("2020-10-25T21:16:42.953Z")),
-                null),
-            new GFActivitySegmentDataPoint(7,
-                Date.from(Instant.parse("2020-10-25T21:16:42.953Z")),
-                Date.from(Instant.parse("2020-10-25T21:18:00.953Z")),
-                "derived:com.google.activity.segment:com.mc.miband1:session_activity_segment")
-        );
-        public static final List<GFCalorieDataPoint> calories = Arrays.asList(
-            new GFCalorieDataPoint(5.2751f,
-                Date.from(Instant.parse("2020-01-01T10:05:00Z")),
-                Date.from(Instant.parse("2020-01-01T10:15:00Z")),
-                "phone"),
-            new GFCalorieDataPoint(8.2698f,
-                Date.from(Instant.parse("2020-01-01T10:31:00Z")),
-                Date.from(Instant.parse("2020-01-01T10:46:00Z")),
-                "tracker"),
-            new GFCalorieDataPoint(2.5421f,
-                Date.from(Instant.parse("2020-01-02T10:34:00Z")),
-                Date.from(Instant.parse("2020-01-02T10:41:00Z")),
-                "tracker")
-        );
-        public static final List<GFStepsDataPoint> steps = Arrays.asList(
-            new GFStepsDataPoint(3525,
-                Date.from(Instant.parse("2020-01-14T23:00:00.000Z")),
-                Date.from(Instant.parse("2020-01-15T01:10:00.000Z")),
-                "raw:com.google.step_count.delta:stream1"),
-            new GFStepsDataPoint(582,
-                Date.from(Instant.parse("2020-01-14T16:23:00.000Z")),
-                Date.from(Instant.parse("2020-01-14T16:59:00.000Z")),
-                "raw:com.google.step_count.delta:stream1"),
-            new GFStepsDataPoint(5957,
-                Date.from(Instant.parse("2020-01-15T17:25:01.000Z")),
-                Date.from(Instant.parse("2020-01-15T19:33:25.000Z")),
-                "raw:com.google.step_count.delta:stream2")
-        );
-
         Clock fixedClock;
         GFSyncMetadataStore gfSyncMetadataStore;
         IStorage mockedStorage;
@@ -395,12 +404,12 @@ public class GFSyncMetadataStoreTest {
             .setTimeEnd(Date.from(Instant.parse("2020-10-16T13:00:00.000Z")))
             .setActivityType("walking")
             .setType(7)
-            .setActivitySegments(activitySegments)
-            .setCalories(calories)
-            .setHeartRate(heartRate)
-            .setPower(power)
-            .setSpeed(speed)
-            .setSteps(steps)
+            .setActivitySegments(TestSessionSamplesData.activitySegments)
+            .setCalories(TestSessionSamplesData.calories)
+            .setHeartRate(TestSessionSamplesData.heartRate)
+            .setPower(TestSessionSamplesData.power)
+            .setSpeed(TestSessionSamplesData.speed)
+            .setSteps(TestSessionSamplesData.steps)
             .build();
         final String expectedKey = "gf-sync-metadata.USER_TOKEN.sessions." + session.getId();
 
@@ -540,4 +549,93 @@ public class GFSyncMetadataStoreTest {
             verify(mockedStorage, times(1)).get(expectedKey);
         }
     }
+}
+
+class TestIntradaySamplesData {
+    public static final List<GFStepsDataPoint> stepsList = Arrays.asList(
+        new GFStepsDataPoint(3525,
+            Date.from(Instant.parse("2020-09-10T10:00:00.000Z")),
+            Date.from(Instant.parse("2020-09-10T10:10:00.000Z")),
+            "raw:com.google.step_count.delta:stream1"),
+        new GFStepsDataPoint(5957,
+            Date.from(Instant.parse("2020-09-10T10:25:01.000Z")),
+            Date.from(Instant.parse("2020-09-10T10:33:25.000Z")),
+            "raw:com.google.step_count.delta:stream2"),
+        new GFStepsDataPoint(582,
+            Date.from(Instant.parse("2020-09-10T10:35:00.000Z")),
+            Date.from(Instant.parse("2020-09-10T10:59:00.000Z")),
+            "raw:com.google.step_count.delta:stream1")
+    );
+
+    public static final List<GFHRSummaryDataPoint> hrSummaryList = Arrays.asList(
+        new GFHRSummaryDataPoint(74.53277f, 74f, 76f, Date.from(Instant.parse("2020-09-10T10:00:00.000Z")), "raw:com.google.heart_rate.bpm:com.mc.miband1"),
+        new GFHRSummaryDataPoint(73.88201f, 71f, 76f, Date.from(Instant.parse("2020-09-10T10:01:00.000Z")), "raw:com.google.heart_rate.bpm:com.mc.miband1"),
+        new GFHRSummaryDataPoint(64f, 64f, 64f, Date.from(Instant.parse("2020-09-10T10:02:00.000Z")), "raw:com.google.heart_rate.bpm:com.mc.miband2")
+    );
+
+}
+
+class TestSessionSamplesData {
+    public static final List<GFHRDataPoint> heartRate = Arrays.asList(
+        new GFHRDataPoint(55f,
+            Date.from(Instant.parse("2020-01-15T17:25:05.000Z")),
+            "raw:com.google.heart_rate.bpm:stream1"),
+        new GFHRDataPoint(56f,
+            Date.from(Instant.parse("2020-01-15T17:25:08.000Z")),
+            "raw:com.google.heart_rate.bpm:stream1"),
+        new GFHRDataPoint(58f,
+            Date.from(Instant.parse("2020-01-15T17:25:10.000Z")),
+            "raw:com.google.heart_rate.bpm:stream2")
+    );
+    public static final List<GFPowerDataPoint> power = Arrays.asList(
+        new GFPowerDataPoint(10f,
+            Date.from(Instant.parse("2020-01-15T17:25:05.000Z")),
+            "raw:com.google.power.sample:stream")
+    );
+    public static final List<GFSpeedDataPoint> speed = Arrays.asList(
+        new GFSpeedDataPoint(1.594202f,
+            Date.from(Instant.parse("2020-01-15T17:25:08.000Z")),
+            "raw:com.google.distance.delta:stream1"),
+        new GFSpeedDataPoint(1.585585f,
+            Date.from(Instant.parse("2020-01-15T17:25:16.000Z")),
+            "raw:com.google.distance.delta:stream1")
+    );
+    public static final List<GFActivitySegmentDataPoint> activitySegments = Arrays.asList(
+        new GFActivitySegmentDataPoint(3,
+            Date.from(Instant.parse("2020-10-25T21:00:00.000Z")),
+            Date.from(Instant.parse("2020-10-25T21:16:42.953Z")),
+            null),
+        new GFActivitySegmentDataPoint(7,
+            Date.from(Instant.parse("2020-10-25T21:16:42.953Z")),
+            Date.from(Instant.parse("2020-10-25T21:18:00.953Z")),
+            "derived:com.google.activity.segment:com.mc.miband1:session_activity_segment")
+    );
+    public static final List<GFCalorieDataPoint> calories = Arrays.asList(
+        new GFCalorieDataPoint(5.2751f,
+            Date.from(Instant.parse("2020-01-01T10:05:00Z")),
+            Date.from(Instant.parse("2020-01-01T10:15:00Z")),
+            "phone"),
+        new GFCalorieDataPoint(8.2698f,
+            Date.from(Instant.parse("2020-01-01T10:31:00Z")),
+            Date.from(Instant.parse("2020-01-01T10:46:00Z")),
+            "tracker"),
+        new GFCalorieDataPoint(2.5421f,
+            Date.from(Instant.parse("2020-01-02T10:34:00Z")),
+            Date.from(Instant.parse("2020-01-02T10:41:00Z")),
+            "tracker")
+    );
+    public static final List<GFStepsDataPoint> steps = Arrays.asList(
+        new GFStepsDataPoint(3525,
+            Date.from(Instant.parse("2020-01-14T23:00:00.000Z")),
+            Date.from(Instant.parse("2020-01-15T01:10:00.000Z")),
+            "raw:com.google.step_count.delta:stream1"),
+        new GFStepsDataPoint(582,
+            Date.from(Instant.parse("2020-01-14T16:23:00.000Z")),
+            Date.from(Instant.parse("2020-01-14T16:59:00.000Z")),
+            "raw:com.google.step_count.delta:stream1"),
+        new GFStepsDataPoint(5957,
+            Date.from(Instant.parse("2020-01-15T17:25:01.000Z")),
+            Date.from(Instant.parse("2020-01-15T19:33:25.000Z")),
+            "raw:com.google.step_count.delta:stream2")
+    );
 }

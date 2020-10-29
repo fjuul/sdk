@@ -18,6 +18,7 @@ import com.squareup.moshi.ToJson;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -34,9 +35,9 @@ public class GFUploadDataJsonAdapter {
 
     @SuppressLint("NewApi")
     private <T extends GFDataPoint, O> List<GFSampleJson<O>> groupAndMapGFPointsToJsonSample(List<T> dataPoints, Function<T, O> pointMapper) {
-        final Map<String, List<T>> groupedByDataSource = dataPoints.stream().collect(Collectors.groupingBy(T::getDataSource));
+        final Map<Optional<String>, List<T>> groupedByDataSource = dataPoints.stream().collect(Collectors.groupingBy(point -> Optional.ofNullable(point.getDataSource())));
         final List<GFSampleJson<O>> samples = groupedByDataSource.entrySet().stream().map((entry) -> {
-            String dataSource = entry.getKey();
+            final String dataSource = entry.getKey().orElse(null);
             List<O> entries = entry.getValue().stream().map(pointMapper).collect(Collectors.toList());
             return new GFSampleJson<>(dataSource, entries);
         }).collect(Collectors.toList());

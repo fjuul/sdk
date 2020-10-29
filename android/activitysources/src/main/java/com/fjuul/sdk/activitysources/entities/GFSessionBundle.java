@@ -2,6 +2,7 @@ package com.fjuul.sdk.activitysources.entities;
 
 import android.annotation.SuppressLint;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.Collections;
@@ -10,37 +11,39 @@ import java.util.List;
 import java.util.Optional;
 
 public class GFSessionBundle {
-    private String id;
+    @NonNull private String id;
 
-    private String name;
+    @Nullable private String name;
 
     @Nullable private String applicationIdentifier;
 
-    private Date timeStart;
+    @NonNull private Date timeStart;
 
-    private Date timeEnd;
+    @NonNull private Date timeEnd;
 
     // string presentation of activity
-    private transient String activityType;
+    @NonNull private transient String activityType;
 
     private int type;
 
-    private List<GFActivitySegmentDataPoint> activitySegments;
+    @NonNull private List<GFActivitySegmentDataPoint> activitySegments;
 
-    private List<GFCalorieDataPoint> calories;
+    @NonNull private List<GFCalorieDataPoint> calories;
 
-    private List<GFStepsDataPoint> steps;
+    @NonNull private List<GFStepsDataPoint> steps;
 
-    private List<GFHRDataPoint> heartRate;
+    @NonNull private List<GFHRDataPoint> heartRate;
 
-    private List<GFPowerDataPoint> power;
+    @NonNull private List<GFPowerDataPoint> power;
 
-    private List<GFSpeedDataPoint> speed;
+    @NonNull private List<GFSpeedDataPoint> speed;
 
+    @NonNull
     public String getId() {
         return id;
     }
 
+    @Nullable
     public String getName() {
         return name;
     }
@@ -50,14 +53,17 @@ public class GFSessionBundle {
         return applicationIdentifier;
     }
 
+    @NonNull
     public Date getTimeStart() {
         return timeStart;
     }
 
+    @NonNull
     public Date getTimeEnd() {
         return timeEnd;
     }
 
+    @NonNull
     public String getActivityType() {
         return activityType;
     }
@@ -66,38 +72,49 @@ public class GFSessionBundle {
         return type;
     }
 
+    @NonNull
     public List<GFActivitySegmentDataPoint> getActivitySegments() {
         return activitySegments;
     }
 
+    @NonNull
     public List<GFCalorieDataPoint> getCalories() {
         return calories;
     }
 
+    @NonNull
     public List<GFStepsDataPoint> getSteps() {
         return steps;
     }
 
+    @NonNull
     public List<GFHRDataPoint> getHeartRate() {
         return heartRate;
     }
 
+    @NonNull
     public List<GFPowerDataPoint> getPower() {
         return power;
     }
 
+    @NonNull
     public List<GFSpeedDataPoint> getSpeed() {
         return speed;
     }
 
-    private GFSessionBundle(String id, String name, @Nullable String applicationIdentifier,
-                            Date timeStart, Date timeEnd, String activityType, int type,
-                            List<GFActivitySegmentDataPoint> activitySegments,
-                            List<GFCalorieDataPoint> calories,
-                            List<GFStepsDataPoint> steps,
-                            List<GFHRDataPoint> heartRate,
-                            List<GFPowerDataPoint> power,
-                            List<GFSpeedDataPoint> speed) {
+    private GFSessionBundle(@NonNull String id,
+                            @Nullable String name,
+                            @Nullable String applicationIdentifier,
+                            @NonNull Date timeStart,
+                            @NonNull Date timeEnd,
+                            @NonNull String activityType,
+                            int type,
+                            @NonNull List<GFActivitySegmentDataPoint> activitySegments,
+                            @NonNull List<GFCalorieDataPoint> calories,
+                            @NonNull List<GFStepsDataPoint> steps,
+                            @NonNull List<GFHRDataPoint> heartRate,
+                            @NonNull List<GFPowerDataPoint> power,
+                            @NonNull List<GFSpeedDataPoint> speed) {
         this.id = id;
         this.name = name;
         this.applicationIdentifier = applicationIdentifier;
@@ -134,12 +151,12 @@ public class GFSessionBundle {
     }
 
     public static class Builder {
-        private String id;
-        private String name;
+        @NonNull private String id;
+        @Nullable private String name;
         @Nullable private String applicationIdentifier;
-        private Date timeStart;
-        private Date timeEnd;
-        private String activityType;
+        @NonNull private Date timeStart;
+        @NonNull private Date timeEnd;
+        @NonNull private String activityType;
         private int type;
 
         @Nullable private List<GFActivitySegmentDataPoint> activitySegments;
@@ -149,12 +166,12 @@ public class GFSessionBundle {
         @Nullable private List<GFPowerDataPoint> power;
         @Nullable private List<GFSpeedDataPoint> speed;
 
-        public Builder setId(String id) {
+        public Builder setId(@NonNull String id) {
             this.id = id;
             return this;
         }
 
-        public Builder setName(String name) {
+        public Builder setName(@Nullable String name) {
             this.name = name;
             return this;
         }
@@ -164,17 +181,17 @@ public class GFSessionBundle {
             return this;
         }
 
-        public Builder setTimeStart(Date timeStart) {
+        public Builder setTimeStart(@NonNull Date timeStart) {
             this.timeStart = timeStart;
             return this;
         }
 
-        public Builder setTimeEnd(Date timeEnd) {
+        public Builder setTimeEnd(@NonNull Date timeEnd) {
             this.timeEnd = timeEnd;
             return this;
         }
 
-        public Builder setActivityType(String activityType) {
+        public Builder setActivityType(@NonNull String activityType) {
             this.activityType = activityType;
             return this;
         }
@@ -184,37 +201,38 @@ public class GFSessionBundle {
             return this;
         }
 
-        public Builder setActivitySegments(List<GFActivitySegmentDataPoint> activitySegments) {
+        public Builder setActivitySegments(@Nullable List<GFActivitySegmentDataPoint> activitySegments) {
             this.activitySegments = activitySegments;
             return this;
         }
 
-        public Builder setCalories(List<GFCalorieDataPoint> calories) {
+        public Builder setCalories(@Nullable List<GFCalorieDataPoint> calories) {
             this.calories = calories;
             return this;
         }
 
-        public Builder setSteps(List<GFStepsDataPoint> steps) {
+        public Builder setSteps(@Nullable List<GFStepsDataPoint> steps) {
             this.steps = steps;
             return this;
         }
 
-        public Builder setHeartRate(List<GFHRDataPoint> heartRate) {
+        public Builder setHeartRate(@Nullable List<GFHRDataPoint> heartRate) {
             this.heartRate = heartRate;
             return this;
         }
 
-        public Builder setPower(List<GFPowerDataPoint> power) {
+        public Builder setPower(@Nullable List<GFPowerDataPoint> power) {
             this.power = power;
             return this;
         }
 
-        public Builder setSpeed(List<GFSpeedDataPoint> speed) {
+        public Builder setSpeed(@Nullable List<GFSpeedDataPoint> speed) {
             this.speed = speed;
             return this;
         }
 
         @SuppressLint("NewApi")
+        @NonNull
         public GFSessionBundle build() {
             // TODO: validate fields ?
             return new GFSessionBundle(id, name, applicationIdentifier, timeStart, timeEnd, activityType, type,

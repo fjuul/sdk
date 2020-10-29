@@ -4,10 +4,10 @@ import java.util.Date;
 import java.util.List;
 
 public class GFUploadDataJson {
-    List<GFSampleJson<GFIntradaySampleEntryJson<Float>>> caloriesData;
-    List<GFSampleJson<GFIntradaySampleEntryJson<Integer>>> stepsData;
-    List<GFSampleJson<GFIntradayHRSampleEntryJson>> hrData;
-    List<GFSessionJson> sessionsData;
+    final List<GFSampleJson<GFIntradaySampleEntryJson<Float>>> caloriesData;
+    final List<GFSampleJson<GFIntradaySampleEntryJson<Integer>>> stepsData;
+    final List<GFSampleJson<GFIntradayHRSampleEntryJson>> hrData;
+    final List<GFSessionJson> sessionsData;
 
     public GFUploadDataJson(List<GFSampleJson<GFIntradaySampleEntryJson<Float>>> caloriesData,
                             List<GFSampleJson<GFIntradaySampleEntryJson<Integer>>> stepsData,
@@ -20,8 +20,8 @@ public class GFUploadDataJson {
     }
 
     public static class GFSampleJson<TEntry> {
-        String dataSource;
-        List<TEntry> entries;
+        final String dataSource;
+        final List<TEntry> entries;
 
         public GFSampleJson(String dataSource, List<TEntry> entries) {
             this.dataSource = dataSource;
@@ -30,20 +30,22 @@ public class GFUploadDataJson {
     }
 
     public static class GFSessionJson {
-        private String id;
-        private String name;
-        private String applicationIdentifier;
-        private Date timeStart;
-        private Date timeEnd;
-        private int type;
-        private List<GFSampleJson<GFSampleEntryJson<Float>>> calories;
-        private List<GFSampleJson<GFSampleEntryJson<Integer>>> steps;
-        private List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> speed;
-        private List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> heartRate;
-        private List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> power;
+        final private String id;
+        final private String name;
+        final private String applicationIdentifier;
+        final private Date timeStart;
+        final private Date timeEnd;
+        final private int type;
+        final private List<GFSampleJson<GFSampleEntryJson<Integer>>> activitySegments;
+        final private List<GFSampleJson<GFSampleEntryJson<Float>>> calories;
+        final private List<GFSampleJson<GFSampleEntryJson<Integer>>> steps;
+        final private List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> speed;
+        final private List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> heartRate;
+        final private List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> power;
 
         public GFSessionJson(String id, String name, String applicationIdentifier, Date timeStart,
                              Date timeEnd, int type,
+                             List<GFSampleJson<GFSampleEntryJson<Integer>>> activitySegments,
                              List<GFSampleJson<GFSampleEntryJson<Float>>> calories,
                              List<GFSampleJson<GFSampleEntryJson<Integer>>> steps,
                              List<GFSampleJson<GFInstantMeasureSampleEntryJson<Float>>> speed,
@@ -55,6 +57,7 @@ public class GFUploadDataJson {
             this.timeStart = timeStart;
             this.timeEnd = timeEnd;
             this.type = type;
+            this.activitySegments = activitySegments;
             this.calories = calories;
             this.steps = steps;
             this.speed = speed;
@@ -64,8 +67,8 @@ public class GFUploadDataJson {
     }
 
     public static class GFIntradaySampleEntryJson<TValue extends Number> {
-        Date start;
-        TValue value;
+        final Date start;
+        final TValue value;
 
         public GFIntradaySampleEntryJson(Date start, TValue value) {
             this.start = start;
@@ -88,9 +91,9 @@ public class GFUploadDataJson {
     }
 
     public static class GFSampleEntryJson<TValue extends Number> {
-        Date start;
-        Date end;
-        TValue value;
+        final Date start;
+        final Date end;
+        final TValue value;
 
         public GFSampleEntryJson(Date start, Date end, TValue value) {
             this.start = start;
@@ -100,8 +103,8 @@ public class GFUploadDataJson {
     }
 
     public static class GFInstantMeasureSampleEntryJson<TValue extends Number> {
-        Date timestamp;
-        TValue value;
+        final Date timestamp;
+        final TValue value;
 
         public GFInstantMeasureSampleEntryJson(Date timestamp, TValue value) {
             this.timestamp = timestamp;

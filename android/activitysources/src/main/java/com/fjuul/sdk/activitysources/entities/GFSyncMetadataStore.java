@@ -3,6 +3,7 @@ package com.fjuul.sdk.activitysources.entities;
 import android.annotation.SuppressLint;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.fjuul.sdk.entities.IStorage;
 import com.squareup.moshi.JsonAdapter;
@@ -16,13 +17,14 @@ import java.util.Date;
 import java.util.TimeZone;
 
 public class GFSyncMetadataStore {
-    private IStorage storage;
-    private String userToken;
-    private SimpleDateFormat dateFormatter;
-    private JsonAdapter<GFSyncCaloriesMetadata> syncCaloriesMetadataJsonAdapter;
-    private JsonAdapter<GFSyncStepsMetadata> syncStepsMetadataJsonAdapter;
-    private JsonAdapter<GFSyncHRMetadata> syncHRMetadataJsonAdapter;
-    private Clock clock;
+    private final IStorage storage;
+    private final String userToken;
+    private final SimpleDateFormat dateFormatter;
+    private final JsonAdapter<GFSyncCaloriesMetadata> syncCaloriesMetadataJsonAdapter;
+    private final JsonAdapter<GFSyncStepsMetadata> syncStepsMetadataJsonAdapter;
+    private final JsonAdapter<GFSyncHRMetadata> syncHRMetadataJsonAdapter;
+    private final JsonAdapter<GFSyncSessionMetadata> syncSessionMetadataJsonAdapter;
+    private final Clock clock;
 
     @SuppressLint("NewApi")
     public GFSyncMetadataStore(@NonNull IStorage storage, @NonNull String userToken) {
@@ -39,11 +41,13 @@ public class GFSyncMetadataStore {
         this.syncCaloriesMetadataJsonAdapter = moshi.adapter(GFSyncCaloriesMetadata.class).nullSafe();
         this.syncStepsMetadataJsonAdapter = moshi.adapter(GFSyncStepsMetadata.class).nullSafe();
         this.syncHRMetadataJsonAdapter = moshi.adapter(GFSyncHRMetadata.class).nullSafe();
+        this.syncSessionMetadataJsonAdapter = moshi.adapter(GFSyncSessionMetadata.class).nullSafe();
     }
 
-    // TODO: find a polymorphic way to check/save metadata for all batches
+    // TODO: find a polymorphic way to check/save metadata for all batches ?
     public boolean isNeededToSyncCaloriesBatch(@NonNull GFDataPointsBatch<GFCalorieDataPoint> caloriesBatch) {
-        final GFSyncCaloriesMetadata storedMetadata = getSyncMetadataOf(GFSyncCaloriesMetadata.class, caloriesBatch.getStartTime(), caloriesBatch.getEndTime());
+        final String lookupKey = buildLookupKeyForIntraday(GFSyncCaloriesMetadata.class, caloriesBatch.getStartTime(), caloriesBatch.getEndTime());
+        final GFSyncCaloriesMetadata storedMetadata = retrieveSyncMetadataOf(GFSyncCaloriesMetadata.class, lookupKey);
         if (storedMetadata == null) {
             return true;
         }
@@ -52,7 +56,8 @@ public class GFSyncMetadataStore {
     }
 
     public boolean isNeededToSyncStepsBatch(@NonNull GFDataPointsBatch<GFStepsDataPoint> stepsBatch) {
-        final GFSyncStepsMetadata storedMetadata = getSyncMetadataOf(GFSyncStepsMetadata.class, stepsBatch.getStartTime(), stepsBatch.getEndTime());
+        final String lookupKey = buildLookupKeyForIntraday(GFSyncStepsMetadata.class, stepsBatch.getStartTime(), stepsBatch.getEndTime());
+        final GFSyncStepsMetadata storedMetadata = retrieveSyncMetadataOf(GFSyncStepsMetadata.class, lookupKey);
         if (storedMetadata == null) {
             return true;
         }
@@ -61,7 +66,8 @@ public class GFSyncMetadataStore {
     }
 
     public boolean isNeededToSyncHRBatch(@NonNull GFDataPointsBatch<GFHRSummaryDataPoint> hrBatch) {
-        final GFSyncHRMetadata storedMetadata = getSyncMetadataOf(GFSyncHRMetadata.class, hrBatch.getStartTime(), hrBatch.getEndTime());
+        final String lookupKey = buildLookupKeyForIntraday(GFSyncHRMetadata.class, hrBatch.getStartTime(), hrBatch.getEndTime());
+        final GFSyncHRMetadata storedMetadata = retrieveSyncMetadataOf(GFSyncHRMetadata.class, lookupKey);
         if (storedMetadata == null) {
             return true;
         }
@@ -69,37 +75,55 @@ public class GFSyncMetadataStore {
         return newMetadata.equals(storedMetadata);
     }
 
+    public boolean isNeededToSyncSessionBundle(@NonNull GFSessionBundle sessionBundle) {
+        final String lookupKey = buildLookupKeyForSessionBundle(sessionBundle);
+        final GFSyncSessionMetadata storedMetadata = retrieveSyncMetadataOf(GFSyncSessionMetadata.class, lookupKey);
+        if (storedMetadata == null) {
+            return true;
+        }
+        final GFSyncSessionMetadata newMetadata = GFSyncSessionMetadata.buildFromSessionBundle(sessionBundle, clock);
+        return newMetadata.equals(storedMetadata);
+    }
+
     @SuppressLint("NewApi")
     public void saveSyncMetadataOfCalories(@NonNull GFDataPointsBatch<GFCalorieDataPoint> caloriesBatch) {
-        GFSyncCaloriesMetadata metadata = GFSyncCaloriesMetadata.buildFromBatch(caloriesBatch, clock);
-        String jsonValue = syncCaloriesMetadataJsonAdapter.toJson(metadata);
-        String key = buildLookupKey(GFSyncCaloriesMetadata.class, caloriesBatch.getStartTime(), caloriesBatch.getEndTime());
+        final GFSyncCaloriesMetadata metadata = GFSyncCaloriesMetadata.buildFromBatch(caloriesBatch, clock);
+        final String jsonValue = syncCaloriesMetadataJsonAdapter.toJson(metadata);
+        final String key = buildLookupKeyForIntraday(GFSyncCaloriesMetadata.class, caloriesBatch.getStartTime(), caloriesBatch.getEndTime());
         storage.set(key, jsonValue);
     }
 
     @SuppressLint("NewApi")
     public void saveSyncMetadataOfSteps(@NonNull GFDataPointsBatch<GFStepsDataPoint> stepsBatch) {
-        GFSyncStepsMetadata metadata = GFSyncStepsMetadata.buildFromBatch(stepsBatch, clock);;
-        String jsonValue = syncStepsMetadataJsonAdapter.toJson(metadata);
-        String key = buildLookupKey(GFSyncStepsMetadata.class, stepsBatch.getStartTime(), stepsBatch.getEndTime());
+        final GFSyncStepsMetadata metadata = GFSyncStepsMetadata.buildFromBatch(stepsBatch, clock);;
+        final String jsonValue = syncStepsMetadataJsonAdapter.toJson(metadata);
+        final String key = buildLookupKeyForIntraday(GFSyncStepsMetadata.class, stepsBatch.getStartTime(), stepsBatch.getEndTime());
         storage.set(key, jsonValue);
     }
 
     @SuppressLint("NewApi")
     public void saveSyncMetadataOfHR(@NonNull GFDataPointsBatch<GFHRSummaryDataPoint> hrBatch) {
-        GFSyncHRMetadata metadata = GFSyncHRMetadata.buildFromBatch(hrBatch, clock);;
-        String jsonValue = syncHRMetadataJsonAdapter.toJson(metadata);
-        String key = buildLookupKey(GFSyncHRMetadata.class, hrBatch.getStartTime(), hrBatch.getEndTime());
+        final GFSyncHRMetadata metadata = GFSyncHRMetadata.buildFromBatch(hrBatch, clock);;
+        final String jsonValue = syncHRMetadataJsonAdapter.toJson(metadata);
+        final String key = buildLookupKeyForIntraday(GFSyncHRMetadata.class, hrBatch.getStartTime(), hrBatch.getEndTime());
         storage.set(key, jsonValue);
     }
 
-    private <T extends GFSyncEntityMetadata> T getSyncMetadataOf(Class<T> tClass, @NonNull Date startTime, @NonNull Date endTime) {
-        String key = buildLookupKey(tClass, startTime, endTime);
-        String jsonValue = storage.get(key);
+    @SuppressLint("NewApi")
+    public void saveSyncMetadataOfSession(@NonNull GFSessionBundle sessionBundle) {
+        final GFSyncSessionMetadata metadata = GFSyncSessionMetadata.buildFromSessionBundle(sessionBundle, clock);;
+        final String jsonValue = syncSessionMetadataJsonAdapter.toJson(metadata);
+        final String key = buildLookupKeyForSessionBundle(sessionBundle);
+        storage.set(key, jsonValue);
+    }
+
+    @Nullable
+    private <T extends GFSyncEntityMetadata> T retrieveSyncMetadataOf(Class<T> tClass, @NonNull String lookupKey) {
+        final String jsonValue = storage.get(lookupKey);
         if (jsonValue == null) {
             return null;
         }
-        JsonAdapter<T> jsonAdapter = getJSONAdapterFor(tClass);
+        final JsonAdapter<T> jsonAdapter = getJSONAdapterFor(tClass);
         try {
             return jsonAdapter.fromJson(jsonValue);
         } catch (IOException e) {
@@ -107,7 +131,7 @@ public class GFSyncMetadataStore {
         }
     }
 
-    private <T extends GFSyncEntityMetadata> String buildLookupKey(Class<T> tClass, Date startTime, Date endTime) {
+    private <T extends GFSyncEntityMetadata> String buildLookupKeyForIntraday(Class<T> tClass, Date startTime, Date endTime) {
         String entityKey = null;
         if (tClass == GFSyncStepsMetadata.class) {
             entityKey = "steps";
@@ -121,6 +145,10 @@ public class GFSyncMetadataStore {
         return String.format("gf-sync-metadata.%s.%s.%s-%s", userToken, entityKey, dateFormatter.format(startTime), dateFormatter.format(endTime));
     }
 
+    private String buildLookupKeyForSessionBundle(GFSessionBundle sessionBundle) {
+        return String.format("gf-sync-metadata.%s.sessions.%s", userToken, sessionBundle.getId());
+    }
+
     private <T extends GFSyncEntityMetadata> JsonAdapter<T> getJSONAdapterFor(Class<T> tClass) {
         if (tClass == GFSyncStepsMetadata.class) {
             return (JsonAdapter<T>) this.syncStepsMetadataJsonAdapter;
@@ -128,6 +156,8 @@ public class GFSyncMetadataStore {
             return (JsonAdapter<T>) this.syncCaloriesMetadataJsonAdapter;
         } else if (tClass == GFSyncHRMetadata.class) {
             return (JsonAdapter<T>) this.syncHRMetadataJsonAdapter;
+        } else if (tClass == GFSyncSessionMetadata.class) {
+            return (JsonAdapter<T>) this.syncSessionMetadataJsonAdapter;
         } else {
             throw new IllegalArgumentException("Invalid class to identify the json adapter");
         }

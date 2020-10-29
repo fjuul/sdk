@@ -11,12 +11,12 @@ public class GFSyncHRMetadata extends GFSyncEntityMetadata {
     public static final int CURRENT_SCHEMA_VERSION = 1;
     private static final float TOTAL_HR_ACCURACY = 0.01f;
     private int count;
-    private float totalSum;
+    private float sumOfAverages;
 
-    public GFSyncHRMetadata(int count, float totalSum, Date editedAt) {
+    public GFSyncHRMetadata(int count, float sumOfAverages, Date editedAt) {
         super(CURRENT_SCHEMA_VERSION, editedAt);
         this.count = count;
-        this.totalSum = totalSum;
+        this.sumOfAverages = sumOfAverages;
     }
 
     @NonNull
@@ -25,8 +25,8 @@ public class GFSyncHRMetadata extends GFSyncEntityMetadata {
     }
 
     @NonNull
-    public float getTotalSum() {
-        return totalSum;
+    public float getSumOfAverages() {
+        return sumOfAverages;
     }
 
     @SuppressLint("NewApi")
@@ -44,6 +44,6 @@ public class GFSyncHRMetadata extends GFSyncEntityMetadata {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GFSyncHRMetadata that = (GFSyncHRMetadata) o;
-        return count == that.count && Math.abs(totalSum - that.totalSum) <= TOTAL_HR_ACCURACY;
+        return count == that.count && Math.abs(sumOfAverages - that.sumOfAverages) <= TOTAL_HR_ACCURACY;
     }
 }

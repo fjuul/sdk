@@ -12,12 +12,12 @@ public abstract class GFScalarDataPoint<TValue extends Number> extends GFDataPoi
         return value;
     }
 
-    public GFScalarDataPoint(@NonNull TValue value, @NonNull Date start, @NonNull String dataSource) {
+    public GFScalarDataPoint(@NonNull TValue value, @NonNull Date start, @Nullable String dataSource) {
         super(start, dataSource);
         this.value = value;
     }
 
-    public GFScalarDataPoint(@NonNull TValue value, @NonNull Date start, @Nullable Date end, @NonNull String dataSource) {
+    public GFScalarDataPoint(@NonNull TValue value, @NonNull Date start, @Nullable Date end, @Nullable String dataSource) {
         super(start, end, dataSource);
         this.value = value;
     }

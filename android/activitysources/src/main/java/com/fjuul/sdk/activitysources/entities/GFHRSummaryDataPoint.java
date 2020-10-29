@@ -1,6 +1,7 @@
 package com.fjuul.sdk.activitysources.entities;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -22,7 +23,7 @@ public class GFHRSummaryDataPoint extends GFDataPoint {
         return max;
     }
 
-    public GFHRSummaryDataPoint(float avg, float min, float max, @NonNull Date start, @NonNull String dataSource) {
+    public GFHRSummaryDataPoint(float avg, float min, float max, @NonNull Date start, @Nullable String dataSource) {
         super(start, dataSource);
         this.avg = avg;
         this.min = min;

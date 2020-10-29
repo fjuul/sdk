@@ -8,7 +8,7 @@ import java.util.Date;
 public abstract class GFDataPoint {
     @NonNull protected final Date start;
     @Nullable protected final Date end;
-    @NonNull protected final String dataSource;
+    @Nullable protected final String dataSource;
 
     @NonNull
     public Date getStart() {
@@ -20,16 +20,16 @@ public abstract class GFDataPoint {
         return end;
     }
 
-    @NonNull
+    @Nullable
     public String getDataSource() {
         return dataSource;
     }
 
-    public GFDataPoint(@NonNull Date start, @NonNull String dataSource) {
+    public GFDataPoint(@NonNull Date start, @Nullable String dataSource) {
         this(start, null, dataSource);
     }
 
-    public GFDataPoint(@NonNull Date start, @Nullable Date end, @NonNull String dataSource) {
+    public GFDataPoint(@NonNull Date start, @Nullable Date end, @Nullable String dataSource) {
         this.start = start;
         this.end = end;
         this.dataSource = dataSource;

@@ -52,7 +52,7 @@ public class GFSyncMetadataStore {
             return true;
         }
         final GFSyncCaloriesMetadata newMetadata = GFSyncCaloriesMetadata.buildFromBatch(caloriesBatch, clock);
-        return newMetadata.equals(storedMetadata);
+        return !newMetadata.equals(storedMetadata);
     }
 
     public boolean isNeededToSyncStepsBatch(@NonNull GFDataPointsBatch<GFStepsDataPoint> stepsBatch) {
@@ -62,7 +62,7 @@ public class GFSyncMetadataStore {
             return true;
         }
         final GFSyncStepsMetadata newMetadata = GFSyncStepsMetadata.buildFromBatch(stepsBatch, clock);
-        return newMetadata.equals(storedMetadata);
+        return !newMetadata.equals(storedMetadata);
     }
 
     public boolean isNeededToSyncHRBatch(@NonNull GFDataPointsBatch<GFHRSummaryDataPoint> hrBatch) {
@@ -72,7 +72,7 @@ public class GFSyncMetadataStore {
             return true;
         }
         final GFSyncHRMetadata newMetadata = GFSyncHRMetadata.buildFromBatch(hrBatch, clock);
-        return newMetadata.equals(storedMetadata);
+        return !newMetadata.equals(storedMetadata);
     }
 
     public boolean isNeededToSyncSessionBundle(@NonNull GFSessionBundle sessionBundle) {
@@ -82,7 +82,7 @@ public class GFSyncMetadataStore {
             return true;
         }
         final GFSyncSessionMetadata newMetadata = GFSyncSessionMetadata.buildFromSessionBundle(sessionBundle, clock);
-        return newMetadata.equals(storedMetadata);
+        return !newMetadata.equals(storedMetadata);
     }
 
     @SuppressLint("NewApi")

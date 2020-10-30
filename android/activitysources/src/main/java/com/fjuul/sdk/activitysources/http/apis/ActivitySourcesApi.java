@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import java.util.Map;
 
 import okhttp3.ResponseBody;
+import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
@@ -35,5 +36,5 @@ public interface ActivitySourcesApi {
         @Query("show") @Nullable String show);
 
     @POST("/sdk/activity-sources/v1/{userToken}/googlefit")
-    ApiCall<Void> uploadGoogleFitData(@Path("userToken") @NonNull String userToken, GFUploadData data);
+    ApiCall<Void> uploadGoogleFitData(@Path("userToken") @NonNull String userToken, @Body GFUploadData data);
 }

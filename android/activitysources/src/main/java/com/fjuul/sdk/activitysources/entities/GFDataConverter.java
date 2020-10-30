@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class GFDataConverter {
+    private static final String TAG = "GFDataConverter";
+
     public static Task<List<GFCalorieDataPoint>> convertDataReadResponseToCalories(DataReadResponse dataReadResponse) {
         ArrayList<GFCalorieDataPoint> calorieDataPoints = new ArrayList<>();
         for (Bucket bucket : dataReadResponse.getBuckets()) {

@@ -16,7 +16,6 @@ import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
-import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.data.Session;
 import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.request.SessionReadRequest;
@@ -29,7 +28,6 @@ import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -135,18 +133,22 @@ public final class GFClientWrapper {
         // TODO: check if sub-task watcher was shutdown
     }
 
+    @SuppressLint("NewApi")
     private Task<List<GFCalorieDataPoint>> runReadCaloriesTask(Pair<Date, Date> dateRange, SupervisedExecutor gfTaskWatcher) {
-        Supplier<Task<List<GFCalorieDataPoint>>> taskSupplier = () -> {
+         final Supplier<Task<List<GFCalorieDataPoint>>> taskSupplier = () -> {
+            final Function<DataReadResponse, List<GFCalorieDataPoint>> convertData = response -> convertResponseBucketsToPoints(response, GFDataConverter::convertBucketToCalorie);
             return readCaloriesHistory(dateRange.first, dateRange.second)
-                .onSuccessTask(executor, GFDataConverter::convertDataReadResponseToCalories);
+                .onSuccessTask(executor, convertData.andThen(Tasks::forResult)::apply);
         };
         return runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
     }
 
+    @SuppressLint("NewApi")
     private Task<List<GFStepsDataPoint>> runReadStepsTask(Pair<Date, Date> dateRange, SupervisedExecutor gfTaskWatcher) {
-        Supplier<Task<List<GFStepsDataPoint>>> taskSupplier = () -> {
+         final Supplier<Task<List<GFStepsDataPoint>>> taskSupplier = () -> {
+            final Function<DataReadResponse, List<GFStepsDataPoint>> convertData = response -> convertResponseBucketsToPoints(response, GFDataConverter::convertBucketToSteps);
             return readStepsHistory(dateRange.first, dateRange.second)
-                .onSuccessTask(executor, GFDataConverter::convertDataReadResponseToSteps);
+                .onSuccessTask(executor, convertData.andThen(Tasks::forResult)::apply);
         };
         return runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
     }
@@ -154,8 +156,9 @@ public final class GFClientWrapper {
     @SuppressLint("NewApi")
     private Task<List<GFHRSummaryDataPoint>> runReadHRTask(Pair<Date, Date> dateRange, Duration bucketDuration, SupervisedExecutor gfTaskWatcher) {
         Supplier<Task<List<GFHRSummaryDataPoint>>> taskSupplier = () -> {
+            final Function<DataReadResponse, List<GFHRSummaryDataPoint>> convertData = response -> convertResponseBucketsToPoints(response, GFDataConverter::convertBucketToHRSummary);
             return readHRHistory(dateRange.first, dateRange.second, bucketDuration)
-                .onSuccessTask(executor, GFDataConverter::convertDataReadResponseToHRSummaries);
+                .onSuccessTask(executor, convertData.andThen(Tasks::forResult)::apply);
         };
         return runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
     }
@@ -307,6 +310,14 @@ public final class GFClientWrapper {
     @SuppressLint("NewApi")
     private <T extends GFDataPoint> List<T> convertDataSetToPoints(DataSet dataSet, Function<DataPoint, T> mapper) {
         return dataSet.getDataPoints().stream()
+            .map(mapper)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+    }
+
+    @SuppressLint("NewApi")
+    private <T extends GFDataPoint> List<T> convertResponseBucketsToPoints(DataReadResponse response, Function<Bucket, T> mapper) {
+        return response.getBuckets().stream()
             .map(mapper)
             .filter(Objects::nonNull)
             .collect(Collectors.toList());

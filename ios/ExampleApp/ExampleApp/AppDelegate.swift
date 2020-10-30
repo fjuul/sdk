@@ -4,12 +4,7 @@ import FjuulActivitySources
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-    // TODO: Create ActivitySource from Factory
-//    private var activitySource = ActivitySourceHealthKit()
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-//        activitySource.mount()
-
         let environment = ApiEnvironment(rawValue: UserDefaults.standard.integer(forKey: "environment"))!
 
         // TODO: Update code for initialize SDK client in example app
@@ -22,8 +17,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             )
         )
 
-        ApiClientHolder.default.apiClient?.activitySources.mountHK { result in
-            print(result)
+        if let apiClient = ApiClientHolder.default.apiClient {
+            ActivitySourceManager.shared.initialize(apiClient: apiClient)
         }
 
         return true

@@ -2,7 +2,6 @@ import Foundation
 import Alamofire
 
 class ApiKeyAdapter: RequestAdapter {
-
     let apiKey: String
 
     init(apiKey: String) {
@@ -14,5 +13,4 @@ class ApiKeyAdapter: RequestAdapter {
         urlRequest.headers.add(name: "x-api-key", value: apiKey)
         completion(.success(urlRequest))
     }
-
 }

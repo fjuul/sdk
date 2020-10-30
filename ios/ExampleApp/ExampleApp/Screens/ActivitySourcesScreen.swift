@@ -39,7 +39,7 @@ struct ActivitySourcesScreen: View {
             }) {
                 Text("Connect Unknown")
             }
-            
+
             Button(action: {
                 self.observable.connect(activitySource: "healthkit")
             }) {

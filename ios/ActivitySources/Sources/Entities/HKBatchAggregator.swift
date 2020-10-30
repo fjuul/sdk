@@ -3,9 +3,9 @@ import HealthKit
 
 class HKBatchAggregator {
     let data: [HKStatistics]
-    let sampleType: HKQuantityType
+    let sampleType: HKSampleType
 
-    init(data: [HKStatistics], sampleType: HKQuantityType) {
+    init(data: [HKStatistics], sampleType: HKSampleType) {
         self.data = data
         self.sampleType = sampleType
     }

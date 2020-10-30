@@ -7,9 +7,9 @@ import Alamofire
 //public typealias PartialHKRequestData = Partial<HKRequestData>
 
 class HKDataManager {
-    internal let healthKitStore: HKHealthStore = HKHealthStore()
-    internal let apiClient: ApiClient
-    internal var hkAnchorStore: HKAnchorStore
+    let healthKitStore: HKHealthStore = HKHealthStore()
+    let apiClient: ApiClient
+    var hkAnchorStore: HKAnchorStore
 
     init(apiClient: ApiClient, persistor: Persistor) {
         self.apiClient = apiClient
@@ -71,7 +71,7 @@ class HKDataManager {
                 guard error == nil else { return }
 
                 self.fetchSampleUpdates(sampleType: sampleType) { data in
-                    print("HR Data", data)
+//                    print("HR Data", data)
                 }
             })
             healthKitStore.execute(query)
@@ -107,16 +107,16 @@ class HKDataManager {
             
             var hrDataPoints: [HrDataPoint] = []
 
-            for sampleItem in samples {
-                let hrItem = HrDataPoint(uuid: sampleItem.uuid,
-                            value: sampleItem.quantity.doubleValue(for: HKUnit.countUnit().unitDividedByUnit(HKUnit.minuteUnit())),
-                            startDate: sampleItem.startDate,
-                            endDate: sampleItem.endDate,
-//                            source: sampleItem.sourceRevision,
-                            metadata: sampleItem.metadata)
-
-                hrDataPoints.append(hrItem)
-            }
+//            for sampleItem in samples {
+//                let hrItem = HrDataPoint(uuid: sampleItem.uuid,
+//                            value: sampleItem.quantity.doubleValue(for: HKUnit.countUnit().unitDividedByUnit(HKUnit.minuteUnit())),
+//                            startDate: sampleItem.startDate,
+//                            endDate: sampleItem.endDate,
+////                            source: sampleItem.sourceRevision,
+//                            metadata: sampleItem.metadata)
+//
+//                hrDataPoints.append(hrItem)
+//            }
             self.hkAnchorStore.anchor?.heartRate = newAnchor
             completion(hrDataPoints)
         }
@@ -125,7 +125,7 @@ class HKDataManager {
 
     private func fetchIntradayUpdates(sampleType: HKQuantityType) {
         self.getBatchSegments(sampleType: sampleType) { (batchStartDates) in
-            print("batchStartDates: \(batchStartDates)")
+//            print("batchStartDates: \(batchStartDates)")
             self.fetchIntradayStatisticsCollections(sampleType: sampleType, batchDates: batchStartDates) { results in
                 let requestData = self.buildHKRequestData(data: results, sampleType: sampleType)
                 self.sendHKData(data: requestData) { result in
@@ -142,7 +142,7 @@ class HKDataManager {
     
     private func buildHKRequestData(data: [HKStatistics], sampleType: HKQuantityType) -> HKRequestData {
         let batches = HKBatchAggregator(data: data, sampleType: sampleType).generate()
-        print("got results, \(sampleType) \(batches.count)")
+//        print("got results, \(sampleType) \(batches.count)")
         
         switch sampleType {
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:

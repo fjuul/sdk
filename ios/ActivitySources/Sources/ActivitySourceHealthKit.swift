@@ -3,9 +3,9 @@ import Foundation
 import FjuulCore
 
 class ActivitySourceHealthKit {
-    internal let hkDataManager: HKDataManager
-    internal let persistor: Persistor
-    internal let apiClient: ApiClient
+    let hkDataManager: HKDataManager
+    let persistor: Persistor
+    let apiClient: ApiClient
 
     init(apiClient: ApiClient, persistor: Persistor = DiskPersistor()) {
         self.apiClient = apiClient

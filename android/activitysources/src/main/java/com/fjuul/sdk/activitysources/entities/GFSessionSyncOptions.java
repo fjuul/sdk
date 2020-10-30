@@ -19,6 +19,21 @@ public final class GFSessionSyncOptions {
         this.minimumSessionDuration = minimumSessionDuration;
     }
 
+    @NonNull
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    @NonNull
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    @NonNull
+    public Duration getMinimumSessionDuration() {
+        return minimumSessionDuration;
+    }
+
     public static class Builder {
         @Nullable LocalDate startDate;
         @Nullable LocalDate endDate;

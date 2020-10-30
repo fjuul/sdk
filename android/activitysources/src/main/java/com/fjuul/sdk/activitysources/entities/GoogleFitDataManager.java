@@ -35,7 +35,6 @@ final class GoogleFitDataManager {
     private GFDataUtils gfUtils;
     private GFSyncMetadataStore gfSyncMetadataStore;
 
-
     GoogleFitDataManager(GFClientWrapper client, GFDataUtils gfUtils, GFSyncMetadataStore gfSyncMetadataStore) {
         this.client = client;
         this.gfUtils = gfUtils;
@@ -126,9 +125,9 @@ final class GoogleFitDataManager {
         // todo: respond with result ?
     }
 
-    public void syncSessions(LocalDate start, LocalDate end, Duration minimumSessionDuration) {
-        Pair<Date, Date> gfQueryDates = gfUtils.adjustInputDatesForGFRequest(start, end);
-        client.getSessions(gfQueryDates.first, gfQueryDates.second, minimumSessionDuration).continueWith(task -> {
+    public void syncSessions(GFSessionSyncOptions options) {
+        Pair<Date, Date> gfQueryDates = gfUtils.adjustInputDatesForGFRequest(options.getStartDate(), options.getEndDate());
+        client.getSessions(gfQueryDates.first, gfQueryDates.second, options.getMinimumSessionDuration()).continueWith(task -> {
             Log.d(TAG, "syncSessions: DONE = " + task.isSuccessful());
             if (!task.isSuccessful()) {
                 // TODO: invoke callback with exception

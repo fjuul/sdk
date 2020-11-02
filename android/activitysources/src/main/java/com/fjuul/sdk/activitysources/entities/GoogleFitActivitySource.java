@@ -6,10 +6,14 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions;
+import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.NotGrantedPermissionsException;
+import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.http.ApiClient;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -30,11 +34,14 @@ public final class GoogleFitActivitySource {
 
     private static volatile GoogleFitActivitySource instance;
 
-    private boolean requestOfflineAccess;
-    private @NonNull ApiClient client;
-    private @NonNull String serverClientId;
+    private final boolean requestOfflineAccess;
+    private final @NonNull String serverClientId;
+    private final @NonNull ActivitySourcesService sourcesService;
+    private final @NonNull GFDataUtils gfDataUtils;
+    private final @NonNull GFSyncMetadataStore syncMetadataStore;
+    private final @NonNull Context context;
 
-    static synchronized void initialize(ApiClient client) {
+    static synchronized void initialize(@NonNull ApiClient client) {
         Context context = client.getAppContext();
         ApplicationInfo app;
         try {
@@ -48,7 +55,10 @@ public final class GoogleFitActivitySource {
         if (serverClientId == null || serverClientId.isEmpty()) {
             throw new IllegalStateException("Can't retrieve meta-data for 'server_client_id' key from the manifest");
         }
-        instance = new GoogleFitActivitySource(client, requestOfflineAccess, serverClientId);
+        ActivitySourcesService sourcesService = new ActivitySourcesService(client);
+        GFDataUtils gfUtils = new GFDataUtils();
+        GFSyncMetadataStore syncMetadataStore = new GFSyncMetadataStore(client.getStorage(), client.getUserToken());
+        instance = new GoogleFitActivitySource(requestOfflineAccess, serverClientId, sourcesService, gfUtils, syncMetadataStore, context);
     }
 
     public static GoogleFitActivitySource getInstance() {
@@ -58,13 +68,21 @@ public final class GoogleFitActivitySource {
         return instance;
     }
 
-    private GoogleFitActivitySource(ApiClient client, boolean requestOfflineAccess, String serverClientId) {
-        this.client = client;
+    public GoogleFitActivitySource(boolean requestOfflineAccess,
+                                   @NonNull String serverClientId,
+                                   @NonNull ActivitySourcesService sourcesService,
+                                   @NonNull GFDataUtils gfDataUtils,
+                                   @NonNull GFSyncMetadataStore syncMetadataStore,
+                                   @NonNull Context context) {
         this.requestOfflineAccess = requestOfflineAccess;
         this.serverClientId = serverClientId;
+        this.sourcesService = sourcesService;
+        this.gfDataUtils = gfDataUtils;
+        this.syncMetadataStore = syncMetadataStore;
+        this.context = context;
     }
 
-    public boolean arePermissionsGranted(@NonNull Context context) {
+    public boolean arePermissionsGranted() {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         return arePermissionsGranted(account);
     }
@@ -78,18 +96,41 @@ public final class GoogleFitActivitySource {
     }
 
     @SuppressLint("NewApi")
-    public void syncIntradayMetrics(@NonNull Context context, GFIntradaySyncOptions options) {
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
-        if (!arePermissionsGranted(account)) {
-            throw new IllegalStateException("Not all permissions were granted");
+    public void syncIntradayMetrics(GFIntradaySyncOptions options) {
+        GoogleFitDataManager googleFitDataManager = null;
+        try {
+            googleFitDataManager = prepareGoogleFitDataManager();
+        } catch (NotGrantedPermissionsException exception) {
+            Log.d("GOOGLE_FIT", "syncIntradayMetrics: " + exception);
+            // pass it to callback
+            // and return
+            return;
         }
-        HistoryClient historyClient = Fitness.getHistoryClient(context, account);
-        SessionsClient sessionsClient = Fitness.getSessionsClient(context, account);
-        GFDataUtils gfUtils = new GFDataUtils();
-        GFClientWrapper clientWrapper = new GFClientWrapper(historyClient, sessionsClient, gfUtils);
-        GFSyncMetadataStore gfSyncMetadataStore = new GFSyncMetadataStore(client.getStorage(), client.getUserToken());
-        GoogleFitDataManager gfDataManager = new GoogleFitDataManager(clientWrapper, gfUtils, gfSyncMetadataStore);
-        gfDataManager.syncIntradayMetrics(options);
+        googleFitDataManager.syncIntradayMetrics(options);
+    }
+
+    public void syncSessions(@NonNull Context context, GFSessionSyncOptions options) {
+        GoogleFitDataManager googleFitDataManager = null;
+        try {
+            googleFitDataManager = prepareGoogleFitDataManager();
+        } catch (NotGrantedPermissionsException exception) {
+            Log.d("GOOGLE_FIT", "syncSessions: " + exception);
+            // pass it to callback
+            // and return
+            return;
+        }
+        googleFitDataManager.syncSessions(options);
+    }
+
+    private GoogleFitDataManager prepareGoogleFitDataManager() throws NotGrantedPermissionsException {
+        final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
+        if (!arePermissionsGranted(account)) {
+            throw new NotGrantedPermissionsException("Not all permissions were granted");
+        }
+        final HistoryClient historyClient = Fitness.getHistoryClient(context, account);
+        final SessionsClient sessionsClient = Fitness.getSessionsClient(context, account);
+        final GFClientWrapper clientWrapper = new GFClientWrapper(historyClient, sessionsClient, gfDataUtils);
+        return new GoogleFitDataManager(clientWrapper, gfDataUtils, syncMetadataStore, sourcesService);
     }
 
     // TODO: add static method checking if google fit is installed in the system

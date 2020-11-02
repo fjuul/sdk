@@ -16,4 +16,10 @@ public final class GoogleFitActivitySourceExceptions {
             super(message);
         }
     }
+
+    public static class NotGrantedPermissionsException extends CommonException {
+        public NotGrantedPermissionsException(@NonNull String message) {
+            super(message);
+        }
+    }
 }

@@ -1,3 +1,6 @@
+import Foundation
+import FjuulCore
+    
 final class ActivitySourcePolar: ActivitySourceProtocol {
     var trackerConnection: TrackerConnection
     var apiClient: ApiClient?
@@ -15,5 +18,6 @@ final class ActivitySourcePolar: ActivitySourceProtocol {
     }
 
     func unmount() -> Bool {
+        return true
     }
 }

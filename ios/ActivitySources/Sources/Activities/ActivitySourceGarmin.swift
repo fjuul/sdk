@@ -19,5 +19,6 @@ final class ActivitySourceGarmin: ActivitySourceProtocol {
     }
 
     func unmount() -> Bool {
+        return true
     }
 }

@@ -19,5 +19,6 @@ final class ActivitySourceFitbit: ActivitySourceProtocol {
     }
 
     func unmount() -> Bool {
+        return true
     }
 }

@@ -18,13 +18,13 @@ class HKBatchAggregator {
             let items = entries.map { statistics -> AggregatedDataPoint? in
                 if let quantity = statistics.sumQuantity() {
                     let value = quantity.doubleValue(for: self.unit())
-                    return AggregatedDataPoint(value: value, startDate: statistics.startDate)
+                    return AggregatedDataPoint(value: value, start: statistics.startDate)
                 }
 
                 return nil
             }.compactMap { $0 }
 
-            batches.append(BatchDataPoint(sources: uniqueSources, items: items))
+            batches.append(BatchDataPoint(sourceBundleIdentifiers: uniqueSources, entries: items))
         }
 
         return batches

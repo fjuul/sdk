@@ -1,6 +1,6 @@
 struct BatchDataPoint: Codable {
-    var sources: [String]
-    var items: [AggregatedDataPoint]
+    var sourceBundleIdentifiers: [String]
+    var entries: [AggregatedDataPoint]
     //    var startDate: Date // No need based on discussion with Manuel
     //    var endDate: Date // No need based on discussion with Manuel
 }

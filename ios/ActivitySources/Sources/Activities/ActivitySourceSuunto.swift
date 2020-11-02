@@ -19,5 +19,6 @@ final class ActivitySourceSuunto: ActivitySourceProtocol {
     }
 
     func unmount() -> Bool {
+        return true
     }
 }

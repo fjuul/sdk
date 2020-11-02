@@ -92,7 +92,7 @@ class HealthKitManager {
             }
         }
     }
-    
+
     private func fetchIntradayStatisticsCollections(sampleType: HKSampleType, batchDates: Set<Date>, completion: @escaping ([HKStatistics]) -> Void) {
         let calendar = Calendar.current
         var interval = DateComponents()
@@ -159,7 +159,7 @@ class HealthKitManager {
                 batchStartDates.insert(HKDataUtils.beginningOfHour(date: sampleItem.startDate)!)
             }
 
-//            self.saveAnchorBySampleType(newAnchor: newAnchor, sampleType: sampleType)
+            self.saveAnchorBySampleType(newAnchor: newAnchor, sampleType: sampleType)
             completion(batchStartDates)
         }
         healthStore.execute(query)

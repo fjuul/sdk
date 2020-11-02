@@ -6,14 +6,14 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions;
 import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.NotGrantedPermissionsException;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
+import com.fjuul.sdk.entities.Callback;
+import com.fjuul.sdk.entities.Result;
 import com.fjuul.sdk.http.ApiClient;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -24,13 +24,25 @@ import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.HistoryClient;
 import com.google.android.gms.fitness.SessionsClient;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 @SuppressLint("NewApi")
 public final class GoogleFitActivitySource {
     static final String SERVER_CLIENT_ID_METADATA_KEY = "com.fjuul.sdk.googlefit.server_client_id";
     static final String REQUEST_OFFLINE_ACCESS_METADATA_KEY = "com.fjuul.sdk.googlefit.request_offline_access";
+
+    private static final ExecutorService localSequentialBackgroundExecutor = createSequentialSingleCachedExecutor();
 
     private static volatile GoogleFitActivitySource instance;
 
@@ -96,30 +108,36 @@ public final class GoogleFitActivitySource {
     }
 
     @SuppressLint("NewApi")
-    public void syncIntradayMetrics(GFIntradaySyncOptions options) {
-        GoogleFitDataManager googleFitDataManager = null;
+    public Future<Result<Void>> syncIntradayMetrics(@NonNull final GFIntradaySyncOptions options, @Nullable final Callback<Void> callback) {
+        GoogleFitDataManager tempGoogleFitDataManager = null;
         try {
-            googleFitDataManager = prepareGoogleFitDataManager();
-        } catch (NotGrantedPermissionsException exception) {
-            Log.d("GOOGLE_FIT", "syncIntradayMetrics: " + exception);
-            // pass it to callback
-            // and return
-            return;
+            tempGoogleFitDataManager = prepareGoogleFitDataManager();
+        } catch (NotGrantedPermissionsException exc) {
+            Result<Void> errorResult = Result.error(exc);
+            if (callback != null) {
+                callback.onResult(errorResult);
+            }
+            return CompletableFuture.completedFuture(errorResult);
         }
-        googleFitDataManager.syncIntradayMetrics(options);
+        final GoogleFitDataManager googleFitDataManager = tempGoogleFitDataManager;
+        Future<Result<Void>> future = performTaskAlongWithCallback(() -> googleFitDataManager.syncIntradayMetrics(options), callback);
+        return future;
     }
 
-    public void syncSessions(@NonNull Context context, GFSessionSyncOptions options) {
-        GoogleFitDataManager googleFitDataManager = null;
+    public Future<Result<Void>> syncSessions(@NonNull final GFSessionSyncOptions options, @Nullable final Callback<Void> callback) {
+        GoogleFitDataManager tempGoogleFitDataManager = null;
         try {
-            googleFitDataManager = prepareGoogleFitDataManager();
-        } catch (NotGrantedPermissionsException exception) {
-            Log.d("GOOGLE_FIT", "syncSessions: " + exception);
-            // pass it to callback
-            // and return
-            return;
+            tempGoogleFitDataManager = prepareGoogleFitDataManager();
+        } catch (NotGrantedPermissionsException exc) {
+            Result<Void> errorResult = Result.error(exc);
+            if (callback != null) {
+                callback.onResult(errorResult);
+            }
+            return CompletableFuture.completedFuture(errorResult);
         }
-        googleFitDataManager.syncSessions(options);
+        final GoogleFitDataManager googleFitDataManager = tempGoogleFitDataManager;
+        Future<Result<Void>> future = performTaskAlongWithCallback(() -> googleFitDataManager.syncSessions(options), callback);
+        return future;
     }
 
     private GoogleFitDataManager prepareGoogleFitDataManager() throws NotGrantedPermissionsException {
@@ -131,6 +149,26 @@ public final class GoogleFitActivitySource {
         final SessionsClient sessionsClient = Fitness.getSessionsClient(context, account);
         final GFClientWrapper clientWrapper = new GFClientWrapper(historyClient, sessionsClient, gfDataUtils);
         return new GoogleFitDataManager(clientWrapper, gfDataUtils, syncMetadataStore, sourcesService);
+    }
+
+    private <T> Future<Result<T>> performTaskAlongWithCallback(Supplier<Task<T>> taskSupplier, @Nullable Callback<T> callback) {
+        Future<Result<T>> future = localSequentialBackgroundExecutor.submit(() -> {
+            try {
+                T taskResult = Tasks.await(taskSupplier.get());
+                Result<T> result = Result.value(taskResult);
+                if (callback != null) {
+                    callback.onResult(result);
+                }
+                return result;
+            } catch (ExecutionException | InterruptedException exc) {
+                Result errorResult = Result.error(exc);
+                if (callback != null) {
+                    callback.onResult(errorResult);
+                }
+                return  errorResult;
+            }
+        });
+        return future;
     }
 
     // TODO: add static method checking if google fit is installed in the system
@@ -160,5 +198,10 @@ public final class GoogleFitActivitySource {
     // TODO: use general callback interface
     public interface HandleSignInResultCallback {
         void onResult(@Nullable Exception exception, boolean success);
+    }
+
+    private static ExecutorService createSequentialSingleCachedExecutor() {
+        // NOTE: this solution works only for single thread (do not edit maximumPoolSize)
+        return new ThreadPoolExecutor(0, 1, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
     }
 }

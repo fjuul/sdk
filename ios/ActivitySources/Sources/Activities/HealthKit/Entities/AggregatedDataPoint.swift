@@ -3,7 +3,7 @@ import FjuulCore
 
 // Structure for aggregated values of
 // - activeEnergyBurned with unit kilocalorie
-// - stepCount
+// - stepCount with unit count
 // - distanceCycling
 // - distanceWalkingRunning
 // Data aggregated by 1m granulariry

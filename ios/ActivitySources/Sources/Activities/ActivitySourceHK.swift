@@ -47,7 +47,7 @@ final class ActivitySourceHK: ActivitySourceProtocol {
         guard let apiClient = self.apiClient else { return  completion(.failure(FjuulError.invalidConfig))}
 
         let url = "\(apiClient.baseUrl)/sdk/activity-sources/v1/\(apiClient.userToken)/healthkit"
-        
+
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .formatted(DateFormatters.iso8601Full)
         let parameterEncoder = JSONParameterEncoder(encoder: encoder)
@@ -55,7 +55,7 @@ final class ActivitySourceHK: ActivitySourceProtocol {
         apiClient.signedSession.request(url, method: .post, parameters: data, encoder: parameterEncoder).response { response in
 //            print(response)
 //            return completion(response.result)
-            
+
             return completion(.success(Data()))
         }
     }

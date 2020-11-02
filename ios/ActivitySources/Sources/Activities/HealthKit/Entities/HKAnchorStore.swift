@@ -11,7 +11,7 @@ public struct HKAnchorStore {
         self.persistor = persistor
     }
 
-    var anchor: HKAnchorData? {
+    var anchors: HKAnchorData? {
         get {
             if let value = persistor.get(key: lookupKey) as HKAnchorData? {
                return value

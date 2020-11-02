@@ -78,6 +78,10 @@ class HealthKitManager {
             self.fetchIntradayUpdates(type: type) { (data) in
                 handler(data)
             }
+        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!:
+            self.fetchIntradayUpdates(type: type) { (data) in
+                handler(data)
+            }
         default: print("Unhandled HKObjectType: \(type)")
         }
     }
@@ -168,9 +172,9 @@ class HealthKitManager {
     private func getAnchorBySampleType(sampleType: HKObjectType) -> HKQueryAnchor {
         switch sampleType {
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
-           return self.hkAnchorStore.anchor?.activeEnergyBurned ?? HKQueryAnchor.init(fromValue: 0)
+            return self.hkAnchorStore.anchors?[.activeEnergyBurned] ?? HKQueryAnchor.init(fromValue: 0)
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!:
-            return self.hkAnchorStore.anchor?.stepCount ?? HKQueryAnchor.init(fromValue: 0)
+            return self.hkAnchorStore.anchors?[.stepCount] ?? HKQueryAnchor.init(fromValue: 0)
         default:
             return HKQueryAnchor.init(fromValue: 0)
         }
@@ -179,18 +183,14 @@ class HealthKitManager {
     private func saveAnchorBySampleType(newAnchor: HKQueryAnchor?, sampleType: HKObjectType) -> Void {
         switch sampleType {
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
-            self.hkAnchorStore.anchor?.activeEnergyBurned = newAnchor
+            self.hkAnchorStore.anchors?[.activeEnergyBurned] = newAnchor
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!:
-            self.hkAnchorStore.anchor?.stepCount = newAnchor
+            self.hkAnchorStore.anchors?[.stepCount] = newAnchor
         default:
             return
         }
     }
-    
-//    private func quantityTypeByObjectType(type: HKObjectType) -> {
-//        case
-//    }
-    
+
     private func statisticsCollectionsDatePredicates(batchDates: Set<Date>) -> [NSPredicate] {
         var predicates: [NSPredicate] = []
 
@@ -217,8 +217,8 @@ class HealthKitManager {
     /// Types of data  Fjull wishes to read from HealthKit.
     /// - returns: A set of HKObjectType.
     private func dataTypesToRead() -> Set<HKSampleType> {
-        return Set(arrayLiteral: HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!
-//                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!,
+        return Set(arrayLiteral: HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!,
+                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!
 //                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!,
 //                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!,
 //                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!,

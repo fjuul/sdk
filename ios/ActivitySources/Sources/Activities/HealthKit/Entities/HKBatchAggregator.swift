@@ -13,7 +13,7 @@ class HKBatchAggregator {
     func generate() -> [BatchDataPoint] {
         var batches: [BatchDataPoint] = []
 
-        self.groupByHour().forEach { (date, entries: [HKStatistics]) in
+        self.groupByHour().forEach { (_, entries: [HKStatistics]) in
             let uniqueSources = Array(Set(entries.compactMap { $0.sources }.flatMap { $0 }.map { $0.bundleIdentifier }))
             let items = entries.map { statistics -> AggregatedDataPoint? in
                 if let quantity = statistics.sumQuantity() {

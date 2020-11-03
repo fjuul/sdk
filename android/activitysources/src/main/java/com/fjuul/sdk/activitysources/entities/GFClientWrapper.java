@@ -111,7 +111,7 @@ public final class GFClientWrapper {
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         SupervisedExecutor gfTaskWatcherDetails = new SupervisedExecutor(gfTaskWatcherExecutor, cancellationTokenSource);
         List<Task<List<GFHRSummaryDataPoint>>> tasks = dateChunks.stream().map(dateRange -> {
-            return runReadHRTask(dateRange, Duration.ofMinutes(1), gfTaskWatcherDetails);
+            return runReadHRTask(dateRange, gfTaskWatcherDetails);
         }).collect(Collectors.toList());
 
         Task<List<GFHRSummaryDataPoint>> getHRTask = flatMapTasksResults(tasks);
@@ -160,10 +160,10 @@ public final class GFClientWrapper {
     }
 
     @SuppressLint("NewApi")
-    private Task<List<GFHRSummaryDataPoint>> runReadHRTask(Pair<Date, Date> dateRange, Duration bucketDuration, SupervisedExecutor gfTaskWatcher) {
+    private Task<List<GFHRSummaryDataPoint>> runReadHRTask(Pair<Date, Date> dateRange, SupervisedExecutor gfTaskWatcher) {
         Supplier<SupervisedTask<List<GFHRSummaryDataPoint>>> taskSupplier = () -> {
             final Function<DataReadResponse, List<GFHRSummaryDataPoint>> convertData = response -> convertResponseBucketsToPoints(response, GFDataConverter::convertBucketToHRSummary);
-            Task<List<GFHRSummaryDataPoint>> task = readHRHistory(dateRange.first, dateRange.second, bucketDuration)
+            Task<List<GFHRSummaryDataPoint>> task = readHRHistory(dateRange.first, dateRange.second)
                 .onSuccessTask(executor, convertData.andThen(Tasks::forResult)::apply);
             return buildSupervisedTask("fetch gf intraday hr", task, dateRange);
         };
@@ -356,8 +356,8 @@ public final class GFClientWrapper {
         return historyClient.readData(readRequest);
     }
 
-    private Task<DataReadResponse> readHRHistory(Date start, Date end, Duration bucketDuration) {
-        DataReadRequest readRequest = buildHRDataReadRequest(start, end, bucketDuration);
+    private Task<DataReadResponse> readHRHistory(Date start, Date end) {
+        DataReadRequest readRequest = buildHRDataReadRequest(start, end);
         return historyClient.readData(readRequest);
     }
 
@@ -389,10 +389,10 @@ public final class GFClientWrapper {
     }
 
     @SuppressLint("NewApi")
-    private DataReadRequest buildHRDataReadRequest(Date start, Date end, Duration bucketDuration) {
+    private DataReadRequest buildHRDataReadRequest(Date start, Date end) {
         return new DataReadRequest.Builder()
             .aggregate(DataType.TYPE_HEART_RATE_BPM)
-            .bucketByTime((int)bucketDuration.toMillis(), TimeUnit.MILLISECONDS)
+            .bucketByTime(1, TimeUnit.MINUTES)
             .setTimeRange(start.getTime(), end.getTime(), TimeUnit.MILLISECONDS)
             .build();
     }

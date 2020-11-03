@@ -108,7 +108,7 @@ public final class GoogleFitActivitySource {
     }
 
     @SuppressLint("NewApi")
-    public Future<Result<Void>> syncIntradayMetrics(@NonNull final GFIntradaySyncOptions options, @Nullable final Callback<Void> callback) {
+    public void syncIntradayMetrics(@NonNull final GFIntradaySyncOptions options, @Nullable final Callback<Void> callback) {
         GoogleFitDataManager tempGoogleFitDataManager = null;
         try {
             tempGoogleFitDataManager = prepareGoogleFitDataManager();
@@ -117,14 +117,13 @@ public final class GoogleFitActivitySource {
             if (callback != null) {
                 callback.onResult(errorResult);
             }
-            return CompletableFuture.completedFuture(errorResult);
+            return;
         }
         final GoogleFitDataManager googleFitDataManager = tempGoogleFitDataManager;
-        Future<Result<Void>> future = performTaskAlongWithCallback(() -> googleFitDataManager.syncIntradayMetrics(options), callback);
-        return future;
+        performTaskAlongWithCallback(() -> googleFitDataManager.syncIntradayMetrics(options), callback);
     }
 
-    public Future<Result<Void>> syncSessions(@NonNull final GFSessionSyncOptions options, @Nullable final Callback<Void> callback) {
+    public void syncSessions(@NonNull final GFSessionSyncOptions options, @Nullable final Callback<Void> callback) {
         GoogleFitDataManager tempGoogleFitDataManager = null;
         try {
             tempGoogleFitDataManager = prepareGoogleFitDataManager();
@@ -133,11 +132,10 @@ public final class GoogleFitActivitySource {
             if (callback != null) {
                 callback.onResult(errorResult);
             }
-            return CompletableFuture.completedFuture(errorResult);
+            return;
         }
         final GoogleFitDataManager googleFitDataManager = tempGoogleFitDataManager;
-        Future<Result<Void>> future = performTaskAlongWithCallback(() -> googleFitDataManager.syncSessions(options), callback);
-        return future;
+        performTaskAlongWithCallback(() -> googleFitDataManager.syncSessions(options), callback);
     }
 
     private GoogleFitDataManager prepareGoogleFitDataManager() throws NotGrantedPermissionsException {
@@ -151,24 +149,21 @@ public final class GoogleFitActivitySource {
         return new GoogleFitDataManager(clientWrapper, gfDataUtils, syncMetadataStore, sourcesService);
     }
 
-    private <T> Future<Result<T>> performTaskAlongWithCallback(Supplier<Task<T>> taskSupplier, @Nullable Callback<T> callback) {
-        Future<Result<T>> future = localSequentialBackgroundExecutor.submit(() -> {
+    private <T> void performTaskAlongWithCallback(@NonNull Supplier<Task<T>> taskSupplier, @Nullable Callback<T> callback) {
+        localSequentialBackgroundExecutor.execute(() -> {
             try {
                 T taskResult = Tasks.await(taskSupplier.get());
                 Result<T> result = Result.value(taskResult);
                 if (callback != null) {
                     callback.onResult(result);
                 }
-                return result;
             } catch (ExecutionException | InterruptedException exc) {
                 Result errorResult = Result.error(exc);
                 if (callback != null) {
                     callback.onResult(errorResult);
                 }
-                return  errorResult;
             }
         });
-        return future;
     }
 
     // TODO: add static method checking if google fit is installed in the system

@@ -21,7 +21,7 @@ public final class ActivitySourcesManager {
     private ActivitySourcesStateStore stateStore;
     @Nullable private List<TrackerConnection> currentConnections;
 
-    @Nullable private static ActivitySourcesManager instance;
+    @Nullable private volatile static ActivitySourcesManager instance;
 
     ActivitySourcesManager(ActivitySourcesService sourcesService, ActivitySourcesStateStore stateStore, List<TrackerConnection> connections) {
         this.sourcesService = sourcesService;

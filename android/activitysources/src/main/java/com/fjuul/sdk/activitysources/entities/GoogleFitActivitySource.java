@@ -10,16 +10,20 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions;
+import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.NotGrantedPermissionsException;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.entities.Callback;
 import com.fjuul.sdk.entities.Result;
+import com.fjuul.sdk.errors.FjuulError;
 import com.fjuul.sdk.http.ApiClient;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.Scopes;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.HistoryClient;
@@ -27,6 +31,8 @@ import com.google.android.gms.fitness.SessionsClient;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -97,8 +103,46 @@ public final class GoogleFitActivitySource extends ActivitySource {
         return arePermissionsGranted(account);
     }
 
-    public boolean arePermissionsGranted(@NonNull GoogleSignInAccount account) {
-        return GoogleFitActivitySource.arePermissionsGranted(account, requestOfflineAccess, serverClientId);
+    public void handleGoogleSignInResult(@NonNull Intent intent, @NonNull Callback<Void> callback) {
+        try {
+            final Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(intent);
+            final GoogleSignInAccount account = task.getResult(ApiException.class);
+            final boolean permissionsGranted = arePermissionsGranted(account);
+            if (!permissionsGranted) {
+                Result<Void> result = Result.error(new CommonException("Not all permissions were granted"));
+                callback.onResult(result);
+                return;
+            }
+            if (!isOfflineAccessRequested()) {
+                Result<Void> result = Result.value(null);
+                callback.onResult(result);
+            }
+            String authCode = account.getServerAuthCode();
+            if (authCode == null) {
+                Result<Void> result = Result.error(new CommonException("No server auth code for the requested offline access"));
+                callback.onResult(result);
+            }
+            Map<String, String> queryParams = new HashMap<>();
+            queryParams.put("code", authCode);
+            sourcesService.connect("googlefit", queryParams).enqueue((call, result) -> {
+                if (result.isError()) {
+                    callback.onResult(Result.error(result.getError()));
+                }
+                ConnectionResult connectionResult = result.getValue();
+                // NOTE: android-sdk shouldn't support an external connection to google-fit
+                if (connectionResult instanceof ConnectionResult.Connected) {
+                    Result<Void> success = Result.value(null);
+                    callback.onResult(success);
+                } else {
+                    FjuulError exception = new FjuulError("Something wrong with the google fit connection: still not established");
+                    Result<Void> error = Result.error(exception);
+                    callback.onResult(error);
+                }
+            });
+        } catch (ApiException exc) {
+            Result<Void> error = Result.error(new CommonException("ApiException: " + exc.getMessage()));
+            callback.onResult(error);
+        }
     }
 
     public boolean isOfflineAccessRequested() {
@@ -107,7 +151,7 @@ public final class GoogleFitActivitySource extends ActivitySource {
 
     @SuppressLint("NewApi")
     public void syncIntradayMetrics(@NonNull final GFIntradaySyncOptions options, @Nullable final Callback<Void> callback) {
-        GoogleFitDataManager tempGoogleFitDataManager = null;
+        GoogleFitDataManager tempGoogleFitDataManager;
         try {
             tempGoogleFitDataManager = prepareGoogleFitDataManager();
         } catch (NotGrantedPermissionsException exc) {
@@ -122,7 +166,7 @@ public final class GoogleFitActivitySource extends ActivitySource {
     }
 
     public void syncSessions(@NonNull final GFSessionSyncOptions options, @Nullable final Callback<Void> callback) {
-        GoogleFitDataManager tempGoogleFitDataManager = null;
+        GoogleFitDataManager tempGoogleFitDataManager;
         try {
             tempGoogleFitDataManager = prepareGoogleFitDataManager();
         } catch (NotGrantedPermissionsException exc) {
@@ -146,6 +190,10 @@ public final class GoogleFitActivitySource extends ActivitySource {
     @Override
     protected String getRawValue() {
         return "googlefit";
+    }
+
+    private boolean arePermissionsGranted(@Nullable GoogleSignInAccount account) {
+        return GoogleFitActivitySource.arePermissionsGranted(account, requestOfflineAccess, serverClientId);
     }
 
     private GoogleFitDataManager prepareGoogleFitDataManager() throws NotGrantedPermissionsException {

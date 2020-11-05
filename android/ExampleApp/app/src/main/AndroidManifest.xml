@@ -27,6 +27,14 @@
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
+
+        <meta-data
+            android:name="com.fjuul.sdk.googlefit.server_client_id"
+            android:value="/PASTE_YOUR_CODE\" />
+        <meta-data
+            android:name="com.fjuul.sdk.googlefit.request_offline_access"
+            android:value="true" />
+
     </application>
 
 </manifest>

@@ -9,7 +9,10 @@ import androidx.annotation.Nullable;
 
 import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
+import com.fjuul.sdk.entities.Callback;
 import com.fjuul.sdk.entities.PersistentStorage;
+import com.fjuul.sdk.entities.Result;
+import com.fjuul.sdk.errors.FjuulError;
 import com.fjuul.sdk.http.ApiClient;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -58,36 +61,45 @@ public final class ActivitySourcesManager {
     }
 
     // TODO: use the unified callback interface
-    public void handleGoogleSignInResult(@NonNull GoogleFitActivitySource gfActivitySource, @NonNull Intent intent, @NonNull GoogleFitActivitySource.HandleSignInResultCallback callback) {
+    public void handleGoogleSignInResult(@NonNull GoogleFitActivitySource gfActivitySource, @NonNull Intent intent, @NonNull Callback<Void> callback) {
         try {
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(intent);
-            GoogleSignInAccount account = task.getResult(ApiException.class);
-            boolean permissionsGranted = gfActivitySource.arePermissionsGranted(account);
+            final Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(intent);
+            final GoogleSignInAccount account = task.getResult(ApiException.class);
+            final boolean permissionsGranted = gfActivitySource.arePermissionsGranted(account);
             if (!permissionsGranted) {
-                callback.onResult(new CommonException("Not all permissions were granted"), false);
+                Result<Void> result = Result.error(new CommonException("Not all permissions were granted"));
+                callback.onResult(result);
                 return;
             }
             if (!gfActivitySource.isOfflineAccessRequested()) {
-                callback.onResult(null, true);
+                Result<Void> result = Result.value(null);
+                callback.onResult(result);
             }
             String authCode = account.getServerAuthCode();
             if (authCode == null) {
-                callback.onResult(new CommonException("No server auth code for the requested offline access"), false);
+                Result<Void> result = Result.error(new CommonException("No server auth code for the requested offline access"));
+                callback.onResult(result);
             }
             Map<String, String> queryParams = new HashMap<>();
             queryParams.put("code", authCode);
             sourcesService.connect("googlefit", queryParams).enqueue((call, result) -> {
                 if (result.isError()) {
-                    callback.onResult(result.getError(), false);
+                    callback.onResult(Result.error(result.getError()));
                 }
                 ConnectionResult connectionResult = result.getValue();
                 // NOTE: android-sdk shouldn't support an external connection to google-fit
                 if (connectionResult instanceof ConnectionResult.Connected) {
-                    callback.onResult(null, true);
+                    Result<Void> success = Result.value(null);
+                    callback.onResult(success);
+                } else {
+                    FjuulError exception = new FjuulError("Something wrong with the google fit connection: still not established");
+                    Result<Void> error = Result.error(exception);
+                    callback.onResult(error);
                 }
             });
         } catch (ApiException exc) {
-            callback.onResult(new CommonException("ApiException: " + exc.getMessage()), false);
+            Result<Void> error = Result.error(new CommonException("ApiException: " + exc.getMessage()));
+            callback.onResult(error);
         }
     }
 }

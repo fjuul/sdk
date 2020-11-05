@@ -28,10 +28,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -188,11 +186,6 @@ public final class GoogleFitActivitySource {
         }
         Set<Scope> grantedScopes = account.getGrantedScopes();
         return grantedScopes.containsAll(buildGoogleSignInOptions(offlineAccess, serverClientId).getScopes());
-    }
-
-    // TODO: use general callback interface
-    public interface HandleSignInResultCallback {
-        void onResult(@Nullable Exception exception, boolean success);
     }
 
     private static ExecutorService createSequentialSingleCachedExecutor() {

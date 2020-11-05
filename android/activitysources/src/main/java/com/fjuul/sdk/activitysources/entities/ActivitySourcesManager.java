@@ -3,10 +3,12 @@ package com.fjuul.sdk.activitysources.entities;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthenticationFlowRequired;
 import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.entities.Callback;
@@ -56,8 +58,27 @@ public final class ActivitySourcesManager {
 
     // TODO: add a single unified connect method which works with activity source polymorphically.
 
-    public Intent connect(@NonNull GoogleFitActivitySource gfActivitySource, @NonNull Context context) {
-        return gfActivitySource.buildIntentRequestingPermissions(context);
+    // TODO: describe the google-fit behavior
+    public void connect(@NonNull final ActivitySource activitySource, @NonNull final Callback<Intent> callback) {
+        if (activitySource instanceof GoogleFitActivitySource) {
+            final Intent intent = ((GoogleFitActivitySource) activitySource).buildIntentRequestingPermissions();
+            callback.onResult(Result.value(intent));
+            return;
+        }
+        sourcesService.connect(activitySource.getRawValue()).enqueue((apiCall, apiCallResult) -> {
+            if (apiCallResult.isError()) {
+                callback.onResult(Result.error(apiCallResult.getError()));
+                return;
+            }
+            ConnectionResult connectionResult = apiCallResult.getValue();
+            if (connectionResult instanceof ExternalAuthenticationFlowRequired) {
+                final String url = ((ExternalAuthenticationFlowRequired) connectionResult).getUrl();
+                final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                callback.onResult(Result.value(intent));
+            } else {
+                callback.onResult(Result.error(new FjuulError("Activity source was already connected")));
+            }
+        });
     }
 
     // TODO: use the unified callback interface

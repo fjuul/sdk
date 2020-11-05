@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 @SuppressLint("NewApi")
-public final class GoogleFitActivitySource {
+public final class GoogleFitActivitySource extends ActivitySource {
     static final String SERVER_CLIENT_ID_METADATA_KEY = "com.fjuul.sdk.googlefit.server_client_id";
     static final String REQUEST_OFFLINE_ACCESS_METADATA_KEY = "com.fjuul.sdk.googlefit.request_offline_access";
 
@@ -136,6 +136,18 @@ public final class GoogleFitActivitySource {
         performTaskAlongWithCallback(() -> googleFitDataManager.syncSessions(options), callback);
     }
 
+    // TODO: add static method checking if google fit is installed in the system
+
+    protected Intent buildIntentRequestingPermissions() {
+        GoogleSignInClient signInClient = GoogleSignIn.getClient(context, buildGoogleSignInOptions(requestOfflineAccess, serverClientId));
+        return signInClient.getSignInIntent();
+    }
+
+    @Override
+    protected String getRawValue() {
+        return "googlefit";
+    }
+
     private GoogleFitDataManager prepareGoogleFitDataManager() throws NotGrantedPermissionsException {
         final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         if (!arePermissionsGranted(account)) {
@@ -162,13 +174,6 @@ public final class GoogleFitActivitySource {
                 }
             }
         });
-    }
-
-    // TODO: add static method checking if google fit is installed in the system
-
-    protected Intent buildIntentRequestingPermissions(@NonNull Context context) {
-        GoogleSignInClient signInClient = GoogleSignIn.getClient(context, buildGoogleSignInOptions(requestOfflineAccess, serverClientId));
-        return signInClient.getSignInIntent();
     }
 
     private static GoogleSignInOptions buildGoogleSignInOptions(boolean offlineAccess, String serverClientId) {

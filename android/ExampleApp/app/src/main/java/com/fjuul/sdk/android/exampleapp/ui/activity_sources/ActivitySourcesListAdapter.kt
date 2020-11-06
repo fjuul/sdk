@@ -11,8 +11,7 @@ enum class ActivitySourcesItem(val label: String) {
     FITBIT("Fitbit"),
     GARMIN("Garmin"),
     POLAR("Polar"),
-    GOOGLE_FIT_BE("Google Fit (BE)"),
-    GOOGLE_FIT_ADVANCED("Google Fit (Advanced)"),
+    GOOGLE_FIT("Google Fit"),
     DISCONNECT("Disconnect all"),
 }
 

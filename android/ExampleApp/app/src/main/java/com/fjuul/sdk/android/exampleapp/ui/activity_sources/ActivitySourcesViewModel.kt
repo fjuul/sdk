@@ -1,9 +1,11 @@
 package com.fjuul.sdk.android.exampleapp.ui.activity_sources
 
+import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.fjuul.sdk.activitysources.entities.ConnectionResult
+import com.fjuul.sdk.activitysources.entities.ActivitySource
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
 import com.fjuul.sdk.activitysources.entities.TrackerConnection
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService
 import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
@@ -12,11 +14,11 @@ class ActivitySourcesViewModel() : ViewModel() {
     private val activitySourcesService = ActivitySourcesService(ApiClientHolder.sdkClient)
     private val _currentConnections = MutableLiveData<Array<TrackerConnection>>(arrayOf())
     private val _errorMessage = MutableLiveData<String>()
-    private val _newConnectionResult = MutableLiveData<ConnectionResult?>()
+    private val _connectionIntent = MutableLiveData<Pair<ActivitySource, Intent>>()
 
     val currentConnections: LiveData<Array<TrackerConnection>> = _currentConnections
     val errorMessage: LiveData<String> = _errorMessage
-    val newConnectionResult: LiveData<ConnectionResult?> = _newConnectionResult
+    val connectionIntent: LiveData<Pair<ActivitySource, Intent>?> = _connectionIntent
 
     fun fetchCurrentConnections() {
         activitySourcesService.currentConnections.enqueue { call, result ->
@@ -29,14 +31,14 @@ class ActivitySourcesViewModel() : ViewModel() {
         }
     }
 
-    fun connect(activitySource: String) {
-        activitySourcesService.connect(activitySource).enqueue { call, result ->
+    fun connect(activitySource: ActivitySource) {
+        val manager = ActivitySourcesManager.getInstance()
+        manager.connect(activitySource) { result ->
             if (result.isError) {
                 _errorMessage.postValue(result.error!!.message)
-                return@enqueue
+                return@connect
             }
-            _newConnectionResult.postValue(result.value)
-            return@enqueue
+            _connectionIntent.postValue(Pair(activitySource, result.value!!))
         }
     }
 

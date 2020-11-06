@@ -15,6 +15,9 @@ import com.fjuul.sdk.errors.FjuulError;
 import com.fjuul.sdk.http.ApiClient;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class ActivitySourcesManager {
     private ActivitySourcesService sourcesService;
@@ -69,5 +72,37 @@ public final class ActivitySourcesManager {
                 callback.onResult(Result.error(new FjuulError("Activity source was already connected")));
             }
         });
+    }
+
+    @SuppressLint("NewApi")
+    @Nullable
+    public List<ActivitySourceConnection> getCurrent() {
+        if (currentConnections == null) {
+            return null;
+        }
+        Stream<ActivitySourceConnection> sourceConnectionsStream = currentConnections.stream()
+            .map(connection -> {
+                ActivitySource activitySource = null;
+                switch (ActivitySource.TrackerValue.forValue(connection.getTracker())) {
+                    case POLAR:
+                        activitySource = PolarActivitySource.getInstance();
+                        break;
+                    case FITBIT:
+                        activitySource = FitbitActivitySource.getInstance();
+                        break;
+                    case GARMIN:
+                        activitySource = GarminActivitySource.getInstance();
+                        break;
+                    case GOOGLE_FIT:
+                        activitySource = GoogleFitActivitySource.getInstance();
+                        break;
+                    default: break;
+                }
+                if (activitySource == null) {
+                    return null;
+                }
+                return new ActivitySourceConnection(connection, activitySource);
+            }).filter(Objects::nonNull);
+        return sourceConnectionsStream.collect(Collectors.toList());
     }
 }

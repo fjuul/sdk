@@ -8,7 +8,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
-import com.fjuul.sdk.activitysources.entities.RedirectHandler
+import com.fjuul.sdk.activitysources.entities.ExternalAuthenticationFlowHandler
 import com.fjuul.sdk.android.exampleapp.ui.activity_sources.ActivitySourcesFragment
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -26,8 +26,8 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         if (intent?.data?.scheme == "fjuulsdk-exampleapp") {
-            val redirectResult = RedirectHandler.process(intent.data!!)
-            if (redirectResult is RedirectHandler.ExternalConnectRedirect && redirectResult.isSuccess) {
+            val redirectResult = ExternalAuthenticationFlowHandler.handle(intent.data!!)
+            if (redirectResult != null && redirectResult.isSuccess) {
                 val navigationController = nav_host_fragment.findNavController()
                 if (navigationController.currentDestination?.id == R.id.activitySourcesFragment) {
                     (nav_host_fragment.childFragmentManager.fragments[0] as ActivitySourcesFragment).refreshCurrentConnections()

@@ -47,8 +47,6 @@ public final class ActivitySourcesManager {
         return instance;
     }
 
-    // TODO: add a single unified connect method which works with activity source polymorphically.
-
     // TODO: describe the google-fit behavior
     public void connect(@NonNull final ActivitySource activitySource, @NonNull final Callback<Intent> callback) {
         if (activitySource instanceof GoogleFitActivitySource) {
@@ -56,7 +54,8 @@ public final class ActivitySourcesManager {
             callback.onResult(Result.value(intent));
             return;
         }
-        sourcesService.connect(activitySource.getRawValue()).enqueue((apiCall, apiCallResult) -> {
+        final String trackerValue = activitySource.getTrackerValue().getValue();
+        sourcesService.connect(trackerValue).enqueue((apiCall, apiCallResult) -> {
             if (apiCallResult.isError()) {
                 callback.onResult(Result.error(apiCallResult.getError()));
                 return;

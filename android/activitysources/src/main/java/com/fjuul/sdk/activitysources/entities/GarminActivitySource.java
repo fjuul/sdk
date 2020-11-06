@@ -12,8 +12,8 @@ public class GarminActivitySource extends ActivitySource {
 
     @NonNull
     @Override
-    protected String getRawValue() {
-        return "garmin";
+    protected TrackerValue getTrackerValue() {
+        return TrackerValue.GARMIN;
     }
 
     private static class SingletonHolder {

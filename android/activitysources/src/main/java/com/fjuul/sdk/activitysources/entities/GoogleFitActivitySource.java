@@ -188,8 +188,8 @@ public final class GoogleFitActivitySource extends ActivitySource {
     }
 
     @Override
-    protected String getRawValue() {
-        return "googlefit";
+    protected TrackerValue getTrackerValue() {
+        return TrackerValue.GOOGLE_FIT;
     }
 
     private boolean arePermissionsGranted(@Nullable GoogleSignInAccount account) {

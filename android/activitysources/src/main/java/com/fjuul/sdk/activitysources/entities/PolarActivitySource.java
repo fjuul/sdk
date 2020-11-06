@@ -12,8 +12,8 @@ public class PolarActivitySource extends ActivitySource {
 
     @NonNull
     @Override
-    protected String getRawValue() {
-        return "polar";
+    protected TrackerValue getTrackerValue() {
+        return TrackerValue.POLAR;
     }
 
     private static class SingletonHolder {

@@ -12,8 +12,8 @@ public class FitbitActivitySource extends ActivitySource {
 
     @NonNull
     @Override
-    protected String getRawValue() {
-        return "fitbit";
+    protected TrackerValue getTrackerValue() {
+        return TrackerValue.FITBIT;
     }
 
     private static class SingletonHolder {

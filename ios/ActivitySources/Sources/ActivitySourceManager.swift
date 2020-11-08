@@ -3,6 +3,7 @@ import FjuulCore
 
 final public class ActivitySourceManager {
     static public let shared = ActivitySourceManager()
+
     var persistor: Persistor?
     var apiClient: ApiClient?
     var connectionsLocalStore: ActivitySourceStore?
@@ -24,9 +25,8 @@ final public class ActivitySourceManager {
         guard let persistor = self.persistor else { return }
 
         connectionsLocalStore?.connections?.forEach { connection in
-            if let activitySource = ActivitySourceFactory.activitySource(trackerConnection: connection) {
-//                print("Mount activitySource \(connection.tracker): ", activitySource.mount(apiClient: apiClient, persistor: persistor))
-                activitySource.mount(apiClient: apiClient, persistor: persistor)
+            if let activitySourceConnection = ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: connection) {
+                _ = activitySourceConnection.mount(apiClient: apiClient, persistor: persistor)
             }
         }
     }

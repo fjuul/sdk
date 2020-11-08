@@ -3,13 +3,12 @@ import FjuulCore
 import Alamofire
 
 final class ActivitySourceHK: ActivitySourceProtocol {
-    var trackerConnection: TrackerConnection
+    static public let shared = ActivitySourceHK()
+
     var apiClient: ApiClient?
     var persistor: Persistor?
 
-    init(trackerConnection: TrackerConnection) {
-        self.trackerConnection = trackerConnection
-    }
+    private init() {}
 
     func mount(apiClient: ApiClient, persistor: Persistor) -> Bool {
         self.apiClient = apiClient
@@ -29,7 +28,7 @@ final class ActivitySourceHK: ActivitySourceProtocol {
     func unmount() -> Bool {
         return true
     }
-    
+
     private func hkDataHandler(_ requestData: HKRequestData) {
         self.sendBatch(data: requestData) { result in
             switch result {

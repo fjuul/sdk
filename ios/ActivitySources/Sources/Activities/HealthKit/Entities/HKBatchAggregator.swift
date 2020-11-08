@@ -29,11 +29,15 @@ class HKBatchAggregator {
 
         return batches
     }
-    
+
     private func unit() -> HKUnit {
         switch self.sampleType {
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
           return HKUnit.kilocalorie()
+        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!:
+            return HKUnit.meter()
+        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!:
+            return HKUnit.meter()
         default:
           return HKUnit.count()
         }

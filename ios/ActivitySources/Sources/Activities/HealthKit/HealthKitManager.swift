@@ -10,6 +10,7 @@ class HealthKitManager {
     private var persistor: Persistor
     private var hkAnchorStore: HKAnchorStore
     public var dataHandler: ((_ data: HKRequestData) -> Void)?
+    private let serialQueue = DispatchQueue(label: "com.fjuul.sdk.queues.backgroundDelivery", qos: .userInitiated)
 
     init(persistor: Persistor) {
         self.persistor = persistor
@@ -45,10 +46,21 @@ class HealthKitManager {
     private func setUpBackgroundDeliveryForDataTypes(types: Set<HKSampleType>) {
         for type in types {
             guard let sampleType = type as? HKSampleType else { print("ERROR: \(type) is not an HKSampleType"); continue }
+            guard let handler = self.dataHandler else { return }
 
             let query = HKObserverQuery(sampleType: sampleType, predicate: nil) { (query: HKObserverQuery, completionHandler: HKObserverQueryCompletionHandler, error: Error?) in
 //                print("observer query update handler called for type \(type), error: \(error)")
-                self.queryForUpdates(type: type)
+
+                // Semaphore need for wait async task and correct notice queue about finish task
+                self.serialQueue.async {
+                    let semaphore = DispatchSemaphore(value: 0)
+                    self.queryForUpdates(type: type) { data in
+                        handler(data)
+                        semaphore.signal()
+                    }
+                    _ = semaphore.wait(wallTimeout: .distantFuture)
+                }
+
                 completionHandler()
             }
 
@@ -70,17 +82,23 @@ class HealthKitManager {
     /// Initiates HK queries for new data based on the given type
     ///
     /// - parameter type: `HKObjectType` which has new data avilable.
-    private func queryForUpdates(type: HKSampleType) {
-        guard let handler = self.dataHandler else { return }
-
+    private func queryForUpdates(type: HKSampleType, completion: @escaping (_ data: HKRequestData) -> Void) {
         switch type {
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
             self.fetchIntradayUpdates(type: type) { (data) in
-                handler(data)
+                completion(data)
             }
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!:
             self.fetchIntradayUpdates(type: type) { (data) in
-                handler(data)
+                completion(data)
+            }
+        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!:
+            self.fetchIntradayUpdates(type: type) { (data) in
+                completion(data)
+            }
+        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!:
+            self.fetchIntradayUpdates(type: type) { (data) in
+                completion(data)
             }
         default: print("Unhandled HKObjectType: \(type)")
         }
@@ -170,22 +188,31 @@ class HealthKitManager {
     }
 
     private func getAnchorBySampleType(sampleType: HKObjectType) -> HKQueryAnchor {
+//        return HKQueryAnchor.init(fromValue: 0)
         switch sampleType {
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
             return self.hkAnchorStore.anchors?[.activeEnergyBurned] ?? HKQueryAnchor.init(fromValue: 0)
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!:
             return self.hkAnchorStore.anchors?[.stepCount] ?? HKQueryAnchor.init(fromValue: 0)
+        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!:
+            return self.hkAnchorStore.anchors?[.distanceCycling] ?? HKQueryAnchor.init(fromValue: 0)
+        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!:
+            return self.hkAnchorStore.anchors?[.distanceWalkingRunning] ?? HKQueryAnchor.init(fromValue: 0)
         default:
             return HKQueryAnchor.init(fromValue: 0)
         }
     }
 
-    private func saveAnchorBySampleType(newAnchor: HKQueryAnchor?, sampleType: HKObjectType) -> Void {
+    private func saveAnchorBySampleType(newAnchor: HKQueryAnchor?, sampleType: HKObjectType) {
         switch sampleType {
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
             self.hkAnchorStore.anchors?[.activeEnergyBurned] = newAnchor
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!:
             self.hkAnchorStore.anchors?[.stepCount] = newAnchor
+        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!:
+            self.hkAnchorStore.anchors?[.distanceCycling] = newAnchor
+        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!:
+            self.hkAnchorStore.anchors?[.distanceWalkingRunning] = newAnchor
         default:
             return
         }
@@ -200,15 +227,19 @@ class HealthKitManager {
 
         return predicates
     }
-    
+
     private func buildRequestData(data: [HKStatistics], sampleType: HKQuantityType) -> HKRequestData {
         let batches = HKBatchAggregator(data: data, sampleType: sampleType).generate()
-        
+
         switch sampleType {
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
            return HKRequestData(caloriesData: batches)
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!:
             return HKRequestData(stepsData: batches)
+        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!:
+            return HKRequestData(cyclingData: batches)
+        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!:
+            return HKRequestData(walkingData: batches)
         default:
             return HKRequestData()
         }
@@ -218,9 +249,9 @@ class HealthKitManager {
     /// - returns: A set of HKObjectType.
     private func dataTypesToRead() -> Set<HKSampleType> {
         return Set(arrayLiteral: HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!,
-                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!
-//                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!,
-//                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!,
+                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!,
+                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!,
+                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!
 //                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!,
 //                       HKObjectType.workoutType()
         )

@@ -1,5 +1,6 @@
 import Foundation
 
+// TODO: Make TrackerConnection private
 public struct TrackerConnection: Codable {
 
     public let id: String

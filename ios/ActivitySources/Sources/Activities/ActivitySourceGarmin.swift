@@ -3,13 +3,12 @@ import FjuulCore
 import Alamofire
 
 final class ActivitySourceGarmin: ActivitySourceProtocol {
-    var trackerConnection: TrackerConnection
+    static public let shared = ActivitySourceGarmin()
+
     var apiClient: ApiClient?
     var persistor: Persistor?
-
-    init(trackerConnection: TrackerConnection) {
-        self.trackerConnection = trackerConnection
-    }
+    
+    private init() {}
 
     func mount(apiClient: ApiClient, persistor: Persistor) -> Bool {
         self.apiClient = apiClient

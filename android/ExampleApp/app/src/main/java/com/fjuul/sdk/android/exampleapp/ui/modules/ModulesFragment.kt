@@ -17,6 +17,7 @@ import com.fjuul.sdk.android.exampleapp.ui.user_profile.UserProfileNavigationFlo
 enum class ModuleItemName(val value: String) {
     PROFILE("Profile"),
     ACTIVITY_SOURCES("Activity Sources"),
+    GF_SYNC("Google Fit synchronization"),
     DAILY_STATS("Daily Stats")
 }
 sealed class ModulesListItem()
@@ -46,6 +47,7 @@ class ModulesFragment : Fragment() {
             ModulesSection("User"),
             ModuleItem(ModuleItemName.PROFILE),
             ModuleItem(ModuleItemName.ACTIVITY_SOURCES),
+            ModuleItem(ModuleItemName.GF_SYNC),
             ModulesSection("Analytics"),
             ModuleItem(ModuleItemName.DAILY_STATS)
         )
@@ -65,6 +67,10 @@ class ModulesFragment : Fragment() {
                     }
                     ModuleItemName.ACTIVITY_SOURCES -> {
                         val action = ModulesFragmentDirections.actionModulesFragmentToActivitySourcesFragment()
+                        findNavController().navigate(action)
+                    }
+                    ModuleItemName.GF_SYNC -> {
+                        val action = ModulesFragmentDirections.actionModulesFragmentToGFSyncFragment()
                         findNavController().navigate(action)
                     }
                 }

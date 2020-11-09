@@ -10,14 +10,14 @@ final class ActivitySourceGarmin: ActivitySourceProtocol {
     
     private init() {}
 
-    func mount(apiClient: ApiClient, persistor: Persistor) -> Bool {
+    func mount(apiClient: ApiClient, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
         self.apiClient = apiClient
         self.persistor = persistor
 
-        return true
+        completion(.success(true))
     }
 
-    func unmount() -> Bool {
-        return true
+    func unmount(completion: @escaping (Result<Bool, Error>) -> Void) {
+        completion(.success(true))
     }
 }

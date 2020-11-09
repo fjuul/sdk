@@ -4,17 +4,6 @@ import FjuulCore
 protocol ActivitySourceProtocol {
     var apiClient: ApiClient? { get }
 
-    func mount(apiClient: ApiClient, persistor: Persistor) -> Bool
-    func unmount() -> Bool
+    func mount(apiClient: ApiClient, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) -> Void
+    func unmount(completion: @escaping (Result<Bool, Error>) -> Void)
 }
-
-//enum ActivitySourceFactory {
-//    static func activitySource(trackerConnection: TrackerConnection) -> ActivitySourceProtocol? {
-//        switch trackerConnection.tracker {
-//        case "healthkit":
-//            return ActivitySourceHK()
-//        default:
-//            return nil
-//        }
-//    }
-//}

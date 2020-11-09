@@ -26,12 +26,14 @@ final class ActivitySourceConnection {
         return trackerConnection.endedAt
     }
 
-    public func mount(apiClient: ApiClient, persistor: Persistor) -> Bool {
-        activitySource.mount(apiClient: apiClient, persistor: persistor)
+    public func mount(apiClient: ApiClient, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
+        activitySource.mount(apiClient: apiClient, persistor: persistor) { result in
+            completion(result)
+        }
     }
 
     public func connected() -> Bool {
-        guard let endedAt = trackerConnection.endedAt else { return true }
+        guard trackerConnection.endedAt != nil else { return false }
 
         return false
     }

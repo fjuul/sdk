@@ -40,6 +40,20 @@ class HealthKitManager {
         }
     }
 
+    func disableAllBackgroundDelivery(completion: @escaping (Result<Bool, Error>) -> Void) {
+        healthStore.disableAllBackgroundDelivery { (success: Bool, error: Error?) in
+            if success {
+                completion(.success(success))
+            } else {
+                if let error = error {
+                    completion(.failure(error))
+                } else {
+                    completion(.success(false))
+                }
+            }
+        }
+    }
+
     /// Sets up the observer queries for background health data delivery.
     ///
     /// - parameter types: Set of `HKObjectType` to observe changes to.

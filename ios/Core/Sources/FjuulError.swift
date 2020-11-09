@@ -16,9 +16,10 @@ public enum FjuulError: Error {
         case generic
         case sourceAlreadyConnected
     }
-    
+
     public enum ActivitySourceDataManageFailure {
         case hkNotAvailableOnDevice
+        case activitySourceNotMounted
     }
 
     case invalidConfig

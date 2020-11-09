@@ -21,13 +21,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class ActivitySourcesManager {
-    private ActivitySourcesService sourcesService;
-    private ActivitySourcesStateStore stateStore;
+    private final ActivitySourcesService sourcesService;
+    private final ActivitySourcesStateStore stateStore;
     @Nullable private volatile List<TrackerConnection> currentConnections;
 
     @Nullable private volatile static ActivitySourcesManager instance;
 
-    ActivitySourcesManager(ActivitySourcesService sourcesService, ActivitySourcesStateStore stateStore, List<TrackerConnection> connections) {
+    ActivitySourcesManager(@NonNull ActivitySourcesService sourcesService,
+                           @NonNull ActivitySourcesStateStore stateStore,
+                           @Nullable List<TrackerConnection> connections) {
         this.sourcesService = sourcesService;
         this.stateStore = stateStore;
         this.currentConnections = connections;
@@ -74,9 +76,22 @@ public final class ActivitySourcesManager {
         });
     }
 
+    public void disconnect(@NonNull final ActivitySourceConnection sourceConnection, @Nullable final Callback<List<ActivitySourceConnection>> callback) {
+        sourcesService.disconnect(sourceConnection).enqueue((call, apiCallResult) -> {
+            if (apiCallResult.isError()) {
+                if (callback != null) {
+                    callback.onResult(Result.error(apiCallResult.getError()));
+                }
+                return;
+            }
+            refreshCurrent(callback);
+        });
+    }
+
     @SuppressLint("NewApi")
     @Nullable
     public List<ActivitySourceConnection> getCurrent() {
+        final List<TrackerConnection> currentConnections = this.currentConnections;
         if (currentConnections == null) {
             return null;
         }
@@ -95,12 +110,14 @@ public final class ActivitySourcesManager {
             final List<ActivitySourceConnection> sourceConnections = convertTrackerConnectionsToActivitySourcesConnections(freshTrackerConnections);
             stateStore.setConnections(freshTrackerConnections);
             this.currentConnections = freshTrackerConnections;
-            callback.onResult(Result.value(sourceConnections));
+            if (callback != null) {
+                callback.onResult(Result.value(sourceConnections));
+            }
         });
     }
 
     @SuppressLint("NewApi")
-    private static List<ActivitySourceConnection> convertTrackerConnectionsToActivitySourcesConnections(List<TrackerConnection> trackerConnections) {
+    private static List<ActivitySourceConnection> convertTrackerConnectionsToActivitySourcesConnections(@NonNull List<TrackerConnection> trackerConnections) {
         Stream<ActivitySourceConnection> sourceConnectionsStream = trackerConnections.stream()
             .map(connection -> {
                 ActivitySource activitySource = null;

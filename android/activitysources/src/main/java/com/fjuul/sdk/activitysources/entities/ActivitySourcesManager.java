@@ -14,6 +14,7 @@ import com.fjuul.sdk.entities.Result;
 import com.fjuul.sdk.errors.FjuulError;
 import com.fjuul.sdk.http.ApiClient;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -22,7 +23,7 @@ import java.util.stream.Stream;
 public final class ActivitySourcesManager {
     private ActivitySourcesService sourcesService;
     private ActivitySourcesStateStore stateStore;
-    @Nullable private List<TrackerConnection> currentConnections;
+    @Nullable private volatile List<TrackerConnection> currentConnections;
 
     @Nullable private volatile static ActivitySourcesManager instance;
 
@@ -34,7 +35,6 @@ public final class ActivitySourcesManager {
 
     @SuppressLint("NewApi")
     public static synchronized void initialize(ApiClient client) {
-        // (get the configured api-client from context ?)
         ActivitySourcesStateStore stateStore = new ActivitySourcesStateStore(client.getStorage(), client.getUserToken());
         List<TrackerConnection> connections = stateStore.getConnections().orElse(null);
         ActivitySourcesService sourcesService = new ActivitySourcesService(client);
@@ -80,7 +80,28 @@ public final class ActivitySourcesManager {
         if (currentConnections == null) {
             return null;
         }
-        Stream<ActivitySourceConnection> sourceConnectionsStream = currentConnections.stream()
+        return convertTrackerConnectionsToActivitySourcesConnections(currentConnections);
+    }
+
+    public void refreshCurrent(@Nullable Callback<List<ActivitySourceConnection>> callback) {
+        sourcesService.getCurrentConnections().enqueue((call, apiCallResult) -> {
+            if (apiCallResult.isError()) {
+                if (callback != null) {
+                    callback.onResult(Result.error(apiCallResult.getError()));
+                }
+                return;
+            }
+            final List<TrackerConnection> freshTrackerConnections = Arrays.asList(apiCallResult.getValue());
+            final List<ActivitySourceConnection> sourceConnections = convertTrackerConnectionsToActivitySourcesConnections(freshTrackerConnections);
+            stateStore.setConnections(freshTrackerConnections);
+            this.currentConnections = freshTrackerConnections;
+            callback.onResult(Result.value(sourceConnections));
+        });
+    }
+
+    @SuppressLint("NewApi")
+    private static List<ActivitySourceConnection> convertTrackerConnectionsToActivitySourcesConnections(List<TrackerConnection> trackerConnections) {
+        Stream<ActivitySourceConnection> sourceConnectionsStream = trackerConnections.stream()
             .map(connection -> {
                 ActivitySource activitySource = null;
                 switch (ActivitySource.TrackerValue.forValue(connection.getTracker())) {

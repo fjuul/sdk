@@ -111,7 +111,7 @@ class ActivitySourcesFragment : Fragment() {
         )
         sourcesList.adapter = adapter
         sourcesList.setOnItemClickListener { parent, view, position, id ->
-            val tracker = when (adapter.getItem(position)) {
+            val activitySource = when (adapter.getItem(position)) {
                 ActivitySourcesItem.FITBIT -> FitbitActivitySource.getInstance()
                 ActivitySourcesItem.POLAR -> PolarActivitySource.getInstance()
                 ActivitySourcesItem.GARMIN -> GarminActivitySource.getInstance()
@@ -121,7 +121,11 @@ class ActivitySourcesFragment : Fragment() {
                     return@setOnItemClickListener
                 }
             }
-            model.connect(tracker)
+            if (model.isConnected(activitySource)) {
+                model.disconnect(activitySource)
+            } else {
+                model.connect(activitySource)
+            }
         }
     }
 

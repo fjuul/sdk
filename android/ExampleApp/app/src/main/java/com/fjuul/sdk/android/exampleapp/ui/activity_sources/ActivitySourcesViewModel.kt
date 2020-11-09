@@ -40,10 +40,15 @@ class ActivitySourcesViewModel() : ViewModel() {
         }
     }
 
+    fun isConnected(activitySource: ActivitySource): Boolean {
+        val manager = ActivitySourcesManager.getInstance()
+        return manager.current?.find { isMatchedConnectionWithActivitySource(it, activitySource) } != null
+    }
+
     fun disconnect() {
         val connections = currentConnections.value
         if (connections.isNullOrEmpty()) {
-            _errorMessage.postValue("No tracker connections")
+            _errorMessage.value = "No tracker connections"
             return
         }
         // NOTE: currently only one connection can be active
@@ -58,7 +63,27 @@ class ActivitySourcesViewModel() : ViewModel() {
         }
     }
 
+    fun disconnect(activitySource: ActivitySource) {
+        val manager = ActivitySourcesManager.getInstance()
+        val sourceConnection = manager.current?.find { isMatchedConnectionWithActivitySource(it, activitySource) }
+        if (sourceConnection == null) {
+            _errorMessage.value = "No appropriate source connection to disconnect"
+            return
+        }
+        manager.disconnect(sourceConnection) { result ->
+            if (result.isError) {
+                _errorMessage.postValue(result.error?.message)
+                return@disconnect
+            }
+            _currentConnections.postValue(result.value)
+        }
+    }
+
     fun resetErrorMessage() {
         _errorMessage.value = null
+    }
+
+    private fun isMatchedConnectionWithActivitySource(connection: ActivitySourceConnection, source: ActivitySource): Boolean {
+        return connection.activitySource::class.java == source::class.java
     }
 }

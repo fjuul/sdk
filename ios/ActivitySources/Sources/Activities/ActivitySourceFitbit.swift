@@ -5,6 +5,7 @@ import Alamofire
 final class ActivitySourceFitbit: ActivitySource {
     static public let shared = ActivitySourceFitbit()
 
+    var tracker = "fitbit"
     var apiClient: ApiClient?
     var persistor: Persistor?
 

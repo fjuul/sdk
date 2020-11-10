@@ -5,6 +5,7 @@ import Alamofire
 final class ActivitySourceSuunto: ActivitySource {
     static public let shared = ActivitySourceSuunto()
 
+    var tracker = "suunto"
     var apiClient: ApiClient?
     var persistor: Persistor?
 

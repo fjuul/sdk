@@ -5,9 +5,10 @@ import Alamofire
 final class ActivitySourceGarmin: ActivitySource {
     static public let shared = ActivitySourceGarmin()
 
+    var tracker = "garmin"
     var apiClient: ApiClient?
     var persistor: Persistor?
-    
+
     private init() {}
 
     func mount(apiClient: ApiClient, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {

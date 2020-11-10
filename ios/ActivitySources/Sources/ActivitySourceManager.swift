@@ -28,7 +28,7 @@ final public class ActivitySourceManager {
             return
         }
 
-        /// Request permissions from HealthKit
+        // Request permissions from HealthKit
         if activitySource is ActivitySourceHK {
             ActivitySourceHK.requestAccess { result in
                 switch result {
@@ -41,7 +41,7 @@ final public class ActivitySourceManager {
             }
         }
 
-        apiClient.activitySources.connect(activitySource: "healthkit") { connectionResult in
+        apiClient.activitySources.connect(activitySource: activitySource.tracker) { connectionResult in
             completion(connectionResult)
         }
     }

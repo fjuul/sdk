@@ -91,7 +91,7 @@ public final class GFClientWrapper {
     @SuppressLint("NewApi")
     public Task<List<GFStepsDataPoint>> getSteps(Date start, Date end) {
         ExecutorService gfTaskWatcherExecutor = createGfTaskWatcherExecutor();
-        List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofDays(12));
+        List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofDays(7));
 
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         SupervisedExecutor gfTaskWatcher = new SupervisedExecutor(gfTaskWatcherExecutor, cancellationTokenSource);

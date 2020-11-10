@@ -84,7 +84,6 @@ class GFSyncFragment : Fragment() {
         )
 
         start_date_input_layout.setOnClickListener {
-            // val date = model.startDate.value!!
             val date = viewModel.startDate.value ?: LocalDate.now()
             DatePickerDialog(
                 requireContext(),
@@ -96,8 +95,8 @@ class GFSyncFragment : Fragment() {
                 date.dayOfMonth
             ).show()
         }
+
         end_date_input_layout.setOnClickListener {
-            // val date = model.startDate.value!!
             val date = viewModel.endDate.value ?: LocalDate.now()
             DatePickerDialog(
                 requireContext(),
@@ -109,7 +108,6 @@ class GFSyncFragment : Fragment() {
                 date.dayOfMonth
             ).show()
         }
-
 
         min_session_duration_text_edit.onFocusChangeListener = View.OnFocusChangeListener { view, hasFocus ->
             if (!hasFocus && min_session_duration_text_edit.text.isNullOrEmpty()) {

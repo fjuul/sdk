@@ -14,7 +14,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
-            android:id="@+id/from_input_layout"
+            android:id="@+id/start_date_input_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -38,17 +38,16 @@
                     android:ems="10"
                     android:gravity="center_vertical"
                     android:minHeight="?android:attr/listPreferredItemHeightSmall"
-                    android:text="From"
+                    android:text="Start date"
                     android:textAppearance="?android:attr/textAppearanceListItemSmall"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
-                    android:id="@+id/from_value_text"
+                    android:id="@+id/start_date_value_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ems="10"
-                    android:text="7/22/20"
                     android:textAlignment="viewEnd"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
@@ -65,13 +64,13 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/to_input_layout"
+            android:id="@+id/end_date_input_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/from_input_layout">
+            app:layout_constraintTop_toBottomOf="@id/start_date_input_layout">
 
             <LinearLayout
                 android:id="@+id/to_text_inputs"
@@ -90,17 +89,16 @@
                     android:ems="10"
                     android:gravity="center_vertical"
                     android:minHeight="?android:attr/listPreferredItemHeightSmall"
-                    android:text="To"
+                    android:text="End"
                     android:textAppearance="?android:attr/textAppearanceListItemSmall"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
-                    android:id="@+id/to_value_text"
+                    android:id="@+id/end_date_value_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ems="10"
-                    android:text="7/22/20"
                     android:textAlignment="viewEnd"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
@@ -116,10 +114,142 @@
         </LinearLayout>
 
         <include
-            android:id="@+id/section_text"
+            android:id="@+id/intraday_section_text"
             layout="@layout/section_list_item"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/to_input_layout" />
+            app:layout_constraintTop_toBottomOf="@id/end_date_input_layout" />
+
+        <LinearLayout
+            android:id="@+id/intraday_options"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/intraday_section_text"
+            android:layout_marginTop="8dp"
+            android:paddingStart="10dp"
+            app:layout_constraintStart_toStartOf="parent">
+            <CheckBox
+                android:id="@+id/calories_check_box"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Calories"
+                android:checked="true"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/intraday_options" />
+
+            <CheckBox
+                android:id="@+id/heart_rate_check_box"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="Heart Rate"
+                android:checked="true"
+                app:layout_constraintStart_toEndOf="@+id/calories_check_box"
+                app:layout_constraintTop_toTopOf="@+id/intraday_options" />
+
+            <CheckBox
+                android:id="@+id/steps_check_box"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="Steps"
+                android:checked="true"
+                app:layout_constraintStart_toEndOf="@+id/heart_rate_check_box"
+                app:layout_constraintTop_toTopOf="@+id/intraday_options" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/intraday_sync"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:paddingStart="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/intraday_options"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <Button
+                android:id="@+id/run_intraday_sync_button"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="Sync intraday"
+                android:gravity="center"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ProgressBar
+                android:id="@+id/intraday_sync_progress_bar"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:visibility="invisible"/>
+        </LinearLayout>
+
+        <include
+            android:id="@+id/sessions_section_text"
+            layout="@layout/section_list_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/intraday_sync"
+            android:layout_marginTop="10dp"/>
+
+        <LinearLayout
+            android:id="@+id/sessions_options"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/sessions_section_text"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="8dp"
+            android:paddingStart="10dp"
+            android:orientation="horizontal">
+            <com.google.android.material.textfield.TextInputLayout
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:boxBackgroundColor="@color/cardview_light_background"
+                android:id="@+id/min_session_duration_text_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Min. session duration (minutes)">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/min_session_duration_text_edit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal"
+                    android:text="3"/>
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/sessions_sync"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:paddingStart="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/sessions_options"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <Button
+                android:id="@+id/run_sessions_sync_button"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="Sync sessions"
+                android:gravity="center"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ProgressBar
+                android:id="@+id/sessions_sync_progress_bar"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:visibility="invisible"/>
+        </LinearLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

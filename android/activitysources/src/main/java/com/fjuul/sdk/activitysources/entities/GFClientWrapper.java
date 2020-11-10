@@ -52,7 +52,7 @@ import com.google.android.gms.internal.fitness.zzjr;
 public final class GFClientWrapper {
     private static final String TAG = "GFClientWrapper";
     private static final int RETRIES_COUNT = 5;
-    private static final int GF_TASK_WATCHER_THREAD_POOL_SIZE = 5;
+    private static final int GF_TASK_WATCHER_THREAD_POOL_SIZE = 1;
     private static final long GF_QUERY_TIMEOUT_SECONDS = 60l;
     private static final long GF_DETAILED_SESSION_QUERY_TIMEOUT_SECONDS = 90L;
 

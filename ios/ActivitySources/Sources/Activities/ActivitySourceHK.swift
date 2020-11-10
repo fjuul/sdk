@@ -2,7 +2,7 @@ import Foundation
 import FjuulCore
 import Alamofire
 
-final class ActivitySourceHK: ActivitySourceProtocol {
+final class ActivitySourceHK: ActivitySource {
     static public let shared = ActivitySourceHK()
 
     var apiClient: ApiClient?
@@ -11,6 +11,12 @@ final class ActivitySourceHK: ActivitySourceProtocol {
     private var healthKitManager: HealthKitManager?
 
     private init() {}
+    
+    static func requestAccess(completion: @escaping (Result<Bool, Error>) -> Void) {
+        HealthKitManager.requestAccess{ result in
+            completion(result)
+        }
+    }
 
     func mount(apiClient: ApiClient, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
         self.apiClient = apiClient
@@ -20,12 +26,8 @@ final class ActivitySourceHK: ActivitySourceProtocol {
         self.healthKitManager = healthKitManager
 
         healthKitManager.dataHandler = self.hkDataHandler
-        healthKitManager.requestAccess() { success, error in
-            if let error = error {
-                completion(.failure(error))
-            } else {
-                completion(.success(success))
-            }
+        healthKitManager.mount { result in
+            completion(result)
         }
     }
 

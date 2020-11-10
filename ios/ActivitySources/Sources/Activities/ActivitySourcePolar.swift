@@ -1,7 +1,7 @@
 import Foundation
 import FjuulCore
 
-final class ActivitySourcePolar: ActivitySourceProtocol {
+final class ActivitySourcePolar: ActivitySource {
     static public let shared = ActivitySourcePolar()
 
     var apiClient: ApiClient?

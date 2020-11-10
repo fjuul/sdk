@@ -1,5 +1,9 @@
 import Foundation
 
+//public enum TrackerConnectionTypes: String, Encodable {
+//    case fitbit, garmin, googlefit_backend, polar, suunto, healthkit, none
+//}
+
 // TODO: Make TrackerConnection private
 public struct TrackerConnection: Codable {
 

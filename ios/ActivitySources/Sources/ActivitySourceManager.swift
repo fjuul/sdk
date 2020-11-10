@@ -22,6 +22,30 @@ final public class ActivitySourceManager {
         self.refreshCurrentConnections()
     }
 
+    public func connect(activitySource: ActivitySource, completion: @escaping (Result<ConnectionResult, Error>) -> Void) {
+        guard let apiClient = self.apiClient else {
+            completion(.failure(FjuulError.invalidConfig))
+            return
+        }
+
+        /// Request permissions from HealthKit
+        if activitySource is ActivitySourceHK {
+            ActivitySourceHK.requestAccess { result in
+                switch result {
+                case .failure(let err):
+                    completion(.failure(err))
+                    return
+                case .success:
+                    print("ActivitySourceHK.requestAccess success")
+                }
+            }
+        }
+
+        apiClient.activitySources.connect(activitySource: "healthkit") { connectionResult in
+            completion(connectionResult)
+        }
+    }
+
     private func restoreState() {
         guard let apiClient = self.apiClient else { return }
         guard let persistor = self.persistor else { return }
@@ -30,8 +54,10 @@ final public class ActivitySourceManager {
             if let activitySourceConnection = ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: connection) {
                 activitySourceConnection.mount(apiClient: apiClient, persistor: persistor) { result in
                     switch result {
-                    case .success: self.mountedActivitySourceConnections.append(activitySourceConnection)
-                    case .failure(let err): print("Error on restore state \(err)")
+                    case .success:
+                        self.mountedActivitySourceConnections.append(activitySourceConnection)
+                    case .failure(let err):
+                        print("Error on restore connectionsLocalStore state \(err)")
                     }
                 }
             }

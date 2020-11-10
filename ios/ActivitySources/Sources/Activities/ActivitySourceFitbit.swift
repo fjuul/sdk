@@ -2,7 +2,7 @@ import Foundation
 import FjuulCore
 import Alamofire
 
-final class ActivitySourceFitbit: ActivitySourceProtocol {
+final class ActivitySourceFitbit: ActivitySource {
     static public let shared = ActivitySourceFitbit()
 
     var apiClient: ApiClient?

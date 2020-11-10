@@ -2,11 +2,10 @@ import Foundation
 import HealthKit
 import FjuulCore
 
-typealias AccessRequestCallback = (_ success: Bool, _ error: Error?) -> Void
-
 /// Helper for reading and writing to HealthKit.
 class HealthKitManager {
-    private let healthStore = HKHealthStore()
+    static private let healthStore = HKHealthStore()
+
     private var persistor: Persistor
     private var hkAnchorStore: HKAnchorStore
     public var dataHandler: ((_ data: HKRequestData) -> Void)?
@@ -18,30 +17,46 @@ class HealthKitManager {
     }
 
     /// Requests access to all the data types the app wishes to read/write from HealthKit.
-    /// On success, data is queried immediately and observer queries are set up for background
-    /// delivery. This is safe to call repeatedly and should be called at least once per launch.
-    func requestAccess(completion: @escaping AccessRequestCallback) {
+    static func requestAccess(completion: @escaping (Result<Bool, Error>) -> Void) {
         guard HKHealthStore.isHealthDataAvailable() else {
-            print("Can't request access to HealthKit when it's not supported on the device.")
+            completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
             return
         }
 
-        let readDataTypes = dataTypesToRead()
-
-        healthStore.requestAuthorization(toShare: nil, read: readDataTypes) { (success: Bool, error: Error?) in
-            if success {
-                self.readHealthKitData()
-                self.setUpBackgroundDeliveryForDataTypes(types: readDataTypes)
+        HealthKitManager.healthStore.requestAuthorization(toShare: nil, read: dataTypesToRead()) { (success: Bool, error: Error?) in
+            if let err = error {
+                completion(.failure(err))
             } else {
-                print("Error requesting HealthKit authorization: \(error)")
+                completion(.success(success))
             }
-
-            completion(success, error)
         }
+    }
+    
+    /// Types of data  Fjull wishes to read from HealthKit.
+    /// - returns: A set of HKObjectType.
+    private static func dataTypesToRead() -> Set<HKSampleType> {
+        return Set(arrayLiteral: HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!,
+                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!,
+                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!,
+                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!
+//                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!,
+//                       HKObjectType.workoutType()
+        )
+    }
+
+    /// On success observer queries are set up for background delivery.
+    /// This is safe to call repeatedly and should be called at least once per launch.
+    func mount(completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard HKHealthStore.isHealthDataAvailable() else {
+            completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
+            return
+        }
+
+        self.setUpBackgroundDeliveryForDataTypes(types: HealthKitManager.dataTypesToRead())
     }
 
     func disableAllBackgroundDelivery(completion: @escaping (Result<Bool, Error>) -> Void) {
-        healthStore.disableAllBackgroundDelivery { (success: Bool, error: Error?) in
+        HealthKitManager.healthStore.disableAllBackgroundDelivery { (success: Bool, error: Error?) in
             if success {
                 completion(.success(success))
             } else {
@@ -75,11 +90,12 @@ class HealthKitManager {
                     _ = semaphore.wait(wallTimeout: .distantFuture)
                 }
 
+                // TODO: Refactoring for call correctly completionHandler
                 completionHandler()
             }
 
-            healthStore.execute(query)
-            healthStore.enableBackgroundDelivery(for: type, frequency: .immediate) { (success: Bool, error: Error?) in
+            HealthKitManager.healthStore.execute(query)
+            HealthKitManager.healthStore.enableBackgroundDelivery(for: type, frequency: .immediate) { (success: Bool, error: Error?) in
 //                print("enableBackgroundDeliveryForType handler called for \(type) - success: \(success), error: \(error)")
             }
         }
@@ -168,7 +184,7 @@ class HealthKitManager {
             completion(result)
         }
 
-        healthStore.execute(query)
+        HealthKitManager.healthStore.execute(query)
     }
 
     private func getBatchSegments(sampleType: HKSampleType, completion: @escaping (Set<Date>) -> Void) {
@@ -198,7 +214,7 @@ class HealthKitManager {
             self.saveAnchorBySampleType(newAnchor: newAnchor, sampleType: sampleType)
             completion(batchStartDates)
         }
-        healthStore.execute(query)
+        HealthKitManager.healthStore.execute(query)
     }
 
     private func getAnchorBySampleType(sampleType: HKObjectType) -> HKQueryAnchor {
@@ -257,17 +273,5 @@ class HealthKitManager {
         default:
             return HKRequestData()
         }
-    }
-
-    /// Types of data  Fjull wishes to read from HealthKit.
-    /// - returns: A set of HKObjectType.
-    private func dataTypesToRead() -> Set<HKSampleType> {
-        return Set(arrayLiteral: HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!,
-                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!,
-                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!,
-                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!
-//                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!,
-//                       HKObjectType.workoutType()
-        )
     }
 }

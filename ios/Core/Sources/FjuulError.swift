@@ -18,7 +18,7 @@ public enum FjuulError: Error {
     }
 
     public enum ActivitySourceDataManageFailure {
-        case hkNotAvailableOnDevice
+        case healthkitNotAvailableOnDevice
         case activitySourceNotMounted
     }
 

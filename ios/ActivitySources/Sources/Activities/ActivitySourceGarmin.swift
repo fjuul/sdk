@@ -2,7 +2,7 @@ import Foundation
 import FjuulCore
 import Alamofire
 
-final class ActivitySourceGarmin: ActivitySourceProtocol {
+final class ActivitySourceGarmin: ActivitySource {
     static public let shared = ActivitySourceGarmin()
 
     var apiClient: ApiClient?

@@ -3,9 +3,9 @@ import FjuulCore
 
 final class ActivitySourceConnection {
     private var trackerConnection: TrackerConnection
-    public var activitySource: ActivitySourceProtocol
+    public var activitySource: ActivitySource
 
-    init(trackerConnection: TrackerConnection, activitySource: ActivitySourceProtocol) {
+    init(trackerConnection: TrackerConnection, activitySource: ActivitySource) {
         self.trackerConnection = trackerConnection
         self.activitySource = activitySource
     }

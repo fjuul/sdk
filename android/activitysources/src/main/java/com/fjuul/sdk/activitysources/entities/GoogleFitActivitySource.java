@@ -45,6 +45,7 @@ import java.util.function.Supplier;
 public final class GoogleFitActivitySource extends ActivitySource {
     static final String SERVER_CLIENT_ID_METADATA_KEY = "com.fjuul.sdk.googlefit.server_client_id";
     static final String REQUEST_OFFLINE_ACCESS_METADATA_KEY = "com.fjuul.sdk.googlefit.request_offline_access";
+    static final String GOOGLE_FIT_APP_PACKAGE_NAME = "com.google.android.apps.fitness";
 
     private static final ExecutorService localSequentialBackgroundExecutor = createSequentialSingleCachedExecutor();
 
@@ -101,6 +102,10 @@ public final class GoogleFitActivitySource extends ActivitySource {
     public boolean arePermissionsGranted() {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         return arePermissionsGranted(account);
+    }
+
+    public boolean isGoogleFitAppInstalled() {
+        return isGoogleFitAppInstalled(context);
     }
 
     public void handleGoogleSignInResult(@NonNull Intent intent, @NonNull Callback<Void> callback) {
@@ -180,7 +185,15 @@ public final class GoogleFitActivitySource extends ActivitySource {
         performTaskAlongWithCallback(() -> googleFitDataManager.syncSessions(options), callback);
     }
 
-    // TODO: add static method checking if google fit is installed in the system
+    public static boolean isGoogleFitAppInstalled(@NonNull Context appContext) {
+        PackageManager packageManager = appContext.getPackageManager();
+        try {
+            packageManager.getPackageInfo(GOOGLE_FIT_APP_PACKAGE_NAME, PackageManager.GET_ACTIVITIES);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     protected Intent buildIntentRequestingPermissions() {
         GoogleSignInClient signInClient = GoogleSignIn.getClient(context, buildGoogleSignInOptions(requestOfflineAccess, serverClientId));

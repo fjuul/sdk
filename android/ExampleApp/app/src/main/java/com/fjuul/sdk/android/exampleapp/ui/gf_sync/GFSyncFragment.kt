@@ -85,7 +85,7 @@ class GFSyncFragment : Fragment() {
 
         start_date_input_layout.setOnClickListener {
             // val date = model.startDate.value!!
-            val date = LocalDate.now()
+            val date = viewModel.startDate.value ?: LocalDate.now()
             DatePickerDialog(
                 requireContext(),
                 DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
@@ -98,11 +98,11 @@ class GFSyncFragment : Fragment() {
         }
         end_date_input_layout.setOnClickListener {
             // val date = model.startDate.value!!
-            val date = LocalDate.now()
+            val date = viewModel.endDate.value ?: LocalDate.now()
             DatePickerDialog(
                 requireContext(),
                 DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
-                    viewModel.setupDateRange(startDate = LocalDate.of(year, month + 1, dayOfMonth))
+                    viewModel.setupDateRange(endDate = LocalDate.of(year, month + 1, dayOfMonth))
                 },
                 date.year,
                 date.monthValue - 1,

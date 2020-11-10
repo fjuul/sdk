@@ -10,7 +10,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions;
 import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.NotGrantedPermissionsException;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
@@ -25,6 +24,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.Scope;
+import com.google.android.gms.fitness.ConfigClient;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.HistoryClient;
 import com.google.android.gms.fitness.SessionsClient;
@@ -106,6 +106,28 @@ public final class GoogleFitActivitySource extends ActivitySource {
 
     public boolean isGoogleFitAppInstalled() {
         return isGoogleFitAppInstalled(context);
+    }
+
+    void disable(@Nullable Callback<Void> callback) {
+        final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
+        if (account == null) {
+            if (callback != null) {
+                callback.onResult(Result.value(null));
+            }
+            return;
+        }
+        final ConfigClient configClient = Fitness.getConfigClient(context, account);
+        configClient.disableFit().addOnCompleteListener(task -> {
+           if (task.isCanceled() || !task.isSuccessful()) {
+               if (callback != null) {
+                   callback.onResult(Result.error(task.getException()));
+               }
+               return;
+           }
+           if (callback != null) {
+               callback.onResult(Result.value(null));
+           }
+        });
     }
 
     public void handleGoogleSignInResult(@NonNull Intent intent, @NonNull Callback<Void> callback) {

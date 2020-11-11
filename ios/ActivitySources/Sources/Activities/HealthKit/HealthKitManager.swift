@@ -8,12 +8,13 @@ class HealthKitManager {
 
     private var persistor: Persistor
     private var hkAnchorStore: HKAnchorStore
-    public var dataHandler: ((_ data: HKRequestData) -> Void)?
+    public var dataHandler: ((_ data: HKRequestData, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)
     private let serialQueue = DispatchQueue(label: "com.fjuul.sdk.queues.backgroundDelivery", qos: .userInitiated)
 
-    init(persistor: Persistor) {
+    init(persistor: Persistor, dataHandler: @escaping ((_ data: HKRequestData, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) {
         self.persistor = persistor
         self.hkAnchorStore = HKAnchorStore(persistor: persistor)
+        self.dataHandler = dataHandler
     }
 
     /// Requests access to all the data types the app wishes to read/write from HealthKit.
@@ -54,7 +55,7 @@ class HealthKitManager {
 
         self.setUpBackgroundDeliveryForDataTypes(types: HealthKitManager.dataTypesToRead())
     }
-
+    
     func disableAllBackgroundDelivery(completion: @escaping (Result<Bool, Error>) -> Void) {
         HealthKitManager.healthStore.disableAllBackgroundDelivery { (success: Bool, error: Error?) in
             if success {
@@ -75,23 +76,27 @@ class HealthKitManager {
     private func setUpBackgroundDeliveryForDataTypes(types: Set<HKSampleType>) {
         for type in types {
             guard let sampleType = type as? HKSampleType else { print("ERROR: \(type) is not an HKSampleType"); continue }
-            guard let handler = self.dataHandler else { return }
 
-            let query = HKObserverQuery(sampleType: sampleType, predicate: nil) { (query: HKObserverQuery, completionHandler: HKObserverQueryCompletionHandler, error: Error?) in
-//                print("observer query update handler called for type \(type), error: \(error)")
-
+            let query = HKObserverQuery(sampleType: sampleType, predicate: nil) { (query: HKObserverQuery, completionHandler: @escaping HKObserverQueryCompletionHandler, error: Error?) in
+                
                 // Semaphore need for wait async task and correct notice queue about finish task
                 self.serialQueue.async {
                     let semaphore = DispatchSemaphore(value: 0)
                     self.queryForUpdates(type: type) { data in
-                        handler(data)
-                        semaphore.signal()
+                        self.dataHandler(data) { result in
+                            switch result {
+                            case .success:
+                                print("SUCESS REQUEST")
+                            case .failure(let err):
+                                print("HTTP error:", err)
+                            }
+
+                            semaphore.signal()
+                            completionHandler()
+                        }
                     }
                     _ = semaphore.wait(wallTimeout: .distantFuture)
                 }
-
-                // TODO: Refactoring for call correctly completionHandler
-                completionHandler()
             }
 
             HealthKitManager.healthStore.execute(query)
@@ -104,9 +109,9 @@ class HealthKitManager {
     /// Initiates an `HKAnchoredObjectQuery` for each type of data that the app reads and stores
     /// the result as well as the new anchor.
     func readHealthKitData() {
-        if let handler = self.dataHandler {
-            //handler("on Setup")
-        }
+//        if let handler = self.dataHandler {
+//            //handler("on Setup")
+//        }
     }
 
     /// Initiates HK queries for new data based on the given type

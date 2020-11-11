@@ -12,9 +12,9 @@ final class ActivitySourceHK: ActivitySource {
     private var healthKitManager: HealthKitManager?
 
     private init() {}
-    
+
     static func requestAccess(completion: @escaping (Result<Bool, Error>) -> Void) {
-        HealthKitManager.requestAccess{ result in
+        HealthKitManager.requestAccess { result in
             completion(result)
         }
     }
@@ -23,10 +23,10 @@ final class ActivitySourceHK: ActivitySource {
         self.apiClient = apiClient
         self.persistor = persistor
 
-        let healthKitManager = HealthKitManager(persistor: persistor)
+        let healthKitManager = HealthKitManager(persistor: persistor, dataHandler: self.hkDataHandler)
         self.healthKitManager = healthKitManager
 
-        healthKitManager.dataHandler = self.hkDataHandler
+//        healthKitManager.dataHandler =
         healthKitManager.mount { result in
             completion(result)
         }
@@ -43,18 +43,13 @@ final class ActivitySourceHK: ActivitySource {
         }
     }
 
-    private func hkDataHandler(_ requestData: HKRequestData) {
+    private func hkDataHandler(_ requestData: HKRequestData, completion: @escaping (Result<Bool, Error>) -> Void) {
         self.sendBatch(data: requestData) { result in
-            switch result {
-            case .success:
-                print("SUCESS REQUEST")
-            case .failure(let err):
-                print("HTTP error:", err)
-            }
+            completion(result)
         }
     }
 
-    private func sendBatch(data: HKRequestData, completion: @escaping (Result<Data, Error>) -> Void) {
+    private func sendBatch(data: HKRequestData, completion: @escaping (Result<Bool, Error>) -> Void) {
         guard let apiClient = self.apiClient else { return  completion(.failure(FjuulError.invalidConfig))}
 
         let url = "\(apiClient.baseUrl)/sdk/activity-sources/v1/\(apiClient.userToken)/healthkit"
@@ -64,10 +59,12 @@ final class ActivitySourceHK: ActivitySource {
         let parameterEncoder = JSONParameterEncoder(encoder: encoder)
 
         apiClient.signedSession.request(url, method: .post, parameters: data, encoder: parameterEncoder).response { response in
-//            print(response)
-//            return completion(response.result)
-
-            return completion(.success(Data()))
+            switch response.result {
+            case .success:
+                return completion(.success(true))
+            case .failure(let err):
+                return completion(.failure(err))
+            }
         }
     }
 }

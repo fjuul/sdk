@@ -1,6 +1,6 @@
 import Foundation
 
-//public enum TrackerConnectionTypes: String, Encodable {
+//public enum TrackerConnectionTypes: String {
 //    case fitbit, garmin, googlefit_backend, polar, suunto, healthkit, none
 //}
 

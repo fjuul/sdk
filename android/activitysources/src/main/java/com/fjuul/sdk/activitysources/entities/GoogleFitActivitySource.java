@@ -151,7 +151,7 @@ public final class GoogleFitActivitySource extends ActivitySource {
             }
             Map<String, String> queryParams = new HashMap<>();
             queryParams.put("code", authCode);
-            sourcesService.connect("googlefit", queryParams).enqueue((call, result) -> {
+            sourcesService.connect(getTrackerValue().getValue(), queryParams).enqueue((call, result) -> {
                 if (result.isError()) {
                     callback.onResult(Result.error(result.getError()));
                 }

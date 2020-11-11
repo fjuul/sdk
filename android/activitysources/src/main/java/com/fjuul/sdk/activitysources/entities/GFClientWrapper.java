@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import androidx.core.util.Pair;
 import androidx.core.util.Supplier;
 
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.MaxRetriesExceededException;
 import com.fjuul.sdk.activitysources.utils.GoogleTaskUtils;
@@ -32,10 +33,12 @@ import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -197,11 +200,16 @@ public final class GFClientWrapper {
 //                    Log.d(TAG, String.format("runGFTaskUnderWatch: completed #%d", tryNumber));
                     taskCompletionSource.trySetResult(result);
                     return;
-                } catch (
-                    // TODO: catch unauthorized exception
-                    java.util.concurrent.ExecutionException | InterruptedException | java.util.concurrent.TimeoutException exc) {
+                } catch (InterruptedException | TimeoutException exc) {
+                    // expected exception due to either the task cancellation or timeout, give a try again
 //                    Log.d(TAG, String.format("runGFTaskUnderWatch: failed #%d", tryNumber));
                     continue;
+                } catch (ExecutionException exc) {
+//                    Log.d(TAG, "runGFTaskUnderWatch: failed " + exc.getCause());
+                    // exception originated from the completed task
+                    Exception exception = new GoogleFitActivitySourceExceptions.CommonException(exc.getCause());
+                    taskCompletionSource.trySetException(exception);
+                    return;
                 }
             }
             if (cancellationToken.isCancellationRequested()) {

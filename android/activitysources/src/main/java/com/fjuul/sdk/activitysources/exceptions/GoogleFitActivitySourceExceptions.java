@@ -9,6 +9,10 @@ public final class GoogleFitActivitySourceExceptions {
         public CommonException(@NonNull String message) {
             super(message);
         }
+
+        public CommonException(@NonNull Throwable throwable) {
+            super(throwable);
+        }
     }
 
     public static class MaxRetriesExceededException extends CommonException {

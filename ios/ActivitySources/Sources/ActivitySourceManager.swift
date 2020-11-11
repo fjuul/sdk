@@ -28,6 +28,7 @@ final public class ActivitySourceManager {
             return
         }
 
+        // TODO Refactoring
         if activitySource is ActivitySourceHK {
             // Request permissions from HealthKit
             ActivitySourceHK.requestAccess { result in
@@ -36,17 +37,48 @@ final public class ActivitySourceManager {
                     completion(.failure(err))
                     return
                 case .success:
-                    print("ActivitySourceHK.requestAccess success")
+                    apiClient.activitySources.connect(activitySourceItem: activitySource.tracker) { connectionResult in
+                        completion(connectionResult)
+                    }
                 }
             }
-        }
-
-        apiClient.activitySources.connect(activitySourceItem: activitySource.tracker) { connectionResult in
-            completion(connectionResult)
+        } else {
+            apiClient.activitySources.connect(activitySourceItem: activitySource.tracker) { connectionResult in
+                completion(connectionResult)
+            }
         }
     }
-    
-    public func disconnect(activitySource: ActivitySource) {
+
+    public func disconnect(activitySourceConnection: ActivitySourceConnection, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let apiClient = self.apiClient else {
+            completion(.failure(FjuulError.invalidConfig))
+            return
+        }
+
+        apiClient.activitySources.disconnect(activitySourceConnection: activitySourceConnection) { result in
+            completion(result)
+        }
+    }
+
+    public func getCurrentConnections(completion: @escaping (Result<[ActivitySourceConnection], Error>) -> Void) {
+        guard let apiClient = self.apiClient else {
+            completion(.failure(FjuulError.invalidConfig))
+            return
+        }
+
+        apiClient.activitySources.getCurrentConnections { result in
+            switch result {
+            case .success(let connections):
+                print("connections -> ", connections)
+                let activitySourceConnections = connections.compactMap { connection in
+                    return ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: connection)
+                }
+                print("activitySourceConnections -> ", activitySourceConnections)
+                completion(.success(activitySourceConnections))
+            case .failure(let err):
+                completion(.failure(err))
+            }
+        }
     }
 
     private func restoreState() {

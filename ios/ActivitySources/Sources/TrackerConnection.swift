@@ -6,6 +6,7 @@ protocol TrackerConnectionable {
     var endedAt: Date? { get }
 }
 
+// TODO make TrackerConnection protected
 public struct TrackerConnection: TrackerConnectionable, Codable {
 
     public let id: String

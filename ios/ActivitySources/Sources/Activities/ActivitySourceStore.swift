@@ -1,7 +1,7 @@
 import Foundation
 import FjuulCore
 
-class ActivitySourceStore {
+public class ActivitySourceStore {
     private let lookupKey: String
     private var persistor: Persistor
 

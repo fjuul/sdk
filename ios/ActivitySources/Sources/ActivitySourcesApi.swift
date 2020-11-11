@@ -24,8 +24,7 @@ public class ActivitySourcesApi {
         return URL(string: self.apiClient.baseUrl)?.appendingPathComponent("sdk/activity-sources/v1")
     }
 
-    // TODO this should probably take a higher-level input, not a string source name
-    public func connect(activitySourceItem: ActivitySourcesItem, completion: @escaping (Result<ConnectionResult, Error>) -> Void) {
+    func connect(activitySourceItem: ActivitySourcesItem, completion: @escaping (Result<ConnectionResult, Error>) -> Void) {
         let path = "/\(apiClient.userToken)/connections/\(activitySourceItem.rawValue)"
         guard let url = baseUrl?.appendingPathComponent(path) else {
             return completion(.failure(FjuulError.invalidConfig))
@@ -56,8 +55,8 @@ public class ActivitySourcesApi {
         }
     }
 
-    public func disconnect(trackerConnection: TrackerConnection, completion: @escaping (Result<Void, Error>) -> Void) {
-        let path = "/\(apiClient.userToken)/connections/\(trackerConnection.id)"
+    func disconnect(activitySourceConnection: ActivitySourceConnection, completion: @escaping (Result<Void, Error>) -> Void) {
+        let path = "/\(apiClient.userToken)/connections/\(activitySourceConnection.id)"
         guard let url = baseUrl?.appendingPathComponent(path) else {
             return completion(.failure(FjuulError.invalidConfig))
         }
@@ -67,7 +66,7 @@ public class ActivitySourcesApi {
         }
     }
 
-    public func getCurrentConnections(completion: @escaping (Result<[TrackerConnection], Error>) -> Void) {
+    func getCurrentConnections(completion: @escaping (Result<[TrackerConnection], Error>) -> Void) {
         let path = "/\(apiClient.userToken)/connections"
         guard let url = baseUrl?.appendingPathComponent(path) else {
             return completion(.failure(FjuulError.invalidConfig))

@@ -2,23 +2,23 @@ import Foundation
 import FjuulCore
 import Alamofire
 
-final class ActivitySourceGarmin: ActivitySource {
+public final class ActivitySourceGarmin: ActivitySource {
     static public let shared = ActivitySourceGarmin()
 
-    var tracker = ActivitySourcesItem.garmin
-    var apiClient: ApiClient?
-    var persistor: Persistor?
+    public var tracker = ActivitySourcesItem.garmin
+    public var apiClient: ApiClient?
+    public var persistor: Persistor?
 
     private init() {}
 
-    func mount(apiClient: ApiClient, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
+    public func mount(apiClient: ApiClient, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
         self.apiClient = apiClient
         self.persistor = persistor
 
         completion(.success(true))
     }
 
-    func unmount(completion: @escaping (Result<Bool, Error>) -> Void) {
+    public func unmount(completion: @escaping (Result<Bool, Error>) -> Void) {
         completion(.success(true))
     }
 }

@@ -1,7 +1,7 @@
 import Foundation
 import FjuulCore
 
-final class ActivitySourceConnection: TrackerConnectionable {
+public final class ActivitySourceConnection: TrackerConnectionable {
     public let id: String
     public let tracker: ActivitySourcesItem?
     public let createdAt: Date
@@ -38,6 +38,14 @@ enum ActivitySourceConnectionFactory {
         switch tracker {
         case ActivitySourcesItem.healthkit:
             return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourceHK.shared)
+        case ActivitySourcesItem.polar:
+            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourcePolar.shared)
+        case ActivitySourcesItem.garmin:
+            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourceGarmin.shared)
+        case ActivitySourcesItem.suunto:
+            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourceSuunto.shared)
+        case ActivitySourcesItem.fitbit:
+            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourceFitbit.shared)
         default:
             return nil
         }

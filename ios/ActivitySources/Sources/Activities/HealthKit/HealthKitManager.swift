@@ -2,7 +2,6 @@ import Foundation
 import HealthKit
 import FjuulCore
 
-/// Helper for reading and writing to HealthKit.
 class HealthKitManager {
     static private let healthStore = HKHealthStore()
 
@@ -112,36 +111,20 @@ class HealthKitManager {
         }
     }
 
-    /// Initiates an `HKAnchoredObjectQuery` for each type of data that the app reads and stores
-    /// the result as well as the new anchor.
-    func readHealthKitData() {
-//        if let handler = self.dataHandler {
-//            //handler("on Setup")
-//        }
-    }
-
     /// Initiates HK queries for new data based on the given type
     ///
     /// - parameter type: `HKObjectType` which has new data avilable.
     private func queryForUpdates(type: HKSampleType, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
         switch type {
-        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
+        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!,
+             HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!,
+             HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!,
+             HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!:
             self.fetchIntradayUpdates(type: type) { (data, newAnchor) in
                 completion(data, newAnchor)
             }
-        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!:
-            self.fetchIntradayUpdates(type: type) { (data, newAnchor) in
-                completion(data, newAnchor)
-            }
-        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!:
-            self.fetchIntradayUpdates(type: type) { (data, newAnchor) in
-                completion(data, newAnchor)
-            }
-        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!:
-            self.fetchIntradayUpdates(type: type) { (data, newAnchor) in
-                completion(data, newAnchor)
-            }
-        default: print("Unhandled HKObjectType: \(type)")
+        default:
+            completion(nil, nil)
         }
     }
 

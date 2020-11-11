@@ -1,5 +1,6 @@
 package com.fjuul.sdk.activitysources.entities;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.NotGrantedPermissionsException;
@@ -106,6 +108,12 @@ public final class GoogleFitActivitySource extends ActivitySource {
 
     public boolean isGoogleFitAppInstalled() {
         return isGoogleFitAppInstalled(context);
+    }
+
+    // TODO: javadoc
+    public static boolean isActivityRecognitionPermissionGranted(@NonNull Context context) {
+        int result = ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION);
+        return result == PackageManager.PERMISSION_GRANTED;
     }
 
     void disable(@Nullable Callback<Void> callback) {

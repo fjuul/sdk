@@ -1,6 +1,6 @@
 package com.fjuul.sdk.http.utils;
 
-import com.fjuul.sdk.errors.ApiErrors.CommonError;
+import com.fjuul.sdk.exceptions.ApiExceptions.CommonException;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,20 +12,20 @@ public final class ApiCallResult<T> {
     }
 
     @NonNull
-    public static <T> ApiCallResult<T> error(@NonNull CommonError error) {
+    public static <T> ApiCallResult<T> error(@NonNull CommonException error) {
         return new ApiCallResult<T>(null, error);
     }
 
     private final T value;
-    private final CommonError error;
+    private final CommonException error;
 
-    private ApiCallResult(T value, CommonError error) {
+    private ApiCallResult(T value, CommonException error) {
         this.value = value;
         this.error = error;
     }
 
     @Nullable
-    public CommonError getError() {
+    public CommonException getError() {
         return error;
     }
 

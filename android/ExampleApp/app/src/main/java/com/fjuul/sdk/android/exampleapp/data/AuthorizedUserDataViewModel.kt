@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import com.fjuul.sdk.http.ApiClient
 import com.fjuul.sdk.user.entities.UserProfile
 import com.fjuul.sdk.user.http.services.UserService
-import java.lang.Error
 
 class AuthorizedUserDataViewModel : ViewModel() {
     private val _profile = MutableLiveData<UserProfile?>()
@@ -16,7 +15,7 @@ class AuthorizedUserDataViewModel : ViewModel() {
         _profile.value = profile
     }
 
-    fun fetchUserProfile(client: ApiClient, callback: (success: Boolean, error: Error?) -> Unit) {
+    fun fetchUserProfile(client: ApiClient, callback: (success: Boolean, exception: Exception?) -> Unit) {
         UserService(client).profile.enqueue { call, result ->
             if (result.isError) {
                 callback(false, result.error)

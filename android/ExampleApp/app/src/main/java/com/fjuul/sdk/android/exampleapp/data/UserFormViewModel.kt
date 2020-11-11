@@ -11,7 +11,6 @@ import com.fjuul.sdk.user.entities.Gender
 import com.fjuul.sdk.user.entities.UserCreationResult
 import com.fjuul.sdk.user.entities.UserProfile
 import com.fjuul.sdk.user.http.services.UserService
-import java.lang.Error
 import java.time.LocalDate
 import java.util.TimeZone
 
@@ -74,20 +73,20 @@ class UserFormViewModel : ViewModel() {
         profileBuilder?.locale = locale
     }
 
-    @Throws(Error::class)
+    @Throws(Exception::class)
     fun createUser(context: Context, apiKey: String, sdkEnvironment: SdkEnvironment): ApiCall<UserCreationResult> {
-        val partialProfile = _profileBuilder ?: throw Error("empty profile params")
+        val partialProfile = _profileBuilder ?: throw Exception("empty profile params")
         ApiClientHolder.setup(context, sdkEnvironment, apiKey)
         return UserService(ApiClientHolder.sdkClient).createUser(partialProfile)
     }
 
-    @Throws(Error::class)
+    @Throws(Exception::class)
     fun updateUser(client: ApiClient): ApiCall<UserProfile> {
-        val partialProfile = _profileBuilder ?: throw Error("empty profile params")
+        val partialProfile = _profileBuilder ?: throw Exception("empty profile params")
         val timezoneId = timezone.value
         if (timezoneId != null) {
             if (!TimeZone.getAvailableIDs().contains(timezoneId)) {
-                throw Error("Invalid timezone")
+                throw Exception("Invalid timezone")
             }
             profileBuilder.timezone = TimeZone.getTimeZone(timezoneId)
         }

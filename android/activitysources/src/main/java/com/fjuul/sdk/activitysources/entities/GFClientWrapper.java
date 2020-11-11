@@ -5,8 +5,8 @@ import android.annotation.SuppressLint;
 import androidx.core.util.Pair;
 import androidx.core.util.Supplier;
 
-import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.CommonException;
-import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.MaxRetriesExceededException;
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.MaxRetriesExceededException;
 import com.fjuul.sdk.activitysources.utils.GoogleTaskUtils;
 import static com.fjuul.sdk.activitysources.utils.GoogleTaskUtils.shutdownExecutorsOnComplete;
 import com.google.android.gms.fitness.HistoryClient;

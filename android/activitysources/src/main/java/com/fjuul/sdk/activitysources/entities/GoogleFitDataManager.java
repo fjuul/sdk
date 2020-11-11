@@ -6,7 +6,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 
-import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.CommonException;
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.activitysources.utils.GoogleTaskUtils;
 import static com.fjuul.sdk.activitysources.utils.GoogleTaskUtils.runAndAwaitTaskByExecutor;

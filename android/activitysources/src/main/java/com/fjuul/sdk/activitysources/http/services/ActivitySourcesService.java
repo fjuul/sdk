@@ -8,6 +8,7 @@ import com.fjuul.sdk.activitysources.adapters.GFUploadDataJsonAdapter;
 import com.fjuul.sdk.activitysources.entities.ConnectionResult;
 import com.fjuul.sdk.activitysources.entities.GFUploadData;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
+import com.fjuul.sdk.activitysources.exceptions.ActivitySourcesApiExceptions;
 import com.fjuul.sdk.activitysources.http.ActivitySourcesApiResponseTransformer;
 import com.fjuul.sdk.activitysources.http.apis.ActivitySourcesApi;
 import com.fjuul.sdk.http.ApiClient;
@@ -65,10 +66,10 @@ public class ActivitySourcesService {
      * 2) no need for authentication: connection to the given tracker was created.
      *
      * In case of attempt to connect to the already connected tracker, the api call result will have error
-     * ActivitySourcesApiErrors.SourceAlreadyConnectedError.
+     * ActivitySourcesApiExceptions.SourceAlreadyConnectedException.
      *
      * @see ConnectionResult
-     * @see com.fjuul.sdk.activitysources.errors.ActivitySourcesApiErrors.SourceAlreadyConnectedError
+     * @see ActivitySourcesApiExceptions.SourceAlreadyConnectedException
      * @return ApiCall for the connection creation.
      */
     @NonNull

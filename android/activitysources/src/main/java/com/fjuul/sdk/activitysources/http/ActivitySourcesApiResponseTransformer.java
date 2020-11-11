@@ -7,7 +7,7 @@ import java.util.Date;
 import com.fjuul.sdk.activitysources.entities.ConnectionResult;
 import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthenticationFlowRequired;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
-import com.fjuul.sdk.activitysources.errors.ActivitySourcesApiErrors.SourceAlreadyConnectedError;
+import com.fjuul.sdk.activitysources.exceptions.ActivitySourcesApiExceptions.SourceAlreadyConnectedException;
 import com.fjuul.sdk.http.responses.ErrorJSONBodyResponse;
 import com.fjuul.sdk.http.utils.ApiCallResult;
 import com.fjuul.sdk.http.utils.DefaultApiResponseTransformer;
@@ -58,7 +58,7 @@ public class ActivitySourcesApiResponseTransformer extends DefaultApiResponseTra
                     errorBody != null && errorBody.getMessage() != null && !errorBody.getMessage().isEmpty()
                         ? errorBody.getMessage()
                         : "Tracker already connected";
-                return ApiCallResult.error(new SourceAlreadyConnectedError(errorMessage));
+                return ApiCallResult.error(new SourceAlreadyConnectedException(errorMessage));
             }
         }
         return super.transform(response);

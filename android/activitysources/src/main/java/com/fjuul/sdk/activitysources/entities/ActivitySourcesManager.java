@@ -11,7 +11,7 @@ import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthentic
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.entities.Callback;
 import com.fjuul.sdk.entities.Result;
-import com.fjuul.sdk.errors.FjuulError;
+import com.fjuul.sdk.exceptions.FjuulException;
 import com.fjuul.sdk.http.ApiClient;
 
 import java.util.Arrays;
@@ -71,7 +71,7 @@ public final class ActivitySourcesManager {
                 final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 callback.onResult(Result.value(intent));
             } else {
-                callback.onResult(Result.error(new FjuulError("Activity source was already connected")));
+                callback.onResult(Result.error(new FjuulException("Activity source was already connected")));
             }
         });
     }

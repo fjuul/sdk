@@ -25,12 +25,12 @@ import org.robolectric.annotation.Config;
 import com.fjuul.sdk.activitysources.entities.ConnectionResult;
 import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthenticationFlowRequired;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
-import com.fjuul.sdk.activitysources.errors.ActivitySourcesApiErrors.SourceAlreadyConnectedError;
+import com.fjuul.sdk.activitysources.exceptions.ActivitySourcesApiExceptions.SourceAlreadyConnectedException;
 import com.fjuul.sdk.entities.InMemoryStorage;
 import com.fjuul.sdk.entities.Keystore;
 import com.fjuul.sdk.entities.SigningKey;
 import com.fjuul.sdk.entities.UserCredentials;
-import com.fjuul.sdk.errors.ApiErrors;
+import com.fjuul.sdk.exceptions.ApiExceptions;
 import com.fjuul.sdk.fixtures.http.TestApiClient;
 import com.fjuul.sdk.http.utils.ApiCallResult;
 
@@ -129,7 +129,7 @@ public class ActivitySourcesServiceTest {
         }
 
         @Test
-        public void connect_WithHttpConflictResponseCode_RespondWithError() throws InterruptedException {
+        public void connect_WithHttpConflictResponseCode_RespondWithException() throws InterruptedException {
             clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
             testKeystore.setKey(validSigningKey);
             clientBuilder.setKeystore(testKeystore);
@@ -143,10 +143,10 @@ public class ActivitySourcesServiceTest {
             RecordedRequest request = mockWebServer.takeRequest();
 
             assertTrue("unsuccessful result", result.isError());
-            assertThat(result.getError(), instanceOf(SourceAlreadyConnectedError.class));
-            SourceAlreadyConnectedError error = (SourceAlreadyConnectedError) result.getError();
+            assertThat(result.getError(), instanceOf(SourceAlreadyConnectedException.class));
+            SourceAlreadyConnectedException exception = (SourceAlreadyConnectedException) result.getError();
             assertEquals("should have error message", "tracker \"android_googlefit\" already connected",
-                error.getMessage());
+                exception.getMessage());
         }
     }
 
@@ -174,7 +174,7 @@ public class ActivitySourcesServiceTest {
         }
 
         @Test
-        public void disconnect_WithHttpNoContentResponseCode_RespondWithoutError()
+        public void disconnect_WithHttpNoContentResponseCode_RespondWithoutException()
             throws IOException, InterruptedException {
             clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
             testKeystore.setKey(validSigningKey);
@@ -192,7 +192,7 @@ public class ActivitySourcesServiceTest {
         }
 
         @Test
-        public void disconnect_WithHttpNotFoundResponseCode_RespondWithError()
+        public void disconnect_WithHttpNotFoundResponseCode_RespondWithException()
             throws IOException, InterruptedException {
             clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
             testKeystore.setKey(validSigningKey);
@@ -209,8 +209,8 @@ public class ActivitySourcesServiceTest {
             RecordedRequest request = mockWebServer.takeRequest();
 
             assertTrue("unsuccessful result", result.isError());
-            ApiErrors.CommonError error = result.getError();
-            assertEquals("should have error message", "tracker \"connection_id\" not found", error.getMessage());
+            ApiExceptions.CommonException exception = result.getError();
+            assertEquals("should have error message", "tracker \"connection_id\" not found", exception.getMessage());
         }
     }
 

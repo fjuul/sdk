@@ -10,12 +10,12 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.CommonException;
-import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.NotGrantedPermissionsException;
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.NotGrantedPermissionsException;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.entities.Callback;
 import com.fjuul.sdk.entities.Result;
-import com.fjuul.sdk.errors.FjuulError;
+import com.fjuul.sdk.exceptions.FjuulException;
 import com.fjuul.sdk.http.ApiClient;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -161,7 +161,7 @@ public final class GoogleFitActivitySource extends ActivitySource {
                     Result<Void> success = Result.value(null);
                     callback.onResult(success);
                 } else {
-                    FjuulError exception = new FjuulError("Something wrong with the google fit connection: still not established");
+                    FjuulException exception = new FjuulException("Something wrong with the google fit connection: still not established");
                     Result<Void> error = Result.error(exception);
                     callback.onResult(error);
                 }

@@ -4,7 +4,7 @@ import android.annotation.SuppressLint;
 
 import androidx.core.util.Supplier;
 
-import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions;
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions;
 import com.google.android.gms.tasks.CancellationToken;
 import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.gms.tasks.Task;

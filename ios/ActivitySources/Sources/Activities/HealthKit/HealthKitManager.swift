@@ -8,10 +8,10 @@ class HealthKitManager {
 
     private var persistor: Persistor
     private var hkAnchorStore: HKAnchorStore
-    public var dataHandler: ((_ data: HKRequestData, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)
+    public var dataHandler: ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)
     private let serialQueue = DispatchQueue(label: "com.fjuul.sdk.queues.backgroundDelivery", qos: .userInitiated)
 
-    init(persistor: Persistor, dataHandler: @escaping ((_ data: HKRequestData, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) {
+    init(persistor: Persistor, dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) {
         self.persistor = persistor
         self.hkAnchorStore = HKAnchorStore(persistor: persistor)
         self.dataHandler = dataHandler
@@ -118,7 +118,7 @@ class HealthKitManager {
     /// Initiates HK queries for new data based on the given type
     ///
     /// - parameter type: `HKObjectType` which has new data avilable.
-    private func queryForUpdates(type: HKSampleType, completion: @escaping (_ data: HKRequestData) -> Void) {
+    private func queryForUpdates(type: HKSampleType, completion: @escaping (_ data: HKRequestData?) -> Void) {
         switch type {
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
             self.fetchIntradayUpdates(type: type) { (data) in
@@ -140,7 +140,7 @@ class HealthKitManager {
         }
     }
 
-    private func fetchIntradayUpdates(type: HKSampleType, completion: @escaping (_ data: HKRequestData) -> Void) {
+    private func fetchIntradayUpdates(type: HKSampleType, completion: @escaping (_ data: HKRequestData?) -> Void) {
         self.getBatchSegments(sampleType: type) { batchStartDates in
             self.fetchIntradayStatisticsCollections(sampleType: type, batchDates: batchStartDates) { results in
 
@@ -264,8 +264,12 @@ class HealthKitManager {
         return predicates
     }
 
-    private func buildRequestData(data: [HKStatistics], sampleType: HKQuantityType) -> HKRequestData {
+    private func buildRequestData(data: [HKStatistics], sampleType: HKQuantityType) -> HKRequestData? {
         let batches = HKBatchAggregator(data: data, sampleType: sampleType).generate()
+
+        if batches.count == 0 {
+            return nil
+        }
 
         switch sampleType {
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
@@ -277,7 +281,7 @@ class HealthKitManager {
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!:
             return HKRequestData(walkingData: batches)
         default:
-            return HKRequestData()
+            return nil
         }
     }
 }

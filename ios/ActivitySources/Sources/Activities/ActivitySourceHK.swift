@@ -42,12 +42,12 @@ final class ActivitySourceHK: ActivitySource {
         }
     }
 
-    private func hkDataHandler(_ requestData: HKRequestData, completion: @escaping (Result<Bool, Error>) -> Void) {
-        if requestData.empty {
+    private func hkDataHandler(_ requestData: HKRequestData?, completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard let requestData = requestData else {
             completion(.success(true))
             return
         }
-
+        
         self.sendBatch(data: requestData) { result in
             completion(result)
         }

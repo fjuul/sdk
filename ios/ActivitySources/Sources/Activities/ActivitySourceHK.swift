@@ -47,7 +47,7 @@ final class ActivitySourceHK: ActivitySource {
             completion(.success(true))
             return
         }
-        
+
         self.sendBatch(data: requestData) { result in
             completion(result)
         }

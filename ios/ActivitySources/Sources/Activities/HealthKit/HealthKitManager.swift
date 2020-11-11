@@ -76,27 +76,32 @@ class HealthKitManager {
     /// - parameter types: Set of `HKObjectType` to observe changes to.
     private func setUpBackgroundDeliveryForDataTypes(types: Set<HKSampleType>) {
         for type in types {
-            guard let sampleType = type as? HKSampleType else { print("ERROR: \(type) is not an HKSampleType"); continue }
+            guard let sampleType = type as? HKSampleType else { continue }
 
             let query = HKObserverQuery(sampleType: sampleType, predicate: nil) { (query: HKObserverQuery, completionHandler: @escaping HKObserverQueryCompletionHandler, error: Error?) in
-                
-                // Semaphore need for wait async task and correct notice queue about finish task
+
+                // Semaphore need for wait async task and correct notice queue about finish async task
                 self.serialQueue.async {
                     let semaphore = DispatchSemaphore(value: 0)
-                    self.queryForUpdates(type: type) { data in
+                    self.queryForUpdates(type: type) { data, newAnchor in
                         self.dataHandler(data) { result in
                             switch result {
                             case .success:
-                                print("SUCESS hadled backgroundDelivery for \(sampleType)")
+                                print("SUCESS hadled backgroundDelivery for \(sampleType), with newAnchor: \(newAnchor)")
+                                self.saveAnchorBySampleType(newAnchor: newAnchor, sampleType: sampleType)
                             case .failure(let err):
                                 print("HTTP error:", err)
                             }
 
                             semaphore.signal()
+                            // You must call this block as soon as you are done processing the incoming data. Calling this block tells HealthKit that you have
+                            // successfully received the background data. If you do not call this block, HealthKit continues to attempt to launch your app using
+                            // a back off algorithm. If your app fails to respond three times, HealthKit assumes that your app cannot receive data, and stops
+                            // sending you background updates.
                             completionHandler()
                         }
                     }
-                    _ = semaphore.wait(wallTimeout: .distantFuture)
+                    _ = semaphore.wait(timeout: .now() + 60)
                 }
             }
 
@@ -118,35 +123,35 @@ class HealthKitManager {
     /// Initiates HK queries for new data based on the given type
     ///
     /// - parameter type: `HKObjectType` which has new data avilable.
-    private func queryForUpdates(type: HKSampleType, completion: @escaping (_ data: HKRequestData?) -> Void) {
+    private func queryForUpdates(type: HKSampleType, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
         switch type {
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
-            self.fetchIntradayUpdates(type: type) { (data) in
-                completion(data)
+            self.fetchIntradayUpdates(type: type) { (data, newAnchor) in
+                completion(data, newAnchor)
             }
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!:
-            self.fetchIntradayUpdates(type: type) { (data) in
-                completion(data)
+            self.fetchIntradayUpdates(type: type) { (data, newAnchor) in
+                completion(data, newAnchor)
             }
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!:
-            self.fetchIntradayUpdates(type: type) { (data) in
-                completion(data)
+            self.fetchIntradayUpdates(type: type) { (data, newAnchor) in
+                completion(data, newAnchor)
             }
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!:
-            self.fetchIntradayUpdates(type: type) { (data) in
-                completion(data)
+            self.fetchIntradayUpdates(type: type) { (data, newAnchor) in
+                completion(data, newAnchor)
             }
         default: print("Unhandled HKObjectType: \(type)")
         }
     }
 
-    private func fetchIntradayUpdates(type: HKSampleType, completion: @escaping (_ data: HKRequestData?) -> Void) {
-        self.getBatchSegments(sampleType: type) { batchStartDates in
+    private func fetchIntradayUpdates(type: HKSampleType, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
+        self.getBatchSegments(sampleType: type) { batchStartDates, newAnchor in
             self.fetchIntradayStatisticsCollections(sampleType: type, batchDates: batchStartDates) { results in
 
                 let hkRequestData = self.buildRequestData(data: results, sampleType: (type as? HKQuantityType)!)
 
-                completion(hkRequestData)
+                completion(hkRequestData, newAnchor)
             }
         }
     }
@@ -193,7 +198,7 @@ class HealthKitManager {
         HealthKitManager.healthStore.execute(query)
     }
 
-    private func getBatchSegments(sampleType: HKSampleType, completion: @escaping (Set<Date>) -> Void) {
+    private func getBatchSegments(sampleType: HKSampleType, completion: @escaping (Set<Date>, HKQueryAnchor?) -> Void) {
         var batchStartDates: Set<Date> = []
 
         let anchorDate = self.getAnchorBySampleType(sampleType: sampleType)
@@ -217,8 +222,7 @@ class HealthKitManager {
                 batchStartDates.insert(HKDataUtils.beginningOfHour(date: sampleItem.startDate)!)
             }
 
-            self.saveAnchorBySampleType(newAnchor: newAnchor, sampleType: sampleType)
-            completion(batchStartDates)
+            completion(batchStartDates, newAnchor)
         }
         HealthKitManager.healthStore.execute(query)
     }

@@ -19,7 +19,7 @@ import com.fjuul.sdk.entities.InMemoryStorage;
 import com.fjuul.sdk.entities.Keystore;
 import com.fjuul.sdk.entities.SigningKey;
 import com.fjuul.sdk.entities.UserCredentials;
-import com.fjuul.sdk.errors.ApiErrors;
+import com.fjuul.sdk.exceptions.ApiExceptions;
 import com.fjuul.sdk.fixtures.http.TestApiClient;
 import com.fjuul.sdk.http.services.ISigningService;
 import com.fjuul.sdk.http.services.UserSigningService;
@@ -150,7 +150,7 @@ public class AnalyticsServiceTest {
     }
 
     @Test
-    public void getDailyStats_EmptyKeystoreWithUnauthorizedError_ReturnsErrorResult() throws IOException {
+    public void getDailyStats_EmptyKeystoreWithUnauthorizedException_ReturnsErrorResult() throws IOException {
         clientBuilder.setKeystore(testKeystore);
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
@@ -162,16 +162,16 @@ public class AnalyticsServiceTest {
         ApiCallResult<DailyStats> result = analyticsService.getDailyStats("2020-03-10").execute();
 
         assertTrue("error result", result.isError());
-        Error error = result.getError();
-        assertThat(result.getError(), IsInstanceOf.instanceOf(ApiErrors.UnauthorizedError.class));
-        ApiErrors.UnauthorizedError authError = (ApiErrors.UnauthorizedError) error;
-        assertEquals("has wrong_credentials error code", ApiErrors.UnauthorizedError.ErrorCode.wrong_credentials,
-            authError.getErrorCode());
-        assertEquals("has error message from response body", "Unauthorized request", authError.getMessage());
+        Exception exception = result.getError();
+        assertThat(exception, IsInstanceOf.instanceOf(ApiExceptions.UnauthorizedException.class));
+        ApiExceptions.UnauthorizedException authException = (ApiExceptions.UnauthorizedException) exception;
+        assertEquals("has wrong_credentials error code", ApiExceptions.UnauthorizedException.ErrorCode.wrong_credentials,
+            authException.getErrorCode());
+        assertEquals("has error message from response body", "Unauthorized request", authException.getMessage());
     }
 
     @Test
-    public void getDailyStats_ResponseWithUnauthorizedError_ReturnsErrorResult() throws IOException {
+    public void getDailyStats_ResponseWithUnauthorizedException_ReturnsErrorResult() throws IOException {
         clientBuilder.setKeystore(testKeystore);
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
@@ -182,15 +182,15 @@ public class AnalyticsServiceTest {
         ApiCallResult<DailyStats> result = analyticsService.getDailyStats("2020-03-10").execute();
 
         assertTrue("error result", result.isError());
-        Error error = result.getError();
-        assertThat(result.getError(), IsInstanceOf.instanceOf(ApiErrors.UnauthorizedError.class));
-        ApiErrors.UnauthorizedError authError = (ApiErrors.UnauthorizedError) error;
-        assertNull("has wrong_credentials error code", authError.getErrorCode());
-        assertEquals("has error message from response body", "Unauthorized request", authError.getMessage());
+        Exception exception = result.getError();
+        assertThat(exception, IsInstanceOf.instanceOf(ApiExceptions.UnauthorizedException.class));
+        ApiExceptions.UnauthorizedException authException = (ApiExceptions.UnauthorizedException) exception;
+        assertNull("has wrong_credentials error code", authException.getErrorCode());
+        assertEquals("has error message from response body", "Unauthorized request", authException.getMessage());
     }
 
     @Test
-    public void getDailyStats_ResponseWithUnauthorizedErrorWithCode_ReturnsErrorResult() throws IOException {
+    public void getDailyStats_ResponseWithUnauthorizedExceptionWithCode_ReturnsErrorResult() throws IOException {
         clientBuilder.setKeystore(testKeystore);
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
@@ -202,16 +202,16 @@ public class AnalyticsServiceTest {
         ApiCallResult<DailyStats> result = analyticsService.getDailyStats("2020-03-10").execute();
 
         assertTrue("error result", result.isError());
-        Error error = result.getError();
-        assertThat(result.getError(), IsInstanceOf.instanceOf(ApiErrors.UnauthorizedError.class));
-        ApiErrors.UnauthorizedError authError = (ApiErrors.UnauthorizedError) error;
-        assertEquals("has wrong_credentials error code", ApiErrors.UnauthorizedError.ErrorCode.wrong_credentials,
-            authError.getErrorCode());
-        assertEquals("has error message from response body", "Unauthorized request", authError.getMessage());
+        Exception exception = result.getError();
+        assertThat(exception, IsInstanceOf.instanceOf(ApiExceptions.UnauthorizedException.class));
+        ApiExceptions.UnauthorizedException authException = (ApiExceptions.UnauthorizedException) exception;
+        assertEquals("has wrong_credentials error code", ApiExceptions.UnauthorizedException.ErrorCode.wrong_credentials,
+            authException.getErrorCode());
+        assertEquals("has error message from response body", "Unauthorized request", authException.getMessage());
     }
 
     @Test
-    public void getDailyStats_ResponseWithClockSkewError_ReturnsErrorResult() throws IOException {
+    public void getDailyStats_ResponseWithClockSkewException_ReturnsErrorResult() throws IOException {
         clientBuilder.setKeystore(testKeystore);
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
@@ -223,12 +223,12 @@ public class AnalyticsServiceTest {
         ApiCallResult<DailyStats> result = analyticsService.getDailyStats("2020-03-10").execute();
 
         assertTrue("error result", result.isError());
-        Error error = result.getError();
-        assertThat(result.getError(), IsInstanceOf.instanceOf(ApiErrors.UnauthorizedError.class));
-        ApiErrors.UnauthorizedError authError = (ApiErrors.UnauthorizedError) error;
-        assertEquals("has wrong_credentials error code", ApiErrors.UnauthorizedError.ErrorCode.clock_skew,
-            authError.getErrorCode());
+        Exception exception = result.getError();
+        assertThat(exception, IsInstanceOf.instanceOf(ApiExceptions.UnauthorizedException.class));
+        ApiExceptions.UnauthorizedException authException = (ApiExceptions.UnauthorizedException) exception;
+        assertEquals("has wrong_credentials error code", ApiExceptions.UnauthorizedException.ErrorCode.clock_skew,
+            authException.getErrorCode());
         assertEquals("has error message from response body", "Unauthorized: clock skew of 301s was greater than 300s",
-            authError.getMessage());
+            authException.getMessage());
     }
 }

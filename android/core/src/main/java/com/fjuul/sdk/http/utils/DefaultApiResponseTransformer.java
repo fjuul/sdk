@@ -3,7 +3,7 @@ package com.fjuul.sdk.http.utils;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
-import com.fjuul.sdk.errors.ApiErrors;
+import com.fjuul.sdk.exceptions.ApiExceptions;
 import com.fjuul.sdk.http.responses.ErrorJSONBodyResponse;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
@@ -28,21 +28,21 @@ public class DefaultApiResponseTransformer<T> implements IApiResponseTransformer
 
         String errorMessage =
             responseBody != null && responseBody.getMessage() != null ? responseBody.getMessage() : "Unknown Error";
-        ApiErrors.CommonError error;
+        ApiExceptions.CommonException exception;
         if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
-            ApiErrors.UnauthorizedError.ErrorCode code;
+            ApiExceptions.UnauthorizedException.ErrorCode code;
             try {
-                code = ApiErrors.UnauthorizedError.ErrorCode.valueOf(response.headers().get("x-authentication-error"));
+                code = ApiExceptions.UnauthorizedException.ErrorCode.valueOf(response.headers().get("x-authentication-error"));
             } catch (IllegalArgumentException | NullPointerException exc) {
                 code = null;
             }
-            error = new ApiErrors.UnauthorizedError(errorMessage, code);
+            exception = new ApiExceptions.UnauthorizedException(errorMessage, code);
         } else if (response.code() == HttpURLConnection.HTTP_BAD_REQUEST) {
-            error = new ApiErrors.BadRequestError(errorMessage);
+            exception = new ApiExceptions.BadRequestException(errorMessage);
         } else {
-            error = new ApiErrors.CommonError(errorMessage);
+            exception = new ApiExceptions.CommonException(errorMessage);
         }
         // TODO: add additional checks (forbidden)
-        return ApiCallResult.error(error);
+        return ApiCallResult.error(exception);
     }
 }

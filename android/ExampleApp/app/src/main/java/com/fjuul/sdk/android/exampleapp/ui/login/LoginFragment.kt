@@ -112,12 +112,12 @@ class LoginFragment : Fragment() {
                     token = token!!,
                     secret = secret!!
                 )
-                authorizedUserDataViewModel.fetchUserProfile(ApiClientHolder.sdkClient) { success, error ->
+                authorizedUserDataViewModel.fetchUserProfile(ApiClientHolder.sdkClient) { success, exception ->
                     if (success) {
                         val action = LoginFragmentDirections.actionLoginFragmentToModulesFragment()
                         findNavController().navigate(action)
                     } else {
-                        AlertDialog.Builder(requireContext()).setMessage(error?.message ?: "Unknown Error").show()
+                        AlertDialog.Builder(requireContext()).setMessage(exception?.message ?: "Unknown Error").show()
                     }
                 }
             }

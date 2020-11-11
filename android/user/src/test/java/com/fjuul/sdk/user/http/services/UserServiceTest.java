@@ -25,7 +25,7 @@ import com.fjuul.sdk.entities.InMemoryStorage;
 import com.fjuul.sdk.entities.Keystore;
 import com.fjuul.sdk.entities.SigningKey;
 import com.fjuul.sdk.entities.UserCredentials;
-import com.fjuul.sdk.errors.ApiErrors;
+import com.fjuul.sdk.exceptions.ApiExceptions;
 import com.fjuul.sdk.fixtures.http.TestApiClient;
 import com.fjuul.sdk.http.utils.ApiCallResult;
 import com.fjuul.sdk.user.entities.Gender;
@@ -145,7 +145,7 @@ public class UserServiceTest {
         }
 
         @Test
-        public void createUser_InvalidParams_RespondWithError() throws IOException, InterruptedException {
+        public void createUser_InvalidParams_RespondWithException() throws IOException, InterruptedException {
             userService = new UserService(clientBuilder.build());
             MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_BAD_REQUEST)
                 .setHeader("Content-Type", "application/json")
@@ -169,9 +169,9 @@ public class UserServiceTest {
                 request.getBody().readUtf8());
 
             assertTrue("unsuccessful result", result.isError());
-            ApiErrors.CommonError error = result.getError();
-            assertThat(error, instanceOf(ApiErrors.BadRequestError.class));
-            assertEquals("should have error message", "Bad Request: Validation error", error.getMessage());
+            ApiExceptions.CommonException exception = result.getError();
+            assertThat(exception, instanceOf(ApiExceptions.BadRequestException.class));
+            assertEquals("should have error message", "Bad Request: Validation error", exception.getMessage());
         }
     }
 
@@ -199,7 +199,7 @@ public class UserServiceTest {
         }
 
         @Test
-        public void getProfile_WithoutUserCredentials_ThrowsError() throws IOException, InterruptedException {
+        public void getProfile_WithoutUserCredentials_ThrowsException() throws IOException, InterruptedException {
             userService = new UserService(clientBuilder.build());
             try {
                 ApiCallResult<UserProfile> result = userService.getProfile().execute();
@@ -260,7 +260,7 @@ public class UserServiceTest {
         }
 
         @Test
-        public void updateProfile_WithoutUserCredentials_ThrowsError() throws IOException, InterruptedException {
+        public void updateProfile_WithoutUserCredentials_ThrowsException() throws IOException, InterruptedException {
             userService = new UserService(clientBuilder.build());
             try {
                 UserProfile.PartialBuilder profileBuilder = new UserProfile.PartialBuilder();

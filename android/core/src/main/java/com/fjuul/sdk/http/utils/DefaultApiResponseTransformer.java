@@ -32,7 +32,8 @@ public class DefaultApiResponseTransformer<T> implements IApiResponseTransformer
         if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
             ApiExceptions.UnauthorizedException.ErrorCode code;
             try {
-                code = ApiExceptions.UnauthorizedException.ErrorCode.valueOf(response.headers().get("x-authentication-error"));
+                code = ApiExceptions.UnauthorizedException.ErrorCode
+                    .valueOf(response.headers().get("x-authentication-error"));
             } catch (IllegalArgumentException | NullPointerException exc) {
                 code = null;
             }

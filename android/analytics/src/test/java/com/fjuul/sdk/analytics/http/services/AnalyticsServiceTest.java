@@ -165,8 +165,8 @@ public class AnalyticsServiceTest {
         Exception exception = result.getError();
         assertThat(exception, IsInstanceOf.instanceOf(ApiExceptions.UnauthorizedException.class));
         ApiExceptions.UnauthorizedException authException = (ApiExceptions.UnauthorizedException) exception;
-        assertEquals("has wrong_credentials error code", ApiExceptions.UnauthorizedException.ErrorCode.wrong_credentials,
-            authException.getErrorCode());
+        assertEquals("has wrong_credentials error code",
+            ApiExceptions.UnauthorizedException.ErrorCode.wrong_credentials, authException.getErrorCode());
         assertEquals("has error message from response body", "Unauthorized request", authException.getMessage());
     }
 
@@ -205,8 +205,8 @@ public class AnalyticsServiceTest {
         Exception exception = result.getError();
         assertThat(exception, IsInstanceOf.instanceOf(ApiExceptions.UnauthorizedException.class));
         ApiExceptions.UnauthorizedException authException = (ApiExceptions.UnauthorizedException) exception;
-        assertEquals("has wrong_credentials error code", ApiExceptions.UnauthorizedException.ErrorCode.wrong_credentials,
-            authException.getErrorCode());
+        assertEquals("has wrong_credentials error code",
+            ApiExceptions.UnauthorizedException.ErrorCode.wrong_credentials, authException.getErrorCode());
         assertEquals("has error message from response body", "Unauthorized request", authException.getMessage());
     }
 

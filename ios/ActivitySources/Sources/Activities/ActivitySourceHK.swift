@@ -26,7 +26,6 @@ final class ActivitySourceHK: ActivitySource {
         let healthKitManager = HealthKitManager(persistor: persistor, dataHandler: self.hkDataHandler)
         self.healthKitManager = healthKitManager
 
-//        healthKitManager.dataHandler =
         healthKitManager.mount { result in
             completion(result)
         }
@@ -44,6 +43,11 @@ final class ActivitySourceHK: ActivitySource {
     }
 
     private func hkDataHandler(_ requestData: HKRequestData, completion: @escaping (Result<Bool, Error>) -> Void) {
+        if requestData.empty {
+            completion(.success(true))
+            return
+        }
+
         self.sendBatch(data: requestData) { result in
             completion(result)
         }

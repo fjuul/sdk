@@ -54,6 +54,7 @@ class HealthKitManager {
         }
 
         self.setUpBackgroundDeliveryForDataTypes(types: HealthKitManager.dataTypesToRead())
+        completion(.success(true))
     }
     
     func disableAllBackgroundDelivery(completion: @escaping (Result<Bool, Error>) -> Void) {
@@ -86,7 +87,7 @@ class HealthKitManager {
                         self.dataHandler(data) { result in
                             switch result {
                             case .success:
-                                print("SUCESS REQUEST")
+                                print("SUCESS hadled backgroundDelivery for \(sampleType)")
                             case .failure(let err):
                                 print("HTTP error:", err)
                             }

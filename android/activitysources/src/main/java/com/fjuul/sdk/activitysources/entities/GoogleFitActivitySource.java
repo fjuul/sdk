@@ -65,6 +65,6 @@ public final class GoogleFitActivitySource {
 
     // TODO: use general callback interface
     public interface HandleSignInResultCallback {
-        void onResult(@Nullable Error error, boolean success);
+        void onResult(@Nullable Exception exception, boolean success);
     }
 }

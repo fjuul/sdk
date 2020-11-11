@@ -5,6 +5,8 @@ import android.content.Intent;
 
 import androidx.annotation.NonNull;
 
+import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions;
+import com.fjuul.sdk.activitysources.errors.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.entities.PersistentStorage;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -36,7 +38,7 @@ public final class ActivitySourcesManager {
             GoogleSignInAccount account = task.getResult(ApiException.class);
             boolean permissionsGranted = gfActivitySource.arePermissionsGranted(account);
             if (!permissionsGranted) {
-                callback.onResult(new Error("Not all permissions were granted"), false);
+                callback.onResult(new CommonException("Not all permissions were granted"), false);
                 return;
             }
             if (!gfActivitySource.isOfflineAccessRequested()) {
@@ -44,7 +46,7 @@ public final class ActivitySourcesManager {
             }
             String authCode = account.getServerAuthCode();
             if (authCode == null) {
-                callback.onResult(new Error("No server auth code for the requested offline access"), false);
+                callback.onResult(new CommonException("No server auth code for the requested offline access"), false);
             }
             Map<String, String> queryParams = new HashMap<>();
             queryParams.put("code", authCode);
@@ -59,7 +61,7 @@ public final class ActivitySourcesManager {
                 }
             });
         } catch (ApiException exc) {
-            callback.onResult(new Error("ApiException: " + exc.getMessage()), false);
+            callback.onResult(new CommonException("ApiException: " + exc.getMessage()), false);
         }
     }
 

@@ -1,29 +1,21 @@
 import Foundation
 import FjuulCore
 
-final class ActivitySourceConnection {
-    private var trackerConnection: TrackerConnection
+final class ActivitySourceConnection: TrackerConnectionable {
+    public let id: String
+    public let tracker: ActivitySourcesItem?
+    public let createdAt: Date
+    public let endedAt: Date?
+
     public var activitySource: ActivitySource
 
     init(trackerConnection: TrackerConnection, activitySource: ActivitySource) {
-        self.trackerConnection = trackerConnection
+        id = trackerConnection.id
+        tracker = ActivitySourcesItem(rawValue: trackerConnection.tracker)
+        createdAt = trackerConnection.createdAt
+        endedAt = trackerConnection.endedAt
+
         self.activitySource = activitySource
-    }
-
-    var id: String {
-        return trackerConnection.id
-    }
-
-    var tracker: ActivitySourcesItem? {
-        return ActivitySourcesItem(rawValue: trackerConnection.tracker)
-    }
-
-    var createdAt: Date {
-        return trackerConnection.createdAt
-    }
-
-    var endedAt: Date? {
-        return trackerConnection.endedAt
     }
 
     public func mount(apiClient: ApiClient, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
@@ -33,7 +25,7 @@ final class ActivitySourceConnection {
     }
 
     public func connected() -> Bool {
-        guard trackerConnection.endedAt != nil else { return false }
+        guard endedAt != nil else { return false }
 
         return false
     }

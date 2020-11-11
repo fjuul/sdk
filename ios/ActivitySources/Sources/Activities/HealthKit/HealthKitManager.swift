@@ -227,6 +227,10 @@ class HealthKitManager {
     }
 
     private func saveAnchorBySampleType(newAnchor: HKQueryAnchor?, sampleType: HKObjectType) {
+        guard let newAnchor = newAnchor else {
+            return
+        }
+
         switch sampleType {
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
             self.hkAnchorStore.anchors?[.activeEnergyBurned] = newAnchor

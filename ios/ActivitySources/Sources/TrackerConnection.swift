@@ -1,6 +1,12 @@
 import Foundation
 
-public struct TrackerConnection: Codable {
+protocol TrackerConnectionable {
+    var id: String { get }
+    var createdAt: Date { get }
+    var endedAt: Date? { get }
+}
+
+public struct TrackerConnection: TrackerConnectionable, Codable {
 
     public let id: String
     public let tracker: String

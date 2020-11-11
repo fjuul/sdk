@@ -157,8 +157,8 @@ class UserProfileFragment : Fragment() {
                         val action = UserProfileFragmentDirections.actionCreateUserFragmentToLoginFragment()
                         findNavController().navigate(action)
                     }
-                } catch (error: Error) {
-                    AlertDialog.Builder(requireContext()).setMessage(error.message).show()
+                } catch (exception: Exception) {
+                    AlertDialog.Builder(requireContext()).setMessage(exception.message).show()
                 }
             } else if (args.flow == UserProfileNavigationFlow.UPDATE) {
                 try {
@@ -172,8 +172,8 @@ class UserProfileFragment : Fragment() {
                         authorizedUserDataViewModel.setUserProfile(profile)
                         prefillWithUserProfile(profile)
                     }
-                } catch (error: Error) {
-                    AlertDialog.Builder(requireContext()).setMessage(error.message).show()
+                } catch (exception: Exception) {
+                    AlertDialog.Builder(requireContext()).setMessage(exception.message).show()
                 }
             }
         }

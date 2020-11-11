@@ -2,7 +2,7 @@ package com.fjuul.sdk.http.utils;
 
 import java.io.IOException;
 
-import com.fjuul.sdk.errors.ApiErrors;
+import com.fjuul.sdk.exceptions.ApiExceptions;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -38,9 +38,9 @@ public class ApiCall<T> {
             Response<T> response = delegate.execute();
             return responseTransformer.transform(response);
         } catch (IOException exc) {
-            return ApiCallResult.error(new ApiErrors.InternalClientError(exc));
+            return ApiCallResult.error(new ApiExceptions.InternalClientException(exc));
         } catch (RuntimeException exc) {
-            return ApiCallResult.error(new ApiErrors.InternalClientError(exc));
+            return ApiCallResult.error(new ApiExceptions.InternalClientException(exc));
         }
     }
 
@@ -66,7 +66,7 @@ public class ApiCall<T> {
             @Override
             public void onFailure(Call<T> call, Throwable t) {
                 mainHandler.post(() -> {
-                    callback.onResult(ApiCall.this, ApiCallResult.error(new ApiErrors.InternalClientError(t)));
+                    callback.onResult(ApiCall.this, ApiCallResult.error(new ApiExceptions.InternalClientException(t)));
                 });
             }
         });

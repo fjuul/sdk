@@ -28,8 +28,8 @@ final public class ActivitySourceManager {
             return
         }
 
-        // Request permissions from HealthKit
         if activitySource is ActivitySourceHK {
+            // Request permissions from HealthKit
             ActivitySourceHK.requestAccess { result in
                 switch result {
                 case .failure(let err):
@@ -41,9 +41,12 @@ final public class ActivitySourceManager {
             }
         }
 
-        apiClient.activitySources.connect(activitySource: activitySource.tracker) { connectionResult in
+        apiClient.activitySources.connect(activitySourceItem: activitySource.tracker) { connectionResult in
             completion(connectionResult)
         }
+    }
+    
+    public func disconnect(activitySource: ActivitySource) {
     }
 
     private func restoreState() {

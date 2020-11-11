@@ -4,7 +4,7 @@ import FjuulCore
 final class ActivitySourcePolar: ActivitySource {
     static public let shared = ActivitySourcePolar()
 
-    var tracker = "polar"
+    var tracker = ActivitySourcesItem.polar
     var apiClient: ApiClient?
     var persistor: Persistor?
 

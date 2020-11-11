@@ -5,7 +5,7 @@ import Alamofire
 final class ActivitySourceHK: ActivitySource {
     static public let shared = ActivitySourceHK()
 
-    var tracker = "healthkit"
+    var tracker = ActivitySourcesItem.healthkit
     var apiClient: ApiClient?
     var persistor: Persistor?
 

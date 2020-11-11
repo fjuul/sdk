@@ -20,10 +20,10 @@ class ActivitySourceObservable: ObservableObject {
         }
     }
 
-    func connect(activitySource: String) {
+    func connect(activitySourceItem: ActivitySourcesItem) {
         // TODO this should trigger a connection list refresh after success or when returning to the app
         // from the browser
-        ApiClientHolder.default.apiClient?.activitySources.connect(activitySource: activitySource) { result in
+        ApiClientHolder.default.apiClient?.activitySources.connect(activitySourceItem: activitySourceItem) { result in
             switch result {
             case .success(let connectionResult):
                 switch connectionResult {

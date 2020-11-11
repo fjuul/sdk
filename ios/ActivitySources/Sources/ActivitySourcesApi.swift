@@ -25,8 +25,8 @@ public class ActivitySourcesApi {
     }
 
     // TODO this should probably take a higher-level input, not a string source name
-    public func connect(activitySource: String, completion: @escaping (Result<ConnectionResult, Error>) -> Void) {
-        let path = "/\(apiClient.userToken)/connections/\(activitySource)"
+    public func connect(activitySourceItem: ActivitySourcesItem, completion: @escaping (Result<ConnectionResult, Error>) -> Void) {
+        let path = "/\(apiClient.userToken)/connections/\(activitySourceItem.rawValue)"
         guard let url = baseUrl?.appendingPathComponent(path) else {
             return completion(.failure(FjuulError.invalidConfig))
         }

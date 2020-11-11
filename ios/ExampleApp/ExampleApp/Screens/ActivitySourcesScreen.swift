@@ -1,4 +1,5 @@
 import SwiftUI
+import FjuulActivitySources
 
 struct ActivitySourcesScreen: View {
 
@@ -10,38 +11,33 @@ struct ActivitySourcesScreen: View {
             // currentConnections, as this could potentially be multiple at the same time in the future
             Text("current source: \(observable.currentConnections.first?.tracker ?? "none")")
             Button(action: {
-                self.observable.connect(activitySource: "fitbit")
+                self.observable.connect(activitySourceItem: ActivitySourcesItem.fitbit)
             }) {
                 Text("Connect Fitbit")
             }
             Button(action: {
-                self.observable.connect(activitySource: "garmin")
+                self.observable.connect(activitySourceItem: ActivitySourcesItem.garmin)
             }) {
                 Text("Connect Garmin")
             }
             Button(action: {
-                self.observable.connect(activitySource: "googlefit_backend")
+                self.observable.connect(activitySourceItem: ActivitySourcesItem.googlefit_backend)
             }) {
                 Text("Connect GoogleFit (BE Integration)")
             }
             Button(action: {
-                self.observable.connect(activitySource: "polar")
+                self.observable.connect(activitySourceItem: ActivitySourcesItem.polar)
             }) {
                 Text("Connect Polar")
             }
             Button(action: {
-                self.observable.connect(activitySource: "suunto")
+                self.observable.connect(activitySourceItem: ActivitySourcesItem.suunto)
             }) {
                 Text("Connect Suunto")
             }
-            Button(action: {
-                self.observable.connect(activitySource: "thisdoesnotexist")
-            }) {
-                Text("Connect Unknown")
-            }
 
             Button(action: {
-                self.observable.connect(activitySource: "healthkit")
+                self.observable.connect(activitySourceItem: ActivitySourcesItem.healthkit)
             }) {
                 Text("Connect Healthkit")
             }

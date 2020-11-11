@@ -5,7 +5,7 @@ import Alamofire
 final class ActivitySourceGarmin: ActivitySource {
     static public let shared = ActivitySourceGarmin()
 
-    var tracker = "garmin"
+    var tracker = ActivitySourcesItem.garmin
     var apiClient: ApiClient?
     var persistor: Persistor?
 

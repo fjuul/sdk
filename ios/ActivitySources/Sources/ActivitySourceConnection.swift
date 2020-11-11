@@ -14,8 +14,8 @@ final class ActivitySourceConnection {
         return trackerConnection.id
     }
 
-    var tracker: String {
-        return trackerConnection.tracker
+    var tracker: ActivitySourcesItem? {
+        return ActivitySourcesItem(rawValue: trackerConnection.tracker)
     }
 
     var createdAt: Date {
@@ -41,8 +41,10 @@ final class ActivitySourceConnection {
 
 enum ActivitySourceConnectionFactory {
     static func activitySourceConnection(trackerConnection: TrackerConnection) -> ActivitySourceConnection? {
-        switch trackerConnection.tracker {
-        case "healthkit":
+        guard let tracker = ActivitySourcesItem(rawValue: trackerConnection.tracker) else { return nil }
+
+        switch tracker {
+        case ActivitySourcesItem.healthkit:
             return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourceHK.shared)
         default:
             return nil

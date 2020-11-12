@@ -79,6 +79,7 @@ public final class ActivitySourcesManager {
     }
 
     public void disconnect(@NonNull final ActivitySourceConnection sourceConnection, @NonNull final Callback<List<ActivitySourceConnection>> callback) {
+        // TODO: validate if sourceConnection was already ended ?
         Runnable runnableDisconnect = () -> {
             sourcesService.disconnect(sourceConnection).enqueue((call, apiCallResult) -> {
                 if (apiCallResult.isError()) {

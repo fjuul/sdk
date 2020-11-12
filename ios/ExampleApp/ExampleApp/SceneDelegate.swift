@@ -4,6 +4,7 @@ import FjuulActivitySources
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
+    var activitySourceObserver = ActivitySourceObservable()
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         // Use this method to optionally configure and attach the UIWindow to the provided UIWindowScene `scene`.
@@ -18,7 +19,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Use a UIHostingController as window root view controller.
         if let windowScene = scene as? UIWindowScene {
             let window = UIWindow(windowScene: windowScene)
-            window.rootViewController = UIHostingController(rootView: contentView)
+            window.rootViewController = UIHostingController(rootView: contentView.environmentObject(activitySourceObserver))
             self.window = window
             window.makeKeyAndVisible()
         }
@@ -34,7 +35,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if let tracker = connectionStatus.tracker {
             print("returned from connecting to: \(tracker) with status: \(connectionStatus.success)")
 
-            // TODO find right way for update current connections to ActivitySourceObservable
+            // Update activitySource list
+            activitySourceObserver.getCurrentConnections()
         }
     }
 

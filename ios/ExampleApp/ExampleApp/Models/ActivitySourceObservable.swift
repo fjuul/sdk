@@ -21,8 +21,6 @@ class ActivitySourceObservable: ObservableObject {
     }
 
     func connect(activitySource: ActivitySource) {
-        // TODO this should trigger a connection list refresh after success or when returning to the app
-        // from the browser
         ActivitySourceManager.shared.connect(activitySource: activitySource) { result in
             switch result {
             case .success(let connectionResult):

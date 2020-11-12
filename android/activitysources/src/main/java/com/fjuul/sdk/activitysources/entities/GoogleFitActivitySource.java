@@ -116,26 +116,13 @@ public final class GoogleFitActivitySource extends ActivitySource {
         return isActivityRecognitionPermissionGranted(context);
     }
 
-    void disable(@Nullable Callback<Void> callback) {
+    Task<Void> disable() {
         final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         if (account == null) {
-            if (callback != null) {
-                callback.onResult(Result.value(null));
-            }
-            return;
+            return Tasks.forResult(null);
         }
         final ConfigClient configClient = Fitness.getConfigClient(context, account);
-        configClient.disableFit().addOnCompleteListener(task -> {
-           if (task.isCanceled() || !task.isSuccessful()) {
-               if (callback != null) {
-                   callback.onResult(Result.error(task.getException()));
-               }
-               return;
-           }
-           if (callback != null) {
-               callback.onResult(Result.value(null));
-           }
-        });
+        return configClient.disableFit();
     }
 
     public void handleGoogleSignInResult(@NonNull Intent intent, @NonNull Callback<Void> callback) {

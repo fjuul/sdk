@@ -13,10 +13,12 @@ import com.fjuul.sdk.entities.Callback;
 import com.fjuul.sdk.entities.Result;
 import com.fjuul.sdk.exceptions.FjuulException;
 import com.fjuul.sdk.http.ApiClient;
+import com.google.android.gms.tasks.Task;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -76,16 +78,33 @@ public final class ActivitySourcesManager {
         });
     }
 
-    public void disconnect(@NonNull final ActivitySourceConnection sourceConnection, @Nullable final Callback<List<ActivitySourceConnection>> callback) {
-        sourcesService.disconnect(sourceConnection).enqueue((call, apiCallResult) -> {
-            if (apiCallResult.isError()) {
-                if (callback != null) {
-                    callback.onResult(Result.error(apiCallResult.getError()));
+    public void disconnect(@NonNull final ActivitySourceConnection sourceConnection, @NonNull final Callback<List<ActivitySourceConnection>> callback) {
+        Runnable runnableDisconnect = () -> {
+            sourcesService.disconnect(sourceConnection).enqueue((call, apiCallResult) -> {
+                if (apiCallResult.isError()) {
+                    if (callback != null) {
+                        callback.onResult(Result.error(apiCallResult.getError()));
+                    }
+                    return;
                 }
-                return;
-            }
-            refreshCurrent(callback);
-        });
+                refreshCurrent(callback);
+            });
+        };
+        final ActivitySource activitySource = sourceConnection.getActivitySource();
+        if (activitySource instanceof GoogleFitActivitySource) {
+            Task<Void> disableGoogleFitTask = ((GoogleFitActivitySource) activitySource).disable();
+            disableGoogleFitTask.addOnCompleteListener((task) -> {
+                // TODO: ensure if is it possible to have an error here on the second disable
+                // TODO: run the disconnect if even there was an error?
+                if (task.isCanceled() || !task.isSuccessful()) {
+                    callback.onResult(Result.error(task.getException()));
+                    return;
+                }
+                runnableDisconnect.run();
+            });
+        } else {
+            runnableDisconnect.run();
+        }
     }
 
     @SuppressLint("NewApi")

@@ -111,9 +111,8 @@ public final class GoogleFitActivitySource extends ActivitySource {
     }
 
     // TODO: javadoc
-    public static boolean isActivityRecognitionPermissionGranted(@NonNull Context context) {
-        int result = ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION);
-        return result == PackageManager.PERMISSION_GRANTED;
+    public boolean isActivityRecognitionPermissionGranted() {
+        return isActivityRecognitionPermissionGranted(context);
     }
 
     void disable(@Nullable Callback<Void> callback) {
@@ -223,6 +222,12 @@ public final class GoogleFitActivitySource extends ActivitySource {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    // TODO: javadoc
+    public static boolean isActivityRecognitionPermissionGranted(@NonNull Context context) {
+        int result = ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION);
+        return result == PackageManager.PERMISSION_GRANTED;
     }
 
     protected Intent buildIntentRequestingPermissions() {

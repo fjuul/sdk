@@ -101,9 +101,9 @@ public final class GoogleFitActivitySource extends ActivitySource {
         this.context = context;
     }
 
-    public boolean arePermissionsGranted() {
+    public boolean areFitnessPermissionsGranted() {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
-        return arePermissionsGranted(account);
+        return areFitnessPermissionsGranted(account);
     }
 
     public boolean isGoogleFitAppInstalled() {
@@ -141,7 +141,7 @@ public final class GoogleFitActivitySource extends ActivitySource {
         try {
             final Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(intent);
             final GoogleSignInAccount account = task.getResult(ApiException.class);
-            final boolean permissionsGranted = arePermissionsGranted(account);
+            final boolean permissionsGranted = areFitnessPermissionsGranted(account);
             if (!permissionsGranted) {
                 Result<Void> result = Result.error(new CommonException("Not all permissions were granted"));
                 callback.onResult(result);
@@ -240,13 +240,13 @@ public final class GoogleFitActivitySource extends ActivitySource {
         return TrackerValue.GOOGLE_FIT;
     }
 
-    private boolean arePermissionsGranted(@Nullable GoogleSignInAccount account) {
-        return GoogleFitActivitySource.arePermissionsGranted(account, requestOfflineAccess, serverClientId);
+    private boolean areFitnessPermissionsGranted(@Nullable GoogleSignInAccount account) {
+        return GoogleFitActivitySource.areFitnessPermissionsGranted(account, requestOfflineAccess, serverClientId);
     }
 
     private GoogleFitDataManager prepareGoogleFitDataManager() throws NotGrantedPermissionsException {
         final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
-        if (!arePermissionsGranted(account)) {
+        if (!areFitnessPermissionsGranted(account)) {
             throw new NotGrantedPermissionsException("Not all permissions were granted");
         }
         final HistoryClient historyClient = Fitness.getHistoryClient(context, account);
@@ -281,7 +281,7 @@ public final class GoogleFitActivitySource extends ActivitySource {
         return builder.build();
     }
 
-    static boolean arePermissionsGranted(@Nullable GoogleSignInAccount account, boolean offlineAccess, String serverClientId) {
+    static boolean areFitnessPermissionsGranted(@Nullable GoogleSignInAccount account, boolean offlineAccess, String serverClientId) {
         if (account == null) {
             return false;
         }

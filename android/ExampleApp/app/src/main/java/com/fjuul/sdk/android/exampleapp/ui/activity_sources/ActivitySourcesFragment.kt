@@ -1,8 +1,11 @@
 package com.fjuul.sdk.android.exampleapp.ui.activity_sources
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -42,15 +45,33 @@ class ActivitySourcesFragment : Fragment() {
         if (requestCode == GOOGLE_SIGN_IN_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK && data != null) {
                 GoogleFitActivitySource.getInstance().handleGoogleSignInResult(data) { result ->
-                    println("Error: ${result.error}; value: ${result.value}")
+                    Log.d(TAG,"GoogleFit connect = Error: ${result.error}; value: ${result.value}")
                     if (result.isError) {
                         // TODO: publish the error to the view model (or show the message in the alert)
                         return@handleGoogleSignInResult
+                    }
+                    if (!GoogleFitActivitySource.getInstance().isActivityRecognitionPermissionGranted) {
+                        requestPermissions(arrayOf(Manifest.permission.ACTIVITY_RECOGNITION), ACTIVITY_RECOGNITION_PERMISSION_REQUEST_CODE)
                     }
                     model.fetchCurrentConnections()
                 }
             }
             // TODO: else show the error message
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == ACTIVITY_RECOGNITION_PERMISSION_REQUEST_CODE) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d(TAG, "onRequestPermissionsResult: ACTIVITY_RECOGNITION granted")
+            } else {
+                Log.d(TAG, "onRequestPermissionsResult: ACTIVITY_RECOGNITION not granted")
+            }
         }
     }
 
@@ -70,7 +91,6 @@ class ActivitySourcesFragment : Fragment() {
             }
         )
 
-        // requestPermissions(listOf<String>(Manifest.permission.ACTIVITY_RECOGNITION).toTypedArray(), 2001)
         model.errorMessage.observe(
             viewLifecycleOwner,
             Observer {
@@ -91,10 +111,12 @@ class ActivitySourcesFragment : Fragment() {
                     return@Observer
                 }
                 val (activitySource, intent) = pair
-                if (activitySource is GoogleFitActivitySource) {
-                    startActivityForResult(intent, GOOGLE_SIGN_IN_REQUEST_CODE)
-                } else {
-                    startActivity(intent)
+                when (activitySource) {
+                    is GoogleFitActivitySource -> {
+                        startActivityForResult(intent, GOOGLE_SIGN_IN_REQUEST_CODE)
+                    } else -> {
+                        startActivity(intent)
+                    }
                 }
             }
         )
@@ -135,6 +157,8 @@ class ActivitySourcesFragment : Fragment() {
 
     companion object {
         const val GOOGLE_SIGN_IN_REQUEST_CODE = 61076
+        const val ACTIVITY_RECOGNITION_PERMISSION_REQUEST_CODE = 33221
+        const val TAG = "ActivitySourcesFragment"
 
         @JvmStatic
         fun newInstance(param1: String, param2: String) =

@@ -12,8 +12,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.ActivityRecognitionPermissionNotGrantedException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
-import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.NotGrantedPermissionsException;
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.FitnessPermissionsNotGrantedException;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.entities.Callback;
 import com.fjuul.sdk.entities.Result;
@@ -183,34 +184,42 @@ public final class GoogleFitActivitySource extends ActivitySource {
         return requestOfflineAccess;
     }
 
+    // TODO: javadoc (the expected error is FitnessPermissionsNotGrantedException)
     @SuppressLint("NewApi")
     public void syncIntradayMetrics(@NonNull final GFIntradaySyncOptions options, @Nullable final Callback<Void> callback) {
-        GoogleFitDataManager tempGoogleFitDataManager;
-        try {
-            tempGoogleFitDataManager = prepareGoogleFitDataManager();
-        } catch (NotGrantedPermissionsException exc) {
-            Result<Void> errorResult = Result.error(exc);
+        final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
+        if (!areFitnessPermissionsGranted(account)) {
             if (callback != null) {
+                Result<Void> errorResult = Result.error(
+                    new FitnessPermissionsNotGrantedException("Not all required GoogleFit permissions were granted"));
                 callback.onResult(errorResult);
             }
             return;
         }
-        final GoogleFitDataManager googleFitDataManager = tempGoogleFitDataManager;
+        final GoogleFitDataManager googleFitDataManager = prepareGoogleFitDataManager(account);
         performTaskAlongWithCallback(() -> googleFitDataManager.syncIntradayMetrics(options), callback);
     }
 
+    // TODO: javadoc (the expected error is FitnessPermissionsNotGrantedException, ActivityRecognitionPermissionNotGrantedException)
     public void syncSessions(@NonNull final GFSessionSyncOptions options, @Nullable final Callback<Void> callback) {
-        GoogleFitDataManager tempGoogleFitDataManager;
-        try {
-            tempGoogleFitDataManager = prepareGoogleFitDataManager();
-        } catch (NotGrantedPermissionsException exc) {
-            Result<Void> errorResult = Result.error(exc);
+        final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
+        if (!areFitnessPermissionsGranted(account)) {
             if (callback != null) {
+                Result<Void> errorResult = Result.error(
+                    new FitnessPermissionsNotGrantedException("Not all required GoogleFit permissions were granted"));
                 callback.onResult(errorResult);
             }
             return;
         }
-        final GoogleFitDataManager googleFitDataManager = tempGoogleFitDataManager;
+        if (!isActivityRecognitionPermissionGranted()) {
+            if (callback != null) {
+                Result<Void> errorResult = Result.error(
+                    new ActivityRecognitionPermissionNotGrantedException("ACTIVITY_RECOGNITION permission not granted"));
+                callback.onResult(errorResult);
+            }
+            return;
+        }
+        final GoogleFitDataManager googleFitDataManager = prepareGoogleFitDataManager(account);
         performTaskAlongWithCallback(() -> googleFitDataManager.syncSessions(options), callback);
     }
 
@@ -244,11 +253,11 @@ public final class GoogleFitActivitySource extends ActivitySource {
         return GoogleFitActivitySource.areFitnessPermissionsGranted(account, requestOfflineAccess, serverClientId);
     }
 
-    private GoogleFitDataManager prepareGoogleFitDataManager() throws NotGrantedPermissionsException {
-        final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
-        if (!areFitnessPermissionsGranted(account)) {
-            throw new NotGrantedPermissionsException("Not all permissions were granted");
-        }
+    private GoogleFitDataManager prepareGoogleFitDataManager(@NonNull GoogleSignInAccount account) {
+//        final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
+//        if (!areFitnessPermissionsGranted(account)) {
+//            throw new FitnessPermissionsNotGrantedException("Not all required GoogleFit permissions were granted");
+//        }
         final HistoryClient historyClient = Fitness.getHistoryClient(context, account);
         final SessionsClient sessionsClient = Fitness.getSessionsClient(context, account);
         final GFClientWrapper clientWrapper = new GFClientWrapper(historyClient, sessionsClient, gfDataUtils);

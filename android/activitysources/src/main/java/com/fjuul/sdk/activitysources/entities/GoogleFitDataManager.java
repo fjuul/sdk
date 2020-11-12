@@ -50,9 +50,7 @@ final class GoogleFitDataManager {
 
     @SuppressLint("NewApi")
     public Task<Void> syncIntradayMetrics(GFIntradaySyncOptions options) {
-        // todo: consider returning metadata of sent data
-        // add cached thread executor for local operations ?
-        // add single thread executor for awaiting result
+        // todo: consider returning metadata of the sent data
         final ExecutorService sequentialExecutorService = Executors.newSingleThreadExecutor();
         final LocalDate startDate = options.getStartDate();
         final LocalDate endDate = options.getEndDate();
@@ -111,10 +109,6 @@ final class GoogleFitDataManager {
             finalGetHRTask.getResult().forEach(gfSyncMetadataStore::saveSyncMetadataOfHR);
             return Tasks.forResult(null);
         });
-        saveSyncMetadataTask.addOnCompleteListener(localBackgroundExecutor, (task) -> {
-            Log.d(TAG, "syncIntradayMetrics: SUCCESS: " + task.isSuccessful());
-            Log.d(TAG, "syncIntradayMetrics: EXCEPTION: " + task.getException());
-        });
         return saveSyncMetadataTask;
     }
 
@@ -138,10 +132,6 @@ final class GoogleFitDataManager {
         final Task<Void> saveSyncMetadataTask = sendDataTask.onSuccessTask(localBackgroundExecutor, apiCallResult -> {
             getNotSyncedSessionsTask.getResult().forEach(gfSyncMetadataStore::saveSyncMetadataOfSession);
             return Tasks.forResult(null);
-        });
-        saveSyncMetadataTask.addOnCompleteListener(localBackgroundExecutor, (task) -> {
-            Log.d(TAG, "syncSessions: SUCCESS: " + task.isSuccessful());
-            Log.d(TAG, "syncSessions: EXCEPTION: " + task.getException());
         });
         return saveSyncMetadataTask;
     }

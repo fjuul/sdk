@@ -1,8 +1,8 @@
 import UIKit
 import SwiftUI
+import FjuulActivitySources
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
-
     var window: UIWindow?
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
@@ -21,6 +21,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             window.rootViewController = UIHostingController(rootView: contentView)
             self.window = window
             window.makeKeyAndVisible()
+        }
+    }
+
+    //  Deeplink Handling for Scene bases app
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        guard let url = URLContexts.first?.url else {
+            return
+        }
+
+        let connectionStatus = ExternalAuthenticationFlowHandler.handle(url: url)
+        if let tracker = connectionStatus.tracker {
+            print("returned from connecting to: \(tracker) with status: \(connectionStatus.success)")
+
+            // TODO find right way for update current connections to ActivitySourceObservable
         }
     }
 

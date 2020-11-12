@@ -69,11 +69,9 @@ final public class ActivitySourceManager {
         apiClient.activitySources.getCurrentConnections { result in
             switch result {
             case .success(let connections):
-                print("connections -> ", connections)
                 let activitySourceConnections = connections.compactMap { connection in
                     return ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: connection)
                 }
-                print("activitySourceConnections -> ", activitySourceConnections)
                 completion(.success(activitySourceConnections))
             case .failure(let err):
                 completion(.failure(err))

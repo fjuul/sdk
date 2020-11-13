@@ -56,9 +56,10 @@ import com.google.android.gms.internal.fitness.zzjr;
 
 public final class GFClientWrapper {
     private static final String TAG = "GFClientWrapper";
-    private static final int RETRIES_COUNT = 3;
     private static final int GF_TASK_WATCHER_THREAD_POOL_SIZE = 1;
+    private static final int RETRIES_COUNT = 3;
     private static final long GF_QUERY_TIMEOUT_SECONDS = 60l;
+    private static final int GF_DETAILED_SESSION_QUERY_RETRIES_COUNT = 2;
     private static final long GF_DETAILED_SESSION_QUERY_TIMEOUT_SECONDS = 60L;
 
     private final HistoryClient historyClient;
@@ -259,7 +260,7 @@ public final class GFClientWrapper {
                 SessionReadRequest detailedSessionReadRequest = buildDetailedSessionReadRequest(session);
                 Task<SessionReadResponse> task = sessionsClient.readSession(detailedSessionReadRequest);
                 String taskName = String.format("fetch detailed gf session %s", session.getIdentifier());
-                return new SupervisedTask<>(taskName, task, GF_DETAILED_SESSION_QUERY_TIMEOUT_SECONDS, RETRIES_COUNT);
+                return new SupervisedTask<>(taskName, task, GF_DETAILED_SESSION_QUERY_TIMEOUT_SECONDS, GF_DETAILED_SESSION_QUERY_RETRIES_COUNT);
             };
             // NOTE: here we create the new SupervisedExecutor with its own cancellation token source
             // because it's expectable that the read detailed session request may silently fall with

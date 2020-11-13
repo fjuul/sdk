@@ -30,6 +30,7 @@ import com.google.android.gms.tasks.Tasks;
 
 import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -250,7 +251,9 @@ public final class GFClientWrapper {
                 Duration sessionDuration = Duration.ofMillis(sessionEndAtMS - sessionStartAtMS);
                 return sessionDuration.compareTo(minSessionDuration) >= 0;
             });
-        List<Task<GFSessionBundle>> sessionBundlesTasks = completedValuableSessions.map(session -> {
+        List<Task<GFSessionBundle>> sessionBundlesTasks = new ArrayList<>();
+        for (Session session : completedValuableSessions.collect(Collectors.toList())) {
+            Task<GFSessionBundle> taskToContinue = sessionBundlesTasks.isEmpty() ? Tasks.forResult(null) : sessionBundlesTasks.get(sessionBundlesTasks.size() - 1);
             TaskCompletionSource<GFSessionBundle> taskCompletionSource = new TaskCompletionSource<>(gfTaskWatcher.getCancellationToken());
             Supplier<SupervisedTask<SessionReadResponse>> readSessionTaskSupplier = () -> {
                 SessionReadRequest detailedSessionReadRequest = buildDetailedSessionReadRequest(session);
@@ -258,7 +261,12 @@ public final class GFClientWrapper {
                 String taskName = String.format("fetch detailed gf session %s", session.getIdentifier());
                 return new SupervisedTask<>(taskName, task, GF_DETAILED_SESSION_QUERY_TIMEOUT_SECONDS, RETRIES_COUNT);
             };
-            Task<SessionReadResponse> readSessionUnderWatch = runGFTaskUnderWatch(readSessionTaskSupplier, gfTaskWatcher);
+            // NOTE: here we create the new SupervisedExecutor with its own cancellation token source
+            // because it's expectable that the read detailed session request may silently fall with
+            // a logging message about TransactionTooLarge. Otherwise, all rest pending tasks will
+            // be canceled.
+            SupervisedExecutor dedicatedReadSessionTaskWatcher = new SupervisedExecutor(gfTaskWatcher.getExecutor(), new CancellationTokenSource());
+            Task<SessionReadResponse> readSessionUnderWatch = taskToContinue.continueWithTask(executor, t -> runGFTaskUnderWatch(readSessionTaskSupplier, dedicatedReadSessionTaskWatcher));
             Task<GFSessionBundle> collectSessionBundleTask = readSessionUnderWatch.onSuccessTask(executor, sessionReadResponse -> {
                 GFSessionBundle gfSessionBundle = collectSessionBundleFromSessionResponse(readSessionUnderWatch.getResult());
                 return Tasks.forResult(gfSessionBundle);
@@ -280,8 +288,8 @@ public final class GFClientWrapper {
                 }
                 taskCompletionSource.trySetResult(commonResultTask.getResult());
             });
-            return taskCompletionSource.getTask();
-        }).collect(Collectors.toList());
+            sessionBundlesTasks.add(taskCompletionSource.getTask());
+        }
 
         Task<List<GFSessionBundle>> completedSessionBundlesTasks = Tasks.whenAll(sessionBundlesTasks).continueWithTask(executor, (commonResultTask) -> {
             if (commonResultTask.isCanceled() || !commonResultTask.isSuccessful()) {

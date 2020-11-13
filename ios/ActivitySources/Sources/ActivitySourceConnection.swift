@@ -23,6 +23,12 @@ public final class ActivitySourceConnection: TrackerConnectionable {
             completion(result)
         }
     }
+    
+    public func unmount(completion: @escaping (Result<Bool, Error>) -> Void) {
+        activitySource.unmount { result in
+            completion(result)
+        }
+    }
 
     public func connected() -> Bool {
         guard endedAt != nil else { return false }

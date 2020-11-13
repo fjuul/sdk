@@ -55,7 +55,7 @@ class HealthKitManager {
         self.setUpBackgroundDeliveryForDataTypes(types: HealthKitManager.dataTypesToRead())
         completion(.success(true))
     }
-    
+
     func disableAllBackgroundDelivery(completion: @escaping (Result<Bool, Error>) -> Void) {
         HealthKitManager.healthStore.disableAllBackgroundDelivery { (success: Bool, error: Error?) in
             if success {
@@ -161,7 +161,6 @@ class HealthKitManager {
         // Set the results handler
         query.initialResultsHandler = { query, results, error in
             guard let statsCollection = results else {
-                // TODO: Perform proper error handling here
                 completion([])
                 return
             }
@@ -196,8 +195,7 @@ class HealthKitManager {
                                               anchor: anchorDate,
                                               limit: HKObjectQueryNoLimit) { (_, samplesOrNil, _, newAnchor, errorOrNil) in
             guard let samples = samplesOrNil else {
-                // TODO: Perform proper error handling here
-                print("*** An error occurred during the initial query: \(errorOrNil!.localizedDescription) ***")
+                completion(batchStartDates, newAnchor)
                 return
             }
 

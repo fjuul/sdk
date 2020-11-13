@@ -19,7 +19,9 @@ final public class ActivitySourceManager {
         self.connectionsLocalStore = ActivitySourceStore(userToken: apiClient.userToken, persistor: persistor)
 
         self.restoreState()
-        self.refreshCurrentConnections()
+        self.getCurrentConnections { _ in
+            print("Initial sync current connections")
+        }
     }
 
     public func connect(activitySource: ActivitySource, completion: @escaping (Result<ConnectionResult, Error>) -> Void) {
@@ -72,9 +74,59 @@ final public class ActivitySourceManager {
                 let activitySourceConnections = connections.compactMap { connection in
                     return ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: connection)
                 }
+                self.refreshCurrentConnections(connections: connections)
                 completion(.success(activitySourceConnections))
             case .failure(let err):
                 completion(.failure(err))
+            }
+        }
+    }
+
+    private func refreshCurrentConnections(connections: [TrackerConnection]) {
+        // Mount new trackers
+        self.mountByConnections(connections: connections)
+
+        // Unmount not relevant Trackers
+        self.unmountByConnections(connections: connections)
+
+        self.connectionsLocalStore?.connections = connections
+    }
+
+    private func mountByConnections(connections: [TrackerConnection]) {
+        guard let apiClient = self.apiClient else { return }
+        guard let persistor = self.persistor else { return }
+
+        connections.forEach { connection in
+            if self.mountedActivitySourceConnections.contains(where: { element in element.tracker?.rawValue == connection.tracker }) {
+              return
+            }
+
+            if let activitySourceConnection = ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: connection) {
+                activitySourceConnection.mount(apiClient: apiClient, persistor: persistor) { result in
+                    switch result {
+                    case .success:
+                        print("SUCESS MOUNT \(activitySourceConnection.tracker)")
+                        self.mountedActivitySourceConnections.append(activitySourceConnection)
+                    case .failure(let err):
+                        print("Error on mountByConnections \(err)")
+                    }
+                }
+            }
+        }
+    }
+
+    private func unmountByConnections(connections: [TrackerConnection]) {
+        self.mountedActivitySourceConnections.forEach { activitySourceConnection in
+            if !connections.contains(where: { element in element.tracker == activitySourceConnection.tracker?.rawValue }) {
+                activitySourceConnection.unmount { result in
+                    switch result {
+                    case .success:
+                        print("SUCESS UNMOUNT \(activitySourceConnection.tracker)")
+                        self.mountedActivitySourceConnections.removeAll { value in value.id == activitySourceConnection.id }
+                    case .failure(let err):
+                        print("Error \(err)")
+                    }
+                }
             }
         }
     }
@@ -93,18 +145,6 @@ final public class ActivitySourceManager {
                         print("Error on restore connectionsLocalStore state \(err)")
                     }
                 }
-            }
-        }
-    }
-
-    private func refreshCurrentConnections() {
-        self.apiClient?.activitySources.getCurrentConnections { result in
-            switch result {
-            case .success(let connections):
-                // TODO: Mount/Unmout new or not used connections
-                self.connectionsLocalStore?.connections = connections
-            case .failure(let err):
-                print("Error updateCurrentConnections ", err)
             }
         }
     }

@@ -58,7 +58,7 @@ public final class GFClientWrapper {
     private static final int RETRIES_COUNT = 3;
     private static final int GF_TASK_WATCHER_THREAD_POOL_SIZE = 1;
     private static final long GF_QUERY_TIMEOUT_SECONDS = 60l;
-    private static final long GF_DETAILED_SESSION_QUERY_TIMEOUT_SECONDS = 90L;
+    private static final long GF_DETAILED_SESSION_QUERY_TIMEOUT_SECONDS = 60L;
 
     private final HistoryClient historyClient;
     private final SessionsClient sessionsClient;

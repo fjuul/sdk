@@ -48,7 +48,7 @@ import java.util.stream.Stream;
 // NOTE: a package below it's not supposed to be used as public api but I didn't find another way to
 // get the integer based constant of ActivityType by the string presentation which is returned by default
 // along with a session.
-import com.google.android.gms.internal.fitness.zzjr;
+import com.google.android.gms.internal.fitness.zzko;
 
 // NOTE: GF can silently fail on a request if response data is too large, more details at https://stackoverflow.com/a/55806509/6685359
 // Also there may be a case when GoogleFit service can't response to the requester on the first attempts due to failed delivery.
@@ -443,7 +443,7 @@ public final class GFClientWrapper {
         sessionBundleBuilder.setApplicationIdentifier(session.getAppPackageName());
         sessionBundleBuilder.setTimeStart(new Date(session.getStartTime(TimeUnit.MILLISECONDS)));
         sessionBundleBuilder.setTimeEnd(new Date(session.getEndTime(TimeUnit.MILLISECONDS)));
-        sessionBundleBuilder.setType(zzjr.zzo(session.getActivity()));
+        sessionBundleBuilder.setType(zzko.zzo(session.getActivity()));
         sessionBundleBuilder.setActivityType(session.getActivity());
         return sessionBundleBuilder;
     }

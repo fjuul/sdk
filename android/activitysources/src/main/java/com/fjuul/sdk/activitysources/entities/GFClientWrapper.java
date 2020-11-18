@@ -204,38 +204,42 @@ public final class GFClientWrapper {
     }
 
     private <T> Task<T> runGFTaskUnderWatch(Supplier<SupervisedTask<T>> taskSupplier, SupervisedExecutor gfTaskWatcher) {
-        ExecutorService gfTaskWatcherExecutor = gfTaskWatcher.getExecutor();
-        TaskCompletionSource<T> taskCompletionSource = new TaskCompletionSource<>(gfTaskWatcher.getCancellationToken());
-        CancellationTokenSource cancellationTokenSource = gfTaskWatcher.getCancellationTokenSource();
-        CancellationToken cancellationToken = gfTaskWatcher.getCancellationToken();
-        gfTaskWatcherExecutor.execute(() -> {
+        // NOTE: here was implementation with TaskCompletionSource but it didn't work in the test
+        // environment because a call #cancel in other thread doesn't notify the listener in
+        // TaskCompletionSource.
+        final ExecutorService gfTaskWatcherExecutor = gfTaskWatcher.getExecutor();
+        final CancellationToken cancellationToken = gfTaskWatcher.getCancellationToken();
+        final CancellationTokenSource cancellationTokenSource = gfTaskWatcher.getCancellationTokenSource();
+
+        return Tasks.forResult(null).continueWithTask(gfTaskWatcherExecutor, dumbTask -> {
+            if (cancellationToken.isCancellationRequested()) {
+                cancellationTokenSource.cancel();
+                return Tasks.forCanceled();
+            }
             final SupervisedTask<T> supervisedTask = taskSupplier.get();
             for (int tryNumber = 1; tryNumber <= supervisedTask.getRetriesCount() && !cancellationToken.isCancellationRequested(); tryNumber++) {
                 try {
                     Task<T> originalTask = supervisedTask.getTask();
                     T result = Tasks.await(originalTask, supervisedTask.getTimeoutSeconds(), TimeUnit.SECONDS);
-                    taskCompletionSource.trySetResult(result);
-                    return;
+                    return Tasks.forResult(result);
                 } catch (InterruptedException | TimeoutException exc) {
                     // expected exception due to either the task cancellation or timeout, give a try again
                     continue;
                 } catch (ExecutionException exc) {
                     // exception originated from the completed task
                     Exception exception = new GoogleFitActivitySourceExceptions.CommonException(exc.getCause());
-                    taskCompletionSource.trySetException(exception);
-                    return;
+                    return Tasks.forException(exception);
                 }
             }
             if (cancellationToken.isCancellationRequested()) {
-                return;
+                return Tasks.forCanceled();
             }
             String exceptionMessage = String.format("Possible retries count (%d) exceeded for task \"%s\"",
                 supervisedTask.getRetriesCount(),
                 supervisedTask.getName());
-            taskCompletionSource.trySetException(new MaxRetriesExceededException(exceptionMessage));
             cancellationTokenSource.cancel();
+            return Tasks.forException(new MaxRetriesExceededException(exceptionMessage));
         });
-        return taskCompletionSource.getTask();
     }
 
     @SuppressLint("NewApi")

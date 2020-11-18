@@ -260,7 +260,7 @@ public final class GoogleFitActivitySource extends ActivitySource {
                     callback.onResult(result);
                 }
             } catch (ExecutionException | InterruptedException exc) {
-                Result errorResult = Result.error(exc);
+                Result<T> errorResult = Result.error(exc);
                 if (callback != null) {
                     callback.onResult(errorResult);
                 }

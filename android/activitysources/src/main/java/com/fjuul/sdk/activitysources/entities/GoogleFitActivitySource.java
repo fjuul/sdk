@@ -29,8 +29,10 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.fitness.ConfigClient;
 import com.google.android.gms.fitness.Fitness;
+import com.google.android.gms.fitness.FitnessOptions;
 import com.google.android.gms.fitness.HistoryClient;
 import com.google.android.gms.fitness.SessionsClient;
+import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
@@ -270,7 +272,12 @@ public final class GoogleFitActivitySource extends ActivitySource {
 
     private static GoogleSignInOptions buildGoogleSignInOptions(boolean offlineAccess, String serverClientId) {
         GoogleSignInOptions.Builder builder = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestScopes(new Scope(Scopes.FITNESS_ACTIVITY_READ), new Scope(Scopes.FITNESS_LOCATION_READ), new Scope(Scopes.FITNESS_BODY_READ));
+            .requestScopes(new Scope(Scopes.FITNESS_ACTIVITY_READ),
+                new Scope(Scopes.FITNESS_LOCATION_READ),
+                new Scope(Scopes.FITNESS_BODY_READ));
+        // TODO: use fitness options to explicitly specify what data types will be used for the google fit data synchronization
+        FitnessOptions fitnessOptions = FitnessOptions.builder().addDataType(DataType.TYPE_HEART_RATE_BPM).build();
+        builder.addExtension(fitnessOptions);
         if (offlineAccess) {
             builder = builder.requestProfile().requestServerAuthCode(serverClientId, true);
         }

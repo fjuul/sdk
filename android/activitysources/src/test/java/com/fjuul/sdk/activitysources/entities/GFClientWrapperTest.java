@@ -2,7 +2,8 @@ package com.fjuul.sdk.activitysources.entities;
 
 import android.os.Build;
 
-import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions;
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.MaxRetriesExceededException;
 import com.google.android.gms.fitness.HistoryClient;
 import com.google.android.gms.fitness.SessionsClient;
 import com.google.android.gms.fitness.data.Bucket;
@@ -16,6 +17,7 @@ import com.google.android.gms.fitness.result.DataReadResult;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -36,6 +38,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -51,7 +54,14 @@ import static org.mockito.Mockito.when;
 @RunWith(Enclosed.class)
 public class GFClientWrapperTest {
 
+    static final GFClientWrapper.Config TEST_CONFIG = new GFClientWrapper.Config(1, 1, 1, 1);
     public static final ExecutorService testExecutor = Executors.newSingleThreadExecutor();
+    public static final ExecutorService testUtilExecutor = Executors.newCachedThreadPool();
+
+    @AfterClass
+    public static void shutdownExecutor() {
+        testUtilExecutor.shutdownNow();
+    }
 
     @RunWith(RobolectricTestRunner.class)
     @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
@@ -72,7 +82,7 @@ public class GFClientWrapperTest {
             mockedSessionsClient = mock(SessionsClient.class);
             GFDataUtils gfDataUtils = new GFDataUtils();
             gfDataUtilsSpy = spy(gfDataUtils);
-            subject = new GFClientWrapper(mockedHistoryClient, mockedSessionsClient, gfDataUtilsSpy);
+            subject = new GFClientWrapper(TEST_CONFIG, mockedHistoryClient, mockedSessionsClient, gfDataUtilsSpy);
         }
 
         @Test
@@ -212,11 +222,53 @@ public class GFClientWrapperTest {
 
             assertFalse("unsuccessful task", result.isSuccessful());
             Exception exception = result.getException();
-            assertThat(exception, instanceOf(GoogleFitActivitySourceExceptions.CommonException.class));
-            GoogleFitActivitySourceExceptions.CommonException gfException = (GoogleFitActivitySourceExceptions.CommonException) exception;
+            assertThat(exception, instanceOf(CommonException.class));
+            CommonException gfException = (CommonException) exception;
             assertEquals("should have error message",
                 "Application needs OAuth consent from the user",
                 gfException.getCause().getMessage());
+            // should request data only for the first day due to the serial execution
+            verify(mockedHistoryClient).readData(argThat(arg -> {
+                boolean correctDates = new Date(arg.getStartTime(TimeUnit.MILLISECONDS)).equals(start) &&
+                    new Date(arg.getEndTime(TimeUnit.MILLISECONDS)).equals(
+                        Date.from(Instant.parse("2020-10-02T00:00:00Z"))
+                    );
+                boolean bucketInOneMinutes = arg.getBucketDuration(TimeUnit.SECONDS) == 60;
+                boolean correctDataType = arg.getAggregatedDataTypes().size() == 1 &&
+                    arg.getAggregatedDataTypes().contains(DataType.TYPE_CALORIES_EXPENDED);
+                return correctDates && bucketInOneMinutes && correctDataType;
+            }));
+            // should split input date ranges into 24-hour chunks
+            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+        }
+
+        @Test
+        public void getCalories_requestFewDaysButFirstDayExceedTimeoutWithRetries_returnsTaskWithCalories() throws InterruptedException {
+            Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
+            Date end = Date.from(Instant.parse("2020-10-02T23:59:59.999Z"));
+
+            when(mockedHistoryClient.readData(Mockito.any()))
+                .thenAnswer(invocation -> {
+                    // NOTE: here we're simulating the died request to GF
+                    return Tasks.forResult(null).continueWithTask(testUtilExecutor, task -> {
+                        Thread.sleep(5000);
+                        return task;
+                    });
+                });
+            Task<List<GFCalorieDataPoint>> result = subject.getCalories(start, end);
+
+            // catch expected ExecutionException
+            try {
+                testExecutor.submit(() -> Tasks.await(result)).get();
+            } catch (ExecutionException exc) { }
+
+            assertFalse("unsuccessful task", result.isSuccessful());
+            Exception exception = result.getException();
+            assertThat(exception, instanceOf(MaxRetriesExceededException.class));
+            MaxRetriesExceededException gfException = (MaxRetriesExceededException) exception;
+            assertThat("should have error message about the executed task",
+                gfException.getMessage(),
+                startsWith("Possible retries count (1) exceeded for task \"'fetch gf intraday calories' for 2020-10-01"));
             // should request data only for the first day due to the serial execution
             verify(mockedHistoryClient).readData(argThat(arg -> {
                 boolean correctDates = new Date(arg.getStartTime(TimeUnit.MILLISECONDS)).equals(start) &&

@@ -2,6 +2,7 @@ package com.fjuul.sdk.activitysources.entities;
 
 import android.os.Build;
 
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions;
 import com.google.android.gms.fitness.HistoryClient;
 import com.google.android.gms.fitness.SessionsClient;
 import com.google.android.gms.fitness.data.Bucket;
@@ -10,7 +11,6 @@ import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
-import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.result.DataReadResponse;
 import com.google.android.gms.fitness.result.DataReadResult;
 import com.google.android.gms.tasks.Task;
@@ -27,7 +27,6 @@ import org.robolectric.annotation.Config;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -36,12 +35,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -191,6 +194,40 @@ public class GFClientWrapperTest {
                 return correctDates && bucketInOneMinutes && correctDataType;
             }));
 
+            // should split input date ranges into 24-hour chunks
+            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+        }
+
+        @Test
+        public void getCalories_requestFewDaysButFirstDayCantBeDelivered_returnsTaskWithCalories() throws InterruptedException {
+            Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
+            Date end = Date.from(Instant.parse("2020-10-02T23:59:59.999Z"));
+            when(mockedHistoryClient.readData(Mockito.any()))
+                .thenReturn(Tasks.forException(new Exception("Application needs OAuth consent from the user")));
+            Task<List<GFCalorieDataPoint>> result = subject.getCalories(start, end);
+
+            try {
+                testExecutor.submit(() -> Tasks.await(result)).get();
+            } catch (ExecutionException exc) { }
+
+            assertFalse("unsuccessful task", result.isSuccessful());
+            Exception exception = result.getException();
+            assertThat(exception, instanceOf(GoogleFitActivitySourceExceptions.CommonException.class));
+            GoogleFitActivitySourceExceptions.CommonException gfException = (GoogleFitActivitySourceExceptions.CommonException) exception;
+            assertEquals("should have error message",
+                "Application needs OAuth consent from the user",
+                gfException.getCause().getMessage());
+            // should request data only for the first day due to the serial execution
+            verify(mockedHistoryClient).readData(argThat(arg -> {
+                boolean correctDates = new Date(arg.getStartTime(TimeUnit.MILLISECONDS)).equals(start) &&
+                    new Date(arg.getEndTime(TimeUnit.MILLISECONDS)).equals(
+                        Date.from(Instant.parse("2020-10-02T00:00:00Z"))
+                    );
+                boolean bucketInOneMinutes = arg.getBucketDuration(TimeUnit.SECONDS) == 60;
+                boolean correctDataType = arg.getAggregatedDataTypes().size() == 1 &&
+                    arg.getAggregatedDataTypes().contains(DataType.TYPE_CALORIES_EXPENDED);
+                return correctDates && bucketInOneMinutes && correctDataType;
+            }));
             // should split input date ranges into 24-hour chunks
             verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
         }

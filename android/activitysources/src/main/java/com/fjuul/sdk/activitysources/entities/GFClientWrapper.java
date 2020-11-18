@@ -91,7 +91,6 @@ public final class GFClientWrapper {
 
         Task<List<GFCalorieDataPoint>> getCaloriesTask = flatMapTasksResults(tasks);
         return shutdownExecutorsOnComplete(executor, getCaloriesTask, gfTaskWatcherExecutor);
-        // TODO: check if it was really shutdown after a while
     }
 
     @SuppressLint("NewApi")

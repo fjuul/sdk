@@ -25,6 +25,7 @@ import org.mockito.Mockito;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -118,7 +119,8 @@ public class GFClientWrapperTest {
                 return correctDates && bucketInOneMinutes && correctDataType;
             }));
 
-            // TODO: verify spy on 24h duration
+            // should split input date ranges into 24-hour chunks
+            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
         }
 
         @Test
@@ -189,7 +191,8 @@ public class GFClientWrapperTest {
                 return correctDates && bucketInOneMinutes && correctDataType;
             }));
 
-            // TODO: verify spy on 24h duration
+            // should split input date ranges into 24-hour chunks
+            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
         }
     }
 

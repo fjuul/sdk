@@ -39,19 +39,19 @@ class HealthKitManager {
     private static func dataTypesToRead(config: ActivitySourceConfigBuilder) -> Set<HKSampleType> {
         var dataTypes: Set<HKSampleType> = []
 
-        if config.healthKitConfig.dataTypes.contains(.activeEnergyBurned) {
+        if config.healthKitConfig.dataTypesToRead.contains(.activeEnergyBurned) {
             dataTypes.insert(HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!)
         }
 
-        if config.healthKitConfig.dataTypes.contains(.distanceCycling) {
+        if config.healthKitConfig.dataTypesToRead.contains(.distanceCycling) {
             dataTypes.insert(HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!)
         }
 
-        if config.healthKitConfig.dataTypes.contains(.stepCount) {
+        if config.healthKitConfig.dataTypesToRead.contains(.stepCount) {
             dataTypes.insert(HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!)
         }
 
-        if config.healthKitConfig.dataTypes.contains(.distanceWalkingRunning) {
+        if config.healthKitConfig.dataTypesToRead.contains(.distanceWalkingRunning) {
             dataTypes.insert(HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!)
         }
 

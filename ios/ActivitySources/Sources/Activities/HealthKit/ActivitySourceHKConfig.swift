@@ -5,9 +5,9 @@ public enum HealthKitConfigType {
 }
 
 public struct ActivitySourceHKConfig {
-    var dataTypes: [HealthKitConfigType]
+    var dataTypesToRead: [HealthKitConfigType]
 
-    public init(dataTypes: [HealthKitConfigType]) {
-        self.dataTypes = dataTypes
+    public init(dataTypesToRead: [HealthKitConfigType]) {
+        self.dataTypesToRead = dataTypesToRead
     }
 }

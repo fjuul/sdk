@@ -16,7 +16,7 @@ public struct HKAnchorData: Codable, Equatable {
     private var distanceCyclingRaw: Data?
     private var distanceWalkingRunningRaw: Data?
     private var heartRateRaw: Data?
-    
+
     subscript(key: HKAnchorKey) -> HKQueryAnchor? {
         get {
             var valueRaw: Data?

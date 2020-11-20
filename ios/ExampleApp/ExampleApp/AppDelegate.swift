@@ -17,8 +17,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             )
         )
 
+        let config = ActivitySourceConfigBuilder { builder in
+            builder.healthKitConfig = HealthKitConfig(dataTypes: [.activeEnergyBurned, .distanceCycling, .distanceWalkingRunning, .stepCount])
+        }
+
         if let apiClient = ApiClientHolder.default.apiClient {
-            ActivitySourceManager.shared.initialize(apiClient: apiClient)
+            ActivitySourceManager.shared.initialize(apiClient: apiClient, config: config)
         }
 
         return true

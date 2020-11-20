@@ -7,23 +7,25 @@ class HealthKitManager {
 
     private var persistor: Persistor
     private var hkAnchorStore: HKAnchorStore
-    public var dataHandler: ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)
+    private var dataHandler: ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)
     private let serialQueue = DispatchQueue(label: "com.fjuul.sdk.queues.backgroundDelivery", qos: .userInitiated)
+    private let config: ActivitySourceConfigBuilder
 
-    init(persistor: Persistor, dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) {
+    init(persistor: Persistor, config: ActivitySourceConfigBuilder, dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) {
+        self.config = config
         self.persistor = persistor
         self.hkAnchorStore = HKAnchorStore(persistor: persistor)
         self.dataHandler = dataHandler
     }
 
     /// Requests access to all the data types the app wishes to read/write from HealthKit.
-    static func requestAccess(completion: @escaping (Result<Bool, Error>) -> Void) {
+    static func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void) {
         guard HKHealthStore.isHealthDataAvailable() else {
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
             return
         }
 
-        HealthKitManager.healthStore.requestAuthorization(toShare: nil, read: dataTypesToRead()) { (success: Bool, error: Error?) in
+        HealthKitManager.healthStore.requestAuthorization(toShare: nil, read: dataTypesToRead(config: config)) { (success: Bool, error: Error?) in
             if let err = error {
                 completion(.failure(err))
             } else {
@@ -31,17 +33,31 @@ class HealthKitManager {
             }
         }
     }
-    
+
     /// Types of data  Fjull wishes to read from HealthKit.
     /// - returns: A set of HKObjectType.
-    private static func dataTypesToRead() -> Set<HKSampleType> {
-        return Set(arrayLiteral: HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!,
-                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!,
-                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!,
-                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!
+    private static func dataTypesToRead(config: ActivitySourceConfigBuilder) -> Set<HKSampleType> {
+        var dataTypes: Set<HKSampleType> = []
+
+        if config.healthKitConfig.dataTypes.contains(.activeEnergyBurned) {
+            dataTypes.insert(HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!)
+        }
+
+        if config.healthKitConfig.dataTypes.contains(.distanceCycling) {
+            dataTypes.insert(HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!)
+        }
+
+        if config.healthKitConfig.dataTypes.contains(.stepCount) {
+            dataTypes.insert(HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!)
+        }
+
+        if config.healthKitConfig.dataTypes.contains(.distanceWalkingRunning) {
+            dataTypes.insert(HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!)
+        }
+
 //                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!,
 //                       HKObjectType.workoutType()
-        )
+        return dataTypes
     }
 
     /// On success observer queries are set up for background delivery.
@@ -52,20 +68,55 @@ class HealthKitManager {
             return
         }
 
-        self.setUpBackgroundDeliveryForDataTypes(types: HealthKitManager.dataTypesToRead())
-        completion(.success(true))
+        HealthKitManager.requestAccess(config: self.config) { result in
+            switch result {
+            case .success:
+                self.setUpBackgroundDeliveryForDataTypes()
+                completion(.success(true))
+            case .failure(let err):
+                completion(.failure(err))
+            }
+        }
     }
 
     func disableAllBackgroundDelivery(completion: @escaping (Result<Bool, Error>) -> Void) {
         HealthKitManager.healthStore.disableAllBackgroundDelivery { (success: Bool, error: Error?) in
-            if success {
-                completion(.success(success))
-            } else {
-                if let error = error {
-                    completion(.failure(error))
-                } else {
-                    completion(.success(false))
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+
+            completion(.success(success))
+        }
+    }
+
+    func sync(completion: @escaping (Result<Bool, Error>) -> Void) {
+        let group = DispatchGroup()
+        var error: Error?
+
+        for sampleType in HealthKitManager.dataTypesToRead(config: self.config) {
+            group.enter()
+
+            self.queryForUpdates(sampleType: sampleType) { data, newAnchor in
+                self.dataHandler(data) { result in
+                    switch result {
+                    case .success:
+                        print("SUCESS hadled backgroundDelivery for \(sampleType), with newAnchor: \(newAnchor)")
+                        self.saveAnchorBySampleType(newAnchor: newAnchor, sampleType: sampleType)
+                    case .failure(let err):
+                        error = err
+                    }
+
+                    group.leave()
                 }
+            }
+        }
+
+        group.notify(queue: DispatchQueue.global()) {
+            if let err = error {
+                completion(.failure(err))
+            } else {
+                completion(.success(true))
             }
         }
     }
@@ -73,7 +124,9 @@ class HealthKitManager {
     /// Sets up the observer queries for background health data delivery.
     ///
     /// - parameter types: Set of `HKObjectType` to observe changes to.
-    private func setUpBackgroundDeliveryForDataTypes(types: Set<HKSampleType>) {
+    private func setUpBackgroundDeliveryForDataTypes() {
+        let types = HealthKitManager.dataTypesToRead(config: self.config)
+
         for type in types {
             guard let sampleType = type as? HKSampleType else { continue }
 
@@ -82,7 +135,7 @@ class HealthKitManager {
                 // Semaphore need for wait async task and correct notice queue about finish async task
                 self.serialQueue.async {
                     let semaphore = DispatchSemaphore(value: 0)
-                    self.queryForUpdates(type: type) { data, newAnchor in
+                    self.queryForUpdates(sampleType: type) { data, newAnchor in
                         self.dataHandler(data) { result in
                             switch result {
                             case .success:
@@ -105,7 +158,7 @@ class HealthKitManager {
             }
 
             HealthKitManager.healthStore.execute(query)
-            HealthKitManager.healthStore.enableBackgroundDelivery(for: type, frequency: .immediate) { (success: Bool, error: Error?) in
+            HealthKitManager.healthStore.enableBackgroundDelivery(for: type, frequency: .hourly) { (success: Bool, error: Error?) in
 //                print("enableBackgroundDeliveryForType handler called for \(type) - success: \(success), error: \(error)")
             }
         }
@@ -114,13 +167,13 @@ class HealthKitManager {
     /// Initiates HK queries for new data based on the given type
     ///
     /// - parameter type: `HKObjectType` which has new data avilable.
-    private func queryForUpdates(type: HKSampleType, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
-        switch type {
+    private func queryForUpdates(sampleType: HKSampleType, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
+        switch sampleType {
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!,
              HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!,
              HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!,
              HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!:
-            self.fetchIntradayUpdates(type: type) { (data, newAnchor) in
+            self.fetchIntradayUpdates(sampleType: (sampleType as? HKQuantityType)!) { (data, newAnchor) in
                 completion(data, newAnchor)
             }
         default:
@@ -128,18 +181,18 @@ class HealthKitManager {
         }
     }
 
-    private func fetchIntradayUpdates(type: HKSampleType, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
-        self.getBatchSegments(sampleType: type) { batchStartDates, newAnchor in
-            self.fetchIntradayStatisticsCollections(sampleType: type, batchDates: batchStartDates) { results in
+    private func fetchIntradayUpdates(sampleType: HKQuantityType, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
+        self.getIntradayBatchSegments(sampleType: sampleType) { batchStartDates, newAnchor in
+            self.fetchIntradayStatisticsCollections(sampleType: sampleType, batchDates: batchStartDates) { results in
 
-                let hkRequestData = self.buildRequestData(data: results, sampleType: (type as? HKQuantityType)!)
+                let hkRequestData = self.buildRequestData(data: results, sampleType: sampleType)
 
                 completion(hkRequestData, newAnchor)
             }
         }
     }
 
-    private func fetchIntradayStatisticsCollections(sampleType: HKSampleType, batchDates: Set<Date>, completion: @escaping ([HKStatistics]) -> Void) {
+    private func fetchIntradayStatisticsCollections(sampleType: HKQuantityType, batchDates: Set<Date>, completion: @escaping ([HKStatistics]) -> Void) {
         let calendar = Calendar.current
         var interval = DateComponents()
         interval.minute = 1
@@ -153,7 +206,7 @@ class HealthKitManager {
         // Always start from beginning of hour
         let anchorDate = HKDataUtils.beginningOfHour(date: calendar.date(byAdding: .day, value: -30, to: Date()))!
 
-        let query = HKStatisticsCollectionQuery(quantityType: (sampleType as? HKQuantityType)!,
+        let query = HKStatisticsCollectionQuery(quantityType: sampleType,
                                                 quantitySamplePredicate: compound,
                                                 options: [.cumulativeSum, .separateBySource],
                                                 anchorDate: anchorDate,
@@ -168,7 +221,6 @@ class HealthKitManager {
             var result: [HKStatistics] = []
             let endDate = Date()
 
-            // TODO: Iterate based on batches, for performance improvement
             statsCollection.enumerateStatistics(from: anchorDate, to: endDate) { statistics, _ in
                 if statistics.sumQuantity() != nil {
                     result.append(statistics)
@@ -180,7 +232,7 @@ class HealthKitManager {
         HealthKitManager.healthStore.execute(query)
     }
 
-    private func getBatchSegments(sampleType: HKSampleType, completion: @escaping (Set<Date>, HKQueryAnchor?) -> Void) {
+    private func getIntradayBatchSegments(sampleType: HKSampleType, completion: @escaping (Set<Date>, HKQueryAnchor?) -> Void) {
         var batchStartDates: Set<Date> = []
 
         let anchorDate = self.getAnchorBySampleType(sampleType: sampleType)

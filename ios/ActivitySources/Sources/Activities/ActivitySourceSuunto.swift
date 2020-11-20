@@ -11,7 +11,7 @@ public final class ActivitySourceSuunto: ActivitySource {
 
     private init() {}
 
-    public func mount(apiClient: ApiClient, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
+    public func mount(apiClient: ApiClient, config: ActivitySourceConfigBuilder, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
         self.apiClient = apiClient
         self.persistor = persistor
 

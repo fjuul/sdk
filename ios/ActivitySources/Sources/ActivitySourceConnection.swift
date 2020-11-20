@@ -18,12 +18,12 @@ public final class ActivitySourceConnection: TrackerConnectionable {
         self.activitySource = activitySource
     }
 
-    public func mount(apiClient: ApiClient, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
-        activitySource.mount(apiClient: apiClient, persistor: persistor) { result in
+    public func mount(apiClient: ApiClient, config: ActivitySourceConfigBuilder, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
+        activitySource.mount(apiClient: apiClient, config: config, persistor: persistor) { result in
             completion(result)
         }
     }
-    
+
     public func unmount(completion: @escaping (Result<Bool, Error>) -> Void) {
         activitySource.unmount { result in
             completion(result)

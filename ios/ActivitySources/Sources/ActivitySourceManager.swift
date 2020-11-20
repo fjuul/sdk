@@ -6,21 +6,24 @@ final public class ActivitySourceManager {
 
     var apiClient: ApiClient?
     var mountedActivitySourceConnections: [ActivitySourceConnection] = []
+    var config: ActivitySourceConfigBuilder?
 
     private var persistor: Persistor?
     private var connectionsLocalStore: ActivitySourceStore?
 
     private init() {}
 
-    public func initialize(apiClient: ApiClient, persistor: Persistor = DiskPersistor()) {
+    public func initialize(apiClient: ApiClient, config: ActivitySourceConfigBuilder, persistor: Persistor = DiskPersistor()) {
         self.apiClient = apiClient
         self.persistor = persistor
+        self.config = config
 
         self.connectionsLocalStore = ActivitySourceStore(userToken: apiClient.userToken, persistor: persistor)
 
-        self.restoreState()
-        self.getCurrentConnections { _ in
-            print("Initial sync current connections")
+        self.restoreState { _ in
+            self.getCurrentConnections { _ in
+                print("Initial sync current connections")
+            }
         }
     }
 
@@ -30,10 +33,14 @@ final public class ActivitySourceManager {
             return
         }
 
+        guard let config = self.config else {
+            completion(.failure(FjuulError.invalidConfig))
+            return
+        }
+
         // TODO Refactoring
         if activitySource is ActivitySourceHK {
-            // Request permissions from HealthKit
-            ActivitySourceHK.requestAccess { result in
+            ActivitySourceHK.requestAccess(config: config) { result in
                 switch result {
                 case .failure(let err):
                     completion(.failure(err))
@@ -95,6 +102,7 @@ final public class ActivitySourceManager {
     private func mountByConnections(connections: [TrackerConnection]) {
         guard let apiClient = self.apiClient else { return }
         guard let persistor = self.persistor else { return }
+        guard let config = self.config else { return }
 
         connections.forEach { connection in
             if self.mountedActivitySourceConnections.contains(where: { element in element.tracker?.rawValue == connection.tracker }) {
@@ -102,10 +110,9 @@ final public class ActivitySourceManager {
             }
 
             if let activitySourceConnection = ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: connection) {
-                activitySourceConnection.mount(apiClient: apiClient, persistor: persistor) { result in
+                activitySourceConnection.mount(apiClient: apiClient, config: config, persistor: persistor) { result in
                     switch result {
                     case .success:
-                        print("SUCESS MOUNT \(activitySourceConnection.tracker)")
                         self.mountedActivitySourceConnections.append(activitySourceConnection)
                     case .failure(let err):
                         print("Error on mountByConnections \(err)")
@@ -121,7 +128,6 @@ final public class ActivitySourceManager {
                 activitySourceConnection.unmount { result in
                     switch result {
                     case .success:
-                        print("SUCESS UNMOUNT \(activitySourceConnection.tracker)")
                         self.mountedActivitySourceConnections.removeAll { value in value.id == activitySourceConnection.id }
                     case .failure(let err):
                         print("Error \(err)")
@@ -131,13 +137,23 @@ final public class ActivitySourceManager {
         }
     }
 
-    private func restoreState() {
-        guard let apiClient = self.apiClient else { return }
-        guard let persistor = self.persistor else { return }
+    private func restoreState(completion: (Result<Bool, Error>) -> Void) {
+        guard let apiClient = self.apiClient else {
+            completion(.failure(FjuulError.invalidConfig))
+            return
+        }
+        guard let persistor = self.persistor else {
+            completion(.failure(FjuulError.invalidConfig))
+            return
+        }
+        guard let config = self.config else {
+            completion(.failure(FjuulError.invalidConfig))
+            return
+        }
 
         connectionsLocalStore?.connections?.forEach { connection in
             if let activitySourceConnection = ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: connection) {
-                activitySourceConnection.mount(apiClient: apiClient, persistor: persistor) { result in
+                activitySourceConnection.mount(apiClient: apiClient, config: config, persistor: persistor) { result in
                     switch result {
                     case .success:
                         self.mountedActivitySourceConnections.append(activitySourceConnection)
@@ -147,5 +163,7 @@ final public class ActivitySourceManager {
                 }
             }
         }
+
+        completion(.success(true))
     }
 }

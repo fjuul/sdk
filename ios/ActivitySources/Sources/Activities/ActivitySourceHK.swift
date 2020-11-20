@@ -13,17 +13,17 @@ public final class ActivitySourceHK: ActivitySource {
 
     private init() {}
 
-    static func requestAccess(completion: @escaping (Result<Bool, Error>) -> Void) {
-        HealthKitManager.requestAccess { result in
+    static func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void) {
+        HealthKitManager.requestAccess(config: config) { result in
             completion(result)
         }
     }
 
-    public func mount(apiClient: ApiClient, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
+    public func mount(apiClient: ApiClient, config: ActivitySourceConfigBuilder, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
         self.apiClient = apiClient
         self.persistor = persistor
 
-        let healthKitManager = HealthKitManager(persistor: persistor, dataHandler: self.hkDataHandler)
+        let healthKitManager = HealthKitManager(persistor: persistor, config: config, dataHandler: self.hkDataHandler)
         self.healthKitManager = healthKitManager
 
         healthKitManager.mount { result in
@@ -38,6 +38,17 @@ public final class ActivitySourceHK: ActivitySource {
         }
 
         healthKitManager.disableAllBackgroundDelivery { result in
+            completion(result)
+        }
+    }
+
+    public func sync(completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard let healthKitManager = self.healthKitManager else {
+            completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
+            return
+        }
+
+        healthKitManager.sync { result in
             completion(result)
         }
     }

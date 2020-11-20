@@ -1,7 +1,7 @@
 import Foundation
 
 public final class ActivitySourceConfigBuilder {
-    public var healthKitConfig: HealthKitConfig = HealthKitConfig(dataTypes: [.activeEnergyBurned])
+    public var healthKitConfig: ActivitySourceHKConfig = ActivitySourceHKConfig(dataTypes: [.activeEnergyBurned])
 
     public typealias BuilderClosure = (ActivitySourceConfigBuilder) -> ()
 

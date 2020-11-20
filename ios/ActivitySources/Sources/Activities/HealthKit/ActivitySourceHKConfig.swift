@@ -4,7 +4,7 @@ public enum HealthKitConfigType {
     case activeEnergyBurned, stepCount, distanceCycling, distanceWalkingRunning, heartRate, workoutType
 }
 
-public struct HealthKitConfig {
+public struct ActivitySourceHKConfig {
     var dataTypes: [HealthKitConfigType]
 
     public init(dataTypes: [HealthKitConfigType]) {

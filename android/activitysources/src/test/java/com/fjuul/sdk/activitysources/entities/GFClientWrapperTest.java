@@ -214,7 +214,7 @@ public class GFClientWrapperTest {
         }
 
         @Test
-        public void getCalories_requestFewDaysButFirstDayCantBeDelivered_returnsTaskWithCalories() throws InterruptedException {
+        public void getCalories_requestFewDaysButFirstDayCantBeDelivered_returnsFailedTask() throws InterruptedException {
             Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
             Date end = Date.from(Instant.parse("2020-10-02T23:59:59.999Z"));
             when(mockedHistoryClient.readData(Mockito.any()))
@@ -249,7 +249,7 @@ public class GFClientWrapperTest {
         }
 
         @Test
-        public void getCalories_requestFewDaysButFirstDayExceedTimeoutWithRetries_returnsTaskWithCalories() throws InterruptedException {
+        public void getCalories_requestFewDaysButFirstDayExceedTimeoutWithRetries_returnsFailedTask() throws InterruptedException {
             Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
             Date end = Date.from(Instant.parse("2020-10-02T23:59:59.999Z"));
 
@@ -360,7 +360,7 @@ public class GFClientWrapperTest {
                     isRequestedCorrectDataSource(arg);
             }));
 
-            // should split input date ranges into 24-hour chunks
+            // should split input date ranges into 7-day chunks
             verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofDays(7));
         }
 
@@ -427,7 +427,7 @@ public class GFClientWrapperTest {
         }
 
         @Test
-        public void getSteps_requestFewWeeksButFirstWeekCantBeDelivered_returnsTaskWithSteps() throws InterruptedException {
+        public void getSteps_requestFewWeeksButFirstWeekCantBeDelivered_returnsFailedTask() throws InterruptedException {
             Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
             Date end = Date.from(Instant.parse("2020-10-13T23:59:59.999Z"));
             when(mockedHistoryClient.readData(Mockito.any()))
@@ -459,7 +459,7 @@ public class GFClientWrapperTest {
         }
 
         @Test
-        public void getSteps_requestFewWeeksButFirstWeekExceedTimeoutWithRetries_returnsTaskWithSteps() throws InterruptedException {
+        public void getSteps_requestFewWeeksButFirstWeekExceedTimeoutWithRetries_returnsFailedTask() throws InterruptedException {
             Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
             Date end = Date.from(Instant.parse("2020-10-13T23:59:59.999Z"));
 
@@ -498,6 +498,222 @@ public class GFClientWrapperTest {
         }
     }
 
+    public static class GetHRSummariesTest extends GivenRobolectricContext {
+        static final DataSource hrDataSource = new DataSource.Builder()
+            .setDataType(DataType.AGGREGATE_HEART_RATE_SUMMARY)
+            .setType(DataSource.TYPE_DERIVED).build();
+        GFClientWrapper subject;
+        HistoryClient mockedHistoryClient;
+        SessionsClient mockedSessionsClient;
+        GFDataUtils gfDataUtilsSpy;
+
+        public static boolean isRequestedCorrectDataSource(DataReadRequest request) {
+            return request.getAggregatedDataTypes().contains(DataType.TYPE_HEART_RATE_BPM);
+        }
+
+        @Before
+        public void beforeTests() {
+            mockedHistoryClient = mock(HistoryClient.class);
+            mockedSessionsClient = mock(SessionsClient.class);
+            GFDataUtils gfDataUtils = new GFDataUtils();
+            gfDataUtilsSpy = spy(gfDataUtils);
+            subject = new GFClientWrapper(TEST_CONFIG, mockedHistoryClient, mockedSessionsClient, gfDataUtilsSpy);
+        }
+
+        @Test
+        public void getHRSummaries_oneDay_returnsTaskWithHR() throws ExecutionException, InterruptedException {
+            Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
+            Date end = Date.from(Instant.parse("2020-10-01T23:59:59.999Z"));
+            DataPoint rawSteps = createAggregatedHRDataPoint(hrDataSource,
+                Date.from(Instant.parse("2020-10-01T10:00:05Z")),
+                Date.from(Instant.parse("2020-10-01T10:00:21Z")),
+                72,
+                73,
+                72.5f);
+            Date bucketStart = Date.from(Instant.parse("2020-10-01T10:00:00Z"));
+            Date bucketEnd = Date.from(Instant.parse("2020-10-01T10:01:00Z"));
+            Bucket mockedBucket = createMockedSoleBucket(
+                bucketStart,
+                bucketEnd,
+                hrDataSource,
+                rawSteps
+            );
+            DataReadResponse dataReadResponse = createTestDataReadResponse(mockedBucket);
+            when(mockedHistoryClient.readData(Mockito.any())).thenReturn(Tasks.forResult(dataReadResponse));
+            Task<List<GFHRSummaryDataPoint>> result = subject.getHRSummaries(start, end);
+
+            testExecutor.submit(() -> Tasks.await(result)).get();
+            assertTrue("successful task", result.isSuccessful());
+            List<GFHRSummaryDataPoint> hrPoints = result.getResult();
+            GFHRSummaryDataPoint hrSummary = hrPoints.get(0);
+            assertEquals("should convert raw data point to hr summary",
+                "derived:com.google.heart_rate.summary:",
+                hrSummary.getDataSource());
+            assertEquals("should take the start of bucket as start time of the data point",
+                bucketStart,
+                hrSummary.getStart());
+            assertNull("data point should have null end time",
+                hrSummary.getEnd());
+            assertEquals("data point should have min value",
+                72,
+                hrSummary.getMin(),
+                0.00001);
+            assertEquals("data point should have max value",
+                73,
+                hrSummary.getMax(),
+                0.00001);
+            assertEquals("data point should have avg value",
+                72.5f,
+                hrSummary.getAvg(),
+                0.00001);
+
+            verify(mockedHistoryClient).readData(argThat((arg) -> {
+                return isTimeIntervalOfRequest(arg, start, end) &&
+                    isXMinutesBucketRequest(arg, 1) &&
+                    isRequestedCorrectDataSource(arg);
+            }));
+
+            // should split input date ranges into 24-hour chunks
+            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+        }
+
+        @Test
+        public void getHRSummaries_fewDays_returnsTaskWithHR() throws ExecutionException, InterruptedException {
+            Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
+            Date end = Date.from(Instant.parse("2020-10-02T23:59:59.999Z"));
+            DataPoint rawHRSummary1 = createAggregatedHRDataPoint(hrDataSource,
+                Date.from(Instant.parse("2020-10-01T10:00:05Z")),
+                Date.from(Instant.parse("2020-10-01T10:00:21Z")),
+                72,
+                73,
+                72.5f);
+            DataPoint rawHRSummary2 = createAggregatedHRDataPoint(hrDataSource,
+                Date.from(Instant.parse("2020-10-02T10:00:15Z")),
+                Date.from(Instant.parse("2020-10-02T10:00:45Z")),
+                60,
+                62,
+                61);
+            Bucket mockedBucket1 = createMockedSoleBucket(
+                Date.from(Instant.parse("2020-10-01T10:00:00Z")),
+                Date.from(Instant.parse("2020-10-01T10:01:00Z")),
+                hrDataSource,
+                rawHRSummary1
+            );
+            Bucket mockedBucket2 = createMockedSoleBucket(
+                Date.from(Instant.parse("2020-10-02T10:00:00Z")),
+                Date.from(Instant.parse("2020-10-02T10:01:00Z")),
+                hrDataSource,
+                rawHRSummary2
+            );
+            DataReadResponse day1Response = createTestDataReadResponse(mockedBucket1);
+            DataReadResponse day2Response = createTestDataReadResponse(mockedBucket2);
+            when(mockedHistoryClient.readData(Mockito.any()))
+                .thenReturn(Tasks.forResult(day1Response))
+                .thenReturn(Tasks.forResult(day2Response));
+            Task<List<GFHRSummaryDataPoint>> result = subject.getHRSummaries(start, end);
+
+            testExecutor.submit(() -> Tasks.await(result)).get();
+            assertTrue("successful task", result.isSuccessful());
+            List<GFHRSummaryDataPoint> hrSummaries = result.getResult();
+            assertEquals("should concatenate results of 2 responses", 2, hrSummaries.size());
+            GFHRSummaryDataPoint day1HRSummary = hrSummaries.get(0);
+            assertEquals("should return HR in the order of responses",
+                72.5,
+                day1HRSummary.getAvg(),
+                0.00001);
+            GFHRSummaryDataPoint day2HRSummary = hrSummaries.get(1);
+            assertEquals("should return HR in the order of responses",
+                61,
+                day2HRSummary.getAvg(),
+                0.00001);
+            InOrder inOrder = inOrder(mockedHistoryClient);
+            inOrder.verify(mockedHistoryClient).readData(argThat((arg) -> {
+                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z"))) &&
+                    isXMinutesBucketRequest(arg, 1) &&
+                    isRequestedCorrectDataSource(arg);
+            }));
+            inOrder.verify(mockedHistoryClient).readData(argThat((arg) -> {
+                return isTimeIntervalOfRequest(arg, Date.from(Instant.parse("2020-10-02T00:00:00Z")), end) &&
+                    isXMinutesBucketRequest(arg, 1) &&
+                    isRequestedCorrectDataSource(arg);
+            }));
+            inOrder.verifyNoMoreInteractions();
+
+            // should split input date ranges into 24-hour chunks
+            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+        }
+
+        @Test
+        public void getHRSummaries_requestFewDaysButFirstDayCantBeDelivered_returnsFailedTask() throws InterruptedException {
+            Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
+            Date end = Date.from(Instant.parse("2020-10-02T23:59:59.999Z"));
+            when(mockedHistoryClient.readData(Mockito.any()))
+                .thenReturn(Tasks.forException(new Exception("Application needs OAuth consent from the user")));
+            Task<List<GFHRSummaryDataPoint>> result = subject.getHRSummaries(start, end);
+
+            try {
+                testExecutor.submit(() -> Tasks.await(result)).get();
+            } catch (ExecutionException exc) { }
+
+            assertFalse("unsuccessful task", result.isSuccessful());
+            Exception exception = result.getException();
+            assertThat(exception, instanceOf(CommonException.class));
+            CommonException gfException = (CommonException) exception;
+            assertEquals("should have error message",
+                "Application needs OAuth consent from the user",
+                gfException.getCause().getMessage());
+            // should request data only for the first day due to the serial execution
+            InOrder inOrder = inOrder(mockedHistoryClient);
+            inOrder.verify(mockedHistoryClient).readData(argThat(arg -> {
+                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z"))) &&
+                    isXMinutesBucketRequest(arg,1) &&
+                    isRequestedCorrectDataSource(arg);
+            }));
+            inOrder.verifyNoMoreInteractions();
+
+            // should split input date ranges into 24-hour chunks
+            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+        }
+
+        @Test
+        public void getHRSummaries_requestFewDaysButFirstDayExceedTimeoutWithRetries_returnsFailedTasks() throws InterruptedException {
+            Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
+            Date end = Date.from(Instant.parse("2020-10-02T23:59:59.999Z"));
+
+            when(mockedHistoryClient.readData(Mockito.any()))
+                .thenAnswer(invocation -> {
+                    // NOTE: here we're simulating the died request to GF
+                    return Tasks.forResult(null).continueWithTask(testUtilExecutor, task -> {
+                        Thread.sleep(5000);
+                        return task;
+                    });
+                });
+            Task<List<GFHRSummaryDataPoint>> result = subject.getHRSummaries(start, end);
+
+            // catch expected ExecutionException
+            try {
+                testExecutor.submit(() -> Tasks.await(result)).get();
+            } catch (ExecutionException exc) { }
+
+            assertFalse("unsuccessful task", result.isSuccessful());
+            Exception exception = result.getException();
+            assertThat(exception, instanceOf(MaxTriesCountExceededException.class));
+            MaxTriesCountExceededException gfException = (MaxTriesCountExceededException) exception;
+            assertThat("should have error message about the executed task",
+                gfException.getMessage(),
+                startsWith("Possible tries count (1) exceeded for task \"'fetch gf intraday hr' for 2020-10-01"));
+            // should request data only for the first week due to the serial execution
+            InOrder inOrder = inOrder(mockedHistoryClient);
+            inOrder.verify(mockedHistoryClient).readData(argThat(arg -> {
+                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z"))) &&
+                    isXMinutesBucketRequest(arg,1) &&
+                    isRequestedCorrectDataSource(arg);
+            }));
+            inOrder.verifyNoMoreInteractions();
+            // should split input date ranges into 24-hour chunks
+            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+        }
+    }
 
     public static Bucket createMockedSoleBucket(Date start, Date end, DataSource source, DataPoint... dataPoints) {
         Bucket mockedBucket = mock(Bucket.class);
@@ -519,6 +735,15 @@ public class GFClientWrapperTest {
         return DataPoint.builder(source)
             .setTimeInterval(start.getTime(), end.getTime(), TimeUnit.MILLISECONDS)
             .setField(field, value)
+            .build();
+    }
+
+    public static DataPoint createAggregatedHRDataPoint(DataSource source, Date start, Date end, float min, float max, float avg) {
+        return DataPoint.builder(source)
+            .setTimeInterval(start.getTime(), end.getTime(), TimeUnit.MILLISECONDS)
+            .setField(Field.FIELD_MIN, min)
+            .setField(Field.FIELD_MAX, max)
+            .setField(Field.FIELD_AVERAGE, avg)
             .build();
     }
 

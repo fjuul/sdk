@@ -228,6 +228,9 @@ public final class GFClientWrapper {
                 } catch (ExecutionException exc) {
                     // exception originated from the completed task
                     Exception exception = new GoogleFitActivitySourceExceptions.CommonException(exc.getCause());
+                    if (!cancellationToken.isCancellationRequested()) {
+                        cancellationTokenSource.cancel();
+                    }
                     return Tasks.forException(exception);
                 }
             }

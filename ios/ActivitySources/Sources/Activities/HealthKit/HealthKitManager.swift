@@ -197,17 +197,11 @@ class HealthKitManager {
         var interval = DateComponents()
         interval.minute = 1
 
-        // Exclude manually added data
-        // let wasUserEnteredPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
-        let datePredicates = self.statisticsCollectionsDatePredicates(batchDates: batchDates)
-
-        let compound = NSCompoundPredicate(orPredicateWithSubpredicates: datePredicates)
-
         // Always start from beginning of hour
         let anchorDate = HKDataUtils.beginningOfHour(date: calendar.date(byAdding: .day, value: -30, to: Date()))!
 
         let query = HKStatisticsCollectionQuery(quantityType: sampleType,
-                                                quantitySamplePredicate: compound,
+                                                quantitySamplePredicate: self.intradatPredicates(batchDates: batchDates),
                                                 options: [.cumulativeSum, .separateBySource],
                                                 anchorDate: anchorDate,
                                                 intervalComponents: interval)
@@ -232,20 +226,46 @@ class HealthKitManager {
         HealthKitManager.healthStore.execute(query)
     }
 
+    private func intradatPredicates(batchDates: Set<Date>) -> NSCompoundPredicate {
+        let datePredicates = NSCompoundPredicate(type: .or, subpredicates: self.statisticsCollectionsDatePredicates(batchDates: batchDates))
+
+        if self.config.healthKitConfig.syncUserEnteredData {
+            // Exclude manually added data
+            let wasUserEnteredPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
+
+            return NSCompoundPredicate(type: .and, subpredicates: [datePredicates, wasUserEnteredPredicate])
+        } else {
+            return datePredicates
+        }
+    }
+
+    private func samplesPredicate() -> NSCompoundPredicate {
+        let fromDate = Calendar.current.date(byAdding: .day, value: -30, to: Date())
+        let startDatePredicate = HKQuery.predicateForSamples(withStart: fromDate, end: Date(), options: .strictStartDate)
+
+        if self.config.healthKitConfig.syncUserEnteredData {
+            let wasUserEnteredPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
+
+            return NSCompoundPredicate(andPredicateWithSubpredicates: [startDatePredicate, wasUserEnteredPredicate])
+        } else {
+            return NSCompoundPredicate(andPredicateWithSubpredicates: [startDatePredicate])
+        }
+    }
+
     private func getIntradayBatchSegments(sampleType: HKSampleType, completion: @escaping (Set<Date>, HKQueryAnchor?) -> Void) {
         var batchStartDates: Set<Date> = []
 
         let anchorDate = self.getAnchorBySampleType(sampleType: sampleType)
 
-        // Exclude manually added data
-        let wasUserEnteredPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
-        let fromDate = Calendar.current.date(byAdding: .day, value: -30, to: Date())
-        let startDatePredicate = HKQuery.predicateForSamples(withStart: fromDate, end: Date(), options: .strictStartDate)
-        let compound = NSCompoundPredicate(andPredicateWithSubpredicates: [startDatePredicate, wasUserEnteredPredicate])
+//        // Exclude manually added data
+//        let wasUserEnteredPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
+//        let fromDate = Calendar.current.date(byAdding: .day, value: -30, to: Date())
+//        let startDatePredicate = HKQuery.predicateForSamples(withStart: fromDate, end: Date(), options: .strictStartDate)
+//        let compound = NSCompoundPredicate(andPredicateWithSubpredicates: [startDatePredicate, wasUserEnteredPredicate])
         let query = HKAnchoredObjectQuery(type: sampleType,
-                                              predicate: compound,
-                                              anchor: anchorDate,
-                                              limit: HKObjectQueryNoLimit) { (_, samplesOrNil, _, newAnchor, errorOrNil) in
+                                          predicate: self.samplesPredicate(),
+                                          anchor: anchorDate,
+                                          limit: HKObjectQueryNoLimit) { (_, samplesOrNil, _, newAnchor, errorOrNil) in
             guard let samples = samplesOrNil else {
                 completion(batchStartDates, newAnchor)
                 return

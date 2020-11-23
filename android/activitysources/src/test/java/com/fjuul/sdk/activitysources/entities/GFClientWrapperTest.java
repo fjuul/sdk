@@ -54,7 +54,7 @@ import static org.mockito.Mockito.when;
 @RunWith(Enclosed.class)
 public class GFClientWrapperTest {
 
-    static final GFClientWrapper.Config TEST_CONFIG = new GFClientWrapper.Config(1, 1, 1, 1);
+    static final GFClientWrapper.Config TEST_CONFIG = new GFClientWrapper.Config(0, 1, 0, 1);
     public static final ExecutorService testExecutor = Executors.newSingleThreadExecutor();
     public static final ExecutorService testUtilExecutor = Executors.newCachedThreadPool();
 

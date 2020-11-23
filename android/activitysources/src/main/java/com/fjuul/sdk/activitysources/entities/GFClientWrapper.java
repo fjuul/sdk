@@ -7,7 +7,7 @@ import androidx.core.util.Supplier;
 
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
-import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.MaxRetriesExceededException;
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.MaxTriesCountExceededException;
 import com.fjuul.sdk.activitysources.utils.GoogleTaskUtils;
 import static com.fjuul.sdk.activitysources.utils.GoogleTaskUtils.shutdownExecutorsOnComplete;
 import com.google.android.gms.fitness.HistoryClient;
@@ -217,7 +217,7 @@ public final class GFClientWrapper {
                 return Tasks.forCanceled();
             }
             final SupervisedTask<T> supervisedTask = taskSupplier.get();
-            for (int tryNumber = 1; tryNumber <= supervisedTask.getRetriesCount() && !cancellationToken.isCancellationRequested(); tryNumber++) {
+            for (int tryNumber = 0; tryNumber <= supervisedTask.getRetriesCount() && !cancellationToken.isCancellationRequested(); tryNumber++) {
                 try {
                     Task<T> originalTask = supervisedTask.getTask();
                     T result = Tasks.await(originalTask, supervisedTask.getTimeoutSeconds(), TimeUnit.SECONDS);
@@ -234,11 +234,11 @@ public final class GFClientWrapper {
             if (cancellationToken.isCancellationRequested()) {
                 return Tasks.forCanceled();
             }
-            String exceptionMessage = String.format("Possible retries count (%d) exceeded for task \"%s\"",
-                supervisedTask.getRetriesCount(),
+            String exceptionMessage = String.format("Possible tries count (%d) exceeded for task \"%s\"",
+                supervisedTask.getRetriesCount() + 1,
                 supervisedTask.getName());
             cancellationTokenSource.cancel();
-            return Tasks.forException(new MaxRetriesExceededException(exceptionMessage));
+            return Tasks.forException(new MaxTriesCountExceededException(exceptionMessage));
         });
     }
 
@@ -295,7 +295,7 @@ public final class GFClientWrapper {
             // for example: android.os.TransactionTooLargeException: Error while delivering result of client request SessionReadRequest.
             // For this rare case, we have to try to fetch all related data points one by one.
             Task<GFSessionBundle> rescueSessionBundleTask = collectSessionBundleTask.continueWithTask(executor, (task) -> {
-                if (task.getException() instanceof MaxRetriesExceededException) {
+                if (task.getException() instanceof MaxTriesCountExceededException) {
                     return collectSessionBundleWithDataReadRequests(session, gfTaskWatcher);
                 }
                 return task;

@@ -3,7 +3,7 @@ package com.fjuul.sdk.activitysources.entities;
 import android.os.Build;
 
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
-import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.MaxRetriesExceededException;
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.MaxTriesCountExceededException;
 import com.google.android.gms.fitness.HistoryClient;
 import com.google.android.gms.fitness.SessionsClient;
 import com.google.android.gms.fitness.data.Bucket;
@@ -264,8 +264,8 @@ public class GFClientWrapperTest {
 
             assertFalse("unsuccessful task", result.isSuccessful());
             Exception exception = result.getException();
-            assertThat(exception, instanceOf(MaxRetriesExceededException.class));
-            MaxRetriesExceededException gfException = (MaxRetriesExceededException) exception;
+            assertThat(exception, instanceOf(MaxTriesCountExceededException.class));
+            MaxTriesCountExceededException gfException = (MaxTriesCountExceededException) exception;
             assertThat("should have error message about the executed task",
                 gfException.getMessage(),
                 startsWith("Possible retries count (1) exceeded for task \"'fetch gf intraday calories' for 2020-10-01"));

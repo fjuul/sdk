@@ -15,8 +15,8 @@ public final class GoogleFitActivitySourceExceptions {
         }
     }
 
-    public static class MaxRetriesExceededException extends CommonException {
-        public MaxRetriesExceededException(@NonNull String message) {
+    public static class MaxTriesCountExceededException extends CommonException {
+        public MaxTriesCountExceededException(@NonNull String message) {
             super(message);
         }
     }

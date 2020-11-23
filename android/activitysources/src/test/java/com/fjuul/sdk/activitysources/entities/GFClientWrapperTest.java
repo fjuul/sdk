@@ -268,7 +268,7 @@ public class GFClientWrapperTest {
             MaxTriesCountExceededException gfException = (MaxTriesCountExceededException) exception;
             assertThat("should have error message about the executed task",
                 gfException.getMessage(),
-                startsWith("Possible retries count (1) exceeded for task \"'fetch gf intraday calories' for 2020-10-01"));
+                startsWith("Possible tries count (1) exceeded for task \"'fetch gf intraday calories' for 2020-10-01"));
             // should request data only for the first day due to the serial execution
             verify(mockedHistoryClient).readData(argThat(arg -> {
                 boolean correctDates = new Date(arg.getStartTime(TimeUnit.MILLISECONDS)).equals(start) &&

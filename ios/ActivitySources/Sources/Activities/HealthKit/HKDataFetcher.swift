@@ -1,19 +1,19 @@
 import Foundation
 import HealthKit
 
-class HrFetcher {
-    static func fetchIntradayData(sampleType: HKQuantityType, predicate: NSCompoundPredicate, batchDates: Set<Date>, completion: @escaping ([BatchDataPoint]) -> Void) {
-        let calendar = Calendar.current
+class HKDataFetcher {
+    static var interval: DateComponents {
         var interval = DateComponents()
         interval.minute = 1
 
-        // Always start from beginning of hour
-        let anchorDate = HKDataUtils.beginningOfHour(date: calendar.date(byAdding: .day, value: -30, to: Date()))!
+        return interval
+    }
 
+    static func fetchIntradayData(sampleType: HKQuantityType, predicate: NSCompoundPredicate, batchDates: Set<Date>, completion: @escaping ([BatchDataPoint]) -> Void) {
         let query = HKStatisticsCollectionQuery(quantityType: sampleType,
                                                 quantitySamplePredicate: predicate,
                                                 options: [.cumulativeSum, .separateBySource],
-                                                anchorDate: anchorDate,
+                                                anchorDate: self.anchor(),
                                                 intervalComponents: interval)
         // Set the results handler
         query.initialResultsHandler = { query, results, error in
@@ -25,9 +25,13 @@ class HrFetcher {
             var result: [HKStatistics] = []
             var batches: [BatchDataPoint] = []
 
-            statsCollection.enumerateStatistics(from: anchorDate, to: Date()) { statistics, _ in
-                if statistics.sumQuantity() != nil {
-                    result.append(statistics)
+            batchDates.forEach { batchStart in
+                let batchEnd = Calendar.current.date(byAdding: .hour, value: 1, to: batchStart)!
+
+                statsCollection.enumerateStatistics(from: batchStart, to: batchEnd) { statistics, _ in
+                    if statistics.sumQuantity() != nil {
+                        result.append(statistics)
+                    }
                 }
             }
 
@@ -51,18 +55,11 @@ class HrFetcher {
         HealthKitManager.healthStore.execute(query)
     }
 
-    static func fetch(predicate: NSCompoundPredicate, batchDates: Set<Date>, completion: @escaping ([HrBatchDataPoint]) -> Void) {
-        let calendar = Calendar.current
-        var interval = DateComponents()
-        interval.minute = 1
-
-        // Always start from beginning of hour
-        let anchorDate = HKDataUtils.beginningOfHour(date: calendar.date(byAdding: .day, value: -30, to: Date()))!
-
+    static func fetchHrData(predicate: NSCompoundPredicate, batchDates: Set<Date>, completion: @escaping ([HrBatchDataPoint]) -> Void) {
         let query = HKStatisticsCollectionQuery(quantityType: HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!,
                                                 quantitySamplePredicate: predicate,
                                                 options: [.discreteMax, .discreteMin, .discreteAverage, .separateBySource],
-                                                anchorDate: anchorDate,
+                                                anchorDate: self.anchor(),
                                                 intervalComponents: interval)
         // Set the results handler
         query.initialResultsHandler = { query, results, error in
@@ -75,9 +72,13 @@ class HrFetcher {
             var batches: [HrBatchDataPoint] = []
             let unit = HKUnit.count().unitDivided(by: HKUnit.minute())
 
-            statsCollection.enumerateStatistics(from: anchorDate, to: Date()) { statistics, _ in
-                if statistics.averageQuantity() != nil {
-                    result.append(statistics)
+            batchDates.forEach { batchStart in
+                let batchEnd = Calendar.current.date(byAdding: .hour, value: 1, to: batchStart)!
+
+                statsCollection.enumerateStatistics(from: batchStart, to: batchEnd) { statistics, _ in
+                    if statistics.averageQuantity() != nil {
+                        result.append(statistics)
+                    }
                 }
             }
 
@@ -105,7 +106,13 @@ class HrFetcher {
 
         HealthKitManager.healthStore.execute(query)
     }
-    
+
+    // With interval 1 min, it doesn’t matter what date will be set, just need starts from beginning of minute
+    // Technically, the anchor sets the start time for a single time interval.
+    private static func anchor() -> Date {
+        return Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: Date())!
+    }
+
     private static func unit(sampleType: HKQuantityType) -> HKUnit {
         switch sampleType {
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:

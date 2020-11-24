@@ -204,13 +204,13 @@ class HealthKitManager {
 
     // TODO: Refactoring: remove extra function
     private func fetchDiscretStatisticsCollections(sampleType: HKQuantityType, batchDates: Set<Date>, completion: @escaping ([HrBatchDataPoint]) -> Void) {
-        HrFetcher.fetch(predicate: self.intradatPredicates(batchDates: batchDates), batchDates: batchDates) { result in
+        HKDataFetcher.fetchHrData(predicate: self.intradatPredicates(batchDates: batchDates), batchDates: batchDates) { result in
             completion(result)
         }
     }
 
     private func fetchIntradayStatisticsCollections(sampleType: HKQuantityType, batchDates: Set<Date>, completion: @escaping ([BatchDataPoint]) -> Void) {
-        HrFetcher.fetchIntradayData(sampleType: sampleType, predicate: self.intradatPredicates(batchDates: batchDates), batchDates: batchDates) { result in
+        HKDataFetcher.fetchIntradayData(sampleType: sampleType, predicate: self.intradatPredicates(batchDates: batchDates), batchDates: batchDates) { result in
             completion(result)
         }
     }

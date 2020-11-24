@@ -18,7 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         )
 
         let config = ActivitySourceConfigBuilder { builder in
-            builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned, .distanceCycling, .distanceWalkingRunning, .stepCount])
+            builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned]) //, .distanceCycling, .distanceWalkingRunning, .stepCount
         }
 
         if let apiClient = ApiClientHolder.default.apiClient {

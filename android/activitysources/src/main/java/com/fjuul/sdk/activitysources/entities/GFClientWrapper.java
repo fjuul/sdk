@@ -142,19 +142,34 @@ public final class GFClientWrapper {
     @SuppressLint("NewApi")
     public Task<List<GFSessionBundle>> getSessions(Date start, Date end, Duration minSessionDuration) {
         ExecutorService gfTaskWatcherExecutor = createGfTaskWatcherExecutor();
-        ExecutorService gfSubTaskWatcherExecutor = createGfTaskWatcherExecutor();
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         CancellationToken cancellationToken = cancellationTokenSource.getToken();
         SupervisedExecutor gfReadSessionsWatcher = new SupervisedExecutor(gfTaskWatcherExecutor, cancellationTokenSource, cancellationToken);
-        SupervisedExecutor gfReadSessionSamplesWatcher = new SupervisedExecutor(gfSubTaskWatcherExecutor, cancellationTokenSource, cancellationToken);
         List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofDays(5));
 
-        List<Task<List<GFSessionBundle>>> tasks = dateChunks.stream().map(dateRange -> {
-            return runReadSessions(dateRange, minSessionDuration, gfReadSessionsWatcher, gfReadSessionSamplesWatcher);
+        List<Task<List<Session>>> readSessionListTasks = dateChunks.stream().map(dateRange -> {
+            return runReadRawSessionList(dateRange, gfReadSessionsWatcher);
         }).collect(Collectors.toList());
+        Task<List<Session>> rawSessionListTask = flatMapTasksResults(readSessionListTasks);
 
-        Task<List<GFSessionBundle>> getSessionsTask = flatMapTasksResults(tasks);
-        return shutdownExecutorsOnComplete(executor, getSessionsTask, gfTaskWatcherExecutor, gfSubTaskWatcherExecutor);
+        Task<List<Session>> filteredSessionListTask = rawSessionListTask.onSuccessTask(executor, (sessions) -> {
+            Stream<Session> completedValuableSessions = sessions.stream()
+                .filter(session -> {
+                    if (session.isOngoing()) {
+                        return false;
+                    }
+                    long sessionStartAtMS = session.getStartTime(TimeUnit.MILLISECONDS);
+                    long sessionEndAtMS = session.getEndTime(TimeUnit.MILLISECONDS);
+                    Duration sessionDuration = Duration.ofMillis(sessionEndAtMS - sessionStartAtMS);
+                    return sessionDuration.compareTo(minSessionDuration) >= 0;
+                });
+            return Tasks.forResult(completedValuableSessions.collect(Collectors.toList()));
+        });
+
+        Task<List<GFSessionBundle>> getSessionsTask = filteredSessionListTask.onSuccessTask(executor, (sessions -> {
+            return runReadDetailedSessionBundles(sessions, gfReadSessionsWatcher);
+        }));
+        return shutdownExecutorsOnComplete(executor, getSessionsTask, gfTaskWatcherExecutor);
         // TODO: check if sub-task watcher was shutdown
     }
 
@@ -191,16 +206,35 @@ public final class GFClientWrapper {
         return runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
     }
 
-    private Task<List<GFSessionBundle>> runReadSessions(Pair<Date, Date> dateRange, Duration minSessionDuration, SupervisedExecutor gfTaskWatcher, SupervisedExecutor gfSubTaskWatcher) {
+    private Task<List<Session>> runReadRawSessionList(Pair<Date, Date> dateRange, SupervisedExecutor gfTaskWatcher) {
         Supplier<SupervisedTask<SessionReadResponse>> taskSupplier = () -> {
             Task<SessionReadResponse> task = readSessions(dateRange.first, dateRange.second);
             return buildSupervisedTask("fetch gf sessions", task, dateRange);
         };
-        Task<SessionReadResponse> readRawSessionsUnderWatchTask = runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
-        Task<List<GFSessionBundle>> bundledSessionsTask = readRawSessionsUnderWatchTask.onSuccessTask(gfTaskWatcher.getExecutor(), (readResponse) -> {
-            return bundleSessionsWithData(readResponse, minSessionDuration, gfSubTaskWatcher);
+        Task<List<Session>> readSessionsTask = runGFTaskUnderWatch(taskSupplier, gfTaskWatcher)
+            .onSuccessTask(executor, (response) -> Tasks.forResult(response.getSessions()));
+        return readSessionsTask;
+    }
+
+    @SuppressLint("NewApi")
+    private Task<List<GFSessionBundle>> runReadDetailedSessionBundles(List<Session> sessions, SupervisedExecutor gfTaskWatcher) {
+        // NOTE: this method runs all tasks sequentially because dedicated tasks reading session
+        // samples must be executed before to continue the rest.
+        // TODO: rewrite this piece via task suppliers and #runGFTaskUnderWatch
+        List<Task<GFSessionBundle>> sessionBundlesTasks = new ArrayList<>();
+        for (Session session : sessions) {
+            Task<GFSessionBundle> taskToContinue = sessionBundlesTasks.isEmpty() ? Tasks.forResult(null) : sessionBundlesTasks.get(sessionBundlesTasks.size() - 1);
+            Task<GFSessionBundle> nextTask = taskToContinue.continueWithTask(executor, (t) -> bundleSessionWithData(session, gfTaskWatcher));
+            sessionBundlesTasks.add(nextTask);
+        }
+        Task<List<GFSessionBundle>> completedSessionBundlesTasks = Tasks.whenAll(sessionBundlesTasks).continueWithTask(executor, (commonResultTask) -> {
+            if (commonResultTask.isCanceled() || !commonResultTask.isSuccessful()) {
+                return Tasks.forException(GoogleTaskUtils.extractGFExceptionFromTasks(sessionBundlesTasks).orElse(commonResultTask.getException()));
+            }
+            List<GFSessionBundle> bundleList = sessionBundlesTasks.stream().map(t -> t.getResult()).collect(Collectors.toList());
+            return Tasks.forResult(bundleList);
         });
-        return bundledSessionsTask;
+        return completedSessionBundlesTasks;
     }
 
     private <T> Task<T> runGFTaskUnderWatch(Supplier<SupervisedTask<T>> taskSupplier, SupervisedExecutor gfTaskWatcher) {
@@ -262,66 +296,42 @@ public final class GFClientWrapper {
     }
 
     @SuppressLint("NewApi")
-    private Task<List<GFSessionBundle>> bundleSessionsWithData(SessionReadResponse readResponse, Duration minSessionDuration, SupervisedExecutor gfTaskWatcher) {
-        List<Session> sessions = readResponse.getSessions();
-        Stream<Session> completedValuableSessions = sessions.stream()
-            .filter(session -> {
-                if (session.isOngoing()) {
-                    return false;
-                }
-                long sessionStartAtMS = session.getStartTime(TimeUnit.MILLISECONDS);
-                long sessionEndAtMS = session.getEndTime(TimeUnit.MILLISECONDS);
-                Duration sessionDuration = Duration.ofMillis(sessionEndAtMS - sessionStartAtMS);
-                return sessionDuration.compareTo(minSessionDuration) >= 0;
-            });
-        List<Task<GFSessionBundle>> sessionBundlesTasks = new ArrayList<>();
-        for (Session session : completedValuableSessions.collect(Collectors.toList())) {
-            Task<GFSessionBundle> taskToContinue = sessionBundlesTasks.isEmpty() ? Tasks.forResult(null) : sessionBundlesTasks.get(sessionBundlesTasks.size() - 1);
-            TaskCompletionSource<GFSessionBundle> taskCompletionSource = new TaskCompletionSource<>(gfTaskWatcher.getCancellationToken());
-            Supplier<SupervisedTask<SessionReadResponse>> readSessionTaskSupplier = () -> {
-                SessionReadRequest detailedSessionReadRequest = buildDetailedSessionReadRequest(session);
-                Task<SessionReadResponse> task = sessionsClient.readSession(detailedSessionReadRequest);
-                String taskName = String.format("fetch detailed gf session %s", session.getIdentifier());
-                return new SupervisedTask<>(taskName, task, config.detailedSessionQueryTimeoutSeconds, config.detailedSessionQueryRetriesCount);
-            };
-            // NOTE: here we create the new SupervisedExecutor with its own cancellation token source
-            // because it's expectable that the read detailed session request may silently fall with
-            // a logging message about TransactionTooLarge. Otherwise, all rest pending tasks will
-            // be canceled.
-            SupervisedExecutor dedicatedReadSessionTaskWatcher = new SupervisedExecutor(gfTaskWatcher.getExecutor(), new CancellationTokenSource());
-            Task<SessionReadResponse> readSessionUnderWatch = taskToContinue.continueWithTask(executor, t -> runGFTaskUnderWatch(readSessionTaskSupplier, dedicatedReadSessionTaskWatcher));
-            Task<GFSessionBundle> collectSessionBundleTask = readSessionUnderWatch.onSuccessTask(executor, sessionReadResponse -> {
-                GFSessionBundle gfSessionBundle = collectSessionBundleFromSessionResponse(readSessionUnderWatch.getResult());
-                return Tasks.forResult(gfSessionBundle);
-            });
-            // NOTE: It is possible that GF Session and its samples are too big for passing it through IPC Binder (TransactionTooLarge),
-            // for example: android.os.TransactionTooLargeException: Error while delivering result of client request SessionReadRequest.
-            // For this rare case, we have to try to fetch all related data points one by one.
-            Task<GFSessionBundle> rescueSessionBundleTask = collectSessionBundleTask.continueWithTask(executor, (task) -> {
-                if (task.getException() instanceof MaxTriesCountExceededException) {
-                    return collectSessionBundleWithDataReadRequests(session, gfTaskWatcher);
-                }
-                return task;
-            });
-
-            rescueSessionBundleTask.addOnCompleteListener(executor, (commonResultTask) -> {
-                if (!commonResultTask.isSuccessful() || commonResultTask.isCanceled()) {
-                    taskCompletionSource.trySetException(commonResultTask.getException());
-                    return;
-                }
-                taskCompletionSource.trySetResult(commonResultTask.getResult());
-            });
-            sessionBundlesTasks.add(taskCompletionSource.getTask());
-        }
-
-        Task<List<GFSessionBundle>> completedSessionBundlesTasks = Tasks.whenAll(sessionBundlesTasks).continueWithTask(executor, (commonResultTask) -> {
-            if (commonResultTask.isCanceled() || !commonResultTask.isSuccessful()) {
-                return Tasks.forException(GoogleTaskUtils.extractGFExceptionFromTasks(sessionBundlesTasks).orElse(commonResultTask.getException()));
-            }
-            List<GFSessionBundle> bundleList = sessionBundlesTasks.stream().map(t -> t.getResult()).collect(Collectors.toList());
-            return Tasks.forResult(bundleList);
+    private Task<GFSessionBundle> bundleSessionWithData(Session session, SupervisedExecutor gfTaskWatcher) {
+        TaskCompletionSource<GFSessionBundle> taskCompletionSource = new TaskCompletionSource<>(gfTaskWatcher.getCancellationToken());
+        Supplier<SupervisedTask<SessionReadResponse>> readSessionTaskSupplier = () -> {
+            SessionReadRequest detailedSessionReadRequest = buildDetailedSessionReadRequest(session);
+            Task<SessionReadResponse> task = sessionsClient.readSession(detailedSessionReadRequest);
+            String taskName = String.format("fetch detailed gf session %s", session.getIdentifier());
+            return new SupervisedTask<>(taskName, task, config.detailedSessionQueryTimeoutSeconds, config.detailedSessionQueryRetriesCount);
+        };
+        // NOTE: here we create the new SupervisedExecutor with its own cancellation token source
+        // because it's expectable that the read detailed session request may silently fall with
+        // a logging message about TransactionTooLarge. Otherwise, all rest pending tasks will
+        // be canceled.
+        SupervisedExecutor dedicatedReadSessionTaskWatcher = new SupervisedExecutor(gfTaskWatcher.getExecutor(), new CancellationTokenSource());
+        Task<SessionReadResponse> readSessionUnderWatch = runGFTaskUnderWatch(readSessionTaskSupplier, dedicatedReadSessionTaskWatcher);
+        Task<GFSessionBundle> collectSessionBundleTask = readSessionUnderWatch.onSuccessTask(executor, sessionReadResponse -> {
+            GFSessionBundle gfSessionBundle = collectSessionBundleFromSessionResponse(sessionReadResponse);
+            return Tasks.forResult(gfSessionBundle);
         });
-        return completedSessionBundlesTasks;
+        // NOTE: It is possible that GF Session and its samples are too big for passing it through IPC Binder (TransactionTooLarge),
+        // for example: android.os.TransactionTooLargeException: Error while delivering result of client request SessionReadRequest.
+        // For this rare case, we have to try to fetch all related data points one by one.
+        Task<GFSessionBundle> rescueSessionBundleTask = collectSessionBundleTask.continueWithTask(executor, (task) -> {
+            if (task.getException() instanceof MaxTriesCountExceededException) {
+                return collectSessionBundleWithDataReadRequests(session, gfTaskWatcher);
+            }
+            return task;
+        });
+
+        rescueSessionBundleTask.addOnCompleteListener(executor, (commonResultTask) -> {
+            if (!commonResultTask.isSuccessful() || commonResultTask.isCanceled()) {
+                taskCompletionSource.trySetException(commonResultTask.getException());
+                return;
+            }
+            taskCompletionSource.trySetResult(commonResultTask.getResult());
+        });
+        return taskCompletionSource.getTask();
     }
 
     @SuppressLint("NewApi")

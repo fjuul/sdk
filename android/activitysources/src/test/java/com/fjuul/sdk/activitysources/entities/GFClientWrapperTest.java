@@ -4,6 +4,7 @@ import android.os.Build;
 
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.MaxTriesCountExceededException;
+import com.google.android.gms.fitness.FitnessActivities;
 import com.google.android.gms.fitness.HistoryClient;
 import com.google.android.gms.fitness.SessionsClient;
 import com.google.android.gms.fitness.data.Bucket;
@@ -12,9 +13,13 @@ import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
+import com.google.android.gms.fitness.data.Session;
 import com.google.android.gms.fitness.request.DataReadRequest;
+import com.google.android.gms.fitness.request.SessionReadRequest;
 import com.google.android.gms.fitness.result.DataReadResponse;
 import com.google.android.gms.fitness.result.DataReadResult;
+import com.google.android.gms.fitness.result.SessionReadResponse;
+import com.google.android.gms.fitness.result.SessionReadResult;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
@@ -33,10 +38,13 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -73,6 +81,11 @@ public class GFClientWrapperTest {
     }
 
     public static boolean isTimeIntervalOfRequest(DataReadRequest request, Date start, Date end) {
+        return new Date(request.getStartTime(TimeUnit.MILLISECONDS)).equals(start) &&
+            new Date(request.getEndTime(TimeUnit.MILLISECONDS)).equals(end);
+    }
+
+    public static boolean isTimeIntervalOfRequest(SessionReadRequest request, Date start, Date end) {
         return new Date(request.getStartTime(TimeUnit.MILLISECONDS)).equals(start) &&
             new Date(request.getEndTime(TimeUnit.MILLISECONDS)).equals(end);
     }
@@ -715,6 +728,544 @@ public class GFClientWrapperTest {
         }
     }
 
+    public static class GetSessionsTest extends GivenRobolectricContext {
+        static final DataSource hrDataSource = new DataSource.Builder()
+            .setDataType(DataType.TYPE_HEART_RATE_BPM)
+            .setType(DataSource.TYPE_DERIVED).build();
+        static final DataSource stepsDataSource = new DataSource.Builder()
+            .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+            .setType(DataSource.TYPE_DERIVED).build();
+        static final DataSource caloriesDataSource = new DataSource.Builder()
+            .setDataType(DataType.TYPE_CALORIES_EXPENDED)
+            .setType(DataSource.TYPE_DERIVED).build();
+        static final DataSource speedDataSource = new DataSource.Builder()
+            .setDataType(DataType.TYPE_SPEED)
+            .setType(DataSource.TYPE_DERIVED).build();
+        static final DataSource powerDataSource = new DataSource.Builder()
+            .setDataType(DataType.TYPE_POWER_SAMPLE)
+            .setType(DataSource.TYPE_DERIVED).build();
+        static final DataSource activitySegmentDataSource = new DataSource.Builder()
+            .setDataType(DataType.TYPE_ACTIVITY_SEGMENT)
+            .setType(DataSource.TYPE_DERIVED).build();
+
+        GFClientWrapper subject;
+        HistoryClient mockedHistoryClient;
+        SessionsClient mockedSessionsClient;
+        GFDataUtils gfDataUtilsSpy;
+
+        public static boolean isCorrectDetailedSessionDeadRequest(SessionReadRequest request, Session session) {
+            Date sessionStart = new Date(session.getStartTime(TimeUnit.MILLISECONDS));
+            Date sessionEnd = new Date(session.getEndTime(TimeUnit.MILLISECONDS));
+            Set<DataType> readingSessionDataTypes = Stream.of(
+                DataType.TYPE_STEP_COUNT_DELTA,
+                DataType.TYPE_HEART_RATE_BPM,
+                DataType.TYPE_SPEED,
+                DataType.TYPE_CALORIES_EXPENDED,
+                DataType.TYPE_POWER_SAMPLE,
+                DataType.TYPE_ACTIVITY_SEGMENT).collect(Collectors.toSet());
+            return request.includeSessionsFromAllApps() &&
+                request.getSessionId().equals(session.getIdentifier()) &&
+                isTimeIntervalOfRequest(request, sessionStart, sessionEnd) &&
+                request.getDataTypes().stream().collect(Collectors.toSet()).equals(readingSessionDataTypes);
+        }
+
+        public static boolean isSingleDataTypeReadRequest(DataReadRequest request, DataType type) {
+            return request.getDataTypes().size() == 1 && request.getDataTypes().get(0).equals(type);
+        }
+
+        @Before
+        public void beforeTests() {
+            mockedHistoryClient = mock(HistoryClient.class);
+            mockedSessionsClient = mock(SessionsClient.class);
+            GFDataUtils gfDataUtils = new GFDataUtils();
+            gfDataUtilsSpy = spy(gfDataUtils);
+            subject = new GFClientWrapper(TEST_CONFIG, mockedHistoryClient, mockedSessionsClient, gfDataUtilsSpy);
+        }
+
+        // check: many sessions list
+        // check: all detailed session request should be executed only after session list requests
+        // check: if detailed session request failed due to timeout => query all samples one by one
+
+        @Test
+        public void getSessions_whenOngoingSessions_returnsTaskWithEmptyList() throws ExecutionException, InterruptedException {
+            Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
+            Date end = Date.from(Instant.parse("2020-10-01T23:59:59.999Z"));
+
+            Session ongoingSession = new Session.Builder()
+                .setActivity(FitnessActivities.WALKING)
+                .setName("ongoing walking")
+                .setStartTime(Date.from(Instant.parse("2020-10-01T10:00:00Z")).getTime(), TimeUnit.MILLISECONDS)
+                .build();
+            SessionReadResponse readResponse = createTestSessionReadResponse(ongoingSession);
+            when(mockedSessionsClient.readSession(Mockito.any())).thenReturn(Tasks.forResult(readResponse));
+
+            Task<List<GFSessionBundle>> result = subject.getSessions(start, end, Duration.ofMinutes(5));
+            testExecutor.submit(() -> Tasks.await(result)).get();
+            assertTrue("successful task", result.isSuccessful());
+            assertTrue("should have empty list", result.getResult().isEmpty());
+
+            InOrder inOrder = inOrder(mockedSessionsClient);
+            inOrder.verify(mockedSessionsClient).readSession(argThat(request -> {
+                return isTimeIntervalOfRequest(request, start, end) && request.includeSessionsFromAllApps();
+            }));
+            inOrder.verifyNoMoreInteractions();
+
+            // should split input date ranges into 5-day chunks for the session list
+            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofDays(5));
+        }
+
+        @Test
+        public void getSessions_whenOneCompletedSessionWithSuccessfulDetailedRequest_returnsTaskWithSessions() throws ExecutionException, InterruptedException {
+            final Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
+            final Date end = Date.from(Instant.parse("2020-10-01T23:59:59.999Z"));
+
+            final Date sessionStart = Date.from(Instant.parse("2020-10-01T10:00:00Z"));
+            final Date sessionEnd = Date.from(Instant.parse("2020-10-01T10:15:00Z"));
+
+            Session _session = new Session.Builder()
+                .setActivity(FitnessActivities.WALKING)
+                .setIdentifier("session#1")
+                .setName("short walking")
+                .setStartTime(sessionStart.getTime(), TimeUnit.MILLISECONDS)
+                .setEndTime(sessionEnd.getTime(), TimeUnit.MILLISECONDS)
+                .build();
+            // spied session to substitute package identifier
+            Session session = spy(_session);
+            when(session.getAppPackageName()).thenReturn("com.fitness.app");
+            SessionReadResponse readResponse = createTestSessionReadResponse(session);
+            DataSet hrDataSet = DataSet.builder(hrDataSource).add(
+                DataPoint.builder(hrDataSource)
+                    .setTimeInterval(sessionStart.getTime(), sessionEnd.getTime(), TimeUnit.MILLISECONDS)
+                    .setField(Field.FIELD_BPM, 77f)
+                    .build()
+            ).build();
+            DataSet caloriesDataSet = DataSet.builder(caloriesDataSource).add(
+                DataPoint.builder(caloriesDataSource)
+                    .setTimeInterval(sessionStart.getTime(), sessionEnd.getTime(), TimeUnit.MILLISECONDS)
+                    .setField(Field.FIELD_CALORIES, 13.2f)
+                    .build()
+            ).build();
+            DataSet stepsDataSet = DataSet.builder(stepsDataSource).add(
+                DataPoint.builder(stepsDataSource)
+                    .setTimeInterval(sessionStart.getTime(), sessionEnd.getTime(), TimeUnit.MILLISECONDS)
+                    .setField(Field.FIELD_STEPS, 1250)
+                    .build()
+            ).build();
+            DataSet powerDataSet = DataSet.builder(powerDataSource).add(
+                DataPoint.builder(powerDataSource)
+                    .setTimeInterval(sessionStart.getTime(), sessionEnd.getTime(), TimeUnit.MILLISECONDS)
+                    .setField(Field.FIELD_WATTS, 5f)
+                    .build()
+            ).build();
+            DataSet speedDataSet = DataSet.builder(speedDataSource).add(
+                DataPoint.builder(speedDataSource)
+                    .setTimeInterval(sessionStart.getTime(), sessionEnd.getTime(), TimeUnit.MILLISECONDS)
+                    .setField(Field.FIELD_SPEED, 0.87f)
+                    .build()
+            ).build();
+            DataSet activitySegmentsDataSet = DataSet.builder(activitySegmentDataSource).add(
+                DataPoint.builder(activitySegmentDataSource)
+                    .setTimeInterval(sessionStart.getTime(), sessionEnd.getTime(), TimeUnit.MILLISECONDS)
+                    .setActivityField(Field.FIELD_ACTIVITY, FitnessActivities.WALKING)
+                    .build()
+            ).build();
+            SessionReadResponse detailedSessionResponse = createTestSessionReadResponseWithDetailedSession(
+                session,
+                caloriesDataSet,
+                hrDataSet,
+                stepsDataSet,
+                powerDataSet,
+                speedDataSet,
+                activitySegmentsDataSet);
+            when(mockedSessionsClient.readSession(Mockito.any()))
+                .thenReturn(Tasks.forResult(readResponse))
+                .thenReturn(Tasks.forResult(detailedSessionResponse));
+            Task<List<GFSessionBundle>> result = subject.getSessions(start, end, Duration.ofMinutes(5));
+            testExecutor.submit(() -> Tasks.await(result)).get();
+            assertTrue("successful task", result.isSuccessful());
+            assertTrue("task should have a list with one session", result.getResult().size() == 1);
+            GFSessionBundle sessionBundle = result.getResult().get(0);
+            assertEquals("should collect the session bundle",
+                "session#1",
+                sessionBundle.getId());
+            assertEquals("should collect the session bundle",
+                "short walking",
+                sessionBundle.getName());
+            assertEquals("should collect the session bundle",
+                "walking",
+                sessionBundle.getActivityType());
+            assertEquals("should collect the session bundle",
+                7,
+                sessionBundle.getType());
+            assertEquals("should collect the session bundle",
+                "com.fitness.app",
+                sessionBundle.getApplicationIdentifier());
+            assertEquals("should collect the session bundle",
+                sessionStart,
+                sessionBundle.getTimeStart());
+            assertEquals("should collect the session bundle",
+                sessionEnd,
+                sessionBundle.getTimeEnd());
+
+            assertTrue("session bundle should have 1 calorie",
+                sessionBundle.getCalories().size() == 1);
+            GFCalorieDataPoint calorie = sessionBundle.getCalories().get(0);
+            assertEquals("should collect calorie's start time",
+                sessionStart,
+                calorie.getStart()
+                );
+            assertEquals("should collect calorie's end time",
+                sessionEnd,
+                calorie.getEnd()
+            );
+            assertEquals("should collect calorie's kcals",
+                13.2f,
+                calorie.getValue(),
+                0.00001
+            );
+            assertEquals("should collect calorie's datasource",
+                "derived:com.google.calories.expended:",
+                calorie.getDataSource()
+            );
+
+            assertEquals("session bundle should have 1 steps", 1, sessionBundle.getSteps().size());
+            GFStepsDataPoint steps = sessionBundle.getSteps().get(0);
+            assertEquals("should collect steps' start time",
+                sessionStart,
+                steps.getStart());
+            assertEquals("should collect steps' end time",
+                sessionEnd,
+                steps.getEnd());
+            assertEquals("should collect steps count",
+                (Integer)1250,
+                steps.getValue());
+            assertEquals("should collect steps' datasource",
+                "derived:com.google.step_count.delta:",
+                steps.getDataSource());
+
+            assertTrue("session bundle should have 1 hr",
+                sessionBundle.getHeartRate().size() == 1);
+            GFHRDataPoint hr = sessionBundle.getHeartRate().get(0);
+            assertEquals("should collect hr's start time as an instant measurement",
+                sessionEnd,
+                hr.getStart());
+            assertNull("should not collect hr's end time", hr.getEnd());
+            assertEquals("should collect hr's bpm",
+                77f,
+                hr.getValue(),
+                0.00001);
+            assertEquals("should collect hr's datasource",
+                "derived:com.google.heart_rate.bpm:",
+                hr.getDataSource());
+
+            assertTrue("session bundle should have 1 speed",
+                sessionBundle.getSpeed().size() == 1);
+            GFSpeedDataPoint speed = sessionBundle.getSpeed().get(0);
+            assertEquals("should collect speed's start time as an instant measurement",
+                sessionEnd,
+                speed.getStart());
+            assertNull("should not collect speed's end time", speed.getEnd());
+            assertEquals("should collect speed's value",
+                0.87f,
+                speed.getValue(),
+                0.00001);
+            assertEquals("should collect speed's datasource",
+                "derived:com.google.speed:",
+                speed.getDataSource());
+
+            assertTrue("session bundle should have 1 power sample",
+                sessionBundle.getPower().size() == 1);
+            GFPowerDataPoint power = sessionBundle.getPower().get(0);
+            assertEquals("should collect power's start time as an instant measurement",
+                sessionEnd,
+                power.getStart());
+            assertNull("should not collect power's end time", power.getEnd());
+            assertEquals("should collect power's watts",
+                5f,
+                power.getValue(),
+                0.00001);
+            assertEquals("should collect power's datasource",
+                "derived:com.google.power.sample:",
+                power.getDataSource());
+
+            assertTrue("session bundle should have 1 activity segment",
+                sessionBundle.getActivitySegments().size() == 1);
+            GFActivitySegmentDataPoint activitySegment = sessionBundle.getActivitySegments().get(0);
+            assertEquals("should collect segment's start time",
+                sessionStart,
+                activitySegment.getStart());
+            assertEquals("should collect segment's end time",
+                sessionEnd,
+                activitySegment.getEnd());
+            assertEquals("should collect segment's type",
+                (Integer)7,
+                activitySegment.getValue());
+            assertEquals("should collect segment's datasource",
+                "derived:com.google.activity.segment:",
+                activitySegment.getDataSource());
+
+            InOrder inOrder = inOrder(mockedSessionsClient);
+            inOrder.verify(mockedSessionsClient).readSession(argThat(request -> {
+                return isTimeIntervalOfRequest(request, start, end) && request.includeSessionsFromAllApps();
+            }));
+            inOrder.verify(mockedSessionsClient).readSession(argThat(request -> {
+                return isCorrectDetailedSessionDeadRequest(request, session);
+            }));
+            inOrder.verifyNoMoreInteractions();
+
+            // should split input date ranges into 5-day chunks for the session list
+            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofDays(5));
+        }
+
+        @Test
+        public void getSessions_whenOneCompletedSessionWithFailedDetailedRequest_returnsTaskWithSessions() throws ExecutionException, InterruptedException {
+            final Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
+            final Date end = Date.from(Instant.parse("2020-10-01T23:59:59.999Z"));
+
+            final Date sessionStart = Date.from(Instant.parse("2020-10-01T10:00:00Z"));
+            final Date sessionEnd = Date.from(Instant.parse("2020-10-01T10:15:00Z"));
+
+            Session _session = new Session.Builder()
+                .setActivity(FitnessActivities.WALKING)
+                .setIdentifier("session#1")
+                .setName("short walking")
+                .setStartTime(sessionStart.getTime(), TimeUnit.MILLISECONDS)
+                .setEndTime(sessionEnd.getTime(), TimeUnit.MILLISECONDS)
+                .build();
+            // spied session to substitute package identifier
+            Session session = spy(_session);
+            when(session.getAppPackageName()).thenReturn("com.fitness.app");
+            SessionReadResponse readResponse = createTestSessionReadResponse(session);
+            DataSet hrDataSet = DataSet.builder(hrDataSource).add(
+                DataPoint.builder(hrDataSource)
+                    .setTimeInterval(sessionStart.getTime(), sessionEnd.getTime(), TimeUnit.MILLISECONDS)
+                    .setField(Field.FIELD_BPM, 77f)
+                    .build()
+            ).build();
+            DataSet caloriesDataSet = DataSet.builder(caloriesDataSource).add(
+                DataPoint.builder(caloriesDataSource)
+                    .setTimeInterval(sessionStart.getTime(), sessionEnd.getTime(), TimeUnit.MILLISECONDS)
+                    .setField(Field.FIELD_CALORIES, 13.2f)
+                    .build()
+            ).build();
+            DataSet stepsDataSet = DataSet.builder(stepsDataSource).add(
+                DataPoint.builder(stepsDataSource)
+                    .setTimeInterval(sessionStart.getTime(), sessionEnd.getTime(), TimeUnit.MILLISECONDS)
+                    .setField(Field.FIELD_STEPS, 1250)
+                    .build()
+            ).build();
+            DataSet powerDataSet = DataSet.builder(powerDataSource).add(
+                DataPoint.builder(powerDataSource)
+                    .setTimeInterval(sessionStart.getTime(), sessionEnd.getTime(), TimeUnit.MILLISECONDS)
+                    .setField(Field.FIELD_WATTS, 5f)
+                    .build()
+            ).build();
+            DataSet speedDataSet = DataSet.builder(speedDataSource).add(
+                DataPoint.builder(speedDataSource)
+                    .setTimeInterval(sessionStart.getTime(), sessionEnd.getTime(), TimeUnit.MILLISECONDS)
+                    .setField(Field.FIELD_SPEED, 0.87f)
+                    .build()
+            ).build();
+            DataSet activitySegmentsDataSet = DataSet.builder(activitySegmentDataSource).add(
+                DataPoint.builder(activitySegmentDataSource)
+                    .setTimeInterval(sessionStart.getTime(), sessionEnd.getTime(), TimeUnit.MILLISECONDS)
+                    .setActivityField(Field.FIELD_ACTIVITY, FitnessActivities.WALKING)
+                    .build()
+            ).build();
+            when(mockedSessionsClient.readSession(Mockito.any()))
+                .thenReturn(Tasks.forResult(readResponse))
+                .thenReturn(Tasks.forResult(null).continueWithTask(testUtilExecutor, (t) -> {
+                    Thread.sleep(5000);
+                    return Tasks.forCanceled();
+                }));
+            when(mockedHistoryClient.readData(Mockito.any())).thenAnswer(invocation -> {
+                DataReadRequest request = invocation.getArgument(0, DataReadRequest.class);
+                if (request.getDataTypes().size() != 1) { return null; }
+                DataType type = request.getDataTypes().get(0);
+                if (DataType.TYPE_CALORIES_EXPENDED.equals(type)) {
+                    return Tasks.forResult(createTestDataReadResponse(caloriesDataSet));
+                } else if (DataType.TYPE_STEP_COUNT_DELTA.equals(type)) {
+                    return Tasks.forResult(createTestDataReadResponse(stepsDataSet));
+                } else if (DataType.TYPE_SPEED.equals(type)) {
+                    return Tasks.forResult(createTestDataReadResponse(speedDataSet));
+                } else if (DataType.TYPE_POWER_SAMPLE.equals(type)) {
+                    return Tasks.forResult(createTestDataReadResponse(powerDataSet));
+                } else if (DataType.TYPE_ACTIVITY_SEGMENT.equals(type)) {
+                    return Tasks.forResult(createTestDataReadResponse(activitySegmentsDataSet));
+                } else if (DataType.TYPE_HEART_RATE_BPM.equals(type)) {
+                    return Tasks.forResult(createTestDataReadResponse(hrDataSet));
+                }
+                throw new IllegalArgumentException("Unpredictable invocation");
+            });
+            Task<List<GFSessionBundle>> result = subject.getSessions(start, end, Duration.ofMinutes(5));
+            testExecutor.submit(() -> Tasks.await(result)).get();
+            assertTrue("successful task", result.isSuccessful());
+            assertTrue("task should have a list with one session", result.getResult().size() == 1);
+            GFSessionBundle sessionBundle = result.getResult().get(0);
+            assertEquals("should collect the session bundle",
+                "session#1",
+                sessionBundle.getId());
+            assertEquals("should collect the session bundle",
+                "short walking",
+                sessionBundle.getName());
+            assertEquals("should collect the session bundle",
+                "walking",
+                sessionBundle.getActivityType());
+            assertEquals("should collect the session bundle",
+                7,
+                sessionBundle.getType());
+            assertEquals("should collect the session bundle",
+                "com.fitness.app",
+                sessionBundle.getApplicationIdentifier());
+            assertEquals("should collect the session bundle",
+                sessionStart,
+                sessionBundle.getTimeStart());
+            assertEquals("should collect the session bundle",
+                sessionEnd,
+                sessionBundle.getTimeEnd());
+
+            assertTrue("session bundle should have 1 calorie",
+                sessionBundle.getCalories().size() == 1);
+            GFCalorieDataPoint calorie = sessionBundle.getCalories().get(0);
+            assertEquals("should collect calorie's start time",
+                sessionStart,
+                calorie.getStart()
+            );
+            assertEquals("should collect calorie's end time",
+                sessionEnd,
+                calorie.getEnd()
+            );
+            assertEquals("should collect calorie's kcals",
+                13.2f,
+                calorie.getValue(),
+                0.00001
+            );
+            assertEquals("should collect calorie's datasource",
+                "derived:com.google.calories.expended:",
+                calorie.getDataSource()
+            );
+
+            assertTrue("session bundle should have 1 steps",
+                sessionBundle.getSteps().size() == 1);
+            GFStepsDataPoint steps = sessionBundle.getSteps().get(0);
+            assertEquals("should collect steps' start time",
+                sessionStart,
+                steps.getStart());
+            assertEquals("should collect steps' end time",
+                sessionEnd,
+                steps.getEnd());
+            assertEquals("should collect steps count",
+                (Integer)1250,
+                steps.getValue());
+            assertEquals("should collect steps' datasource",
+                "derived:com.google.step_count.delta:",
+                steps.getDataSource());
+
+            assertTrue("session bundle should have 1 hr",
+                sessionBundle.getHeartRate().size() == 1);
+            GFHRDataPoint hr = sessionBundle.getHeartRate().get(0);
+            assertEquals("should collect hr's start time as an instant measurement",
+                sessionEnd,
+                hr.getStart());
+            assertNull("should not collect hr's end time", hr.getEnd());
+            assertEquals("should collect hr's bpm",
+                77f,
+                hr.getValue(),
+                0.00001);
+            assertEquals("should collect hr's datasource",
+                "derived:com.google.heart_rate.bpm:",
+                hr.getDataSource());
+
+            assertTrue("session bundle should have 1 speed",
+                sessionBundle.getSpeed().size() == 1);
+            GFSpeedDataPoint speed = sessionBundle.getSpeed().get(0);
+            assertEquals("should collect speed's start time as an instant measurement",
+                sessionEnd,
+                speed.getStart());
+            assertNull("should not collect speed's end time", speed.getEnd());
+            assertEquals("should collect speed's value",
+                0.87f,
+                speed.getValue(),
+                0.00001);
+            assertEquals("should collect speed's datasource",
+                "derived:com.google.speed:",
+                speed.getDataSource());
+
+            assertTrue("session bundle should have 1 power sample",
+                sessionBundle.getPower().size() == 1);
+            GFPowerDataPoint power = sessionBundle.getPower().get(0);
+            assertEquals("should collect power's start time as an instant measurement",
+                sessionEnd,
+                power.getStart());
+            assertNull("should not collect power's end time", power.getEnd());
+            assertEquals("should collect power's watts",
+                5f,
+                power.getValue(),
+                0.00001);
+            assertEquals("should collect power's datasource",
+                "derived:com.google.power.sample:",
+                power.getDataSource());
+
+            assertTrue("session bundle should have 1 activity segment",
+                sessionBundle.getActivitySegments().size() == 1);
+            GFActivitySegmentDataPoint activitySegment = sessionBundle.getActivitySegments().get(0);
+            assertEquals("should collect segment's start time",
+                sessionStart,
+                activitySegment.getStart());
+            assertEquals("should collect segment's end time",
+                sessionEnd,
+                activitySegment.getEnd());
+            assertEquals("should collect segment's type",
+                (Integer)7,
+                activitySegment.getValue());
+            assertEquals("should collect segment's datasource",
+                "derived:com.google.activity.segment:",
+                activitySegment.getDataSource());
+
+            InOrder sessionClientInOrder = inOrder(mockedSessionsClient);
+            sessionClientInOrder.verify(mockedSessionsClient).readSession(argThat(request -> {
+                return isTimeIntervalOfRequest(request, start, end) && request.includeSessionsFromAllApps();
+            }));
+            sessionClientInOrder.verify(mockedSessionsClient).readSession(argThat(request -> {
+                return isCorrectDetailedSessionDeadRequest(request, session);
+            }));
+            sessionClientInOrder.verifyNoMoreInteractions();
+            InOrder historyClientInOrder = inOrder(mockedHistoryClient);
+            historyClientInOrder.verify(mockedHistoryClient).readData(argThat(request -> {
+                return isSingleDataTypeReadRequest(request, DataType.TYPE_HEART_RATE_BPM) &&
+                    isTimeIntervalOfRequest(request, sessionStart, sessionEnd);
+            }));
+            historyClientInOrder.verify(mockedHistoryClient).readData(argThat(request -> {
+                return isSingleDataTypeReadRequest(request, DataType.TYPE_STEP_COUNT_DELTA) &&
+                    isTimeIntervalOfRequest(request, sessionStart, sessionEnd);
+            }));
+            historyClientInOrder.verify(mockedHistoryClient).readData(argThat(request -> {
+                return isSingleDataTypeReadRequest(request, DataType.TYPE_SPEED) &&
+                    isTimeIntervalOfRequest(request, sessionStart, sessionEnd);
+            }));
+            historyClientInOrder.verify(mockedHistoryClient).readData(argThat(request -> {
+                return isSingleDataTypeReadRequest(request, DataType.TYPE_POWER_SAMPLE) &&
+                    isTimeIntervalOfRequest(request, sessionStart, sessionEnd);
+            }));
+            historyClientInOrder.verify(mockedHistoryClient).readData(argThat(request -> {
+                return isSingleDataTypeReadRequest(request, DataType.TYPE_CALORIES_EXPENDED) &&
+                    isTimeIntervalOfRequest(request, sessionStart, sessionEnd);
+            }));
+            historyClientInOrder.verify(mockedHistoryClient).readData(argThat(request -> {
+                return isSingleDataTypeReadRequest(request, DataType.TYPE_ACTIVITY_SEGMENT) &&
+                    isTimeIntervalOfRequest(request, sessionStart, sessionEnd);
+            }));
+            historyClientInOrder.verifyNoMoreInteractions();
+
+            // should split input date ranges into 5-day chunks for the session list
+            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofDays(5));
+            // should split date ranges into 15-minutes chunks for subqueries
+            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(sessionStart, sessionEnd, Duration.ofMinutes(15));
+        }
+        // todo: many sessions lists
+
+    }
+
     public static Bucket createMockedSoleBucket(Date start, Date end, DataSource source, DataPoint... dataPoints) {
         Bucket mockedBucket = mock(Bucket.class);
         DataSet ds = DataSet.builder(source).addAll(Arrays.asList(dataPoints)).build();
@@ -753,5 +1304,32 @@ public class GFClientWrapperTest {
         when(mockedDataReadResult.getBuckets()).thenReturn(Arrays.asList(buckets));
         dataReadResponse.setResult(mockedDataReadResult);
         return dataReadResponse;
+    }
+
+    public static DataReadResponse createTestDataReadResponse(DataSet... dataSets) {
+        DataReadResponse dataReadResponse = new DataReadResponse();
+        DataReadResult mockedDataReadResult = mock(DataReadResult.class);
+        Arrays.stream(dataSets).forEach(dataSet -> {
+            when(mockedDataReadResult.getDataSet(dataSet.getDataType())).thenReturn(dataSet);
+        });
+        dataReadResponse.setResult(mockedDataReadResult);
+        return dataReadResponse;
+    }
+
+    public static SessionReadResponse createTestSessionReadResponse(Session... sessions) {
+        SessionReadResponse sessionReadResponse = new SessionReadResponse();
+        SessionReadResult mockedReadResult = mock(SessionReadResult.class);
+        when(mockedReadResult.getSessions()).thenReturn(Arrays.asList(sessions));
+        sessionReadResponse.setResult(mockedReadResult);
+        return sessionReadResponse;
+    }
+
+    public static SessionReadResponse createTestSessionReadResponseWithDetailedSession(Session session, DataSet... dataSets) {
+        SessionReadResponse sessionReadResponse = new SessionReadResponse();
+        SessionReadResult mockedReadResult = mock(SessionReadResult.class);
+        when(mockedReadResult.getSessions()).thenReturn(Arrays.asList(session));
+        when(mockedReadResult.getDataSet(session)).thenReturn(Arrays.asList(dataSets));
+        sessionReadResponse.setResult(mockedReadResult);
+        return sessionReadResponse;
     }
 }

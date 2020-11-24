@@ -3,7 +3,7 @@ import HealthKit
 import FjuulCore
 
 class HealthKitManager {
-    static private let healthStore = HKHealthStore()
+    static let healthStore = HKHealthStore()
 
     private var persistor: Persistor
     private var hkAnchorStore: HKAnchorStore
@@ -55,6 +55,10 @@ class HealthKitManager {
             dataTypes.insert(HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!)
         }
 
+        if config.healthKitConfig.dataTypesToRead.contains(.heartRate) {
+            dataTypes.insert(HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!)
+        }
+
 //                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!,
 //                       HKObjectType.workoutType()
         return dataTypes
@@ -101,7 +105,7 @@ class HealthKitManager {
                 self.dataHandler(data) { result in
                     switch result {
                     case .success:
-                        print("SUCESS hadled backgroundDelivery for \(sampleType), with newAnchor: \(newAnchor)")
+                        print("SUCESS sync for \(sampleType), with newAnchor: \(newAnchor)")
                         self.saveAnchorBySampleType(newAnchor: newAnchor, sampleType: sampleType)
                     case .failure(let err):
                         error = err
@@ -172,6 +176,7 @@ class HealthKitManager {
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!,
              HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!,
              HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!,
+             HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!,
              HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!:
             self.fetchIntradayUpdates(sampleType: (sampleType as? HKQuantityType)!) { (data, newAnchor) in
                 completion(data, newAnchor)
@@ -183,47 +188,31 @@ class HealthKitManager {
 
     private func fetchIntradayUpdates(sampleType: HKQuantityType, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
         self.getIntradayBatchSegments(sampleType: sampleType) { batchStartDates, newAnchor in
-            self.fetchIntradayStatisticsCollections(sampleType: sampleType, batchDates: batchStartDates) { results in
+            if sampleType == HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)! {
+                self.fetchDiscretStatisticsCollections(sampleType: sampleType, batchDates: batchStartDates) { results in
+                    completion(HKRequestData(hrData: results.count > 0 ? results : nil ), newAnchor)
+                }
+            } else {
+                self.fetchIntradayStatisticsCollections(sampleType: sampleType, batchDates: batchStartDates) { results in
+                    let hkRequestData = self.buildRequestData(batches: results, sampleType: sampleType)
 
-                let hkRequestData = self.buildRequestData(data: results, sampleType: sampleType)
-
-                completion(hkRequestData, newAnchor)
+                    completion(hkRequestData, newAnchor)
+                }
             }
         }
     }
 
-    private func fetchIntradayStatisticsCollections(sampleType: HKQuantityType, batchDates: Set<Date>, completion: @escaping ([HKStatistics]) -> Void) {
-        let calendar = Calendar.current
-        var interval = DateComponents()
-        interval.minute = 1
-
-        // Always start from beginning of hour
-        let anchorDate = HKDataUtils.beginningOfHour(date: calendar.date(byAdding: .day, value: -30, to: Date()))!
-
-        let query = HKStatisticsCollectionQuery(quantityType: sampleType,
-                                                quantitySamplePredicate: self.intradatPredicates(batchDates: batchDates),
-                                                options: [.cumulativeSum, .separateBySource],
-                                                anchorDate: anchorDate,
-                                                intervalComponents: interval)
-        // Set the results handler
-        query.initialResultsHandler = { query, results, error in
-            guard let statsCollection = results else {
-                completion([])
-                return
-            }
-
-            var result: [HKStatistics] = []
-            let endDate = Date()
-
-            statsCollection.enumerateStatistics(from: anchorDate, to: endDate) { statistics, _ in
-                if statistics.sumQuantity() != nil {
-                    result.append(statistics)
-                }
-            }
+    // TODO: Refactoring: remove extra function
+    private func fetchDiscretStatisticsCollections(sampleType: HKQuantityType, batchDates: Set<Date>, completion: @escaping ([HrBatchDataPoint]) -> Void) {
+        HrFetcher.fetch(predicate: self.intradatPredicates(batchDates: batchDates), batchDates: batchDates) { result in
             completion(result)
         }
+    }
 
-        HealthKitManager.healthStore.execute(query)
+    private func fetchIntradayStatisticsCollections(sampleType: HKQuantityType, batchDates: Set<Date>, completion: @escaping ([BatchDataPoint]) -> Void) {
+        HrFetcher.fetchIntradayData(sampleType: sampleType, predicate: self.intradatPredicates(batchDates: batchDates), batchDates: batchDates) { result in
+            completion(result)
+        }
     }
 
     private func intradatPredicates(batchDates: Set<Date>) -> NSCompoundPredicate {
@@ -257,11 +246,6 @@ class HealthKitManager {
 
         let anchorDate = self.getAnchorBySampleType(sampleType: sampleType)
 
-//        // Exclude manually added data
-//        let wasUserEnteredPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
-//        let fromDate = Calendar.current.date(byAdding: .day, value: -30, to: Date())
-//        let startDatePredicate = HKQuery.predicateForSamples(withStart: fromDate, end: Date(), options: .strictStartDate)
-//        let compound = NSCompoundPredicate(andPredicateWithSubpredicates: [startDatePredicate, wasUserEnteredPredicate])
         let query = HKAnchoredObjectQuery(type: sampleType,
                                           predicate: self.samplesPredicate(),
                                           anchor: anchorDate,
@@ -281,16 +265,17 @@ class HealthKitManager {
     }
 
     private func getAnchorBySampleType(sampleType: HKObjectType) -> HKQueryAnchor {
-//        return HKQueryAnchor.init(fromValue: 0)
         switch sampleType {
-        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
+        case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!:
             return self.hkAnchorStore.anchors?[.activeEnergyBurned] ?? HKQueryAnchor.init(fromValue: 0)
-        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!:
+        case HKObjectType.quantityType(forIdentifier: .stepCount)!:
             return self.hkAnchorStore.anchors?[.stepCount] ?? HKQueryAnchor.init(fromValue: 0)
-        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!:
+        case HKObjectType.quantityType(forIdentifier: .distanceCycling)!:
             return self.hkAnchorStore.anchors?[.distanceCycling] ?? HKQueryAnchor.init(fromValue: 0)
-        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!:
+        case HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning)!:
             return self.hkAnchorStore.anchors?[.distanceWalkingRunning] ?? HKQueryAnchor.init(fromValue: 0)
+        case HKObjectType.quantityType(forIdentifier: .heartRate)!:
+            return self.hkAnchorStore.anchors?[.heartRate] ?? HKQueryAnchor.init(fromValue: 0)
         default:
             return HKQueryAnchor.init(fromValue: 0)
         }
@@ -302,14 +287,16 @@ class HealthKitManager {
         }
 
         switch sampleType {
-        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
+        case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!:
             self.hkAnchorStore.anchors?[.activeEnergyBurned] = newAnchor
-        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!:
+        case HKObjectType.quantityType(forIdentifier: .stepCount)!:
             self.hkAnchorStore.anchors?[.stepCount] = newAnchor
-        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!:
+        case HKObjectType.quantityType(forIdentifier: .distanceCycling)!:
             self.hkAnchorStore.anchors?[.distanceCycling] = newAnchor
-        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!:
+        case HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning)!:
             self.hkAnchorStore.anchors?[.distanceWalkingRunning] = newAnchor
+        case HKObjectType.quantityType(forIdentifier: .heartRate)!:
+            self.hkAnchorStore.anchors?[.heartRate] = newAnchor
         default:
             return
         }
@@ -325,13 +312,7 @@ class HealthKitManager {
         return predicates
     }
 
-    private func buildRequestData(data: [HKStatistics], sampleType: HKQuantityType) -> HKRequestData? {
-        let batches = HKBatchAggregator(data: data, sampleType: sampleType).generate()
-
-        if batches.count == 0 {
-            return nil
-        }
-
+    private func buildRequestData(batches: [BatchDataPoint], sampleType: HKQuantityType) -> HKRequestData {
         switch sampleType {
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
            return HKRequestData(caloriesData: batches)
@@ -342,7 +323,7 @@ class HealthKitManager {
         case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!:
             return HKRequestData(walkingData: batches)
         default:
-            return nil
+            return HKRequestData()
         }
     }
 }

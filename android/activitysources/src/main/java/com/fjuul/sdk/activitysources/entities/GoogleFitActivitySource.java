@@ -137,7 +137,7 @@ public final class GoogleFitActivitySource extends ActivitySource {
                 callback.onResult(result);
                 return;
             }
-            if (!isOfflineAccessRequested()) {
+            if (!isOfflineAccessRequired()) {
                 Result<Void> result = Result.value(null);
                 callback.onResult(result);
             }
@@ -169,7 +169,7 @@ public final class GoogleFitActivitySource extends ActivitySource {
         }
     }
 
-    public boolean isOfflineAccessRequested() {
+    public boolean isOfflineAccessRequired() {
         return requestOfflineAccess;
     }
 

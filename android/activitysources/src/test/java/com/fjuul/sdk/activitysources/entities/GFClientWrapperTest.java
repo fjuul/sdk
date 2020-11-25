@@ -268,7 +268,7 @@ public class GFClientWrapperTest {
 
             when(mockedHistoryClient.readData(Mockito.any()))
                 .thenAnswer(invocation -> {
-                    // NOTE: here we're simulating the died request to GF
+                    // NOTE: here we're simulating the dead request to GF
                     return Tasks.forResult(null).continueWithTask(testUtilExecutor, task -> {
                         Thread.sleep(5000);
                         return task;
@@ -478,7 +478,7 @@ public class GFClientWrapperTest {
 
             when(mockedHistoryClient.readData(Mockito.any()))
                 .thenAnswer(invocation -> {
-                    // NOTE: here we're simulating the died request to GF
+                    // NOTE: here we're simulating the dead request to GF
                     return Tasks.forResult(null).continueWithTask(testUtilExecutor, task -> {
                         Thread.sleep(5000);
                         return task;
@@ -695,7 +695,7 @@ public class GFClientWrapperTest {
 
             when(mockedHistoryClient.readData(Mockito.any()))
                 .thenAnswer(invocation -> {
-                    // NOTE: here we're simulating the died request to GF
+                    // NOTE: here we're simulating the dead request to GF
                     return Tasks.forResult(null).continueWithTask(testUtilExecutor, task -> {
                         Thread.sleep(5000);
                         return task;
@@ -782,9 +782,35 @@ public class GFClientWrapperTest {
             subject = new GFClientWrapper(TEST_CONFIG, mockedHistoryClient, mockedSessionsClient, gfDataUtilsSpy);
         }
 
-        // check: many sessions list
-        // check: all detailed session request should be executed only after session list requests
-        // check: if detailed session request failed due to timeout => query all samples one by one
+        @Test
+        public void getSessions_whenOnlyShortSessions_returnsTaskWithEmptyList() throws ExecutionException, InterruptedException {
+            Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
+            Date end = Date.from(Instant.parse("2020-10-01T23:59:59.999Z"));
+
+            Session shortSession = new Session.Builder()
+                .setActivity(FitnessActivities.WALKING)
+                .setName("very short walking")
+                .setStartTime(Date.from(Instant.parse("2020-10-01T10:00:00Z")).getTime(), TimeUnit.MILLISECONDS)
+                .setEndTime(Date.from(Instant.parse("2020-10-01T10:04:59Z")).getTime(), TimeUnit.MILLISECONDS)
+                .build();
+            SessionReadResponse readResponse = createTestSessionReadResponse(shortSession);
+            when(mockedSessionsClient.readSession(Mockito.any())).thenReturn(Tasks.forResult(readResponse));
+
+            // 5 minutes duration filter is more than the session duration
+            Task<List<GFSessionBundle>> result = subject.getSessions(start, end, Duration.ofMinutes(5));
+            testExecutor.submit(() -> Tasks.await(result)).get();
+            assertTrue("successful task", result.isSuccessful());
+            assertTrue("should have empty list", result.getResult().isEmpty());
+
+            InOrder inOrder = inOrder(mockedSessionsClient);
+            inOrder.verify(mockedSessionsClient).readSession(argThat(request -> {
+                return isTimeIntervalOfRequest(request, start, end) && request.includeSessionsFromAllApps();
+            }));
+            inOrder.verifyNoMoreInteractions();
+
+            // should split input date ranges into 5-day chunks for the session list
+            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofDays(5));
+        }
 
         @Test
         public void getSessions_whenOngoingSessions_returnsTaskWithEmptyList() throws ExecutionException, InterruptedException {
@@ -1259,11 +1285,191 @@ public class GFClientWrapperTest {
 
             // should split input date ranges into 5-day chunks for the session list
             verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofDays(5));
-            // should split date ranges into 15-minutes chunks for subqueries
+            // should split date ranges into 15-minute chunks for subqueries
             verify(gfDataUtilsSpy).splitDateRangeIntoChunks(sessionStart, sessionEnd, Duration.ofMinutes(15));
         }
-        // todo: many sessions lists
 
+
+        @Test
+        public void getSessions_whenTwoSessionLists_returnsTaskWithSessions() throws ExecutionException, InterruptedException {
+            final Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
+            final Date end = Date.from(Instant.parse("2020-10-08T23:59:59.999Z"));
+
+            final Date sessionStart1 = Date.from(Instant.parse("2020-10-01T10:00:00Z"));
+            final Date sessionEnd1 = Date.from(Instant.parse("2020-10-01T10:15:00Z"));
+            final Session _session1 = new Session.Builder()
+                .setActivity(FitnessActivities.WALKING)
+                .setIdentifier("session#1")
+                .setName("short walking")
+                .setStartTime(sessionStart1.getTime(), TimeUnit.MILLISECONDS)
+                .setEndTime(sessionEnd1.getTime(), TimeUnit.MILLISECONDS)
+                .build();
+            // spied session to substitute package identifier
+            final Session session1 = spy(_session1);
+            when(session1.getAppPackageName()).thenReturn("com.fitness.app");
+
+            final Date sessionStart2 = Date.from(Instant.parse("2020-10-07T17:05:00Z"));
+            final Date sessionEnd2 = Date.from(Instant.parse("2020-10-07T17:25:00Z"));
+            final Session _session2 = new Session.Builder()
+                .setActivity(FitnessActivities.WALKING)
+                .setIdentifier("session#2")
+                .setName("running")
+                .setStartTime(sessionStart2.getTime(), TimeUnit.MILLISECONDS)
+                .setEndTime(sessionEnd2.getTime(), TimeUnit.MILLISECONDS)
+                .build();
+            // spied session to substitute package identifier
+            final Session session2 = spy(_session2);
+            when(session2.getAppPackageName()).thenReturn("com.fitness.app");
+
+            SessionReadResponse sessionResponse1 = createTestSessionReadResponse(session1);
+            SessionReadResponse sessionResponse2 = createTestSessionReadResponse(session2);
+            when(mockedSessionsClient.readSession(Mockito.any()))
+                .thenReturn(Tasks.forResult(sessionResponse1))
+                .thenReturn(Tasks.forResult(sessionResponse2))
+                .thenReturn(Tasks.forResult(sessionResponse1))
+                .thenReturn(Tasks.forResult(sessionResponse2));
+
+            Task<List<GFSessionBundle>> result = subject.getSessions(start, end, Duration.ofMinutes(5));
+            testExecutor.submit(() -> Tasks.await(result)).get();
+            assertTrue("successful task", result.isSuccessful());
+            List<GFSessionBundle> sessionBundles = result.getResult();
+            assertEquals("task should have a list with 2 sessions",
+                2,
+                sessionBundles.size());
+            assertEquals("should return sessions in the order of responses",
+                "session#1",
+                sessionBundles.get(0).getId());
+            assertEquals("should return sessions in the order of responses",
+                "session#2",
+                sessionBundles.get(1).getId());
+
+            InOrder inOrder = inOrder(mockedSessionsClient);
+            // should first request session lists for the specified dates
+            inOrder.verify(mockedSessionsClient).readSession(argThat(request -> {
+                return isTimeIntervalOfRequest(request, start, Date.from(Instant.parse("2020-10-06T00:00:00Z"))) &&
+                    request.includeSessionsFromAllApps();
+            }));
+            inOrder.verify(mockedSessionsClient).readSession(argThat(request -> {
+                return isTimeIntervalOfRequest(request, Date.from(Instant.parse("2020-10-06T00:00:00Z")), end) &&
+                    request.includeSessionsFromAllApps();
+            }));
+            // // should then request detailed sessions one be one
+            inOrder.verify(mockedSessionsClient).readSession(argThat(request -> {
+                return isCorrectDetailedSessionDeadRequest(request, session1);
+            }));
+            inOrder.verify(mockedSessionsClient).readSession(argThat(request -> {
+                return isCorrectDetailedSessionDeadRequest(request, session2);
+            }));
+            inOrder.verifyNoMoreInteractions();
+
+            // should split input date ranges into 5-day chunks for the session list
+            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofDays(5));
+        }
+
+        @Test
+        public void getSessions_whenTwoSessionListsButTheFirstRequestDies_returnsFailedTask() throws InterruptedException {
+            final Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
+            final Date end = Date.from(Instant.parse("2020-10-08T23:59:59.999Z"));
+
+            when(mockedSessionsClient.readSession(Mockito.any()))
+                // simulate the dead request to gf service
+                .thenReturn(Tasks.forResult(null).continueWithTask(testUtilExecutor, (t) -> {
+                    Thread.sleep(5000);
+                    return Tasks.forCanceled();
+                }));
+
+            Task<List<GFSessionBundle>> result = subject.getSessions(start, end, Duration.ofMinutes(5));
+            try {
+                testExecutor.submit(() -> Tasks.await(result)).get();
+            } catch (ExecutionException exception) { /* catch expected ExecutionException */ }
+
+            assertFalse("unsuccessful task", result.isSuccessful());
+            Exception exception = result.getException();
+            assertThat(exception, instanceOf(MaxTriesCountExceededException.class));
+            MaxTriesCountExceededException triesCountExceededException = (MaxTriesCountExceededException) exception;
+            assertThat("exception should have error message",
+                triesCountExceededException.getMessage(),
+                startsWith("Possible tries count (1) exceeded for task \"'fetch gf sessions' for 2020-10-01"));
+
+            InOrder inOrder = inOrder(mockedSessionsClient);
+            // should only try to request the first session list
+            inOrder.verify(mockedSessionsClient).readSession(argThat(request -> {
+                return isTimeIntervalOfRequest(request, start, Date.from(Instant.parse("2020-10-06T00:00:00Z"))) &&
+                    request.includeSessionsFromAllApps();
+            }));
+            inOrder.verifyNoMoreInteractions();
+
+            // should split input date ranges into 5-day chunks for the session list
+            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofDays(5));
+        }
+
+        @Test
+        public void getSessions_whenOneSessionListsButTheDetailedRequestAndDataReadRequestsDie_returnsFailedTask() throws InterruptedException {
+            final Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
+            final Date end = Date.from(Instant.parse("2020-10-01T23:59:59.999Z"));
+
+            final Date sessionStart = Date.from(Instant.parse("2020-10-01T10:00:00Z"));
+            final Date sessionEnd = Date.from(Instant.parse("2020-10-01T10:15:00Z"));
+            final Session _session = new Session.Builder()
+                .setActivity(FitnessActivities.WALKING)
+                .setIdentifier("session#1")
+                .setName("short walking")
+                .setStartTime(sessionStart.getTime(), TimeUnit.MILLISECONDS)
+                .setEndTime(sessionEnd.getTime(), TimeUnit.MILLISECONDS)
+                .build();
+            // spied session to substitute package identifier
+            final Session session = spy(_session);
+            when(session.getAppPackageName()).thenReturn("com.fitness.app");
+
+            SessionReadResponse readResponse = createTestSessionReadResponseWithDetailedSession(session);
+            when(mockedSessionsClient.readSession(Mockito.any()))
+                .thenReturn(Tasks.forResult(readResponse))
+                // simulate the dead request to gf service
+                .thenReturn(Tasks.forResult(null).continueWithTask(testUtilExecutor, (t) -> {
+                    Thread.sleep(5000);
+                    return Tasks.forCanceled();
+                }));
+            when(mockedHistoryClient.readData(Mockito.any()))
+                // simulate the dead request to gf service
+                .thenReturn(Tasks.forResult(null).continueWithTask(testUtilExecutor, (t) -> {
+                    Thread.sleep(5000);
+                    return Tasks.forCanceled();
+                }));
+
+            Task<List<GFSessionBundle>> result = subject.getSessions(start, end, Duration.ofMinutes(5));
+            try {
+                testExecutor.submit(() -> Tasks.await(result)).get();
+            } catch (ExecutionException exception) { /* catch expected ExecutionException */ }
+
+            assertFalse("unsuccessful task", result.isSuccessful());
+            Exception exception = result.getException();
+            assertThat(exception, instanceOf(MaxTriesCountExceededException.class));
+            MaxTriesCountExceededException triesCountExceededException = (MaxTriesCountExceededException) exception;
+            assertThat("exception should have error message",
+                triesCountExceededException.getMessage(),
+                startsWith("Possible tries count (1) exceeded for task \"'fetch gf HR for session session#1' for 2020-10-01"));
+
+            InOrder sessionClientInOrder = inOrder(mockedSessionsClient);
+            sessionClientInOrder.verify(mockedSessionsClient).readSession(argThat(request -> {
+                return isTimeIntervalOfRequest(request, start, end) &&
+                    request.includeSessionsFromAllApps();
+            }));
+            sessionClientInOrder.verify(mockedSessionsClient).readSession(argThat(request -> {
+                return isCorrectDetailedSessionDeadRequest(request, session);
+            }));
+            sessionClientInOrder.verifyNoMoreInteractions();
+
+            InOrder historyClientInOrder = inOrder(mockedHistoryClient);
+            historyClientInOrder.verify(mockedHistoryClient).readData(argThat(request -> {
+                return isSingleDataTypeReadRequest(request, DataType.TYPE_HEART_RATE_BPM) &&
+                    isTimeIntervalOfRequest(request, sessionStart, sessionEnd);
+            }));
+
+            // should split input date ranges into 5-day chunks for the session list
+            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofDays(5));
+            // should split date ranges into 15-minute chunks for subqueries
+            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(sessionStart, sessionEnd, Duration.ofMinutes(15));
+        }
     }
 
     public static Bucket createMockedSoleBucket(Date start, Date end, DataSource source, DataPoint... dataPoints) {

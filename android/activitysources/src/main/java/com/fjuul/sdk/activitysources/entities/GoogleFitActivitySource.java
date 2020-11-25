@@ -125,7 +125,17 @@ public final class GoogleFitActivitySource extends ActivitySource {
             return Tasks.forResult(null);
         }
         final ConfigClient configClient = Fitness.getConfigClient(context, account);
-        return configClient.disableFit();
+        // NOTE: for some weird reasons, ConfigClient#disableFit is not enough to revoke all
+        // granted OAuth permissions. Then we revoke these explicitly via GoogleSignInClient#revokeAccess.
+        // However then revokeAccess task resolves with error code 4 which is SIGN_IN_REQUIRED.
+        // The solution based on https://github.com/android/fit-samples/issues/28#issuecomment-557865949
+        final Task<Void> disableFitAndRevokeAccessTask = configClient.disableFit()
+            .continueWithTask((disableFitTask) -> {
+                final GoogleSignInOptions signInOptions = buildGoogleSignInOptions(requestOfflineAccess, serverClientId);
+                return GoogleSignIn.getClient(context, signInOptions).revokeAccess()
+                    .continueWithTask((revokeAccessTask) -> Tasks.forResult(null));
+            });
+        return disableFitAndRevokeAccessTask;
     }
 
     public void handleGoogleSignInResult(@NonNull Intent intent, @NonNull Callback<Void> callback) {

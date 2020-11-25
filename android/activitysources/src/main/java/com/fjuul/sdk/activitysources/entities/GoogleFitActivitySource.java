@@ -91,7 +91,7 @@ public final class GoogleFitActivitySource extends ActivitySource {
         return instance;
     }
 
-    public GoogleFitActivitySource(boolean requestOfflineAccess,
+    private GoogleFitActivitySource(boolean requestOfflineAccess,
                                    @NonNull String serverClientId,
                                    @NonNull ActivitySourcesService sourcesService,
                                    @NonNull GFDataUtils gfDataUtils,

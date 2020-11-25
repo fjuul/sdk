@@ -40,26 +40,24 @@ class HealthKitManager {
         var dataTypes: Set<HKSampleType> = []
 
         if config.healthKitConfig.dataTypesToRead.contains(.activeEnergyBurned) {
-            dataTypes.insert(HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!)
+            dataTypes.insert(HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!)
         }
 
         if config.healthKitConfig.dataTypesToRead.contains(.distanceCycling) {
-            dataTypes.insert(HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!)
+            dataTypes.insert(HKObjectType.quantityType(forIdentifier: .distanceCycling)!)
         }
 
         if config.healthKitConfig.dataTypesToRead.contains(.stepCount) {
-            dataTypes.insert(HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!)
+            dataTypes.insert(HKObjectType.quantityType(forIdentifier: .stepCount)!)
         }
 
         if config.healthKitConfig.dataTypesToRead.contains(.distanceWalkingRunning) {
-            dataTypes.insert(HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!)
+            dataTypes.insert(HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning)!)
         }
 
         if config.healthKitConfig.dataTypesToRead.contains(.heartRate) {
-            dataTypes.insert(HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!)
+            dataTypes.insert(HKObjectType.quantityType(forIdentifier: .heartRate)!)
         }
-
-//                       HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!,
 //                       HKObjectType.workoutType()
         return dataTypes
     }
@@ -173,11 +171,11 @@ class HealthKitManager {
     /// - parameter type: `HKObjectType` which has new data avilable.
     private func queryForUpdates(sampleType: HKSampleType, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
         switch sampleType {
-        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!,
-             HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!,
-             HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!,
-             HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!,
-             HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!:
+        case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!,
+             HKObjectType.quantityType(forIdentifier: .distanceCycling)!,
+             HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning)!,
+             HKObjectType.quantityType(forIdentifier: .heartRate)!,
+             HKObjectType.quantityType(forIdentifier: .stepCount)!:
             self.fetchIntradayUpdates(sampleType: (sampleType as? HKQuantityType)!) { (data, newAnchor) in
                 completion(data, newAnchor)
             }
@@ -187,31 +185,18 @@ class HealthKitManager {
     }
 
     private func fetchIntradayUpdates(sampleType: HKQuantityType, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
-        self.getIntradayBatchSegments(sampleType: sampleType) { batchStartDates, newAnchor in
-            if sampleType == HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)! {
-                self.fetchDiscretStatisticsCollections(sampleType: sampleType, batchDates: batchStartDates) { results in
+        self.getIntradayBatchSegments(sampleType: sampleType) { batchDates, newAnchor in
+            if sampleType == HKObjectType.quantityType(forIdentifier: .heartRate)! {
+                HKDataFetcher.fetchHrData(predicate: self.intradatPredicates(batchDates: batchDates), batchDates: batchDates) { results in
                     completion(HKRequestData(hrData: results.count > 0 ? results : nil ), newAnchor)
                 }
             } else {
-                self.fetchIntradayStatisticsCollections(sampleType: sampleType, batchDates: batchStartDates) { results in
+                HKDataFetcher.fetchIntradayData(sampleType: sampleType, predicate: self.intradatPredicates(batchDates: batchDates), batchDates: batchDates) { results in
                     let hkRequestData = self.buildRequestData(batches: results, sampleType: sampleType)
 
-                    completion(hkRequestData, newAnchor)
+                    completion(results.count > 0 ? hkRequestData : nil, newAnchor)
                 }
             }
-        }
-    }
-
-    // TODO: Refactoring: remove extra function
-    private func fetchDiscretStatisticsCollections(sampleType: HKQuantityType, batchDates: Set<Date>, completion: @escaping ([HrBatchDataPoint]) -> Void) {
-        HKDataFetcher.fetchHrData(predicate: self.intradatPredicates(batchDates: batchDates), batchDates: batchDates) { result in
-            completion(result)
-        }
-    }
-
-    private func fetchIntradayStatisticsCollections(sampleType: HKQuantityType, batchDates: Set<Date>, completion: @escaping ([BatchDataPoint]) -> Void) {
-        HKDataFetcher.fetchIntradayData(sampleType: sampleType, predicate: self.intradatPredicates(batchDates: batchDates), batchDates: batchDates) { result in
-            completion(result)
         }
     }
 
@@ -314,13 +299,13 @@ class HealthKitManager {
 
     private func buildRequestData(batches: [BatchDataPoint], sampleType: HKQuantityType) -> HKRequestData {
         switch sampleType {
-        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
+        case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!:
            return HKRequestData(caloriesData: batches)
-        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.stepCount)!:
+        case HKObjectType.quantityType(forIdentifier: .stepCount)!:
             return HKRequestData(stepsData: batches)
-        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!:
+        case HKObjectType.quantityType(forIdentifier: .distanceCycling)!:
             return HKRequestData(cyclingData: batches)
-        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!:
+        case HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning)!:
             return HKRequestData(walkingData: batches)
         default:
             return HKRequestData()

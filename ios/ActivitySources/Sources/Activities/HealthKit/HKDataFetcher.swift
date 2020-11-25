@@ -56,7 +56,7 @@ class HKDataFetcher {
     }
 
     static func fetchHrData(predicate: NSCompoundPredicate, batchDates: Set<Date>, completion: @escaping ([HrBatchDataPoint]) -> Void) {
-        let query = HKStatisticsCollectionQuery(quantityType: HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.heartRate)!,
+        let query = HKStatisticsCollectionQuery(quantityType: HKObjectType.quantityType(forIdentifier: .heartRate)!,
                                                 quantitySamplePredicate: predicate,
                                                 options: [.discreteMax, .discreteMin, .discreteAverage, .separateBySource],
                                                 anchorDate: self.anchor(),
@@ -115,10 +115,10 @@ class HKDataFetcher {
 
     private static func unit(sampleType: HKQuantityType) -> HKUnit {
         switch sampleType {
-        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.activeEnergyBurned)!:
+        case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!:
           return HKUnit.kilocalorie()
-        case HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceCycling)!,
-             HKObjectType.quantityType(forIdentifier: HKQuantityTypeIdentifier.distanceWalkingRunning)!:
+        case HKObjectType.quantityType(forIdentifier: .distanceCycling)!,
+             HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning)!:
             return HKUnit.meter()
         default:
           return HKUnit.count()

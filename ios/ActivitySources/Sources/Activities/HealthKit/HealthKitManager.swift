@@ -192,7 +192,7 @@ class HealthKitManager {
                 }
             } else {
                 HKDataFetcher.fetchIntradayData(sampleType: sampleType, predicate: self.intradatPredicates(batchDates: batchDates), batchDates: batchDates) { results in
-                    let hkRequestData = self.buildRequestData(batches: results, sampleType: sampleType)
+                    let hkRequestData = HKRequestData.build(sampleType: sampleType, batches: results)
 
                     completion(results.count > 0 ? hkRequestData : nil, newAnchor)
                 }
@@ -295,20 +295,5 @@ class HealthKitManager {
         }
 
         return predicates
-    }
-
-    private func buildRequestData(batches: [BatchDataPoint], sampleType: HKQuantityType) -> HKRequestData {
-        switch sampleType {
-        case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!:
-           return HKRequestData(caloriesData: batches)
-        case HKObjectType.quantityType(forIdentifier: .stepCount)!:
-            return HKRequestData(stepsData: batches)
-        case HKObjectType.quantityType(forIdentifier: .distanceCycling)!:
-            return HKRequestData(cyclingData: batches)
-        case HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning)!:
-            return HKRequestData(walkingData: batches)
-        default:
-            return HKRequestData()
-        }
     }
 }

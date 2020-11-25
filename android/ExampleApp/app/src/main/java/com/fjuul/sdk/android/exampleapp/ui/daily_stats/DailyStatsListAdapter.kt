@@ -31,6 +31,7 @@ class DailyStatsListAdapter(private val context: Context, var dataSource: Array<
         textView.text =
             """
 |date: ${item.date};
+|lowest: ${item.lowest.metMinutes} metMinutes;
 |low: ${item.low.metMinutes} metMinutes;
 |moderate: ${item.moderate.metMinutes} metMinutes;
 |high: ${item.high.metMinutes} metMinutes""".trimMargin()

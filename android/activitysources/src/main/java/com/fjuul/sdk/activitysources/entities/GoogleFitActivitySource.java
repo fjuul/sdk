@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -224,6 +225,11 @@ public final class GoogleFitActivitySource extends ActivitySource {
 
     // TODO: javadoc
     public static boolean isActivityRecognitionPermissionGranted(@NonNull Context context) {
+        // NOTE: dangerous permissions (aka runtime permissions) appeared since android api level 23
+        // (Android 6.0 Marshmallow). Before that, they granted automatically.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return true;
+        }
         int result = ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION);
         return result == PackageManager.PERMISSION_GRANTED;
     }

@@ -102,8 +102,15 @@ class GoogleFitDataManager {
             uploadData.setStepsData(steps);
             return Tasks.forResult(uploadData);
         });
-        final Task<ApiCallResult<Void>> sendDataTask = prepareUploadDataTask.onSuccessTask(localBackgroundExecutor, this::sendGFUploadData);
-        final Task<Void> saveSyncMetadataTask = sendDataTask.onSuccessTask(localBackgroundExecutor, apiCallResult -> {
+        final Task<Void> sendDataIfNotEmptyTask = prepareUploadDataTask.onSuccessTask(localBackgroundExecutor, (uploadData) -> {
+            if (uploadData.isEmpty()) {
+                return Tasks.forResult(null);
+            }
+            return this.sendGFUploadData(uploadData).onSuccessTask(localBackgroundExecutor, (apiCallResult) -> {
+                return Tasks.forResult(apiCallResult.getValue());
+            });
+        });
+        final Task<Void> saveSyncMetadataTask = sendDataIfNotEmptyTask.onSuccessTask(localBackgroundExecutor, apiCallResult -> {
             finalGetCaloriesTask.getResult().forEach(gfSyncMetadataStore::saveSyncMetadataOfCalories);
             finalGetStepsTask.getResult().forEach(gfSyncMetadataStore::saveSyncMetadataOfSteps);
             finalGetHRTask.getResult().forEach(gfSyncMetadataStore::saveSyncMetadataOfHR);

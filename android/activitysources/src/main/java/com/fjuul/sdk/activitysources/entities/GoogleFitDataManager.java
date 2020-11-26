@@ -185,7 +185,7 @@ class GoogleFitDataManager {
         final TaskCompletionSource<ApiCallResult<Void>> sendDataTaskCompletionSource = new TaskCompletionSource<>();
         activitySourcesService.uploadGoogleFitData(uploadData).enqueue((apiCall, result) -> {
             if (result.isError()) {
-                final CommonException exception = new CommonException("Failed to send data to the server: " + result.getError().getLocalizedMessage());
+                final CommonException exception = new CommonException("Failed to send data to the server", result.getError());
                 sendDataTaskCompletionSource.trySetException(exception);
                 return;
             }

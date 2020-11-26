@@ -31,7 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-final class GoogleFitDataManager {
+class GoogleFitDataManager {
     private static final String TAG = "GoogleFitDataManager";
 
     private static final ExecutorService localBackgroundExecutor = Executors.newCachedThreadPool();

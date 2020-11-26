@@ -54,7 +54,7 @@ import com.google.android.gms.internal.fitness.zzko;
 // Also there may be a case when GoogleFit service can't response to the requester on the first attempts due to failed delivery.
 // Therefore the wrapper divide one big request into smaller ones and use a fixed thread pool to watch for the fired requests with a timeout and retries.
 
-public final class GFClientWrapper {
+class GFClientWrapper {
     private static final String TAG = "GFClientWrapper";
 
     static class Config {

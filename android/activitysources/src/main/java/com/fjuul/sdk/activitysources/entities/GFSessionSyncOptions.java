@@ -9,9 +9,9 @@ import java.time.Duration;
 import java.time.LocalDate;
 
 public final class GFSessionSyncOptions {
-    @NonNull final LocalDate startDate;
-    @NonNull final LocalDate endDate;
-    @NonNull final Duration minimumSessionDuration;
+    @NonNull private final LocalDate startDate;
+    @NonNull private final LocalDate endDate;
+    @NonNull private final Duration minimumSessionDuration;
 
     private GFSessionSyncOptions(@NonNull LocalDate startDate, @NonNull LocalDate endDate, @NonNull Duration minimumSessionDuration) {
         this.startDate = startDate;
@@ -35,9 +35,9 @@ public final class GFSessionSyncOptions {
     }
 
     public static class Builder {
-        @Nullable LocalDate startDate;
-        @Nullable LocalDate endDate;
-        @Nullable Duration minimumSessionDuration;
+        @Nullable private LocalDate startDate;
+        @Nullable private LocalDate endDate;
+        @Nullable private Duration minimumSessionDuration;
 
         public Builder setDateRange(@NonNull LocalDate startDate, @NonNull LocalDate endDate) {
             this.startDate = startDate;

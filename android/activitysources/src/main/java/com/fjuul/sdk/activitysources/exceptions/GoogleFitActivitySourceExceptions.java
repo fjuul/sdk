@@ -10,6 +10,10 @@ public final class GoogleFitActivitySourceExceptions {
             super(message);
         }
 
+        public CommonException(@NonNull String message, @NonNull Throwable throwable) {
+            super(message, throwable);
+        }
+
         public CommonException(@NonNull Throwable throwable) {
             super(throwable);
         }

@@ -70,6 +70,7 @@ public class GFClientWrapperTest {
     @AfterClass
     public static void shutdownExecutor() {
         testUtilExecutor.shutdownNow();
+        testExecutor.shutdownNow();
     }
 
     @RunWith(RobolectricTestRunner.class)

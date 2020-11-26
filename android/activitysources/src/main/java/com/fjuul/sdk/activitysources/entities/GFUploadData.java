@@ -43,4 +43,8 @@ public class GFUploadData {
     public void setSessionsData(@NonNull List<GFSessionBundle> sessionsData) {
         this.sessionsData = sessionsData;
     }
+
+    public boolean isEmpty() {
+        return caloriesData.isEmpty() && stepsData.isEmpty() && hrData.isEmpty() && sessionsData.isEmpty();
+    }
 }

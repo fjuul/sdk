@@ -41,7 +41,7 @@ final class GoogleFitDataManager {
     final private @NonNull GFSyncMetadataStore gfSyncMetadataStore;
     final private @NonNull ActivitySourcesService activitySourcesService;
 
-    public GoogleFitDataManager(@NonNull GFClientWrapper client, @NonNull GFDataUtils gfUtils, @NonNull GFSyncMetadataStore gfSyncMetadataStore, @NonNull ActivitySourcesService activitySourcesService) {
+    GoogleFitDataManager(@NonNull GFClientWrapper client, @NonNull GFDataUtils gfUtils, @NonNull GFSyncMetadataStore gfSyncMetadataStore, @NonNull ActivitySourcesService activitySourcesService) {
         this.client = client;
         this.gfUtils = gfUtils;
         this.gfSyncMetadataStore = gfSyncMetadataStore;

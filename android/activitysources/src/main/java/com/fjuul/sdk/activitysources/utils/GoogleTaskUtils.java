@@ -36,24 +36,26 @@ public final class GoogleTaskUtils {
     }
 
     public static <T> Task<T> runAndAwaitTaskByExecutor(Supplier<Task<T>> taskSupplier, Executor executor, CancellationTokenSource cancellationTokenSource, CancellationToken cancellationToken) {
-        TaskCompletionSource<T> taskCompletionSource = new TaskCompletionSource<>(cancellationToken);
-        executor.execute(() -> {
+        return Tasks.forResult(null).continueWithTask(executor, t -> {
             if (cancellationToken.isCancellationRequested()) {
-                return;
+                return Tasks.forCanceled();
             }
             try {
                 T result = Tasks.await(taskSupplier.get());
-                taskCompletionSource.trySetResult(result);
-            } catch (ExecutionException e) {
-                if (e.getCause() instanceof Exception) {
-                    taskCompletionSource.trySetException((Exception)e.getCause());
-                } else {
-                    taskCompletionSource.trySetException(e);
+                if (cancellationToken.isCancellationRequested()) {
+                    return Tasks.forCanceled();
                 }
+                return Tasks.forResult(result);
+            } catch (ExecutionException e) {
                 cancellationTokenSource.cancel();
-            } catch (InterruptedException e) { /* task was interrupted due to cancellation */ }
+                if (e.getCause() instanceof Exception) {
+                    return Tasks.forException((Exception)e.getCause());
+                } else {
+                    return Tasks.forException(e);
+                }
+            } catch (InterruptedException e) {
+                return Tasks.forCanceled();
+            }
         });
-        return taskCompletionSource.getTask();
     }
-
 }

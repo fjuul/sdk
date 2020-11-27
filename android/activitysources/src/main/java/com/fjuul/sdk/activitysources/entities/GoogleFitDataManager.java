@@ -128,15 +128,21 @@ class GoogleFitDataManager {
                     .filter(gfSyncMetadataStore::isNeededToSyncSessionBundle)
                     .collect(Collectors.toList());
                 return Tasks.forResult(notSyncedSessions);
-                // TODO: handle case with the empty list => do not send the blank data to the back-end
             });
         final Task<GFUploadData> prepareUploadDataTask = getNotSyncedSessionsTask.onSuccessTask(localBackgroundExecutor, (sessions) -> {
             final GFUploadData uploadData = new GFUploadData();
             uploadData.setSessionsData(sessions);
             return Tasks.forResult(uploadData);
         });
-        final Task<ApiCallResult<Void>> sendDataTask = prepareUploadDataTask.onSuccessTask(localBackgroundExecutor, this::sendGFUploadData);
-        final Task<Void> saveSyncMetadataTask = sendDataTask.onSuccessTask(localBackgroundExecutor, apiCallResult -> {
+        final Task<Void> sendDataIfNotEmptyTask = prepareUploadDataTask.onSuccessTask(localBackgroundExecutor, (uploadData) -> {
+            if (uploadData.isEmpty()) {
+                return Tasks.forResult(null);
+            }
+            return this.sendGFUploadData(uploadData).onSuccessTask(localBackgroundExecutor, (apiCallResult) -> {
+                return Tasks.forResult(apiCallResult.getValue());
+            });
+        });
+        final Task<Void> saveSyncMetadataTask = sendDataIfNotEmptyTask.onSuccessTask(localBackgroundExecutor, apiCallResult -> {
             getNotSyncedSessionsTask.getResult().forEach(gfSyncMetadataStore::saveSyncMetadataOfSession);
             return Tasks.forResult(null);
         });

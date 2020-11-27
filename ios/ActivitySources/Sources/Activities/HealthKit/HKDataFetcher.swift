@@ -115,10 +115,10 @@ class HKDataFetcher {
 
     private static func unit(sampleType: HKQuantityType) -> HKUnit {
         switch sampleType {
-        case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!:
+        case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned):
           return HKUnit.kilocalorie()
-        case HKObjectType.quantityType(forIdentifier: .distanceCycling)!,
-             HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning)!:
+        case HKObjectType.quantityType(forIdentifier: .distanceCycling),
+             HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning):
             return HKUnit.meter()
         default:
           return HKUnit.count()

@@ -29,6 +29,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -539,6 +540,209 @@ public class GoogleFitDataManagerTest {
                 assertEquals("should send the calories data", calories, uploadData.getCaloriesData());
                 assertEquals("should send the steps data", steps, uploadData.getStepsData());
                 assertEquals("should send the hr data", hr, uploadData.getHrData());
+                return true;
+            }));
+        }
+    }
+
+    public static class SyncSessions extends GFClientWrapperTest.GivenRobolectricContext {
+        final String currentInstant = "2020-10-05T09:30:00Z";
+        final TimeZone testTimeZone = TimeZone.getTimeZone("Europe/Zurich");
+        final ZoneId testZoneId = testTimeZone.toZoneId();
+        final Clock fixedClock = Clock.fixed(Instant.parse(currentInstant), testZoneId);
+
+        GoogleFitDataManager subject;
+        GFClientWrapper mockedGFClientWrapper;
+        GFDataUtils gfDataUtilsSpy;
+        GFSyncMetadataStore mockedGFSyncMetadataStore;
+        ActivitySourcesService mockedActivitySourcesService;
+
+        @Before
+        public void beforeTests() {
+            mockedGFClientWrapper = mock(GFClientWrapper.class);
+            mockedGFSyncMetadataStore = mock(GFSyncMetadataStore.class);
+            mockedActivitySourcesService = mock(ActivitySourcesService.class);
+            GFDataUtils gfDataUtils = new GFDataUtils(testZoneId, fixedClock);
+            gfDataUtilsSpy = spy(gfDataUtils);
+            subject = new GoogleFitDataManager(mockedGFClientWrapper, gfDataUtilsSpy, mockedGFSyncMetadataStore, mockedActivitySourcesService);
+        }
+
+        @Test
+        public void syncSessions_emptyGFResponse_returnsSuccessfulTask() throws ExecutionException, InterruptedException {
+            final LocalDate startDate = LocalDate.parse("2020-10-01");
+            final LocalDate endDate = LocalDate.parse("2020-10-02");
+            final Duration minDuration = Duration.ofMinutes(5);
+            final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder()
+                .setMinimumSessionDuration(minDuration)
+                .setDateRange(startDate, endDate)
+                .build();
+
+            final Date startRequestDate = Date.from(
+                LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()
+            );
+            final Date endRequestDate = Date.from(
+                LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant()
+            );
+
+            when(mockedGFClientWrapper.getSessions(startRequestDate, endRequestDate, minDuration)).
+                thenReturn(Tasks.forResult(Collections.emptyList()));
+
+            Task<Void> result = subject.syncSessions(options);
+            testExecutor.submit(() -> Tasks.await(result)).get();
+
+            assertTrue("should return successful task", result.isSuccessful());
+            // should ask client-wrapper for data for the specified time interval in the local timezone
+            verify(mockedGFClientWrapper).getSessions(startRequestDate, endRequestDate, minDuration);
+            // shouldn't interact with the activity sources service
+            verifyNoInteractions(mockedActivitySourcesService);
+            // should even not interact with the sync metadata store
+            verifyNoInteractions(mockedGFSyncMetadataStore);
+        }
+
+        @Test
+        public void syncSessions_whenAlreadySyncedSession_returnsSuccessfulTask() throws ExecutionException, InterruptedException {
+            final LocalDate startDate = LocalDate.parse("2020-10-01");
+            final LocalDate endDate = LocalDate.parse("2020-10-02");
+            final Duration minDuration = Duration.ofMinutes(5);
+            final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder()
+                .setMinimumSessionDuration(minDuration)
+                .setDateRange(startDate, endDate)
+                .build();
+
+            final Date startRequestDate = Date.from(
+                LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()
+            );
+            final Date endRequestDate = Date.from(
+                LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant()
+            );
+
+            final GFSessionBundle stubSessionBundle = mock(GFSessionBundle.class);
+
+            when(mockedGFClientWrapper.getSessions(startRequestDate, endRequestDate, minDuration))
+                .thenReturn(Tasks.forResult(Arrays.asList(stubSessionBundle)));
+            when(mockedGFSyncMetadataStore.isNeededToSyncSessionBundle(stubSessionBundle))
+                .thenReturn(false);
+
+            Task<Void> result = subject.syncSessions(options);
+            testExecutor.submit(() -> Tasks.await(result)).get();
+
+            assertTrue("should return successful task", result.isSuccessful());
+            // should ask client-wrapper for data for the specified time interval in the local timezone
+            verify(mockedGFClientWrapper).getSessions(startRequestDate, endRequestDate, minDuration);
+            // should ask the sync metadata store about session
+            verify(mockedGFSyncMetadataStore).isNeededToSyncSessionBundle(stubSessionBundle);
+            verifyNoMoreInteractions(mockedGFSyncMetadataStore);
+            // shouldn't interact with the activity sources service
+            verifyNoInteractions(mockedActivitySourcesService);
+        }
+
+        @Test
+        public void syncSessions_whenNotSyncedSessionWithFailedApiRequest_returnsSuccessfulTask() throws ExecutionException, InterruptedException {
+            final LocalDate startDate = LocalDate.parse("2020-10-01");
+            final LocalDate endDate = LocalDate.parse("2020-10-02");
+            final Duration minDuration = Duration.ofMinutes(5);
+            final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder()
+                .setMinimumSessionDuration(minDuration)
+                .setDateRange(startDate, endDate)
+                .build();
+
+            final Date startRequestDate = Date.from(
+                LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()
+            );
+            final Date endRequestDate = Date.from(
+                LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant()
+            );
+
+            final GFSessionBundle stubSessionBundle = mock(GFSessionBundle.class);
+
+            when(mockedGFClientWrapper.getSessions(startRequestDate, endRequestDate, minDuration))
+                .thenReturn(Tasks.forResult(Arrays.asList(stubSessionBundle)));
+            when(mockedGFSyncMetadataStore.isNeededToSyncSessionBundle(stubSessionBundle))
+                .thenReturn(true);
+            final ApiCall mockedApiCall = mock(ApiCall.class);
+            final ApiExceptions.BadRequestException requestException = new ApiExceptions.BadRequestException("Bad request");
+            doAnswer(invocation -> {
+                final ApiCallCallback<Void> callback = invocation.getArgument(0, ApiCallCallback.class);
+                callback.onResult(null, ApiCallResult.error(requestException));
+                return null;
+            }).when(mockedApiCall).enqueue(any());
+            when(mockedActivitySourcesService.uploadGoogleFitData(any())).thenReturn(mockedApiCall);
+
+            Task<Void> result = subject.syncSessions(options);
+            try {
+                testExecutor.submit(() -> Tasks.await(result)).get();
+            } catch (ExecutionException exc) { /* expected exception */ }
+
+            assertFalse("should return unsuccessful task", result.isSuccessful());
+            assertThat(result.getException(), instanceOf(CommonException.class));
+            CommonException exception = (CommonException)result.getException();
+            assertEquals("exception should have message",
+                "Failed to send data to the server",
+                exception.getMessage());
+            assertEquals("exception should carry original cause",
+                requestException,
+                exception.getCause());
+            // should ask client-wrapper for data for the specified time interval in the local timezone
+            verify(mockedGFClientWrapper).getSessions(startRequestDate, endRequestDate, minDuration);
+            // should ask the sync metadata store about session
+            verify(mockedGFSyncMetadataStore).isNeededToSyncSessionBundle(stubSessionBundle);
+            // should not store the metadata
+            verifyNoMoreInteractions(mockedGFSyncMetadataStore);
+            // should try to send the data to the server
+            verify(mockedActivitySourcesService).uploadGoogleFitData(argThat(uploadData -> {
+                assertEquals("should try to send the sessions data",
+                    Arrays.asList(stubSessionBundle),
+                    uploadData.getSessionsData());
+                return true;
+            }));
+        }
+
+        @Test
+        public void syncSessions_whenNotSyncedSessionWithSuccessfulApiRequest_returnsSuccessfulTask() throws ExecutionException, InterruptedException {
+            final LocalDate startDate = LocalDate.parse("2020-10-01");
+            final LocalDate endDate = LocalDate.parse("2020-10-02");
+            final Duration minDuration = Duration.ofMinutes(5);
+            final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder()
+                .setMinimumSessionDuration(minDuration)
+                .setDateRange(startDate, endDate)
+                .build();
+
+            final Date startRequestDate = Date.from(
+                LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()
+            );
+            final Date endRequestDate = Date.from(
+                LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant()
+            );
+
+            final GFSessionBundle stubSessionBundle = mock(GFSessionBundle.class);
+
+            when(mockedGFClientWrapper.getSessions(startRequestDate, endRequestDate, minDuration))
+                .thenReturn(Tasks.forResult(Arrays.asList(stubSessionBundle)));
+            when(mockedGFSyncMetadataStore.isNeededToSyncSessionBundle(stubSessionBundle))
+                .thenReturn(true);
+            final ApiCall mockedApiCall = mock(ApiCall.class);
+            doAnswer(invocation -> {
+                final ApiCallCallback<Void> callback = invocation.getArgument(0, ApiCallCallback.class);
+                callback.onResult(null, ApiCallResult.value(null));
+                return null;
+            }).when(mockedApiCall).enqueue(any());
+            when(mockedActivitySourcesService.uploadGoogleFitData(any())).thenReturn(mockedApiCall);
+
+            Task<Void> result = subject.syncSessions(options);
+            testExecutor.submit(() -> Tasks.await(result)).get();
+
+            assertTrue("should return successful task", result.isSuccessful());
+            // should ask client-wrapper for data for the specified time interval in the local timezone
+            verify(mockedGFClientWrapper).getSessions(startRequestDate, endRequestDate, minDuration);
+            // should ask the sync metadata store about session
+            verify(mockedGFSyncMetadataStore).isNeededToSyncSessionBundle(stubSessionBundle);
+            // should save the metadata
+            verify(mockedGFSyncMetadataStore).saveSyncMetadataOfSession(stubSessionBundle);
+            // should send the data to the server
+            verify(mockedActivitySourcesService).uploadGoogleFitData(argThat(uploadData -> {
+                assertEquals("should try to send the sessions data",
+                    Arrays.asList(stubSessionBundle),
+                    uploadData.getSessionsData());
                 return true;
             }));
         }

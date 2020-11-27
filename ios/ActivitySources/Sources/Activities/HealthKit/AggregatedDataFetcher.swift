@@ -1,7 +1,7 @@
 import Foundation
 import HealthKit
 
-class HKDataFetcher {
+class AggregatedDataFetcher {
     static var interval: DateComponents {
         var interval = DateComponents()
         interval.minute = 1

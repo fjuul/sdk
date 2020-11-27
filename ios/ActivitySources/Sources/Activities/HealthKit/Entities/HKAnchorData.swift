@@ -16,6 +16,7 @@ public struct HKAnchorData: Codable, Equatable {
     private var distanceCyclingRaw: Data?
     private var distanceWalkingRunningRaw: Data?
     private var heartRateRaw: Data?
+    private var workoutRaw: Data?
 
     subscript(key: HKAnchorKey) -> HKQueryAnchor? {
         get {
@@ -32,6 +33,8 @@ public struct HKAnchorData: Codable, Equatable {
                 valueRaw = distanceWalkingRunningRaw
             case .heartRate:
                 valueRaw = heartRateRaw
+            case .workout:
+                valueRaw = workoutRaw
             default:
                 return nil
             }
@@ -56,6 +59,8 @@ public struct HKAnchorData: Codable, Equatable {
                 distanceWalkingRunningRaw = newValueRaw
             case .heartRate:
                 heartRateRaw = newValueRaw
+            case .workout:
+                workoutRaw = newValueRaw
             default:
                 print("Not found key for save data")
             }

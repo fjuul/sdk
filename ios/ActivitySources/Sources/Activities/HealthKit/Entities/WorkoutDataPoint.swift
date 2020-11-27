@@ -26,5 +26,4 @@ struct WorkoutSampleData: Codable {
   var value: Double // Value can be for heartRates, stepCounts or activeEnergyBurned
   var startDate: Date
   var endDate: Date
-  var uuid: UUID // A unique identifier of the receiver in the HealthKit database.
 }

@@ -18,6 +18,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Utility class for processing and querying google fit data.
+ */
 public class GFDataUtils {
     private ZoneId zoneId;
     private Clock clock;
@@ -32,8 +35,17 @@ public class GFDataUtils {
         this.clock = clock;
     }
 
+    /**
+     * Generates a list of batches with the duration for the specified time interval containing GF data points according to the start time of a data point.
+     * A batch will be created even if there are not any points matched with the time interval of the batch.
+     * @param start start time since the first batch will be created.
+     * @param end end time of the batching. If this parameter doesn't satisfy the strict batch division then the end time of the last batch will be rounded by the duration.
+     * @param points data points that need to group into batches
+     * @param duration duration of a batch
+     * @return list of batches
+     */
     @SuppressLint("NewApi")
-    public <V, T extends GFDataPoint> List<GFDataPointsBatch<T>> groupPointsIntoBatchesByDuration(Date start, Date end, List<T> points, Duration duration) {
+    public <T extends GFDataPoint> List<GFDataPointsBatch<T>> groupPointsIntoBatchesByDuration(Date start, Date end, List<T> points, Duration duration) {
         Date leftBorderRange = start;
         Date rightBorderRange = Date.from(start.toInstant().plusMillis(duration.toMillis()));
         List<GFDataPointsBatch<T>> batches = new ArrayList<>();
@@ -51,6 +63,13 @@ public class GFDataUtils {
         return batches;
     }
 
+    /**
+     * Transforms dates of a request to a pair of dates in the local timezone.
+     * The input start date will be considered as the start of a day, and the input end date as the end of a day or the current moment if it belongs to today.
+     * @param start local start date
+     * @param end local end date
+     * @return pair of adjusted input dates
+     */
     @SuppressLint("NewApi")
     public Pair<Date, Date> adjustInputDatesForGFRequest(LocalDate start, LocalDate end) {
         final Date startDate = Date.from(start.atStartOfDay(zoneId).toInstant());
@@ -61,6 +80,17 @@ public class GFDataUtils {
         return new Pair(startDate, endDate);
     }
 
+
+    /**
+     * Transforms dates of a request to a pair of dates for the batching in the local timezone.
+     * The input start date will be considered as the start of a day.
+     * The input end date will be considered as the end of a day or the current moment rounded up by
+     * the duration if it belongs to today (for example, the current moment at 10:45 will be rounded up 11:00 for 30 minutes duration).
+     * @param start local start date
+     * @param end local start date
+     * @param batchDuration duration of batches
+     * @return pair of adjusted input dates
+     */
     @SuppressLint("NewApi")
     public Pair<Date, Date> adjustInputDatesForBatches(LocalDate start, LocalDate end, Duration batchDuration) {
         final Date startDate = Date.from(start.atStartOfDay(zoneId).toInstant());

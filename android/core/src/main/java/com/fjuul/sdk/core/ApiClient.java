@@ -29,13 +29,13 @@ import okhttp3.OkHttpClient;
  * @see ApiClient.Builder
  */
 public class ApiClient {
-    private String baseUrl;
-    private String apiKey;
-    private Context appContext;
-    private IStorage storage;
-    private Keystore userKeystore;
-    private UserCredentials userCredentials;
-    private SigningAuthInterceptor signingAuthInterceptor;
+    private @NonNull String baseUrl;
+    private @NonNull String apiKey;
+    private @NonNull Context appContext;
+    private @NonNull IStorage storage;
+    private @NonNull Keystore userKeystore;
+    private @Nullable UserCredentials userCredentials;
+    private @Nullable SigningAuthInterceptor signingAuthInterceptor;
 
     private ApiClient(String baseUrl, String apiKey, Context appContext, IStorage storage, Keystore userKeystore, UserCredentials credentials) {
         this.baseUrl = baseUrl;
@@ -50,8 +50,8 @@ public class ApiClient {
      * Besides constructor parameters, user credentials and others may be initialized through the appropriate setters.
      */
     public static class Builder {
-        private String baseUrl;
-        private String apiKey;
+        private @NonNull String baseUrl;
+        private @NonNull String apiKey;
         protected @NonNull Context appContext;
         protected @Nullable IStorage storage;
         protected @Nullable Keystore keystore;

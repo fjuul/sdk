@@ -34,9 +34,9 @@ public class GoogleFitIntradaySyncWorker extends GoogleFitSyncWorker {
             // TODO: the task should be canceled on the next initialization of ActivitySourcesManager
             return Result.success();
         }
-        GoogleFitActivitySource gfSource = ((GoogleFitActivitySource)gfConnection.getActivitySource());
-        TaskCompletionSource<Void> taskCompletionSource = new TaskCompletionSource<>();
-        GFIntradaySyncOptions syncOptions = buildIntradaySyncOptions();
+        final GoogleFitActivitySource gfSource = ((GoogleFitActivitySource)gfConnection.getActivitySource());
+        final TaskCompletionSource<Void> taskCompletionSource = new TaskCompletionSource<>();
+        final GFIntradaySyncOptions syncOptions = buildIntradaySyncOptions();
         gfSource.syncIntradayMetrics(syncOptions, (result -> {
             if (result.isError() && result.getError() instanceof Exception) {
                 taskCompletionSource.trySetException((Exception)result.getError());
@@ -56,17 +56,16 @@ public class GoogleFitIntradaySyncWorker extends GoogleFitSyncWorker {
 
     @SuppressLint("NewApi")
     private GFIntradaySyncOptions buildIntradaySyncOptions() {
-        String[] rawIntradayMetrics = getInputData().getStringArray(KEY_INTRADAY_METRICS_ARG);
-        GFIntradaySyncOptions.Builder syncOptionsBuilder = new GFIntradaySyncOptions.Builder();
+        final String[] rawIntradayMetrics = getInputData().getStringArray(KEY_INTRADAY_METRICS_ARG);
+        final GFIntradaySyncOptions.Builder syncOptionsBuilder = new GFIntradaySyncOptions.Builder();
         for (final String rawIntradayMetric : rawIntradayMetrics) {
             try {
-                GFIntradaySyncOptions.METRICS_TYPE metric = GFIntradaySyncOptions.METRICS_TYPE.valueOf(rawIntradayMetric);
+                final GFIntradaySyncOptions.METRICS_TYPE metric = GFIntradaySyncOptions.METRICS_TYPE.valueOf(rawIntradayMetric);
                 if (metric != null) {
                     syncOptionsBuilder.include(metric);
                 }
             } catch (Exception e) { }
         }
-        return syncOptionsBuilder.setDateRange(LocalDate.now().minusDays(2), LocalDate.now())
-            .build();
+        return syncOptionsBuilder.setDateRange(LocalDate.now().minusDays(2), LocalDate.now()).build();
     }
 }

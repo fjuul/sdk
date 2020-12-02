@@ -10,6 +10,7 @@ import androidx.work.WorkerParameters;
 
 import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig;
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
 import com.fjuul.sdk.entities.UserCredentials;
 import com.fjuul.sdk.http.ApiClient;
@@ -31,15 +32,19 @@ public abstract class GoogleFitSyncWorker extends Worker {
         } catch (IllegalStateException exception) {
             // TODO: construct the isolated instance of activity sources manager to avoid the case ?
             // ActivitySourcesManager is not initialized yet
-            String userToken = getInputData().getString(KEY_USER_TOKEN_ARG);
-            String userSecret = getInputData().getString(KEY_USER_SECRET_ARG);
-            String apiKey = getInputData().getString(KEY_API_KEY_ARG);
-            String baseUrl = getInputData().getString(KEY_BASE_URL_ARG);
-            ApiClient client = new ApiClient.Builder(getApplicationContext(), baseUrl, apiKey)
+            final String userToken = getInputData().getString(KEY_USER_TOKEN_ARG);
+            final String userSecret = getInputData().getString(KEY_USER_SECRET_ARG);
+            final String apiKey = getInputData().getString(KEY_API_KEY_ARG);
+            final String baseUrl = getInputData().getString(KEY_BASE_URL_ARG);
+            final ApiClient client = new ApiClient.Builder(getApplicationContext(), baseUrl, apiKey)
                 .setUserCredentials(new UserCredentials(userToken, userSecret))
                 .build();
-            // TODO: setup config
-            ActivitySourcesManager.initialize(client, null);
+            // NOTE: here we build the config with the untouched mode because we don't want to reset
+            // previously scheduled periodic gf sync works
+            final ActivitySourcesManagerConfig config = new ActivitySourcesManagerConfig.Builder()
+                .keepUntouchedGFBackgroundSync()
+                .build();
+            ActivitySourcesManager.initialize(client, config);
             sourcesManager = ActivitySourcesManager.getInstance();
         }
         return sourcesManager;

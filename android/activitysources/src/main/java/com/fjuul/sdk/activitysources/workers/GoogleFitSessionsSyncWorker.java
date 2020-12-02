@@ -35,9 +35,9 @@ public class GoogleFitSessionsSyncWorker extends GoogleFitSyncWorker {
             // TODO: the task should be canceled on the next initialization of ActivitySourcesManager
             return Result.success();
         }
-        GoogleFitActivitySource gfSource = ((GoogleFitActivitySource)gfConnection.getActivitySource());
-        TaskCompletionSource<Void> taskCompletionSource = new TaskCompletionSource<>();
-        GFSessionSyncOptions syncOptions = buildSessionSyncOptions();
+        final GoogleFitActivitySource gfSource = ((GoogleFitActivitySource)gfConnection.getActivitySource());
+        final TaskCompletionSource<Void> taskCompletionSource = new TaskCompletionSource<>();
+        final GFSessionSyncOptions syncOptions = buildSessionSyncOptions();
         gfSource.syncSessions(syncOptions, (result -> {
             if (result.isError() && result.getError() instanceof Exception) {
                 taskCompletionSource.trySetException((Exception)result.getError());

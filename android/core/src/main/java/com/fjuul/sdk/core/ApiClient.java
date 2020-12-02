@@ -99,11 +99,22 @@ public class ApiClient {
         return baseUrl;
     }
 
+    public @NonNull String getApiKey() {
+        return apiKey;
+    }
+
     public @NonNull String getUserToken() {
         if (userCredentials == null) {
             throw new IllegalStateException("The builder needed user credentials");
         }
         return userCredentials.getToken();
+    }
+
+    public @NonNull String getUserSecret() {
+        if (userCredentials == null) {
+            throw new IllegalStateException("The builder needed user credentials");
+        }
+        return userCredentials.getSecret();
     }
 
     public @NonNull IStorage getStorage() {

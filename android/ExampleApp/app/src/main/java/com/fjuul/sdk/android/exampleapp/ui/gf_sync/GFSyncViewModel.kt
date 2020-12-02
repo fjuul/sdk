@@ -44,7 +44,7 @@ class GFSyncViewModel : ViewModel() {
             return
         }
         val options = GFIntradaySyncOptions.Builder().apply {
-            setDateRange(_startDate.value, _endDate.value)
+            setDateRange(_startDate.value!!, _endDate.value!!)
             if (calories) { include(GFIntradaySyncOptions.METRICS_TYPE.CALORIES) }
             if (hr) { include(GFIntradaySyncOptions.METRICS_TYPE.HEART_RATE) }
             if (steps) { include(GFIntradaySyncOptions.METRICS_TYPE.STEPS) }

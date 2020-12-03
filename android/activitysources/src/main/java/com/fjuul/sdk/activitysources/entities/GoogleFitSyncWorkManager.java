@@ -28,6 +28,8 @@ public class GoogleFitSyncWorkManager {
     @NonNull private final String userSecret;
     @NonNull private final String apiKey;
     @NonNull private final String baseUrl;
+    private volatile boolean intradaySyncWorkEnqueued = false;
+    private volatile boolean sessionsSyncWorkEnqueued = false;
 
     public GoogleFitSyncWorkManager(@NonNull WorkManager workManager,
                                     @NonNull String userToken,
@@ -46,12 +48,17 @@ public class GoogleFitSyncWorkManager {
         workManager.cancelUniqueWork(GF_SESSIONS_SYNC_WORK_NAME);
     }
 
-    public void cancelWorks() {
+    public synchronized void cancelWorks() {
         cancelWorks(workManager);
+        intradaySyncWorkEnqueued = false;
+        sessionsSyncWorkEnqueued = false;
     }
 
     @SuppressLint("NewApi")
-    public void scheduleIntradaySyncWork(@NonNull List<METRICS_TYPE> intradayMetrics) {
+    public synchronized void scheduleIntradaySyncWork(@NonNull List<METRICS_TYPE> intradayMetrics) {
+        if (intradaySyncWorkEnqueued) {
+            return;
+        }
         String[] serializedIntradayMetrics = intradayMetrics.stream()
             .map(Enum::toString)
             .toArray(String[]::new);
@@ -66,13 +73,18 @@ public class GoogleFitSyncWorkManager {
         workManager.enqueueUniquePeriodicWork(GF_INTRADAY_SYNC_WORK_NAME,
             ExistingPeriodicWorkPolicy.REPLACE,
             periodicWorkRequest);
+        intradaySyncWorkEnqueued = true;
     }
 
-    public void cancelIntradaySyncWork() {
+    public synchronized void cancelIntradaySyncWork() {
         workManager.cancelUniqueWork(GF_INTRADAY_SYNC_WORK_NAME);
+        intradaySyncWorkEnqueued = false;
     }
 
-    public void scheduleSessionsSyncWork(@NonNull Duration minSessionDuration) {
+    public synchronized void scheduleSessionsSyncWork(@NonNull Duration minSessionDuration) {
+        if (sessionsSyncWorkEnqueued) {
+            return;
+        }
         String serializedDuration = minSessionDuration.toString();
         Data inputWorkRequestData = buildEssentialInputData()
             .putString(GoogleFitSessionsSyncWorker.KEY_MIN_SESSION_DURATION_ARG, serializedDuration)
@@ -85,10 +97,12 @@ public class GoogleFitSyncWorkManager {
         workManager.enqueueUniquePeriodicWork(GF_SESSIONS_SYNC_WORK_NAME,
             ExistingPeriodicWorkPolicy.REPLACE,
             periodicWorkRequest);
+        sessionsSyncWorkEnqueued = true;
     }
 
-    public void cancelSessionsSyncWork() {
+    public synchronized void cancelSessionsSyncWork() {
         workManager.cancelUniqueWork(GF_SESSIONS_SYNC_WORK_NAME);
+        sessionsSyncWorkEnqueued = false;
     }
 
     private Data.Builder buildEssentialInputData() {

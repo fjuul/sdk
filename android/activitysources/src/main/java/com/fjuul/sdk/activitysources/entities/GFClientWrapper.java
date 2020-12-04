@@ -71,7 +71,7 @@ class GFClientWrapper {
         }
     }
 
-    static final Config DEFAULT_CONFIG = new Config(0, 60, 0, 60);
+    static final Config DEFAULT_CONFIG = new Config(0, 60, 0, 40);
 
     private final Config config;
     private final HistoryClient historyClient;

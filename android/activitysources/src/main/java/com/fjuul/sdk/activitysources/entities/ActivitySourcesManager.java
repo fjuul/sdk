@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 
 public final class ActivitySourcesManager {
     @NonNull private final ActivitySourcesManagerConfig config;
-    @NonNull private final GoogleFitSyncWorkManager gfSyncWorkManager;
+    @NonNull private final BackgroundWorkManager backgroundWorkManager;
     @NonNull private final ActivitySourcesService sourcesService;
     @NonNull private final ActivitySourcesStateStore stateStore;
     @Nullable private volatile List<TrackerConnection> currentConnections;
@@ -34,12 +34,12 @@ public final class ActivitySourcesManager {
     @Nullable private volatile static ActivitySourcesManager instance;
 
     ActivitySourcesManager(@NonNull ActivitySourcesManagerConfig config,
-                           @NonNull GoogleFitSyncWorkManager gfSyncWorkManager,
+                           @NonNull BackgroundWorkManager backgroundWorkManager,
                            @NonNull ActivitySourcesService sourcesService,
                            @NonNull ActivitySourcesStateStore stateStore,
                            @Nullable List<TrackerConnection> connections) {
         this.config = config;
-        this.gfSyncWorkManager = gfSyncWorkManager;
+        this.backgroundWorkManager = backgroundWorkManager;
         this.sourcesService = sourcesService;
         this.stateStore = stateStore;
         this.currentConnections = connections;
@@ -53,18 +53,20 @@ public final class ActivitySourcesManager {
     @SuppressLint("NewApi")
     public static synchronized void initialize(@NonNull ApiClient client,
                                                @NonNull ActivitySourcesManagerConfig config) {
-        ActivitySourcesStateStore stateStore = new ActivitySourcesStateStore(client.getStorage(), client.getUserToken());
-        List<TrackerConnection> storedConnections = stateStore.getConnections().orElse(null);
-        ActivitySourcesService sourcesService = new ActivitySourcesService(client);
-        WorkManager workManager = WorkManager.getInstance(client.getAppContext());
-        GoogleFitActivitySource.initialize(client);
-        GoogleFitSyncWorkManager gfSyncWorkManager = new GoogleFitSyncWorkManager(workManager,
+        final ActivitySourcesStateStore stateStore = new ActivitySourcesStateStore(client.getStorage(), client.getUserToken());
+        final List<TrackerConnection> storedConnections = stateStore.getConnections().orElse(null);
+        final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
+        final WorkManager workManager = WorkManager.getInstance(client.getAppContext());
+        final GoogleFitSyncWorkManager gfSyncWorkManager = new GoogleFitSyncWorkManager(workManager,
             client.getUserToken(),
             client.getUserToken(),
             client.getApiKey(),
             client.getBaseUrl());
-        setupBackgroundWorksByConnections(storedConnections, gfSyncWorkManager, config);
-        instance = new ActivitySourcesManager(config, gfSyncWorkManager, sourcesService, stateStore, storedConnections);
+        GoogleFitActivitySource.initialize(client);
+
+        final BackgroundWorkManager backgroundWorkManager = new BackgroundWorkManager(config, gfSyncWorkManager);
+        setupBackgroundWorksByConnections(storedConnections, backgroundWorkManager);
+        instance = new ActivitySourcesManager(config, backgroundWorkManager, sourcesService, stateStore, storedConnections);
     }
 
     @NonNull
@@ -149,7 +151,7 @@ public final class ActivitySourcesManager {
                 return;
             }
             final List<TrackerConnection> freshTrackerConnections = Arrays.asList(apiCallResult.getValue());
-            setupBackgroundWorksByConnections(freshTrackerConnections, gfSyncWorkManager, config);
+            setupBackgroundWorksByConnections(freshTrackerConnections, backgroundWorkManager);
             final List<ActivitySourceConnection> sourceConnections = convertTrackerConnectionsToActivitySourcesConnections(freshTrackerConnections);
             stateStore.setConnections(freshTrackerConnections);
             this.currentConnections = freshTrackerConnections;
@@ -193,12 +195,11 @@ public final class ActivitySourcesManager {
     }
 
     private static void setupBackgroundWorksByConnections(@Nullable List<TrackerConnection> trackerConnections,
-                                                          @NonNull GoogleFitSyncWorkManager gfSyncWorkManager,
-                                                          @NonNull ActivitySourcesManagerConfig config) {
+                                                          @NonNull BackgroundWorkManager backgroundWorkManager) {
         if (checkIfHasGoogleFitConnection(trackerConnections)) {
-            configureBackgroundGFSyncWorks(gfSyncWorkManager, config);
+            backgroundWorkManager.configureBackgroundGFSyncWorks();
         } else {
-            gfSyncWorkManager.cancelWorks();
+            backgroundWorkManager.cancelBackgroundGFSyncWorks();
         }
     }
 
@@ -209,29 +210,5 @@ public final class ActivitySourcesManager {
                 .filter(c -> c.getTracker().equals(ActivitySource.TrackerValue.GOOGLE_FIT.getValue()))
                 .findFirst();
         }).isPresent();
-    }
-
-    private static void configureBackgroundGFSyncWorks(@NonNull GoogleFitSyncWorkManager gfSyncWorkManager,
-                                                        @NonNull ActivitySourcesManagerConfig config) {
-        switch (config.getGfIntradayBackgroundSyncMode()) {
-            case DISABLED: {
-                gfSyncWorkManager.cancelIntradaySyncWork();
-                break;
-            }
-            case ENABLED: {
-                gfSyncWorkManager.scheduleIntradaySyncWork(config.getGfIntradayBackgroundSyncMetrics());
-                break;
-            }
-        }
-        switch (config.getGfSessionsBackgroundSyncMode()) {
-            case DISABLED: {
-                gfSyncWorkManager.cancelSessionsSyncWork();
-                break;
-            }
-            case ENABLED: {
-                gfSyncWorkManager.scheduleSessionsSyncWork(config.getGfSessionsBackgroundSyncMinSessionDuration());
-                break;
-            }
-        }
     }
 }

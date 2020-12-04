@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 
 public class ActivitySourceConnection extends TrackerConnection {
     @NonNull
-    private ActivitySource activitySource;
+    private final ActivitySource activitySource;
 
     public ActivitySourceConnection(@NonNull TrackerConnection trackerConnection, @NonNull ActivitySource activitySource) {
         super(trackerConnection.getId(), trackerConnection.getTracker(), trackerConnection.getCreatedAt(), trackerConnection.getEndedAt());

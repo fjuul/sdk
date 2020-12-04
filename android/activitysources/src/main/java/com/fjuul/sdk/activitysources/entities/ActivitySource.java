@@ -15,7 +15,7 @@ public abstract class ActivitySource {
         GOOGLE_FIT("googlefit");
 
         @NonNull
-        private String value;
+        private final String value;
         TrackerValue(@NonNull String value) {
             this.value = value;
         }

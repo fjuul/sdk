@@ -24,6 +24,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * The `ActivitySourcesManager` encapsulates connection to fitness trackers, access to current user's tracker connections. This is a high-level entity and entry point of the whole 'activity sources' module.
+ * The class designed as the singleton, so you need first to initialize it before getting the instance.
+ * For proper initialization you have to provide the configured api-client built with the user credentials.
+ */
 public final class ActivitySourcesManager {
     @NonNull private final ActivitySourcesManagerConfig config;
     @NonNull private final BackgroundWorkManager backgroundWorkManager;
@@ -45,11 +50,21 @@ public final class ActivitySourcesManager {
         this.currentConnections = connections;
     }
 
+    /**
+     * Initialize the singleton with default config. Periodic background works for syncing GoogleFit
+     * intraday and session data will be automatically scheduled if a user has a GoogleFit connection.
+     * @param client configured client with signing ability and user credentials
+     */
     @SuppressLint("NewApi")
     public static synchronized void initialize(@NonNull ApiClient client) {
         initialize(client, ActivitySourcesManagerConfig.buildDefault());
     }
 
+    /**
+     * Initialize the singleton.
+     * @param client configured client with signing ability and user credentials
+     * @param config config for ActivitySourcesManager
+     */
     @SuppressLint("NewApi")
     public static synchronized void initialize(@NonNull ApiClient client,
                                                @NonNull ActivitySourcesManagerConfig config) {
@@ -69,6 +84,11 @@ public final class ActivitySourcesManager {
         instance = new ActivitySourcesManager(config, backgroundWorkManager, sourcesService, stateStore, storedConnections);
     }
 
+    /**
+     * Return previously initialized instance. This method throws IllegalStateException if it is invoked before the initialization.
+     * @return instance of ActivitySourcesManager
+     * @throws IllegalStateException
+     */
     @NonNull
     public static ActivitySourcesManager getInstance() throws IllegalStateException {
         if (instance == null) {
@@ -77,6 +97,19 @@ public final class ActivitySourcesManager {
         return instance;
     }
 
+    /**
+     * Provides an intent performing connection to the specified ActivitySource.<br>
+     * After getting it in the callback, you need to do one of the following:
+     * <ul>
+     *     <li> if you wanted to connect to GoogleFit tracker, then you need to pass this intent to #startActivityForResult method of Activity or Fragment.
+     *     Connection to GoogleFit will show a window prompting all required permissions. A response of user decisions on the prompted window can be retir
+     *     Connection to GoogleFit will show a window prompting all required permissions.
+     *     <li>if you wanted to connect to any other tracker, then you need to pass this intent to #startActivity method of Activity or Fragment
+     * </ul>
+     * Connection to GoogleFit will show a window prompting all required permissions.
+     * @param activitySource
+     * @param callback
+     */
     // TODO: describe the google-fit behavior
     public void connect(@NonNull final ActivitySource activitySource, @NonNull final Callback<Intent> callback) {
         if (activitySource instanceof GoogleFitActivitySource) {

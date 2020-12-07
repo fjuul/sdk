@@ -44,7 +44,6 @@ public class GFSyncMetadataStore {
         this.syncSessionMetadataJsonAdapter = moshi.adapter(GFSyncSessionMetadata.class).nullSafe();
     }
 
-    // TODO: find a polymorphic way to check/save metadata for all batches ?
     public boolean isNeededToSyncCaloriesBatch(@NonNull GFDataPointsBatch<GFCalorieDataPoint> caloriesBatch) {
         final String lookupKey = buildLookupKeyForIntraday(GFSyncCaloriesMetadata.class, caloriesBatch.getStartTime(), caloriesBatch.getEndTime());
         final GFSyncCaloriesMetadata storedMetadata = retrieveSyncMetadataOf(GFSyncCaloriesMetadata.class, lookupKey);

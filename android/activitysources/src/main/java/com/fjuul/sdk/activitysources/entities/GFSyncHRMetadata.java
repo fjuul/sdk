@@ -5,16 +5,18 @@ import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 
 import java.time.Clock;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Date;
 
-public class GFSyncHRMetadata extends GFSyncEntityMetadata {
+public class GFSyncHRMetadata extends GFSyncDatedEntityMetadata {
     public static final int CURRENT_SCHEMA_VERSION = 1;
     private static final float TOTAL_HR_ACCURACY = 0.01f;
     private int count;
     private float sumOfAverages;
 
-    public GFSyncHRMetadata(int count, float sumOfAverages, Date editedAt) {
-        super(CURRENT_SCHEMA_VERSION, editedAt);
+    public GFSyncHRMetadata(int count, float sumOfAverages, LocalDate date, Date editedAt) {
+        super(CURRENT_SCHEMA_VERSION, date, editedAt);
         this.count = count;
         this.sumOfAverages = sumOfAverages;
     }
@@ -35,8 +37,9 @@ public class GFSyncHRMetadata extends GFSyncEntityMetadata {
             .map(hr -> hr.getAvg())
             .reduce(0f, (acc, el) -> acc + el);
         int count = batch.getPoints().size();
-        Date editedAt = Date.from(clock.instant());
-        return new GFSyncHRMetadata (count, totalSum, editedAt);
+        final Date editedAt = Date.from(clock.instant());
+        final LocalDate date = batch.getStartTime().toInstant().atOffset(ZoneOffset.UTC).toLocalDate();
+        return new GFSyncHRMetadata(count, totalSum, date, editedAt);
     }
 
     @Override

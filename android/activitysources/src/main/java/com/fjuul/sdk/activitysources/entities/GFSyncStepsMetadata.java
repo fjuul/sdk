@@ -5,16 +5,17 @@ import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 
 import java.time.Clock;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Date;
-import java.util.Objects;
 
-public class GFSyncStepsMetadata extends GFSyncEntityMetadata {
+public class GFSyncStepsMetadata extends GFSyncDatedEntityMetadata {
     public static final int CURRENT_SCHEMA_VERSION = 1;
     private int count;
     private int totalSteps;
 
-    public GFSyncStepsMetadata(int count, int totalSteps, Date editedAt) {
-        super(CURRENT_SCHEMA_VERSION, editedAt);
+    public GFSyncStepsMetadata(int count, int totalSteps, LocalDate date, Date editedAt) {
+        super(CURRENT_SCHEMA_VERSION, date, editedAt);
         this.count = count;
         this.totalSteps = totalSteps;
     }
@@ -34,8 +35,9 @@ public class GFSyncStepsMetadata extends GFSyncEntityMetadata {
         // TODO: move the sum calculation to batch class (or GFDataUtils)
         int totalSteps = batch.getPoints().stream().mapToInt(s -> s.getValue()).sum();
         int count = batch.getPoints().size();
-        Date editedAt = Date.from(clock.instant());
-        return new GFSyncStepsMetadata(count, totalSteps, editedAt);
+        final Date editedAt = Date.from(clock.instant());
+        final LocalDate date = batch.getStartTime().toInstant().atOffset(ZoneOffset.UTC).toLocalDate();
+        return new GFSyncStepsMetadata(count, totalSteps, date, editedAt);
     }
 
     @Override

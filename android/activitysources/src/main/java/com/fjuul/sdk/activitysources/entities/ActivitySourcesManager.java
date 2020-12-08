@@ -101,14 +101,63 @@ public final class ActivitySourcesManager {
      * Provides an intent performing connection to the specified ActivitySource.<br>
      * After getting it in the callback, you need to do one of the following:
      * <ul>
-     *     <li> if you wanted to connect to GoogleFit tracker, then you need to pass this intent to #startActivityForResult method of Activity or Fragment.
-     *     Connection to GoogleFit will show a window prompting all required permissions. A response of user decisions on the prompted window can be retir
-     *     Connection to GoogleFit will show a window prompting all required permissions.
-     *     <li>if you wanted to connect to any other tracker, then you need to pass this intent to #startActivity method of Activity or Fragment
+     *     <li> if you wanted to connect to the GoogleFit tracker, then you need to pass this intent to #startActivityForResult method of Activity or Fragment.
+     *     Connection to GoogleFit will show a window prompting all required permissions. A response of user decisions on the prompted window will be available
+     *     in #onActivityResult method of Activity or Fragment with the `requestCode` you specified to #startActivityForResult.<br>
+     *     After you compared `requestCode` with your and checked `resultCode` with `Activity.RESULT_OK`, you need to pass the coming `data` (Intent) in #onActivityResult to
+     *     GoogleFitActivitySource#handleGoogleSignIn method to complete the connection to the GoogleFit tracker.
+     *     <pre>
+     *     {@code
+     *     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+     *       super.onActivityResult(requestCode, resultCode, data)
+     *       if (requestCode == YOUR_REQUEST_CODE) {
+     *         if (resultCode == Activity.RESULT_OK && data != null) {
+     *           GoogleFitActivitySource.getInstance().handleGoogleSignInResult(data) { result ->
+     *             if (result.isError) {
+     *               // get the error via result.getError()
+     *             }
+     *             // successfully connected
+     *           }
+     *         } else {
+     *             // the prompted window was declined
+     *         }
+     *       }
+     *     }
+     *     }
+     *     </pre>
+     *
+     *     <li>if you wanted to connect to any other tracker, then you need to pass this intent to #startActivity method of Activity or Fragment.
+     *     This will open the user's web browser on the page with authorization of the specified tracker.
+     *     After the user successfully authenticates, the user will be redirected back to the app by the link
+     *     matched with the scheme provided to you or coordinated with you by Fjuul.<br>
+     *     Returning to the app and processing the connection result is available in the #onNewIntent
+     *     method of your Activity class, which contains an intent-filter with the SDK schema. There you can determine
+     *     which schema the incoming link belongs to and find out the result of the external connection:
+     *     <pre>
+     *     {@code
+     *     override fun onNewIntent(intent: Intent?) {
+     *       super.onNewIntent(intent)
+     *       if (intent?.data?.scheme == "your-fjuulsdk-sceme") {
+     *         val redirectResult = ExternalAuthenticationFlowHandler.handle(intent.data!!)
+     *         if (redirectResult != null && redirectResult.isSuccess) {
+     *           // successfully connected to the external tracker
+     *         }
+     *       }
+     *     }
+     *     }
+     *     </pre>
      * </ul>
-     * Connection to GoogleFit will show a window prompting all required permissions.
-     * @param activitySource
-     * @param callback
+     *
+     * One important remark: Many functional parts of ActivitySourcesManager depend on the list of current connections.
+     * Because of the complexity of the connection flow, there is not an automatic refreshing of the user's connection list.
+     * Therefore, after a user succeeds in the connection, please invoke refreshing current connections of the user via the #refreshCurrent method.
+     *
+     * @see ActivitySourcesManager#refreshCurrent
+     * @see ExternalAuthenticationFlowHandler
+     * @see GoogleFitActivitySource
+     *
+     * @param activitySource instance of ActivitySource to connect
+     * @param callback callback bringing the connecting intent
      */
     // TODO: describe the google-fit behavior
     public void connect(@NonNull final ActivitySource activitySource, @NonNull final Callback<Intent> callback) {

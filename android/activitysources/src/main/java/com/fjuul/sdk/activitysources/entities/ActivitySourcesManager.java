@@ -1,13 +1,11 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.work.WorkManager;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthenticationFlowRequired;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
@@ -17,33 +15,38 @@ import com.fjuul.sdk.exceptions.FjuulException;
 import com.fjuul.sdk.http.ApiClient;
 import com.google.android.gms.tasks.Task;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.work.WorkManager;
 
 /**
- * The `ActivitySourcesManager` encapsulates connection to fitness trackers, access to current user's tracker connections.
- * This is a high-level entity and entry point of the whole 'activity sources' module.
- * The class designed as the singleton, so you need first to initialize it before getting the instance.
- * For the proper initialization, you have to provide the configured api-client built with the user credentials.
+ * The `ActivitySourcesManager` encapsulates connection to fitness trackers, access to current user's tracker
+ * connections. This is a high-level entity and entry point of the whole 'activity sources' module. The class designed
+ * as the singleton, so you need first to initialize it before getting the instance. For the proper initialization, you
+ * have to provide the configured api-client built with the user credentials.
  */
 public final class ActivitySourcesManager {
-    @NonNull private final ActivitySourcesManagerConfig config;
-    @NonNull private final BackgroundWorkManager backgroundWorkManager;
-    @NonNull private final ActivitySourcesService sourcesService;
-    @NonNull private final ActivitySourcesStateStore stateStore;
-    @Nullable private volatile List<TrackerConnection> currentConnections;
+    @NonNull
+    private final ActivitySourcesManagerConfig config;
+    @NonNull
+    private final BackgroundWorkManager backgroundWorkManager;
+    @NonNull
+    private final ActivitySourcesService sourcesService;
+    @NonNull
+    private final ActivitySourcesStateStore stateStore;
+    @Nullable
+    private volatile List<TrackerConnection> currentConnections;
 
-    @Nullable private volatile static ActivitySourcesManager instance;
+    @Nullable
+    private volatile static ActivitySourcesManager instance;
 
     ActivitySourcesManager(@NonNull ActivitySourcesManagerConfig config,
-                           @NonNull BackgroundWorkManager backgroundWorkManager,
-                           @NonNull ActivitySourcesService sourcesService,
-                           @NonNull ActivitySourcesStateStore stateStore,
-                           @Nullable List<TrackerConnection> connections) {
+        @NonNull BackgroundWorkManager backgroundWorkManager, @NonNull ActivitySourcesService sourcesService,
+        @NonNull ActivitySourcesStateStore stateStore, @Nullable List<TrackerConnection> connections) {
         this.config = config;
         this.backgroundWorkManager = backgroundWorkManager;
         this.sourcesService = sourcesService;
@@ -52,8 +55,9 @@ public final class ActivitySourcesManager {
     }
 
     /**
-     * Initialize the singleton with default config. Periodic background works for syncing GoogleFit
-     * intraday and session data will be automatically scheduled if a user has a GoogleFit connection.
+     * Initialize the singleton with default config. Periodic background works for syncing GoogleFit intraday and
+     * session data will be automatically scheduled if a user has a GoogleFit connection.
+     *
      * @param client configured client with signing ability and user credentials
      */
     @SuppressLint("NewApi")
@@ -63,30 +67,32 @@ public final class ActivitySourcesManager {
 
     /**
      * Initialize the singleton.
+     *
      * @param client configured client with signing ability and user credentials
      * @param config config for ActivitySourcesManager
      */
     @SuppressLint("NewApi")
     public static synchronized void initialize(@NonNull ApiClient client,
-                                               @NonNull ActivitySourcesManagerConfig config) {
-        final ActivitySourcesStateStore stateStore = new ActivitySourcesStateStore(client.getStorage(), client.getUserToken());
+        @NonNull ActivitySourcesManagerConfig config) {
+        final ActivitySourcesStateStore stateStore =
+            new ActivitySourcesStateStore(client.getStorage(), client.getUserToken());
         final List<TrackerConnection> storedConnections = stateStore.getConnections().orElse(null);
         final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
         final WorkManager workManager = WorkManager.getInstance(client.getAppContext());
         final GoogleFitSyncWorkManager gfSyncWorkManager = new GoogleFitSyncWorkManager(workManager,
-            client.getUserToken(),
-            client.getUserSecret(),
-            client.getApiKey(),
-            client.getBaseUrl());
+            client.getUserToken(), client.getUserSecret(), client.getApiKey(), client.getBaseUrl());
         GoogleFitActivitySource.initialize(client);
 
         final BackgroundWorkManager backgroundWorkManager = new BackgroundWorkManager(config, gfSyncWorkManager);
         setupBackgroundWorksByConnections(storedConnections, backgroundWorkManager);
-        instance = new ActivitySourcesManager(config, backgroundWorkManager, sourcesService, stateStore, storedConnections);
+        instance =
+            new ActivitySourcesManager(config, backgroundWorkManager, sourcesService, stateStore, storedConnections);
     }
 
     /**
-     * Return the previously initialized instance. This method throws IllegalStateException if it is invoked before the initialization.
+     * Return the previously initialized instance. This method throws IllegalStateException if it is invoked before the
+     * initialization.
+     *
      * @return instance of ActivitySourcesManager
      * @throws IllegalStateException
      */
@@ -102,12 +108,16 @@ public final class ActivitySourcesManager {
      * Provides an intent performing connection to the specified ActivitySource.<br>
      * After getting it in the callback, you need to do one of the following:
      * <ul>
-     *     <li> if you wanted to connect to the GoogleFit tracker, then you need to pass this intent to #startActivityForResult method of Activity or Fragment.
-     *     Connection to GoogleFit will show a window prompting all required GoogleFit OAuth permissions. A response of user decisions on the prompted window will be available
-     *     in #onActivityResult method of Activity or Fragment with the `requestCode` you specified to #startActivityForResult.<br>
-     *     After you compared `requestCode` with your and checked `resultCode` with `Activity.RESULT_OK`, you need to pass the coming `data` (Intent) in #onActivityResult to
-     *     GoogleFitActivitySource#handleGoogleSignIn method to complete the connection to the GoogleFit tracker.
-     *     <pre>
+     * <li>if you wanted to connect to the GoogleFit tracker, then you need to pass this intent to
+     * #startActivityForResult method of Activity or Fragment. Connection to GoogleFit will show a window prompting all
+     * required GoogleFit OAuth permissions. A response of user decisions on the prompted window will be available in
+     * #onActivityResult method of Activity or Fragment with the `requestCode` you specified to
+     * #startActivityForResult.<br>
+     * After you compared `requestCode` with your and checked `resultCode` with `Activity.RESULT_OK`, you need to pass
+     * the coming `data` (Intent) in #onActivityResult to GoogleFitActivitySource#handleGoogleSignIn method to complete
+     * the connection to the GoogleFit tracker.
+     *
+     * <pre>
      *     {@code
      *     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
      *       super.onActivityResult(requestCode, resultCode, data)
@@ -125,16 +135,17 @@ public final class ActivitySourcesManager {
      *       }
      *     }
      *     }
-     *     </pre>
+     * </pre>
      *
-     *     <li>if you wanted to connect to any other tracker, then you need to pass this intent to #startActivity method of Activity or Fragment.
-     *     This will open the user's web browser on the page with authorization of the specified tracker.
-     *     After the user successfully authenticates, the user will be redirected back to the app by the link
-     *     matched with the scheme provided to you or coordinated with you by Fjuul.<br>
-     *     Returning to the app and processing the connection result is available in the #onNewIntent
-     *     method of your Activity class, which contains an intent-filter with the SDK schema. There you can determine
-     *     which schema the incoming link belongs to and find out the result of the external connection:
-     *     <pre>
+     * <li>if you wanted to connect to any other tracker, then you need to pass this intent to #startActivity method of
+     * Activity or Fragment. This will open the user's web browser on the page with authorization of the specified
+     * tracker. After the user successfully authenticates, the user will be redirected back to the app by the link
+     * matched with the scheme provided to you or coordinated with you by Fjuul.<br>
+     * Returning to the app and processing the connection result is available in the #onNewIntent method of your
+     * Activity class, which contains an intent-filter with the SDK schema. There you can determine which schema the
+     * incoming link belongs to and find out the result of the external connection:
+     *
+     * <pre>
      *     {@code
      *     override fun onNewIntent(intent: Intent?) {
      *       super.onNewIntent(intent)
@@ -146,21 +157,19 @@ public final class ActivitySourcesManager {
      *       }
      *     }
      *     }
-     *     </pre>
+     * </pre>
      * </ul>
-     *
      * One important remark: Many functional parts of ActivitySourcesManager depend on the list of current connections.
-     * Because of the complexity of the connection flow, there is not an automatic refreshing of the user's connection list.
-     * Therefore, after a user succeeds in the connection, please invoke refreshing current connections of the user via the #refreshCurrent method.
+     * Because of the complexity of the connection flow, there is not an automatic refreshing of the user's connection
+     * list. Therefore, after a user succeeds in the connection, please invoke refreshing current connections of the
+     * user via the #refreshCurrent method.
      *
      * @see ActivitySourcesManager#refreshCurrent
      * @see ExternalAuthenticationFlowHandler
      * @see GoogleFitActivitySource
-     *
      * @param activitySource instance of ActivitySource to connect
      * @param callback callback bringing the connecting intent
      */
-    // TODO: describe the google-fit behavior
     public void connect(@NonNull final ActivitySource activitySource, @NonNull final Callback<Intent> callback) {
         if (activitySource instanceof GoogleFitActivitySource) {
             final Intent intent = ((GoogleFitActivitySource) activitySource).buildIntentRequestingPermissions();
@@ -186,12 +195,14 @@ public final class ActivitySourcesManager {
 
 
     /**
-     * Disconnects the activity source connection and refreshes current connection list.
-     * In the case of GoogleFitActivitySource, this will revoke GoogleFit OAuth permissions.
+     * Disconnects the activity source connection and refreshes current connection list. In the case of
+     * GoogleFitActivitySource, this will revoke GoogleFit OAuth permissions.
+     *
      * @param sourceConnection current connection to disconnect
      * @param callback callback bringing the updated connection list
      */
-    public void disconnect(@NonNull final ActivitySourceConnection sourceConnection, @NonNull final Callback<List<ActivitySourceConnection>> callback) {
+    public void disconnect(@NonNull final ActivitySourceConnection sourceConnection,
+        @NonNull final Callback<List<ActivitySourceConnection>> callback) {
         // TODO: validate if sourceConnection was already ended ?
         Runnable runnableDisconnect = () -> {
             sourcesService.disconnect(sourceConnection).enqueue((call, apiCallResult) -> {
@@ -221,10 +232,10 @@ public final class ActivitySourcesManager {
     }
 
     /**
-     * Returns a list of current connections of the user.
-     * The list with current user connections is automatically saved in the persistent storage.
-     * This method returns null only if there are not stored connections for the user yet.
+     * Returns a list of current connections of the user. The list with current user connections is automatically saved
+     * in the persistent storage. This method returns null only if there are not stored connections for the user yet.
      * After the successful call of #refreshCurrent here will be at least an empty list.
+     *
      * @return list of activity source connections
      */
     @SuppressLint("NewApi")
@@ -239,6 +250,7 @@ public final class ActivitySourcesManager {
 
     /**
      * Requests for the fresh state of user tracker connections.
+     *
      * @param callback callback bringing the updated connection list
      */
     @SuppressLint("NewApi")
@@ -252,7 +264,8 @@ public final class ActivitySourcesManager {
             }
             final List<TrackerConnection> freshTrackerConnections = Arrays.asList(apiCallResult.getValue());
             setupBackgroundWorksByConnections(freshTrackerConnections, backgroundWorkManager);
-            final List<ActivitySourceConnection> sourceConnections = convertTrackerConnectionsToActivitySourcesConnections(freshTrackerConnections);
+            final List<ActivitySourceConnection> sourceConnections =
+                convertTrackerConnectionsToActivitySourcesConnections(freshTrackerConnections);
             stateStore.setConnections(freshTrackerConnections);
             this.currentConnections = freshTrackerConnections;
             if (callback != null) {
@@ -262,8 +275,9 @@ public final class ActivitySourcesManager {
     }
 
     /**
-     * Cancel any scheduled background works for syncing GoogleFit data.
-     * The main use case of this method is to cancel any background syncs after a user logged out.
+     * Cancel any scheduled background works for syncing GoogleFit data. The main use case of this method is to cancel
+     * any background syncs after a user logged out.
+     *
      * @param applicationContext
      */
     public static void disableBackgroundGFSyncWorkers(@NonNull Context applicationContext) {
@@ -272,35 +286,36 @@ public final class ActivitySourcesManager {
     }
 
     @SuppressLint("NewApi")
-    private static List<ActivitySourceConnection> convertTrackerConnectionsToActivitySourcesConnections(@NonNull List<TrackerConnection> trackerConnections) {
-        Stream<ActivitySourceConnection> sourceConnectionsStream = trackerConnections.stream()
-            .map(connection -> {
-                ActivitySource activitySource = null;
-                switch (ActivitySource.TrackerValue.forValue(connection.getTracker())) {
-                    case POLAR:
-                        activitySource = PolarActivitySource.getInstance();
-                        break;
-                    case FITBIT:
-                        activitySource = FitbitActivitySource.getInstance();
-                        break;
-                    case GARMIN:
-                        activitySource = GarminActivitySource.getInstance();
-                        break;
-                    case GOOGLE_FIT:
-                        activitySource = GoogleFitActivitySource.getInstance();
-                        break;
-                    default: break;
-                }
-                if (activitySource == null) {
-                    return null;
-                }
-                return new ActivitySourceConnection(connection, activitySource);
-            }).filter(Objects::nonNull);
+    private static List<ActivitySourceConnection> convertTrackerConnectionsToActivitySourcesConnections(
+        @NonNull List<TrackerConnection> trackerConnections) {
+        Stream<ActivitySourceConnection> sourceConnectionsStream = trackerConnections.stream().map(connection -> {
+            ActivitySource activitySource = null;
+            switch (ActivitySource.TrackerValue.forValue(connection.getTracker())) {
+                case POLAR:
+                    activitySource = PolarActivitySource.getInstance();
+                    break;
+                case FITBIT:
+                    activitySource = FitbitActivitySource.getInstance();
+                    break;
+                case GARMIN:
+                    activitySource = GarminActivitySource.getInstance();
+                    break;
+                case GOOGLE_FIT:
+                    activitySource = GoogleFitActivitySource.getInstance();
+                    break;
+                default:
+                    break;
+            }
+            if (activitySource == null) {
+                return null;
+            }
+            return new ActivitySourceConnection(connection, activitySource);
+        }).filter(Objects::nonNull);
         return sourceConnectionsStream.collect(Collectors.toList());
     }
 
     private static void setupBackgroundWorksByConnections(@Nullable List<TrackerConnection> trackerConnections,
-                                                          @NonNull BackgroundWorkManager backgroundWorkManager) {
+        @NonNull BackgroundWorkManager backgroundWorkManager) {
         if (checkIfHasGoogleFitConnection(trackerConnections)) {
             backgroundWorkManager.configureBackgroundGFSyncWorks();
         } else {

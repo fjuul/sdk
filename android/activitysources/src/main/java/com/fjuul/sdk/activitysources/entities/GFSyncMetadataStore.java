@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.fjuul.sdk.adapters.LocalDateJsonAdapter;
 import com.fjuul.sdk.entities.IStorage;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
@@ -14,16 +15,38 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Clock;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class GFSyncMetadataStore {
     private final IStorage storage;
     private final String userToken;
-    private final SimpleDateFormat dateFormatter;
+    private final ThreadLocal<SimpleDateFormat> dateFormatter = new ThreadLocal<SimpleDateFormat>() {
+        @Nullable
+        @Override
+        protected SimpleDateFormat initialValue() {
+            final SimpleDateFormat format = new SimpleDateFormat("'D'dd'T'HH:mm");
+            format.setTimeZone(TimeZone.getTimeZone("UTC"));
+            return format;
+        }
+    };
+    private final ThreadLocal<SimpleDateFormat> sessionListDateFormatter = new ThreadLocal<SimpleDateFormat>() {
+        @Nullable
+        @Override
+        protected SimpleDateFormat initialValue() {
+            final SimpleDateFormat format = new SimpleDateFormat("'D'dd");
+            format.setTimeZone(TimeZone.getTimeZone("UTC"));
+            return format;
+        }
+    };
     private final JsonAdapter<GFSyncCaloriesMetadata> syncCaloriesMetadataJsonAdapter;
     private final JsonAdapter<GFSyncStepsMetadata> syncStepsMetadataJsonAdapter;
     private final JsonAdapter<GFSyncHRMetadata> syncHRMetadataJsonAdapter;
     private final JsonAdapter<GFSyncSessionMetadata> syncSessionMetadataJsonAdapter;
+    private final JsonAdapter<GFSyncSessionsMetadata> syncSessionsMetadataJsonAdapter;
     private final Clock clock;
 
     @SuppressLint("NewApi")
@@ -31,17 +54,20 @@ public class GFSyncMetadataStore {
         this(storage, userToken, Clock.systemUTC());
     }
 
+    @SuppressLint("NewApi")
     public GFSyncMetadataStore(@NonNull IStorage storage, @NonNull String userToken, @NonNull Clock clock) {
         this.storage = storage;
         this.userToken = userToken;
         this.clock = clock;
-        dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
-        dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-        Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
+        Moshi moshi = new Moshi.Builder()
+            .add(Date.class, new Rfc3339DateJsonAdapter())
+            .add(new LocalDateJsonAdapter())
+            .build();
         this.syncCaloriesMetadataJsonAdapter = moshi.adapter(GFSyncCaloriesMetadata.class).nullSafe();
         this.syncStepsMetadataJsonAdapter = moshi.adapter(GFSyncStepsMetadata.class).nullSafe();
         this.syncHRMetadataJsonAdapter = moshi.adapter(GFSyncHRMetadata.class).nullSafe();
         this.syncSessionMetadataJsonAdapter = moshi.adapter(GFSyncSessionMetadata.class).nullSafe();
+        this.syncSessionsMetadataJsonAdapter = moshi.adapter(GFSyncSessionsMetadata.class).nullSafe();
     }
 
     public boolean isNeededToSyncCaloriesBatch(@NonNull GFDataPointsBatch<GFCalorieDataPoint> caloriesBatch) {
@@ -109,6 +135,45 @@ public class GFSyncMetadataStore {
     }
 
     @SuppressLint("NewApi")
+    public void saveSyncMetadataOfSessions(@NonNull List<GFSessionBundle> sessionBundles) {
+        final Map<String, List<GFSessionBundle>> keyToSessionBundles = sessionBundles.stream()
+            .collect(Collectors.groupingBy(this::buildLookupKeyForSessionBundleList));
+
+        keyToSessionBundles.forEach((key, sessionBundleList) -> {
+            final GFSyncSessionsMetadata storedMetadata = retrieveSyncMetadataOf(GFSyncSessionsMetadata.class, key);
+            final GFSyncSessionsMetadata newMetadata = GFSyncSessionsMetadata.buildFromList(sessionBundleList, clock);
+            if (storedMetadata == null) {
+                final String json = syncSessionsMetadataJsonAdapter.toJson(newMetadata);
+                storage.set(key, json);
+                return;
+            }
+
+            if (storedMetadata.getDate().isBefore(newMetadata.getDate())) {
+                // remove previously stored stale session metadata
+                storedMetadata.getIdentifiers().forEach(sessionId -> {
+                    final String staleSessionMetadataKey = buildLookupKeyForSessionBundle(sessionId);
+                    storage.set(staleSessionMetadataKey, null);
+                });
+                final String json = syncSessionsMetadataJsonAdapter.toJson(newMetadata);
+                storage.set(key, json);
+                return;
+            }
+
+            final List<String> mergedIdentifiers = Stream.concat(
+                storedMetadata.getIdentifiers().stream(),
+                newMetadata.getIdentifiers().stream()
+            ).distinct().collect(Collectors.toList());
+            final GFSyncSessionsMetadata mergedMetadata = new GFSyncSessionsMetadata(mergedIdentifiers,
+                newMetadata.getDate(),
+                Date.from(clock.instant()));
+            final String json = syncSessionsMetadataJsonAdapter.toJson(mergedMetadata);
+            storage.set(key, json);
+        });
+
+        sessionBundles.forEach(this::saveSyncMetadataOfSession);
+    }
+
+    @SuppressLint("NewApi")
     public void saveSyncMetadataOfSession(@NonNull GFSessionBundle sessionBundle) {
         final GFSyncSessionMetadata metadata = GFSyncSessionMetadata.buildFromSessionBundle(sessionBundle, clock);;
         final String jsonValue = syncSessionMetadataJsonAdapter.toJson(metadata);
@@ -141,11 +206,20 @@ public class GFSyncMetadataStore {
         } else {
             throw new IllegalArgumentException("Invalid class to evaluate the metadata key");
         }
-        return String.format("gf-sync-metadata.%s.%s.%s-%s", userToken, entityKey, dateFormatter.format(startTime), dateFormatter.format(endTime));
+        return String.format("gf-sync-metadata.%s.%s.%s-%s", userToken, entityKey, dateFormatter.get().format(startTime), dateFormatter.get().format(endTime));
     }
 
     private String buildLookupKeyForSessionBundle(GFSessionBundle sessionBundle) {
-        return String.format("gf-sync-metadata.%s.sessions.%s", userToken, sessionBundle.getId());
+        return buildLookupKeyForSessionBundle(sessionBundle.getId());
+    }
+
+    private String buildLookupKeyForSessionBundle(String sessionId) {
+        return String.format("gf-sync-metadata.%s.session.%s", userToken, sessionId);
+    }
+
+    private String buildLookupKeyForSessionBundleList(GFSessionBundle sessionBundle) {
+        String monthDay = sessionListDateFormatter.get().format(sessionBundle.getTimeStart());
+        return String.format("gf-sync-metadata.%s.sessions.%s", userToken, monthDay);
     }
 
     private <T extends GFSyncEntityMetadata> JsonAdapter<T> getJSONAdapterFor(Class<T> tClass) {
@@ -157,6 +231,8 @@ public class GFSyncMetadataStore {
             return (JsonAdapter<T>) this.syncHRMetadataJsonAdapter;
         } else if (tClass == GFSyncSessionMetadata.class) {
             return (JsonAdapter<T>) this.syncSessionMetadataJsonAdapter;
+        } else if (tClass == GFSyncSessionsMetadata.class) {
+            return (JsonAdapter<T>) this.syncSessionsMetadataJsonAdapter;
         } else {
             throw new IllegalArgumentException("Invalid class to identify the json adapter");
         }

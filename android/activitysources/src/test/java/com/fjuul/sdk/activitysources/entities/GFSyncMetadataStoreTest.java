@@ -61,8 +61,8 @@ public class GFSyncMetadataStoreTest {
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
             gfSyncMetadataStore.saveSyncMetadataOfCalories(caloriesBatch);
-            final String expectedKey = "gf-sync-metadata.USER_TOKEN.calories.2020-09-10T10:00-2020-09-10T11:00";
-            final String expectedJson = "{\"count\":3,\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"totalKcals\":14.8147}";
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.calories.D10T10:00-D10T11:00";
+            final String expectedJson = "{\"count\":3,\"date\":\"2020-09-10\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"totalKcals\":14.8147}";
             verify(mockedStorage, times(1)).set(expectedKey, expectedJson);
         }
     }
@@ -88,8 +88,8 @@ public class GFSyncMetadataStoreTest {
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
             gfSyncMetadataStore.saveSyncMetadataOfHR(hrBatch);
-            final String expectedKey = "gf-sync-metadata.USER_TOKEN.hr.2020-09-10T10:00-2020-09-10T11:00";
-            final String expectedJson = "{\"count\":3,\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"sumOfAverages\":212.41478}";
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.hr.D10T10:00-D10T11:00";
+            final String expectedJson = "{\"count\":3,\"date\":\"2020-09-10\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"sumOfAverages\":212.41478}";
             verify(mockedStorage, times(1)).set(expectedKey, expectedJson);
         }
     }
@@ -115,8 +115,8 @@ public class GFSyncMetadataStoreTest {
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
             gfSyncMetadataStore.saveSyncMetadataOfSteps(stepsBatch);
-            final String expectedKey = "gf-sync-metadata.USER_TOKEN.steps.2020-09-10T10:00-2020-09-10T11:00";
-            final String expectedJson = "{\"count\":3,\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"totalSteps\":10064}";
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.steps.D10T10:00-D10T11:00";
+            final String expectedJson = "{\"count\":3,\"date\":\"2020-09-10\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"totalSteps\":10064}";
             verify(mockedStorage, times(1)).set(expectedKey, expectedJson);
         }
     }
@@ -151,10 +151,116 @@ public class GFSyncMetadataStoreTest {
                 .setSteps(TestSessionSamplesData.steps)
                 .build();
             gfSyncMetadataStore.saveSyncMetadataOfSession(session);
-            final String expectedKey = "gf-sync-metadata.USER_TOKEN.sessions.679acf3c-3d38-4931-8822-0b355d8134e1";
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.session.679acf3c-3d38-4931-8822-0b355d8134e1";
             final String expectedJson =
                 "{\"activitySegmentsCount\":2,\"applicationIdentifier\":\"com.google.android.apps.fitness\",\"caloriesCount\":3,\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"heartRateCount\":3,\"id\":\"679acf3c-3d38-4931-8822-0b355d8134e1\",\"name\":\"short walk\",\"powerCount\":1,\"schemaVersion\":1,\"speedCount\":2,\"stepsCount\":3,\"timeEnd\":\"2020-10-16T13:00:00.000Z\",\"timeStart\":\"2020-10-16T11:20:00.000Z\",\"type\":7}";
-            verify(mockedStorage, times(1)).set(expectedKey, expectedJson);
+            verify(mockedStorage).set(expectedKey, expectedJson);
+        }
+    }
+
+    public static class SaveSyncMetadataOfSessionsTest extends GivenRobolectricContext {
+        Clock fixedClock;
+        GFSyncMetadataStore gfSyncMetadataStore;
+        IStorage mockedStorage;
+
+        @Before
+        public void beforeTests() {
+            String instantExpected = "2020-10-16T21:30:00Z";
+            fixedClock = Clock.fixed(Instant.parse(instantExpected), ZoneId.of("UTC"));
+            mockedStorage = mock(IStorage.class);
+            gfSyncMetadataStore = new GFSyncMetadataStore(mockedStorage, USER_TOKEN, fixedClock);
+        }
+
+        @Test
+        public void saveSyncMetadataOfSessions_whenNoStoredSessionList_createsAndSavesSyncMetadataInUTC() {
+            final GFSessionBundle session = new GFSessionBundle.Builder().setId("679acf3c-3d38-4931-8822-0b355d8134e1")
+                .setName("short walk")
+                .setApplicationIdentifier("com.google.android.apps.fitness")
+                .setTimeStart(Date.from(Instant.parse("2020-10-16T11:20:00.000Z")))
+                .setTimeEnd(Date.from(Instant.parse("2020-10-16T13:00:00.000Z")))
+                .setActivityType("walking")
+                .setType(7)
+                .build();
+            final List<GFSessionBundle> sessionBundles = Stream.of(session).collect(Collectors.toList());
+
+            final String expectedSessionListKey = "gf-sync-metadata.USER_TOKEN.sessions.D16";
+            when(mockedStorage.get(expectedSessionListKey)).thenReturn(null);
+
+            gfSyncMetadataStore.saveSyncMetadataOfSessions(sessionBundles);
+
+            // should save new metadata of the list
+            String expectedListMetadataJson =
+                "{\"date\":\"2020-10-16\",\"editedAt\":\"2020-10-16T21:30:00.000Z\",\"identifiers\":[\"679acf3c-3d38-4931-8822-0b355d8134e1\"],\"schemaVersion\":1}";
+            verify(mockedStorage).set(expectedSessionListKey, expectedListMetadataJson);
+            // should save each session metadata
+            final String expectedSessionKey = "gf-sync-metadata.USER_TOKEN.session.679acf3c-3d38-4931-8822-0b355d8134e1";
+            final String expectedSessionMetadataJson =
+                "{\"activitySegmentsCount\":0,\"applicationIdentifier\":\"com.google.android.apps.fitness\",\"caloriesCount\":0,\"editedAt\":\"2020-10-16T21:30:00.000Z\",\"heartRateCount\":0,\"id\":\"679acf3c-3d38-4931-8822-0b355d8134e1\",\"name\":\"short walk\",\"powerCount\":0,\"schemaVersion\":1,\"speedCount\":0,\"stepsCount\":0,\"timeEnd\":\"2020-10-16T13:00:00.000Z\",\"timeStart\":\"2020-10-16T11:20:00.000Z\",\"type\":7}";
+            verify(mockedStorage).set(expectedSessionKey, expectedSessionMetadataJson);
+        }
+
+        @Test
+        public void saveSyncMetadataOfSessions_whenStoredStaleSessionList_savesNewSyncMetadataInUTC() {
+            final GFSessionBundle session = new GFSessionBundle.Builder().setId("679acf3c-3d38-4931-8822-0b355d8134e1")
+                .setName("short walk")
+                .setApplicationIdentifier("com.google.android.apps.fitness")
+                .setTimeStart(Date.from(Instant.parse("2020-10-16T11:20:00.000Z")))
+                .setTimeEnd(Date.from(Instant.parse("2020-10-16T13:00:00.000Z")))
+                .setActivityType("walking")
+                .setType(7)
+                .build();
+            final List<GFSessionBundle> sessionBundles = Stream.of(session).collect(Collectors.toList());
+
+            final String expectedSessionListKey = "gf-sync-metadata.USER_TOKEN.sessions.D16";
+            final String staleListMetadataJson =
+                "{\"date\":\"2020-09-16\",\"editedAt\":\"2020-09-16T21:30:00.000Z\",\"identifiers\":[\"old_session_id\"],\"schemaVersion\":1}";
+            when(mockedStorage.get(expectedSessionListKey)).thenReturn(staleListMetadataJson);
+
+            gfSyncMetadataStore.saveSyncMetadataOfSessions(sessionBundles);
+
+            // should remove the previous session identifier
+            final String staleSessionKey = "gf-sync-metadata.USER_TOKEN.session.old_session_id";
+            verify(mockedStorage).set(staleSessionKey, null);
+
+            // should save new metadata of the list
+            String expectedListMetadataJson =
+                "{\"date\":\"2020-10-16\",\"editedAt\":\"2020-10-16T21:30:00.000Z\",\"identifiers\":[\"679acf3c-3d38-4931-8822-0b355d8134e1\"],\"schemaVersion\":1}";
+            verify(mockedStorage).set(expectedSessionListKey, expectedListMetadataJson);
+            // should save each new session metadata
+            final String expectedSessionKey = "gf-sync-metadata.USER_TOKEN.session.679acf3c-3d38-4931-8822-0b355d8134e1";
+            final String expectedSessionMetadataJson =
+                "{\"activitySegmentsCount\":0,\"applicationIdentifier\":\"com.google.android.apps.fitness\",\"caloriesCount\":0,\"editedAt\":\"2020-10-16T21:30:00.000Z\",\"heartRateCount\":0,\"id\":\"679acf3c-3d38-4931-8822-0b355d8134e1\",\"name\":\"short walk\",\"powerCount\":0,\"schemaVersion\":1,\"speedCount\":0,\"stepsCount\":0,\"timeEnd\":\"2020-10-16T13:00:00.000Z\",\"timeStart\":\"2020-10-16T11:20:00.000Z\",\"type\":7}";
+            verify(mockedStorage).set(expectedSessionKey, expectedSessionMetadataJson);
+        }
+
+        @Test
+        public void saveSyncMetadataOfSessions_whenStoredActualSessionList_savesNewSyncMetadataInUTC() {
+            final GFSessionBundle session = new GFSessionBundle.Builder().setId("new_session_id")
+                .setName("short walk")
+                .setApplicationIdentifier("com.google.android.apps.fitness")
+                .setTimeStart(Date.from(Instant.parse("2020-10-16T11:20:00.000Z")))
+                .setTimeEnd(Date.from(Instant.parse("2020-10-16T13:00:00.000Z")))
+                .setActivityType("walking")
+                .setType(7)
+                .build();
+            final List<GFSessionBundle> sessionBundles = Stream.of(session).collect(Collectors.toList());
+
+            final String expectedSessionListKey = "gf-sync-metadata.USER_TOKEN.sessions.D16";
+            final String listMetadataJson =
+                "{\"date\":\"2020-10-16\",\"editedAt\":\"2020-10-16T21:30:00.000Z\",\"identifiers\":[\"other_session_id\"],\"schemaVersion\":1}";
+            when(mockedStorage.get(expectedSessionListKey)).thenReturn(listMetadataJson);
+
+            gfSyncMetadataStore.saveSyncMetadataOfSessions(sessionBundles);
+
+            // should save the merged metadata of both lists
+            String expectedListMetadataJson =
+                "{\"date\":\"2020-10-16\",\"editedAt\":\"2020-10-16T21:30:00.000Z\",\"identifiers\":[\"other_session_id\",\"new_session_id\"],\"schemaVersion\":1}";
+            verify(mockedStorage).set(expectedSessionListKey, expectedListMetadataJson);
+            // should save each new session metadata
+            final String expectedSessionKey = "gf-sync-metadata.USER_TOKEN.session.new_session_id";
+            final String expectedSessionMetadataJson =
+                "{\"activitySegmentsCount\":0,\"applicationIdentifier\":\"com.google.android.apps.fitness\",\"caloriesCount\":0,\"editedAt\":\"2020-10-16T21:30:00.000Z\",\"heartRateCount\":0,\"id\":\"new_session_id\",\"name\":\"short walk\",\"powerCount\":0,\"schemaVersion\":1,\"speedCount\":0,\"stepsCount\":0,\"timeEnd\":\"2020-10-16T13:00:00.000Z\",\"timeStart\":\"2020-10-16T11:20:00.000Z\",\"type\":7}";
+            verify(mockedStorage).set(expectedSessionKey, expectedSessionMetadataJson);
         }
     }
 
@@ -180,8 +286,27 @@ public class GFSyncMetadataStoreTest {
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
-            final String expectedKey = "gf-sync-metadata.USER_TOKEN.calories.2020-09-10T10:00-2020-09-10T11:00";
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.calories.D10T10:00-D10T11:00";
             when(mockedStorage.get(expectedKey)).thenReturn(null);
+            boolean result = gfSyncMetadataStore.isNeededToSyncCaloriesBatch(caloriesBatch);
+            assertTrue("should require the sync", result);
+            verify(mockedStorage, times(1)).get(expectedKey);
+        }
+
+        @Test
+        public void isNeededToSyncCaloriesBatch_whenStoredMetadataHasDifferentDate_returnsTrue() {
+            final GFDataPointsBatch<GFCalorieDataPoint> caloriesBatch = new GFDataPointsBatch<>(
+                Stream.of(
+                    new GFCalorieDataPoint(5.2751f, Date.from(Instant.parse("2020-09-10T10:05:00Z")), CALORIES_DATA_SOURCE),
+                    new GFCalorieDataPoint(1.2698f, Date.from(Instant.parse("2020-09-10T10:07:00Z")), CALORIES_DATA_SOURCE),
+                    new GFCalorieDataPoint(8.2698f, Date.from(Instant.parse("2020-09-10T10:31:00Z")), CALORIES_DATA_SOURCE)
+                ).collect(Collectors.toList()),
+                Date.from(Instant.parse("2020-09-10T10:00:00Z")),
+                Date.from(Instant.parse("2020-09-10T11:00:00Z"))
+            );
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.calories.D10T10:00-D10T11:00";
+            final String storedJson = "{\"count\":3,\"date\":\"2020-08-10\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"totalKcals\":14.8147}";
+            when(mockedStorage.get(expectedKey)).thenReturn(storedJson);
             boolean result = gfSyncMetadataStore.isNeededToSyncCaloriesBatch(caloriesBatch);
             assertTrue("should require the sync", result);
             verify(mockedStorage, times(1)).get(expectedKey);
@@ -198,9 +323,9 @@ public class GFSyncMetadataStoreTest {
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
-            final String expectedKey = "gf-sync-metadata.USER_TOKEN.calories.2020-09-10T10:00-2020-09-10T11:00";
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.calories.D10T10:00-D10T11:00";
             // NOTE: there is a diff more than 0.001, the current totalKcals is 14.8147
-            final String storedJson = "{\"count\":3,\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"totalKcals\":14.8248}";
+            final String storedJson = "{\"count\":3,\"date\":\"2020-09-10\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"totalKcals\":14.8248}";
             when(mockedStorage.get(expectedKey)).thenReturn(storedJson);
             boolean result = gfSyncMetadataStore.isNeededToSyncCaloriesBatch(caloriesBatch);
             assertTrue("should require the sync", result);
@@ -218,8 +343,8 @@ public class GFSyncMetadataStoreTest {
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
-            final String expectedKey = "gf-sync-metadata.USER_TOKEN.calories.2020-09-10T10:00-2020-09-10T11:00";
-            final String storedJson = "{\"count\":2,\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"totalKcals\":14.8147}";
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.calories.D10T10:00-D10T11:00";
+            final String storedJson = "{\"count\":2,\"date\":\"2020-09-10\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"totalKcals\":14.8147}";
             when(mockedStorage.get(expectedKey)).thenReturn(storedJson);
             boolean result = gfSyncMetadataStore.isNeededToSyncCaloriesBatch(caloriesBatch);
             assertTrue("should require the sync", result);
@@ -237,8 +362,8 @@ public class GFSyncMetadataStoreTest {
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
-            final String expectedKey = "gf-sync-metadata.USER_TOKEN.calories.2020-09-10T10:00-2020-09-10T11:00";
-            final String storedJson = "{\"count\":3,\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"totalKcals\":14.8150}";
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.calories.D10T10:00-D10T11:00";
+            final String storedJson = "{\"count\":3,\"date\":\"2020-09-10\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"totalKcals\":14.8150}";
             when(mockedStorage.get(expectedKey)).thenReturn(storedJson);
             boolean result = gfSyncMetadataStore.isNeededToSyncCaloriesBatch(caloriesBatch);
             assertFalse("should not require the sync", result);
@@ -266,11 +391,25 @@ public class GFSyncMetadataStoreTest {
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
-            final String expectedKey = "gf-sync-metadata.USER_TOKEN.hr.2020-09-10T10:00-2020-09-10T11:00";
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.hr.D10T10:00-D10T11:00";
             when(mockedStorage.get(expectedKey)).thenReturn(null);
             boolean result = gfSyncMetadataStore.isNeededToSyncHRBatch(hrBatch);
             assertTrue("should require the sync", result);
             verify(mockedStorage, times(1)).get(expectedKey);
+        }
+
+        @Test
+        public void isNeededToSyncHRBatch_whenStoredMetadataHasDifferentDate_returnsTrue() {
+            final GFDataPointsBatch<GFHRSummaryDataPoint> hrBatch = new GFDataPointsBatch<>(
+                TestIntradaySamplesData.hrSummaryList,
+                Date.from(Instant.parse("2020-09-10T10:00:00Z")),
+                Date.from(Instant.parse("2020-09-10T11:00:00Z"))
+            );
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.hr.D10RT10:00-D10T11:00";
+            final String storedJson = "{\"count\":3,\"date\":\"2020-08-10\",\"editedAt\":\"2020-09-15T21:40:00.000Z\",\"schemaVersion\":1,\"sumOfAverages\":212.41478}";
+            when(mockedStorage.get(expectedKey)).thenReturn(storedJson);
+            boolean result = gfSyncMetadataStore.isNeededToSyncHRBatch(hrBatch);
+            assertTrue("should require the sync", result);
         }
 
         @Test
@@ -280,9 +419,9 @@ public class GFSyncMetadataStoreTest {
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
-            final String expectedKey = "gf-sync-metadata.USER_TOKEN.hr.2020-09-10T10:00-2020-09-10T11:00";
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.hr.D10T10:00-D10T11:00";
             // NOTE: there is a diff more than 0.01, the current sum is 212.41478
-            final String storedJson = "{\"count\":3,\"editedAt\":\"2020-09-15T21:40:00.000Z\",\"schemaVersion\":1,\"sumOfAverages\":212.42479}";
+            final String storedJson = "{\"count\":3,\"date\":\"2020-09-10\",\"editedAt\":\"2020-09-15T21:40:00.000Z\",\"schemaVersion\":1,\"sumOfAverages\":212.42479}";
             when(mockedStorage.get(expectedKey)).thenReturn(storedJson);
             boolean result = gfSyncMetadataStore.isNeededToSyncHRBatch(hrBatch);
             assertTrue("should require the sync", result);
@@ -296,8 +435,8 @@ public class GFSyncMetadataStoreTest {
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
-            final String expectedKey = "gf-sync-metadata.USER_TOKEN.hr.2020-09-10T10:00-2020-09-10T11:00";
-            final String storedJson = "{\"count\":2,\"editedAt\":\"2020-09-15T21:40:00.000Z\",\"schemaVersion\":1,\"sumOfAverages\":212.41478}";
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.hr.D10T10:00-D10T11:00";
+            final String storedJson = "{\"count\":2,\"date\":\"2020-09-10\",\"editedAt\":\"2020-09-15T21:40:00.000Z\",\"schemaVersion\":1,\"sumOfAverages\":212.41478}";
             when(mockedStorage.get(expectedKey)).thenReturn(storedJson);
             boolean result = gfSyncMetadataStore.isNeededToSyncHRBatch(hrBatch);
             assertTrue("should require the sync", result);
@@ -310,8 +449,8 @@ public class GFSyncMetadataStoreTest {
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
-            final String expectedKey = "gf-sync-metadata.USER_TOKEN.hr.2020-09-10T10:00-2020-09-10T11:00";
-            final String storedJson = "{\"count\":3,\"editedAt\":\"2020-09-15T21:40:00.000Z\",\"schemaVersion\":1,\"sumOfAverages\":212.41480}";
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.hr.D10T10:00-D10T11:00";
+            final String storedJson = "{\"count\":3,\"date\":\"2020-09-10\",\"editedAt\":\"2020-09-15T21:40:00.000Z\",\"schemaVersion\":1,\"sumOfAverages\":212.41480}";
             when(mockedStorage.get(expectedKey)).thenReturn(storedJson);
             boolean result = gfSyncMetadataStore.isNeededToSyncHRBatch(hrBatch);
             assertFalse("should not require the sync", result);
@@ -339,11 +478,25 @@ public class GFSyncMetadataStoreTest {
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
-            final String expectedKey = "gf-sync-metadata.USER_TOKEN.steps.2020-09-10T10:00-2020-09-10T11:00";
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.steps.D10T10:00-D10T11:00";
             when(mockedStorage.get(expectedKey)).thenReturn(null);
             boolean result = gfSyncMetadataStore.isNeededToSyncStepsBatch(stepsBatch);
             assertTrue("should require the sync", result);
             verify(mockedStorage, times(1)).get(expectedKey);
+        }
+
+        @Test
+        public void isNeededToSyncStepsBatch_whenStoredMetadataHasDifferentDate_returnsTrue() {
+            final GFDataPointsBatch<GFStepsDataPoint> stepsBatch = new GFDataPointsBatch<>(
+                TestIntradaySamplesData.stepsList,
+                Date.from(Instant.parse("2020-09-10T10:00:00Z")),
+                Date.from(Instant.parse("2020-09-10T11:00:00Z"))
+            );
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.steps.D10T10:00-D10T11:00";
+            final String storedJson = "{\"count\":3,\"date\":\"2020-08-10\",\"editedAt\":\"2020-09-15T21:40:00.000Z\",\"schemaVersion\":1,\"totalSteps\":10064}";
+            when(mockedStorage.get(expectedKey)).thenReturn(storedJson);
+            boolean result = gfSyncMetadataStore.isNeededToSyncStepsBatch(stepsBatch);
+            assertTrue("should require the sync", result);
         }
 
         @Test
@@ -353,9 +506,9 @@ public class GFSyncMetadataStoreTest {
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
-            final String expectedKey = "gf-sync-metadata.USER_TOKEN.steps.2020-09-10T10:00-2020-09-10T11:00";
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.steps.D10T10:00-D10T11:00";
             // NOTE: there is a diff in 1 step, the current total is 10064
-            final String storedJson = "{\"count\":3,\"editedAt\":\"2020-09-15T21:40:00.000Z\",\"schemaVersion\":1,\"totalSteps\":10063}";
+            final String storedJson = "{\"count\":3,\"date\":\"2020-09-10\",\"editedAt\":\"2020-09-15T21:40:00.000Z\",\"schemaVersion\":1,\"totalSteps\":10063}";
             when(mockedStorage.get(expectedKey)).thenReturn(storedJson);
             boolean result = gfSyncMetadataStore.isNeededToSyncStepsBatch(stepsBatch);
             assertTrue("should require the sync", result);
@@ -369,8 +522,8 @@ public class GFSyncMetadataStoreTest {
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
-            final String expectedKey = "gf-sync-metadata.USER_TOKEN.steps.2020-09-10T10:00-2020-09-10T11:00";
-            final String storedJson = "{\"count\":2,\"editedAt\":\"2020-09-15T21:40:00.000Z\",\"schemaVersion\":1,\"totalSteps\":10064}";
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.steps.D10T10:00-D10T11:00";
+            final String storedJson = "{\"count\":2,\"date\":\"2020-09-10\",\"editedAt\":\"2020-09-15T21:40:00.000Z\",\"schemaVersion\":1,\"totalSteps\":10064}";
             when(mockedStorage.get(expectedKey)).thenReturn(storedJson);
             boolean result = gfSyncMetadataStore.isNeededToSyncStepsBatch(stepsBatch);
             assertTrue("should require the sync", result);
@@ -383,8 +536,8 @@ public class GFSyncMetadataStoreTest {
                 Date.from(Instant.parse("2020-09-10T10:00:00Z")),
                 Date.from(Instant.parse("2020-09-10T11:00:00Z"))
             );
-            final String expectedKey = "gf-sync-metadata.USER_TOKEN.steps.2020-09-10T10:00-2020-09-10T11:00";
-            final String storedJson = "{\"count\":3,\"editedAt\":\"2020-09-15T21:40:00.000Z\",\"schemaVersion\":1,\"totalSteps\":10064}";
+            final String expectedKey = "gf-sync-metadata.USER_TOKEN.steps.D10T10:00-D10T11:00";
+            final String storedJson = "{\"count\":3,\"date\":\"2020-09-10\",\"editedAt\":\"2020-09-15T21:40:00.000Z\",\"schemaVersion\":1,\"totalSteps\":10064}";
             when(mockedStorage.get(expectedKey)).thenReturn(storedJson);
             boolean result = gfSyncMetadataStore.isNeededToSyncStepsBatch(stepsBatch);
             assertFalse("should not require the sync", result);
@@ -411,7 +564,7 @@ public class GFSyncMetadataStoreTest {
             .setSpeed(TestSessionSamplesData.speed)
             .setSteps(TestSessionSamplesData.steps)
             .build();
-        final String expectedKey = "gf-sync-metadata.USER_TOKEN.sessions." + session.getId();
+        final String expectedKey = "gf-sync-metadata.USER_TOKEN.session." + session.getId();
 
         @Before
         public void beforeTests() {

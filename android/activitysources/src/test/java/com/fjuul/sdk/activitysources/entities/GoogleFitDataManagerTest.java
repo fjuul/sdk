@@ -737,7 +737,7 @@ public class GoogleFitDataManagerTest {
             // should ask the sync metadata store about session
             verify(mockedGFSyncMetadataStore).isNeededToSyncSessionBundle(stubSessionBundle);
             // should save the metadata
-            verify(mockedGFSyncMetadataStore).saveSyncMetadataOfSession(stubSessionBundle);
+            verify(mockedGFSyncMetadataStore).saveSyncMetadataOfSessions(Arrays.asList(stubSessionBundle));
             // should send the data to the server
             verify(mockedActivitySourcesService).uploadGoogleFitData(argThat(uploadData -> {
                 assertEquals("should try to send the sessions data",

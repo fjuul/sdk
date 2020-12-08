@@ -25,9 +25,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * The `ActivitySourcesManager` encapsulates connection to fitness trackers, access to current user's tracker connections. This is a high-level entity and entry point of the whole 'activity sources' module.
+ * The `ActivitySourcesManager` encapsulates connection to fitness trackers, access to current user's tracker connections.
+ * This is a high-level entity and entry point of the whole 'activity sources' module.
  * The class designed as the singleton, so you need first to initialize it before getting the instance.
- * For proper initialization you have to provide the configured api-client built with the user credentials.
+ * For the proper initialization, you have to provide the configured api-client built with the user credentials.
  */
 public final class ActivitySourcesManager {
     @NonNull private final ActivitySourcesManagerConfig config;
@@ -85,7 +86,7 @@ public final class ActivitySourcesManager {
     }
 
     /**
-     * Return previously initialized instance. This method throws IllegalStateException if it is invoked before the initialization.
+     * Return the previously initialized instance. This method throws IllegalStateException if it is invoked before the initialization.
      * @return instance of ActivitySourcesManager
      * @throws IllegalStateException
      */
@@ -102,7 +103,7 @@ public final class ActivitySourcesManager {
      * After getting it in the callback, you need to do one of the following:
      * <ul>
      *     <li> if you wanted to connect to the GoogleFit tracker, then you need to pass this intent to #startActivityForResult method of Activity or Fragment.
-     *     Connection to GoogleFit will show a window prompting all required permissions. A response of user decisions on the prompted window will be available
+     *     Connection to GoogleFit will show a window prompting all required GoogleFit OAuth permissions. A response of user decisions on the prompted window will be available
      *     in #onActivityResult method of Activity or Fragment with the `requestCode` you specified to #startActivityForResult.<br>
      *     After you compared `requestCode` with your and checked `resultCode` with `Activity.RESULT_OK`, you need to pass the coming `data` (Intent) in #onActivityResult to
      *     GoogleFitActivitySource#handleGoogleSignIn method to complete the connection to the GoogleFit tracker.
@@ -183,6 +184,13 @@ public final class ActivitySourcesManager {
         });
     }
 
+
+    /**
+     * Disconnects the activity source connection and refreshes current connection list.
+     * In the case of GoogleFitActivitySource, this will revoke GoogleFit OAuth permissions.
+     * @param sourceConnection current connection to disconnect
+     * @param callback callback bringing the updated connection list
+     */
     public void disconnect(@NonNull final ActivitySourceConnection sourceConnection, @NonNull final Callback<List<ActivitySourceConnection>> callback) {
         // TODO: validate if sourceConnection was already ended ?
         Runnable runnableDisconnect = () -> {
@@ -200,7 +208,6 @@ public final class ActivitySourcesManager {
         if (activitySource instanceof GoogleFitActivitySource) {
             Task<Void> disableGoogleFitTask = ((GoogleFitActivitySource) activitySource).disable();
             disableGoogleFitTask.addOnCompleteListener((task) -> {
-                // TODO: ensure if is it possible to have an error here on the second disable
                 // TODO: run the disconnect if even there was an error?
                 if (task.isCanceled() || !task.isSuccessful()) {
                     callback.onResult(Result.error(task.getException()));
@@ -213,6 +220,13 @@ public final class ActivitySourcesManager {
         }
     }
 
+    /**
+     * Returns a list of current connections of the user.
+     * The list with current user connections is automatically saved in the persistent storage.
+     * This method returns null only if there are not stored connections for the user yet.
+     * After the successful call of #refreshCurrent here will be at least an empty list.
+     * @return list of activity source connections
+     */
     @SuppressLint("NewApi")
     @Nullable
     public List<ActivitySourceConnection> getCurrent() {
@@ -223,6 +237,10 @@ public final class ActivitySourcesManager {
         return convertTrackerConnectionsToActivitySourcesConnections(currentConnections);
     }
 
+    /**
+     * Requests for the fresh state of user tracker connections.
+     * @param callback callback bringing the updated connection list
+     */
     @SuppressLint("NewApi")
     public void refreshCurrent(@Nullable Callback<List<ActivitySourceConnection>> callback) {
         sourcesService.getCurrentConnections().enqueue((call, apiCallResult) -> {
@@ -241,6 +259,16 @@ public final class ActivitySourcesManager {
                 callback.onResult(Result.value(sourceConnections));
             }
         });
+    }
+
+    /**
+     * Cancel any scheduled background works for syncing GoogleFit data.
+     * The main use case of this method is to cancel any background syncs after a user logged out.
+     * @param applicationContext
+     */
+    public static void disableBackgroundGFSyncWorkers(@NonNull Context applicationContext) {
+        final WorkManager workManager = WorkManager.getInstance(applicationContext);
+        GoogleFitSyncWorkManager.cancelWorks(workManager);
     }
 
     @SuppressLint("NewApi")
@@ -269,11 +297,6 @@ public final class ActivitySourcesManager {
                 return new ActivitySourceConnection(connection, activitySource);
             }).filter(Objects::nonNull);
         return sourceConnectionsStream.collect(Collectors.toList());
-    }
-
-    public static void disableBackgroundGFSyncWorkers(@NonNull Context applicationContext) {
-        final WorkManager workManager = WorkManager.getInstance(applicationContext);
-        GoogleFitSyncWorkManager.cancelWorks(workManager);
     }
 
     private static void setupBackgroundWorksByConnections(@Nullable List<TrackerConnection> trackerConnections,

@@ -143,7 +143,7 @@ class GoogleFitDataManager {
             });
         });
         final Task<Void> saveSyncMetadataTask = sendDataIfNotEmptyTask.onSuccessTask(localBackgroundExecutor, apiCallResult -> {
-            getNotSyncedSessionsTask.getResult().forEach(gfSyncMetadataStore::saveSyncMetadataOfSession);
+            gfSyncMetadataStore.saveSyncMetadataOfSessions(getNotSyncedSessionsTask.getResult());
             return Tasks.forResult(null);
         });
         return saveSyncMetadataTask;

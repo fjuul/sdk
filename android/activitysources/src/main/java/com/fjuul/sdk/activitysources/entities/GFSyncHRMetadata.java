@@ -8,6 +8,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Date;
+import java.util.Objects;
 
 public class GFSyncHRMetadata extends GFSyncDatedEntityMetadata {
     public static final int CURRENT_SCHEMA_VERSION = 1;
@@ -47,6 +48,6 @@ public class GFSyncHRMetadata extends GFSyncDatedEntityMetadata {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GFSyncHRMetadata that = (GFSyncHRMetadata) o;
-        return count == that.count && Math.abs(sumOfAverages - that.sumOfAverages) <= TOTAL_HR_ACCURACY;
+        return Objects.equals(date, that.date) && count == that.count && Math.abs(sumOfAverages - that.sumOfAverages) <= TOTAL_HR_ACCURACY;
     }
 }

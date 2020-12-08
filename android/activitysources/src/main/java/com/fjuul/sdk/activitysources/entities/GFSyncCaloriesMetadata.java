@@ -8,6 +8,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Date;
+import java.util.Objects;
 
 public final class GFSyncCaloriesMetadata extends GFSyncDatedEntityMetadata {
     public static final int CURRENT_SCHEMA_VERSION = 1;
@@ -48,6 +49,6 @@ public final class GFSyncCaloriesMetadata extends GFSyncDatedEntityMetadata {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GFSyncCaloriesMetadata that = (GFSyncCaloriesMetadata) o;
-        return count == that.count && Math.abs(totalKcals - that.totalKcals) <= TOTAL_CALORIES_ACCURACY;
+        return Objects.equals(date, that.date) && count == that.count && Math.abs(totalKcals - that.totalKcals) <= TOTAL_CALORIES_ACCURACY;
     }
 }

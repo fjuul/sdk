@@ -5,7 +5,7 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.fjuul.sdk.entities.UserCredentials
+import com.fjuul.sdk.core.entities.UserCredentials
 
 data class SdkUserConfigState(
     val environment: SdkEnvironment?,

@@ -5,8 +5,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
-import com.fjuul.sdk.http.ApiClient
-import com.fjuul.sdk.http.utils.ApiCall
+import com.fjuul.sdk.core.ApiClient
+import com.fjuul.sdk.core.http.utils.ApiCall
 import com.fjuul.sdk.user.entities.Gender
 import com.fjuul.sdk.user.entities.UserCreationResult
 import com.fjuul.sdk.user.entities.UserProfile

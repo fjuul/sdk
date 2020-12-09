@@ -10,9 +10,9 @@ import java.util.stream.Stream;
 import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthenticationFlowRequired;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.core.entities.Callback;
-import com.fjuul.sdk.entities.Result;
-import com.fjuul.sdk.exceptions.FjuulException;
-import com.fjuul.sdk.http.ApiClient;
+import com.fjuul.sdk.core.entities.Result;
+import com.fjuul.sdk.core.exceptions.FjuulException;
+import com.fjuul.sdk.core.ApiClient;
 import com.google.android.gms.tasks.Task;
 
 import android.annotation.SuppressLint;

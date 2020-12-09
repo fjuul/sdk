@@ -1,6 +1,6 @@
 package com.fjuul.sdk.activitysources.exceptions;
 
-import com.fjuul.sdk.exceptions.ApiExceptions;
+import com.fjuul.sdk.core.exceptions.ApiExceptions;
 
 import androidx.annotation.NonNull;
 

@@ -6,10 +6,10 @@ import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceException
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.MaxTriesCountExceededException;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
-import com.fjuul.sdk.exceptions.ApiExceptions;
-import com.fjuul.sdk.http.utils.ApiCall;
-import com.fjuul.sdk.http.utils.ApiCallCallback;
-import com.fjuul.sdk.http.utils.ApiCallResult;
+import com.fjuul.sdk.core.exceptions.ApiExceptions;
+import com.fjuul.sdk.core.http.utils.ApiCall;
+import com.fjuul.sdk.core.http.utils.ApiCallCallback;
+import com.fjuul.sdk.core.http.utils.ApiCallResult;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 

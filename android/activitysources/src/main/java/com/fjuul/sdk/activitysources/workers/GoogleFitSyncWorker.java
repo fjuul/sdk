@@ -12,8 +12,8 @@ import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig;
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
-import com.fjuul.sdk.entities.UserCredentials;
-import com.fjuul.sdk.http.ApiClient;
+import com.fjuul.sdk.core.entities.UserCredentials;
+import com.fjuul.sdk.core.ApiClient;
 
 public abstract class GoogleFitSyncWorker extends Worker {
     public static final String KEY_USER_TOKEN_ARG = "USER_TOKEN";

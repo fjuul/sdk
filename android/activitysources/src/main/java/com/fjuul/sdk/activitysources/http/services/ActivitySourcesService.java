@@ -11,9 +11,9 @@ import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.activitysources.exceptions.ActivitySourcesApiExceptions;
 import com.fjuul.sdk.activitysources.http.ActivitySourcesApiResponseTransformer;
 import com.fjuul.sdk.activitysources.http.apis.ActivitySourcesApi;
-import com.fjuul.sdk.http.ApiClient;
-import com.fjuul.sdk.http.utils.ApiCall;
-import com.fjuul.sdk.http.utils.ApiCallAdapterFactory;
+import com.fjuul.sdk.core.ApiClient;
+import com.fjuul.sdk.core.http.utils.ApiCall;
+import com.fjuul.sdk.core.http.utils.ApiCallAdapterFactory;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 

@@ -18,9 +18,9 @@ import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceException
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.FitnessPermissionsNotGrantedException;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.core.entities.Callback;
-import com.fjuul.sdk.entities.Result;
-import com.fjuul.sdk.exceptions.FjuulException;
-import com.fjuul.sdk.http.ApiClient;
+import com.fjuul.sdk.core.entities.Result;
+import com.fjuul.sdk.core.exceptions.FjuulException;
+import com.fjuul.sdk.core.ApiClient;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;

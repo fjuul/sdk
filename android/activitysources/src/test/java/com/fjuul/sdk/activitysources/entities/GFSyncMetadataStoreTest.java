@@ -2,7 +2,7 @@ package com.fjuul.sdk.activitysources.entities;
 
 import android.os.Build;
 
-import com.fjuul.sdk.entities.IStorage;
+import com.fjuul.sdk.core.entities.IStorage;
 
 import org.junit.Before;
 import org.junit.Test;

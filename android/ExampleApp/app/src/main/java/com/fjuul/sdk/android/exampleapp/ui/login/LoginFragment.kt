@@ -24,8 +24,8 @@ import com.fjuul.sdk.android.exampleapp.data.SDKConfigViewModel
 import com.fjuul.sdk.android.exampleapp.data.SDKConfigViewModelFactory
 import com.fjuul.sdk.android.exampleapp.data.SdkEnvironment
 import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
-import com.fjuul.sdk.entities.UserCredentials
-import com.fjuul.sdk.http.ApiClient
+import com.fjuul.sdk.core.entities.UserCredentials
+import com.fjuul.sdk.core.ApiClient
 
 class LoginFragment : Fragment() {
     private val sdkConfigViewModel: SDKConfigViewModel by activityViewModels {

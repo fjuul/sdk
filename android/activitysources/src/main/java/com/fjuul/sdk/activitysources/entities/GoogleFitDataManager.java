@@ -11,7 +11,7 @@ import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.activitysources.utils.GoogleTaskUtils;
 import static com.fjuul.sdk.activitysources.utils.GoogleTaskUtils.runAndAwaitTaskByExecutor;
 
-import com.fjuul.sdk.http.utils.ApiCallResult;
+import com.fjuul.sdk.core.http.utils.ApiCallResult;
 import com.google.android.gms.tasks.CancellationToken;
 import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.gms.tasks.Task;

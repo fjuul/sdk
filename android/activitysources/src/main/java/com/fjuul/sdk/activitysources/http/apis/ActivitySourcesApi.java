@@ -2,7 +2,7 @@ package com.fjuul.sdk.activitysources.http.apis;
 
 import com.fjuul.sdk.activitysources.entities.GFUploadData;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
-import com.fjuul.sdk.http.utils.ApiCall;
+import com.fjuul.sdk.core.http.utils.ApiCall;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

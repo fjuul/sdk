@@ -1,6 +1,9 @@
 import Foundation
 import FjuulCore
 
+// ActivitySourceManager.initialize(apiClient, ...)
+// ActivitySourceManager.shared
+
 final public class ActivitySourceManager {
     static public let shared = ActivitySourceManager()
 
@@ -13,12 +16,12 @@ final public class ActivitySourceManager {
 
     private init() {}
 
-    public func initialize(apiClient: ApiClient, config: ActivitySourceConfigBuilder, persistor: Persistor = DiskPersistor()) {
+    public func initialize(apiClient: ApiClient, config: ActivitySourceConfigBuilder) { //, persistor: Persistor = DiskPersistor()
         self.apiClient = apiClient
-        self.persistor = persistor
+        self.persistor = apiClient.persistor
         self.config = config
 
-        self.connectionsLocalStore = ActivitySourceStore(userToken: apiClient.userToken, persistor: persistor)
+        self.connectionsLocalStore = ActivitySourceStore(userToken: apiClient.userToken, persistor: apiClient.persistor)
 
         self.restoreState { _ in
             self.getCurrentConnections { _ in

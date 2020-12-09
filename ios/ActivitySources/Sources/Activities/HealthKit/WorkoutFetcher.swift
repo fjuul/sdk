@@ -6,6 +6,11 @@ class WorkoutFetcher {
         let cycleDispatchGroup = DispatchGroup()
         var workouts: [WorkoutDataPoint] = []
         let query = HKAnchoredObjectQuery(type: HKObjectType.workoutType(), predicate: predicate, anchor: anchor, limit: HKObjectQueryNoLimit) { (_, samples, _, newAnchor, error) in
+            if let error = error {
+                completion([], nil)
+                return
+            }
+
             guard let samples = samples as? [HKWorkout] else {
                 completion(workouts, nil)
                 return

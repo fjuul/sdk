@@ -3,7 +3,7 @@ import HealthKit
 import FjuulCore
 
 class HealthKitManager {
-    static let healthStore = HKHealthStore()
+    static var healthStore: HKHealthStore = HKHealthStore()
 
     private var persistor: Persistor
     private var hkAnchorStore: HKAnchorStore
@@ -198,7 +198,8 @@ class HealthKitManager {
         let predicate = self.samplesPredicate()
 
         WorkoutFetcher.fetch(anchor: anchor, predicate: predicate) { workouts, newAnchor in
-            completion(HKRequestData(workouts: workouts), newAnchor)
+            let requestData = workouts.count > 0 ? HKRequestData(workouts: workouts) : nil
+            completion(requestData, newAnchor)
         }
     }
 

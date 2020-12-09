@@ -18,6 +18,8 @@ public final class ActivitySourcePolar: ActivitySource {
     }
 
     public func unmount(completion: @escaping (Result<Bool, Error>) -> Void) {
+//        self.apiClient = nil
+//        self.persistor = nil
         completion(.success(true))
     }
 }

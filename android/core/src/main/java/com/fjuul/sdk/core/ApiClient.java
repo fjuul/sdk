@@ -1,5 +1,6 @@
 package com.fjuul.sdk.core;
 
+import com.fjuul.sdk.core.entities.IStorage;
 import com.fjuul.sdk.core.entities.Keystore;
 import com.fjuul.sdk.core.entities.PersistentStorage;
 import com.fjuul.sdk.core.entities.UserCredentials;
@@ -30,14 +31,16 @@ import okhttp3.OkHttpClient;
 public class ApiClient {
     private String baseUrl;
     private String apiKey;
+    private IStorage storage;
     private Keystore userKeystore;
     private UserCredentials userCredentials;
     private SigningAuthInterceptor signingAuthInterceptor;
 
-    private ApiClient(String baseUrl, String apiKey, Keystore keychain, UserCredentials credentials) {
+    private ApiClient(String baseUrl, String apiKey, IStorage storage, Keystore userKeystore, UserCredentials credentials) {
         this.baseUrl = baseUrl;
         this.apiKey = apiKey;
-        this.userKeystore = keychain;
+        this.storage = storage;
+        this.userKeystore = userKeystore;
         this.userCredentials = credentials;
     }
 
@@ -48,6 +51,7 @@ public class ApiClient {
         private String baseUrl;
         private String apiKey;
         protected @NonNull Context appContext;
+        protected @Nullable IStorage storage;
         protected @Nullable Keystore keystore;
         protected @Nullable UserCredentials userCredentials;
 
@@ -73,15 +77,19 @@ public class ApiClient {
             return this;
         }
 
-        protected void setupDefaultKeystore() {
-            if (appContext != null && userCredentials != null) {
+        protected void setupDefaultStorage() {
+            if (appContext == null) {
+                throw new IllegalArgumentException("Application context must not be null");
+            }
+            storage = new PersistentStorage(appContext);
+            if (userCredentials != null) {
                 this.keystore = new Keystore(new PersistentStorage(appContext), userCredentials.getToken());
             }
         }
 
         public @NonNull ApiClient build() {
-            setupDefaultKeystore();
-            return new ApiClient(baseUrl, apiKey, keystore, userCredentials);
+            setupDefaultStorage();
+            return new ApiClient(baseUrl, apiKey, storage, keystore, userCredentials);
         }
     }
 
@@ -94,6 +102,10 @@ public class ApiClient {
             throw new IllegalStateException("The builder needed user credentials");
         }
         return userCredentials.getToken();
+    }
+
+    public @NonNull IStorage getStorage() {
+        return storage;
     }
 
     public @NonNull OkHttpClient buildSigningClient(@NonNull ISigningService signingService) {

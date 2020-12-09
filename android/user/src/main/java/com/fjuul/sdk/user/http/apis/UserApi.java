@@ -1,6 +1,6 @@
 package com.fjuul.sdk.user.http.apis;
 
-import com.fjuul.sdk.http.utils.ApiCall;
+import com.fjuul.sdk.core.http.utils.ApiCall;
 import com.fjuul.sdk.user.entities.UserCreationResult;
 import com.fjuul.sdk.user.entities.UserProfile;
 

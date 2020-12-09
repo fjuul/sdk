@@ -25,7 +25,7 @@ import com.fjuul.sdk.android.exampleapp.data.SDKConfigViewModelFactory
 import com.fjuul.sdk.android.exampleapp.data.UserFormViewModel
 import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
 import com.fjuul.sdk.android.exampleapp.ui.login.afterTextChanged
-import com.fjuul.sdk.entities.UserCredentials
+import com.fjuul.sdk.core.entities.UserCredentials
 import com.fjuul.sdk.user.entities.Gender
 import com.fjuul.sdk.user.entities.UserProfile
 import com.google.android.material.textfield.TextInputLayout

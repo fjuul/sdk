@@ -106,13 +106,13 @@ public class ActivitySourcesServiceTest {
             sourcesService = new ActivitySourcesService(clientBuilder.build());
             MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_CREATED)
                 .setHeader("Content-Type", "application/json")
-                .setBody("{\n" + "    \"tracker\": \"android_googlefit\",\n"
+                .setBody("{\n" + "    \"tracker\": \"googlefit\",\n"
                     + "    \"createdAt\": \"2020-05-18T15:30:53.978Z\",\n" + "    \"endedAt\": null,\n"
                     + "    \"user\": {\n" + "        \"token\": \"7733f6b0-****-****-9684-03421262e9a1\"\n" + "    },\n"
                     + "    \"id\": \"09f6e64b-63cc-41a2-8a4a-076bbd981077\"\n" + "}");
             mockWebServer.enqueue(mockResponse);
 
-            ApiCallResult<ConnectionResult> result = sourcesService.connect("android_googlefit").execute();
+            ApiCallResult<ConnectionResult> result = sourcesService.connect("googlefit").execute();
             RecordedRequest request = mockWebServer.takeRequest();
 
             assertFalse("successful result", result.isError());
@@ -120,7 +120,7 @@ public class ActivitySourcesServiceTest {
             ConnectionResult.Connected connectionResult = (ConnectionResult.Connected) result.getValue();
             assertNotNull("should have tracker connection", connectionResult.getTrackerConnection());
             TrackerConnection trackerConnection = connectionResult.getTrackerConnection();
-            assertEquals("should have tracker name", "android_googlefit", trackerConnection.getTracker());
+            assertEquals("should have tracker name", "googlefit", trackerConnection.getTracker());
             assertEquals("should have tracker id", "09f6e64b-63cc-41a2-8a4a-076bbd981077", trackerConnection.getId());
             assertEquals("should have createdAt",
                 Date.from(ZonedDateTime.parse("2020-05-18T15:30:53.978Z").toInstant()),
@@ -136,16 +136,16 @@ public class ActivitySourcesServiceTest {
             sourcesService = new ActivitySourcesService(clientBuilder.build());
             MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_CONFLICT)
                 .setHeader("Content-Type", "application/json")
-                .setBody("{ \"message\": \"tracker \\\"android_googlefit\\\" already connected\" }");
+                .setBody("{ \"message\": \"tracker \\\"googlefit\\\" already connected\" }");
             mockWebServer.enqueue(mockResponse);
 
-            ApiCallResult<ConnectionResult> result = sourcesService.connect("android_googlefit").execute();
+            ApiCallResult<ConnectionResult> result = sourcesService.connect("googlefit").execute();
             RecordedRequest request = mockWebServer.takeRequest();
 
             assertTrue("unsuccessful result", result.isError());
             assertThat(result.getError(), instanceOf(SourceAlreadyConnectedException.class));
             SourceAlreadyConnectedException exception = (SourceAlreadyConnectedException) result.getError();
-            assertEquals("should have error message", "tracker \"android_googlefit\" already connected",
+            assertEquals("should have error message", "tracker \"googlefit\" already connected",
                 exception.getMessage());
         }
     }

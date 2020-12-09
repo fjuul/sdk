@@ -1,8 +1,11 @@
 package com.fjuul.sdk.activitysources.http;
 
+import android.annotation.SuppressLint;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 import com.fjuul.sdk.activitysources.entities.ConnectionResult;
 import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthenticationFlowRequired;
@@ -20,8 +23,9 @@ import okhttp3.ResponseBody;
 import retrofit2.Response;
 
 public class ActivitySourcesApiResponseTransformer extends DefaultApiResponseTransformer {
-    private JsonAdapter<ExternalAuthenticationFlowRequired> externalAuthenticationJsonAdapter;
-    private JsonAdapter<TrackerConnection> connectionJsonAdapter;
+    private final JsonAdapter<ExternalAuthenticationFlowRequired> externalAuthenticationJsonAdapter;
+    private final JsonAdapter<TrackerConnection> connectionJsonAdapter;
+    private final Pattern createConnectionPathPattern = Pattern.compile("/connections/[^/]+$");
 
     public ActivitySourcesApiResponseTransformer() {
         Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
@@ -29,12 +33,13 @@ public class ActivitySourcesApiResponseTransformer extends DefaultApiResponseTra
         connectionJsonAdapter = moshi.adapter(TrackerConnection.class);
     }
 
+    @SuppressLint("NewApi")
     @NonNull
     @Override
     public ApiCallResult transform(@NonNull Response response) {
         final String requestPath = response.raw().request().url().encodedPath();
         final String requestMethod = response.raw().request().method();
-        if (requestMethod.equals("POST") && requestPath.contains("/connections/")) {
+        if (requestMethod.equals("POST") && createConnectionPathPattern.asPredicate().test(requestPath)) {
             ResponseBody responseBody = (ResponseBody) response.body();
             if (response.code() == HttpURLConnection.HTTP_OK) {
                 try {

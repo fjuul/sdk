@@ -3,7 +3,7 @@ package com.fjuul.sdk.user.http.services;
 import java.util.Date;
 import java.util.TimeZone;
 
-import com.fjuul.sdk.core.http.ApiClient;
+import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.http.utils.ApiCall;
 import com.fjuul.sdk.core.http.utils.ApiCallAdapterFactory;
 import com.fjuul.sdk.user.adapters.LocalDateJsonAdapter;

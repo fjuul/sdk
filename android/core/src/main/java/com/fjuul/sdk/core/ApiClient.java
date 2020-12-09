@@ -1,4 +1,4 @@
-package com.fjuul.sdk.core.http;
+package com.fjuul.sdk.core;
 
 import com.fjuul.sdk.core.entities.Keystore;
 import com.fjuul.sdk.core.entities.PersistentStorage;

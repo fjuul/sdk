@@ -17,7 +17,7 @@ import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceException
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.FitnessPermissionsNotGrantedException;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
-import com.fjuul.sdk.entities.Callback;
+import com.fjuul.sdk.core.entities.Callback;
 import com.fjuul.sdk.entities.Result;
 import com.fjuul.sdk.exceptions.FjuulException;
 import com.fjuul.sdk.http.ApiClient;

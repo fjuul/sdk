@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthenticationFlowRequired;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
-import com.fjuul.sdk.entities.Callback;
+import com.fjuul.sdk.core.entities.Callback;
 import com.fjuul.sdk.entities.Result;
 import com.fjuul.sdk.exceptions.FjuulException;
 import com.fjuul.sdk.http.ApiClient;

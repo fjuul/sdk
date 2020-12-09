@@ -1,4 +1,4 @@
-package com.fjuul.sdk.entities;
+package com.fjuul.sdk.core.entities;
 
 import androidx.annotation.NonNull;
 

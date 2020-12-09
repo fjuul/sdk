@@ -18,8 +18,8 @@ import retrofit2.Response;
  * request and producing the api call result which is either the requested value of the specified type or error.
  */
 public class ApiCall<T> {
-    private Call<T> delegate;
-    private IApiResponseTransformer<T> responseTransformer;
+    private final Call<T> delegate;
+    private final IApiResponseTransformer<T> responseTransformer;
 
     /**
      * @param delegate instance of retrofit's call to be wrapped of.

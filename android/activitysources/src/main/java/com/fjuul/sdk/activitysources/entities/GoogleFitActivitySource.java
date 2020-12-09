@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 @SuppressLint("NewApi")
-public final class GoogleFitActivitySource extends ActivitySource {
+public class GoogleFitActivitySource extends ActivitySource {
     static final String SERVER_CLIENT_ID_METADATA_KEY = "com.fjuul.sdk.googlefit.server_client_id";
     static final String REQUEST_OFFLINE_ACCESS_METADATA_KEY = "com.fjuul.sdk.googlefit.request_offline_access";
     static final String GOOGLE_FIT_APP_PACKAGE_NAME = "com.google.android.apps.fitness";

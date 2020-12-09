@@ -1,13 +1,10 @@
 package com.fjuul.sdk.user.http.services;
 
-import java.util.Date;
-import java.util.TimeZone;
-
 import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.http.utils.ApiCall;
 import com.fjuul.sdk.core.http.utils.ApiCallAdapterFactory;
-import com.fjuul.sdk.user.adapters.LocalDateJsonAdapter;
-import com.fjuul.sdk.user.adapters.TimeZoneJsonAdapter;
+import com.fjuul.sdk.core.adapters.LocalDateJsonAdapter;
+import com.fjuul.sdk.core.adapters.TimeZoneJsonAdapter;
 import com.fjuul.sdk.user.entities.UserCreationResult;
 import com.fjuul.sdk.user.entities.UserProfile;
 import com.fjuul.sdk.user.http.apis.UserApi;

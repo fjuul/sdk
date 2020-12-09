@@ -1,4 +1,4 @@
-package com.fjuul.sdk.user.adapters;
+package com.fjuul.sdk.core.adapters;
 
 import java.io.IOException;
 import java.time.LocalDate;

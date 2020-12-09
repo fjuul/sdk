@@ -1,7 +1,7 @@
 package com.fjuul.sdk.analytics.http.apis;
 
 import com.fjuul.sdk.analytics.entities.DailyStats;
-import com.fjuul.sdk.http.utils.ApiCall;
+import com.fjuul.sdk.core.http.utils.ApiCall;
 
 import androidx.annotation.NonNull;
 import retrofit2.http.GET;

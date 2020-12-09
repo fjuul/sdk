@@ -3,9 +3,9 @@ package com.fjuul.sdk.user.http.services;
 import java.util.Date;
 import java.util.TimeZone;
 
-import com.fjuul.sdk.http.ApiClient;
-import com.fjuul.sdk.http.utils.ApiCall;
-import com.fjuul.sdk.http.utils.ApiCallAdapterFactory;
+import com.fjuul.sdk.core.http.ApiClient;
+import com.fjuul.sdk.core.http.utils.ApiCall;
+import com.fjuul.sdk.core.http.utils.ApiCallAdapterFactory;
 import com.fjuul.sdk.user.adapters.LocalDateJsonAdapter;
 import com.fjuul.sdk.user.adapters.TimeZoneJsonAdapter;
 import com.fjuul.sdk.user.entities.UserCreationResult;
@@ -76,7 +76,7 @@ public class UserService {
 
     /**
      * Builds the call to create a new user with the given profile params.
-     * 
+     *
      * @param builder profile builder with all required params.
      * @return ApiCall for the user creation.
      */
@@ -93,7 +93,7 @@ public class UserService {
 
     /**
      * Builds the call to get a user profile by the user credentials specified at the client configuration.
-     * 
+     *
      * @return ApiCall for the user profile.
      */
     @NonNull
@@ -103,7 +103,7 @@ public class UserService {
 
     /**
      * Builds the call to update a user profile with the given params.
-     * 
+     *
      * @param builder profile builder with parameters. This method supports a partial update so it will be enough to
      *        assign only parameters those need to update.
      * @return ApiCall for the update of user profile.

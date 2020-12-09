@@ -4,9 +4,9 @@ import java.util.Date;
 
 import com.fjuul.sdk.analytics.entities.DailyStats;
 import com.fjuul.sdk.analytics.http.apis.AnalyticsApi;
-import com.fjuul.sdk.http.ApiClient;
-import com.fjuul.sdk.http.utils.ApiCall;
-import com.fjuul.sdk.http.utils.ApiCallAdapterFactory;
+import com.fjuul.sdk.core.http.ApiClient;
+import com.fjuul.sdk.core.http.utils.ApiCall;
+import com.fjuul.sdk.core.http.utils.ApiCallAdapterFactory;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 

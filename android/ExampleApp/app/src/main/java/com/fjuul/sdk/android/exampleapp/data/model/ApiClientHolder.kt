@@ -1,8 +1,8 @@
 package com.fjuul.sdk.android.exampleapp.data.model
 import android.content.Context
 import com.fjuul.sdk.android.exampleapp.data.SdkEnvironment
-import com.fjuul.sdk.core.entities.UserCredentials
 import com.fjuul.sdk.core.ApiClient
+import com.fjuul.sdk.core.entities.UserCredentials
 
 object ApiClientHolder {
     lateinit var sdkClient: ApiClient

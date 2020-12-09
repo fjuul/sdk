@@ -1,7 +1,7 @@
 package com.fjuul.sdk.core.fixtures.http;
 
-import com.fjuul.sdk.core.entities.Keystore;
 import com.fjuul.sdk.core.ApiClient;
+import com.fjuul.sdk.core.entities.Keystore;
 
 import okhttp3.mockwebserver.MockWebServer;
 

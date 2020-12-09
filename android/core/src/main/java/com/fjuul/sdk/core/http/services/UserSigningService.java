@@ -3,8 +3,8 @@ package com.fjuul.sdk.core.http.services;
 import java.io.IOException;
 import java.util.Date;
 
-import com.fjuul.sdk.core.entities.SigningKey;
 import com.fjuul.sdk.core.ApiClient;
+import com.fjuul.sdk.core.entities.SigningKey;
 import com.fjuul.sdk.core.http.apis.SigningApi;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;

@@ -3,7 +3,7 @@ package com.fjuul.sdk.android.exampleapp.data
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.fjuul.sdk.http.ApiClient
+import com.fjuul.sdk.core.ApiClient
 import com.fjuul.sdk.user.entities.UserProfile
 import com.fjuul.sdk.user.http.services.UserService
 

@@ -53,7 +53,7 @@ android {
         //     java.srcDir project(':core').file("src/androidTest/java")
         // }
         test {
-            java.srcDir project(':core').file("src/test/java/com/fjuul/sdk/fixtures")
+            java.srcDir project(':core').file("src/test/java/com/fjuul/sdk/core/fixtures")
         }
     }
 }

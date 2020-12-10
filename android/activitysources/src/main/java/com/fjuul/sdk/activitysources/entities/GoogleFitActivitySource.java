@@ -91,12 +91,12 @@ public class GoogleFitActivitySource extends ActivitySource {
         return instance;
     }
 
-    private GoogleFitActivitySource(boolean requestOfflineAccess,
-                                   @NonNull String serverClientId,
-                                   @NonNull ActivitySourcesService sourcesService,
-                                   @NonNull GFDataUtils gfDataUtils,
-                                   @NonNull GFSyncMetadataStore syncMetadataStore,
-                                   @NonNull Context context) {
+    GoogleFitActivitySource(boolean requestOfflineAccess,
+                            @NonNull String serverClientId,
+                            @NonNull ActivitySourcesService sourcesService,
+                            @NonNull GFDataUtils gfDataUtils,
+                            @NonNull GFSyncMetadataStore syncMetadataStore,
+                            @NonNull Context context) {
         this.requestOfflineAccess = requestOfflineAccess;
         this.serverClientId = serverClientId;
         this.sourcesService = sourcesService;

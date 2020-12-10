@@ -281,7 +281,7 @@ public class GoogleFitActivitySource extends ActivitySource {
     }
 
     private static GoogleSignInOptions buildGoogleSignInOptions(boolean offlineAccess, String serverClientId) {
-        GoogleSignInOptions.Builder builder = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        GoogleSignInOptions.Builder builder = new GoogleSignInOptions.Builder()
             .requestScopes(new Scope(Scopes.FITNESS_ACTIVITY_READ),
                 new Scope(Scopes.FITNESS_LOCATION_READ),
                 new Scope(Scopes.FITNESS_BODY_READ));

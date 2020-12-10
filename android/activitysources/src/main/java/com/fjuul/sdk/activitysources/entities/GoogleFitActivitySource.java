@@ -148,17 +148,15 @@ public class GoogleFitActivitySource extends ActivitySource {
                 callback.onResult(result);
                 return;
             }
-            if (!isOfflineAccessRequired()) {
-                Result<Void> result = Result.value(null);
-                callback.onResult(result);
-            }
-            String authCode = account.getServerAuthCode();
-            if (authCode == null) {
+            final Map<String, String> queryParams = new HashMap<>();
+            final String authCode = account.getServerAuthCode();
+            if (isOfflineAccessRequired() && authCode == null) {
                 Result<Void> result = Result.error(new CommonException("No server auth code for the requested offline access"));
                 callback.onResult(result);
+                return;
+            } else if (isOfflineAccessRequired() && authCode != null) {
+                queryParams.put("code", authCode);
             }
-            Map<String, String> queryParams = new HashMap<>();
-            queryParams.put("code", authCode);
             sourcesService.connect(getTrackerValue().getValue(), queryParams).enqueue((call, result) -> {
                 if (result.isError()) {
                     callback.onResult(Result.error(result.getError()));

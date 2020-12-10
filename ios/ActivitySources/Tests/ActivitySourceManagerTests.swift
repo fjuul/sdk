@@ -211,7 +211,7 @@ final class ActivitySourceManagerTests: XCTestCase {
         wait(for: [promise], timeout: 5)
         HTTPStubs.removeStub(createStub)
     }
-    
+
     func testDisconnectActivitySource() {
         // Given
         let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)

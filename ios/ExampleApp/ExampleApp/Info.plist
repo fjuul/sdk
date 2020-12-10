@@ -35,6 +35,8 @@
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Reads data for daily tracking</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>For sync HealthKit data with FjuulSDK server</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -53,9 +55,7 @@
 		</dict>
 	</dict>
 	<key>UIBackgroundModes</key>
-	<array>
-		<string>processing</string>
-	</array>
+	<array/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>

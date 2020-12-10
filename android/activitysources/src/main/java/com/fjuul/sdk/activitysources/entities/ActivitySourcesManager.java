@@ -38,6 +38,8 @@ public final class ActivitySourcesManager {
     private final ActivitySourcesService sourcesService;
     @NonNull
     private final ActivitySourcesStateStore stateStore;
+    @NonNull
+    private final ActivitySourceResolver activitySourceResolver;
     @Nullable
     private volatile List<TrackerConnection> currentConnections;
 
@@ -45,12 +47,14 @@ public final class ActivitySourcesManager {
     private volatile static ActivitySourcesManager instance;
 
     ActivitySourcesManager(@NonNull ActivitySourcesManagerConfig config,
-        @NonNull BackgroundWorkManager backgroundWorkManager, @NonNull ActivitySourcesService sourcesService,
-        @NonNull ActivitySourcesStateStore stateStore, @Nullable List<TrackerConnection> connections) {
+                           @NonNull BackgroundWorkManager backgroundWorkManager, @NonNull ActivitySourcesService sourcesService,
+                           @NonNull ActivitySourcesStateStore stateStore, @NonNull ActivitySourceResolver activitySourceResolver,
+                           @Nullable List<TrackerConnection> connections) {
         this.config = config;
         this.backgroundWorkManager = backgroundWorkManager;
         this.sourcesService = sourcesService;
         this.stateStore = stateStore;
+        this.activitySourceResolver = activitySourceResolver;
         this.currentConnections = connections;
     }
 
@@ -85,8 +89,9 @@ public final class ActivitySourcesManager {
 
         final BackgroundWorkManager backgroundWorkManager = new BackgroundWorkManager(config, gfSyncWorkManager);
         setupBackgroundWorksByConnections(storedConnections, backgroundWorkManager);
+        final ActivitySourceResolver activitySourceResolver = new ActivitySourceResolver();
         instance =
-            new ActivitySourcesManager(config, backgroundWorkManager, sourcesService, stateStore, storedConnections);
+            new ActivitySourcesManager(config, backgroundWorkManager, sourcesService, stateStore, activitySourceResolver, storedConnections);
     }
 
     /**
@@ -245,7 +250,7 @@ public final class ActivitySourcesManager {
         if (currentConnections == null) {
             return null;
         }
-        return convertTrackerConnectionsToActivitySourcesConnections(currentConnections);
+        return convertTrackerConnectionsToActivitySourcesConnections(activitySourceResolver, currentConnections);
     }
 
     /**
@@ -264,11 +269,11 @@ public final class ActivitySourcesManager {
             }
             final List<TrackerConnection> freshTrackerConnections = Arrays.asList(apiCallResult.getValue());
             setupBackgroundWorksByConnections(freshTrackerConnections, backgroundWorkManager);
-            final List<ActivitySourceConnection> sourceConnections =
-                convertTrackerConnectionsToActivitySourcesConnections(freshTrackerConnections);
             stateStore.setConnections(freshTrackerConnections);
             this.currentConnections = freshTrackerConnections;
             if (callback != null) {
+                final List<ActivitySourceConnection> sourceConnections =
+                    convertTrackerConnectionsToActivitySourcesConnections(activitySourceResolver, freshTrackerConnections);
                 callback.onResult(Result.value(sourceConnections));
             }
         });
@@ -287,25 +292,10 @@ public final class ActivitySourcesManager {
 
     @SuppressLint("NewApi")
     private static List<ActivitySourceConnection> convertTrackerConnectionsToActivitySourcesConnections(
+        @NonNull ActivitySourceResolver activitySourceResolver,
         @NonNull List<TrackerConnection> trackerConnections) {
         Stream<ActivitySourceConnection> sourceConnectionsStream = trackerConnections.stream().map(connection -> {
-            ActivitySource activitySource = null;
-            switch (ActivitySource.TrackerValue.forValue(connection.getTracker())) {
-                case POLAR:
-                    activitySource = PolarActivitySource.getInstance();
-                    break;
-                case FITBIT:
-                    activitySource = FitbitActivitySource.getInstance();
-                    break;
-                case GARMIN:
-                    activitySource = GarminActivitySource.getInstance();
-                    break;
-                case GOOGLE_FIT:
-                    activitySource = GoogleFitActivitySource.getInstance();
-                    break;
-                default:
-                    break;
-            }
+            ActivitySource activitySource = activitySourceResolver.getInstanceByTrackerValue(connection.getTracker());
             if (activitySource == null) {
                 return null;
             }

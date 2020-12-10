@@ -259,10 +259,6 @@ public class GoogleFitActivitySource extends ActivitySource {
     }
 
     private GoogleFitDataManager prepareGoogleFitDataManager(@NonNull GoogleSignInAccount account) {
-//        final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
-//        if (!areFitnessPermissionsGranted(account)) {
-//            throw new FitnessPermissionsNotGrantedException("Not all required GoogleFit permissions were granted");
-//        }
         final HistoryClient historyClient = Fitness.getHistoryClient(context, account);
         final SessionsClient sessionsClient = Fitness.getSessionsClient(context, account);
         final GFClientWrapper clientWrapper = new GFClientWrapper(historyClient, sessionsClient, gfDataUtils);

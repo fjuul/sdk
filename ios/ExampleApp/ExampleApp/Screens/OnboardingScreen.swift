@@ -1,5 +1,6 @@
 import SwiftUI
 import FjuulCore
+import FjuulActivitySources
 
 struct OnboardingScreen: View {
 
@@ -41,14 +42,25 @@ struct OnboardingScreen: View {
             }
             Section {
                 Button("Continue") {
-                    ApiClientHolder.default.apiClient = ApiClient(
-                        baseUrl: self.userDefaultsManager.environment.baseUrl,
-                        apiKey: self.userDefaultsManager.apiKey,
-                        credentials: UserCredentials(
-                            token: self.userDefaultsManager.token,
-                            secret: self.userDefaultsManager.secret
+                    if ApiClientHolder.default.apiClient == nil {
+                        ApiClientHolder.default.apiClient = ApiClient(
+                            baseUrl: self.userDefaultsManager.environment.baseUrl,
+                            apiKey: self.userDefaultsManager.apiKey,
+                            credentials: UserCredentials(
+                                token: self.userDefaultsManager.token,
+                                secret: self.userDefaultsManager.secret
+                            )
                         )
-                    )
+
+                        let config = ActivitySourceConfigBuilder { builder in
+                            builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned,
+                                                                                               .distanceCycling, .distanceWalkingRunning, .stepCount, .workoutType])
+                        }
+
+                        if let apiClient = ApiClientHolder.default.apiClient {
+                            ActivitySourceManager.shared.initialize(apiClient: apiClient, config: config)
+                        }
+                    }
                     self.viewRouter.presentedView = .moduleSelection
                 }.disabled(!everythingProvided)
             }

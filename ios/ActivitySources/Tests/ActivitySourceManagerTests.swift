@@ -17,7 +17,6 @@ extension ActivitySourceManager {
 
 class StubHKHealthStore: HKHealthStore {
     override func requestAuthorization(toShare typesToShare: Set<HKSampleType>?, read typesToRead: Set<HKObjectType>?, completion: @escaping (Bool, Error?) -> Void) {
-        print("Calll   requestAuthorization!!!  ")
         completion(true, nil)
     }
 }
@@ -51,6 +50,11 @@ final class ActivitySourceManagerTests: XCTestCase {
     """
 
     let persistor = InMemoryPersistor()
+    
+    let config = ActivitySourceConfigBuilder { builder in
+        builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned, .distanceCycling,
+                                                                           .distanceWalkingRunning, .stepCount, .workoutType, ])
+    }
 
     func testUnitializedState() {
         XCTAssert(sut.apiClient == nil, "Wrong configuration")
@@ -173,8 +177,6 @@ final class ActivitySourceManagerTests: XCTestCase {
             return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
         }
 
-        let promise = expectation(description: "Success get external authentication URL")
-
         let createStub = stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(client.userToken)/connections/\(ActivitySourcesItem.polar.rawValue)")) { request in
             XCTAssertEqual(request.httpMethod, "POST")
             let json = """
@@ -187,6 +189,8 @@ final class ActivitySourceManagerTests: XCTestCase {
         }
 
         sut.initialize(apiClient: client, config: config)
+        
+        let promise = expectation(description: "Success get external authentication URL")
 
         // When
         sut.connect(activitySource: ActivitySourcePolar.shared) { result in
@@ -206,5 +210,30 @@ final class ActivitySourceManagerTests: XCTestCase {
         }
         wait(for: [promise], timeout: 5)
         HTTPStubs.removeStub(createStub)
+    }
+    
+    func testDisconnectActivitySource() {
+        // Given
+        let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
+        stub(condition: isHost("apibase") && isPath("/sdk/signing/v1/issue-key/user")) { _ in
+            let stubData = self.signingKeyResponse.data(using: String.Encoding.utf8)
+            return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
+        }
+
+        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(client.userToken)/connections")) { _ in
+            let json = """
+                [
+                    { \"id\": \"0ca60422-3626-4b50-aa70-43c91d8da731\", \"healthkit\": \"polar\", \"createdAt\": \"2020-12-07T15:23:57.397Z\", \"endedAt\": null }
+                ]
+            """
+            let stubData = json.data(using: String.Encoding.utf8)
+            return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
+        }
+
+        // When
+        sut.initialize(apiClient: client, config: config)
+
+        // Then
+        
     }
 }

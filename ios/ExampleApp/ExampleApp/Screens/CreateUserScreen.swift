@@ -30,7 +30,6 @@ struct CreateUserScreen: View {
             }
         }
         .navigationBarTitle("Create User", displayMode: .inline)
-
     }
 
 }

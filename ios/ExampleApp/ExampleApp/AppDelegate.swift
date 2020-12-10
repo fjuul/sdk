@@ -8,21 +8,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let environment = ApiEnvironment(rawValue: UserDefaults.standard.integer(forKey: "environment"))!
 
         // TODO: Update code for initialize SDK client in example app
-        ApiClientHolder.default.apiClient = ApiClient(
-            baseUrl: environment.baseUrl,
-            apiKey: UserDefaults.standard.string(forKey: "apiKey") ?? "",
-            credentials: UserCredentials(
-                token: UserDefaults.standard.string(forKey: "token") ?? "",
-                secret: UserDefaults.standard.string(forKey: "secret") ?? ""
+        if UserDefaults.standard.string(forKey: "token") != nil {
+            ApiClientHolder.default.apiClient = ApiClient(
+                baseUrl: environment.baseUrl,
+                apiKey: UserDefaults.standard.string(forKey: "apiKey") ?? "",
+                credentials: UserCredentials(
+                    token: UserDefaults.standard.string(forKey: "token") ?? "",
+                    secret: UserDefaults.standard.string(forKey: "secret") ?? ""
+                )
             )
-        )
 
-        let config = ActivitySourceConfigBuilder { builder in
-            builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned, .distanceCycling, .distanceWalkingRunning, .stepCount, .workoutType])
-        }
+            let config = ActivitySourceConfigBuilder { builder in
+                builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned,
+                                                                                   .distanceCycling, .distanceWalkingRunning, .stepCount, .workoutType])
+            }
 
-        if let apiClient = ApiClientHolder.default.apiClient {
-            ActivitySourceManager.shared.initialize(apiClient: apiClient, config: config)
+            if let apiClient = ApiClientHolder.default.apiClient {
+                ActivitySourceManager.shared.initialize(apiClient: apiClient, config: config)
+            }
         }
 
         return true

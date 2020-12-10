@@ -16,7 +16,7 @@ final public class ActivitySourceManager {
 
     private init() {}
 
-    public func initialize(apiClient: ApiClient, config: ActivitySourceConfigBuilder) { //, persistor: Persistor = DiskPersistor()
+    public func initialize(apiClient: ApiClient, config: ActivitySourceConfigBuilder) {
         self.apiClient = apiClient
         self.persistor = apiClient.persistor
         self.config = config
@@ -61,14 +61,27 @@ final public class ActivitySourceManager {
         }
     }
 
-    public func disconnect(activitySourceConnection: ActivitySourceConnection, completion: @escaping (Result<Void, Error>) -> Void) {
+    public func disconnect(activitySourceConnection: ActivitySourceConnection, completion: @escaping (Result<Bool, Error>) -> Void) {
         guard let apiClient = self.apiClient else {
             completion(.failure(FjuulError.invalidConfig))
             return
         }
 
         apiClient.activitySources.disconnect(activitySourceConnection: activitySourceConnection) { result in
-            completion(result)
+            switch result {
+            case .success:
+                activitySourceConnection.unmount { unmountResult in
+                    switch unmountResult {
+                    case .success:
+                        self.mountedActivitySourceConnections = self.mountedActivitySourceConnections.filter { connection in connection.tracker != activitySourceConnection.tracker }
+                        completion(.success(true))
+                    case .failure(let err):
+                        completion(.failure(err))
+                    }
+                }
+            case .failure(let err):
+                completion(.failure(err))
+            }
         }
     }
 

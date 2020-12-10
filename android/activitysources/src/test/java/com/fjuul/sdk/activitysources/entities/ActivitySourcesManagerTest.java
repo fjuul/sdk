@@ -435,7 +435,7 @@ public class ActivitySourcesManagerTest {
             }
 
             @Test
-            public void refreshCurrent_whenApiCallFailsAndCallbackIsNotNull_bringsApi() {
+            public void refreshCurrent_whenApiCallFailsAndCallbackIsNotNull_bringsApiCallExceptionToCallback() {
                 subject = new ActivitySourcesManager(mockedConfig, mockedBackgroundWorkManager, mockedSourcesService, mockedStateStore, mockedActivitySourceResolver, null);
 
                 final ApiExceptions.BadRequestException apiCallException = new ApiExceptions.BadRequestException("Bad request");

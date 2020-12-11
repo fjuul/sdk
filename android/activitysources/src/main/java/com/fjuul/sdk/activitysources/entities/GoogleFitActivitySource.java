@@ -144,7 +144,7 @@ public class GoogleFitActivitySource extends ActivitySource {
             final GoogleSignInAccount account = task.getResult(ApiException.class);
             final boolean permissionsGranted = areFitnessPermissionsGranted(account);
             if (!permissionsGranted) {
-                Result<Void> result = Result.error(new CommonException("Not all permissions were granted"));
+                Result<Void> result = Result.error(new FitnessPermissionsNotGrantedException("Not all required GoogleFit permissions were granted"));
                 callback.onResult(result);
                 return;
             }

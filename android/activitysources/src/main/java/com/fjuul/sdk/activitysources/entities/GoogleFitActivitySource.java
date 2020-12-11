@@ -31,8 +31,6 @@ import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.fitness.ConfigClient;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
-import com.google.android.gms.fitness.HistoryClient;
-import com.google.android.gms.fitness.SessionsClient;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
@@ -60,9 +58,8 @@ public class GoogleFitActivitySource extends ActivitySource {
     private final boolean requestOfflineAccess;
     private final @NonNull String serverClientId;
     private final @NonNull ActivitySourcesService sourcesService;
-    private final @NonNull GFDataUtils gfDataUtils;
-    private final @NonNull GFSyncMetadataStore syncMetadataStore;
     private final @NonNull Context context;
+    private final @NonNull GoogleFitDataManagerBuilder gfDataManagerBuilder;
 
     static synchronized void initialize(@NonNull ApiClient client) {
         Context context = client.getAppContext();
@@ -81,7 +78,8 @@ public class GoogleFitActivitySource extends ActivitySource {
         ActivitySourcesService sourcesService = new ActivitySourcesService(client);
         GFDataUtils gfUtils = new GFDataUtils();
         GFSyncMetadataStore syncMetadataStore = new GFSyncMetadataStore(client.getStorage(), client.getUserToken());
-        instance = new GoogleFitActivitySource(requestOfflineAccess, serverClientId, sourcesService, gfUtils, syncMetadataStore, context);
+        final GoogleFitDataManagerBuilder gfDataManagerBuilder = new GoogleFitDataManagerBuilder(context,gfUtils,syncMetadataStore,sourcesService);
+        instance = new GoogleFitActivitySource(requestOfflineAccess, serverClientId, sourcesService, context, gfDataManagerBuilder);
     }
 
     public static GoogleFitActivitySource getInstance() {
@@ -94,15 +92,13 @@ public class GoogleFitActivitySource extends ActivitySource {
     GoogleFitActivitySource(boolean requestOfflineAccess,
                             @NonNull String serverClientId,
                             @NonNull ActivitySourcesService sourcesService,
-                            @NonNull GFDataUtils gfDataUtils,
-                            @NonNull GFSyncMetadataStore syncMetadataStore,
-                            @NonNull Context context) {
+                            @NonNull Context context,
+                            @NonNull GoogleFitDataManagerBuilder gfDataManagerBuilder) {
         this.requestOfflineAccess = requestOfflineAccess;
         this.serverClientId = serverClientId;
         this.sourcesService = sourcesService;
-        this.gfDataUtils = gfDataUtils;
-        this.syncMetadataStore = syncMetadataStore;
         this.context = context;
+        this.gfDataManagerBuilder = gfDataManagerBuilder;
     }
 
     public boolean areFitnessPermissionsGranted() {
@@ -194,7 +190,7 @@ public class GoogleFitActivitySource extends ActivitySource {
             }
             return;
         }
-        final GoogleFitDataManager googleFitDataManager = prepareGoogleFitDataManager(account);
+        final GoogleFitDataManager googleFitDataManager = gfDataManagerBuilder.build(account);
         performTaskAlongWithCallback(() -> googleFitDataManager.syncIntradayMetrics(options), callback);
     }
 
@@ -217,7 +213,7 @@ public class GoogleFitActivitySource extends ActivitySource {
             }
             return;
         }
-        final GoogleFitDataManager googleFitDataManager = prepareGoogleFitDataManager(account);
+        final GoogleFitDataManager googleFitDataManager = gfDataManagerBuilder.build(account);
         performTaskAlongWithCallback(() -> googleFitDataManager.syncSessions(options), callback);
     }
 
@@ -254,13 +250,6 @@ public class GoogleFitActivitySource extends ActivitySource {
 
     private boolean areFitnessPermissionsGranted(@Nullable GoogleSignInAccount account) {
         return GoogleFitActivitySource.areFitnessPermissionsGranted(account, requestOfflineAccess, serverClientId);
-    }
-
-    private GoogleFitDataManager prepareGoogleFitDataManager(@NonNull GoogleSignInAccount account) {
-        final HistoryClient historyClient = Fitness.getHistoryClient(context, account);
-        final SessionsClient sessionsClient = Fitness.getSessionsClient(context, account);
-        final GFClientWrapper clientWrapper = new GFClientWrapper(historyClient, sessionsClient, gfDataUtils);
-        return new GoogleFitDataManager(clientWrapper, gfDataUtils, syncMetadataStore, sourcesService);
     }
 
     private <T> void performTaskAlongWithCallback(@NonNull Supplier<Task<T>> taskSupplier, @Nullable Callback<T> callback) {

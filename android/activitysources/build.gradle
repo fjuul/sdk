@@ -80,6 +80,7 @@ dependencies {
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.mockito:mockito-core:3.4.4'
+    testImplementation('org.mockito:mockito-inline:3.4.4')
     testImplementation "com.squareup.okhttp3:mockwebserver:$rootProject.ext.okHttpVersion"
 
     testImplementation 'org.robolectric:robolectric:4.3.1'

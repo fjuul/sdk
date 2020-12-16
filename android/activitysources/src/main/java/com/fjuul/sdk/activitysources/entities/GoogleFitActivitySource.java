@@ -71,15 +71,15 @@ public class GoogleFitActivitySource extends ActivitySource {
         } catch (PackageManager.NameNotFoundException e) {
             throw new IllegalStateException("Can't retrieve config parameters for google-fit from the manifest: " + e.getLocalizedMessage());
         }
-        Bundle bundle = app.metaData;
-        boolean requestOfflineAccess = bundle.getBoolean(REQUEST_OFFLINE_ACCESS_METADATA_KEY, false);
-        String serverClientId = bundle.getString(SERVER_CLIENT_ID_METADATA_KEY);
-        if (serverClientId == null || serverClientId.isEmpty()) {
+        final Bundle bundle = app.metaData;
+        final boolean requestOfflineAccess = bundle.getBoolean(REQUEST_OFFLINE_ACCESS_METADATA_KEY, false);
+        final String serverClientId = bundle.getString(SERVER_CLIENT_ID_METADATA_KEY);
+        if (requestOfflineAccess && (serverClientId == null || serverClientId.isEmpty())) {
             throw new IllegalStateException("Can't retrieve meta-data for 'server_client_id' key from the manifest");
         }
-        ActivitySourcesService sourcesService = new ActivitySourcesService(client);
-        GFDataUtils gfUtils = new GFDataUtils();
-        GFSyncMetadataStore syncMetadataStore = new GFSyncMetadataStore(client.getStorage(), client.getUserToken());
+        final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
+        final GFDataUtils gfUtils = new GFDataUtils();
+        final GFSyncMetadataStore syncMetadataStore = new GFSyncMetadataStore(client.getStorage(), client.getUserToken());
         final GoogleFitDataManagerBuilder gfDataManagerBuilder = new GoogleFitDataManagerBuilder(context,gfUtils,syncMetadataStore,sourcesService);
         instance = new GoogleFitActivitySource(requestOfflineAccess, serverClientId, sourcesManagerConfig.getCollectableFitnessMetrics(), sourcesService, context, gfDataManagerBuilder);
     }

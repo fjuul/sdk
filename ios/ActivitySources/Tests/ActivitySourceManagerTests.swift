@@ -15,10 +15,18 @@ extension ActivitySourceManager {
     }
 }
 
+
+// TODO: May be remove it
 class StubHKHealthStore: HKHealthStore {
-    override func requestAuthorization(toShare typesToShare: Set<HKSampleType>?, read typesToRead: Set<HKObjectType>?, completion: @escaping (Bool, Error?) -> Void) {
+    override public func requestAuthorization(toShare typesToShare: Set<HKSampleType>?, read typesToRead: Set<HKObjectType>?, completion: @escaping (Bool, Error?) -> Void) {
         completion(true, nil)
     }
+}
+
+class ApiClientStub: ApiClient {
+//    override public func requestAuthorization(toShare typesToShare: Set<HKSampleType>?, read typesToRead: Set<HKObjectType>?, completion: @escaping (Bool, Error?) -> Void) {
+//        completion(true, nil)
+//    }
 }
 
 final class ActivitySourceManagerTests: XCTestCase {
@@ -64,10 +72,10 @@ final class ActivitySourceManagerTests: XCTestCase {
 
     func testInitializeWithEmptyStoredActyvityConnections() {
         // Given
-        let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
-        let config = ActivitySourceConfigBuilder { builder in
-            builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned, .distanceCycling, .distanceWalkingRunning, .stepCount, .workoutType])
-        }
+        let client = ApiClientStub(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
+//        let config = ActivitySourceConfigBuilder { builder in
+//            builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned, .distanceCycling, .distanceWalkingRunning, .stepCount, .workoutType])
+//        }
 
         // When
         sut.initialize(apiClient: client, config: config)
@@ -80,10 +88,10 @@ final class ActivitySourceManagerTests: XCTestCase {
 
     func testInitializeWithExistsStoredActyvityConnections() {
         // Given
-        let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
-        let config = ActivitySourceConfigBuilder { builder in
-            builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned, .distanceCycling, .distanceWalkingRunning, .stepCount, .workoutType])
-        }
+        let client = ApiClientStub(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
+//        let config = ActivitySourceConfigBuilder { builder in
+//            builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned, .distanceCycling, .distanceWalkingRunning, .stepCount, .workoutType])
+//        }
 
         let trackerConnections = [
             TrackerConnection(id: "polar", tracker: "polar", createdAt: Date(), endedAt: nil)
@@ -107,12 +115,12 @@ final class ActivitySourceManagerTests: XCTestCase {
         // Given
         HealthKitManager.healthStore = StubHKHealthStore()
 
-        let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
-        let config = ActivitySourceConfigBuilder { builder in
-            builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned, .distanceCycling,
-                                                                               .distanceWalkingRunning, .stepCount, .workoutType, ])
-        }
-        
+        let client = ApiClientStub(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
+//        let config = ActivitySourceConfigBuilder { builder in
+//            builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned, .distanceCycling,
+//                                                                               .distanceWalkingRunning, .stepCount, .workoutType, ])
+//        }
+
         stub(condition: isHost("apibase") && isPath("/sdk/signing/v1/issue-key/user")) { _ in
             let stubData = self.signingKeyResponse.data(using: String.Encoding.utf8)
             return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
@@ -133,7 +141,7 @@ final class ActivitySourceManagerTests: XCTestCase {
             let stubData = json.data(using: String.Encoding.utf8)
             return HTTPStubsResponse(data: stubData!, statusCode: 201, headers: nil)
         }
-        
+
         let promise = expectation(description: "Success connect HealthKit activity source")
 
         sut.initialize(apiClient: client, config: config)
@@ -161,11 +169,11 @@ final class ActivitySourceManagerTests: XCTestCase {
 
     func testConnectExternalActivitySource() {
         // Given
-        let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
-        let config = ActivitySourceConfigBuilder { builder in
-            builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned, .distanceCycling,
-                                                                               .distanceWalkingRunning, .stepCount, .workoutType, ])
-        }
+        let client = ApiClientStub(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
+//        let config = ActivitySourceConfigBuilder { builder in
+//            builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned, .distanceCycling,
+//                                                                               .distanceWalkingRunning, .stepCount, .workoutType, ])
+//        }
 
         stub(condition: isHost("apibase") && isPath("/sdk/signing/v1/issue-key/user")) { _ in
             let stubData = self.signingKeyResponse.data(using: String.Encoding.utf8)
@@ -189,7 +197,7 @@ final class ActivitySourceManagerTests: XCTestCase {
         }
 
         sut.initialize(apiClient: client, config: config)
-        
+
         let promise = expectation(description: "Success get external authentication URL")
 
         // When
@@ -214,7 +222,8 @@ final class ActivitySourceManagerTests: XCTestCase {
 
     func testDisconnectActivitySource() {
         // Given
-        let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
+        let polarTrackerID = "0ca60422-3626-4b50-aa70-43c91d8da731"
+        let client = ApiClientStub(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
         stub(condition: isHost("apibase") && isPath("/sdk/signing/v1/issue-key/user")) { _ in
             let stubData = self.signingKeyResponse.data(using: String.Encoding.utf8)
             return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
@@ -223,17 +232,46 @@ final class ActivitySourceManagerTests: XCTestCase {
         stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(client.userToken)/connections")) { _ in
             let json = """
                 [
-                    { \"id\": \"0ca60422-3626-4b50-aa70-43c91d8da731\", \"healthkit\": \"polar\", \"createdAt\": \"2020-12-07T15:23:57.397Z\", \"endedAt\": null }
+                    { \"id\": \"\(polarTrackerID)\", \"tracker\": \"polar\", \"createdAt\": \"2020-12-07T15:23:57.397Z\", \"endedAt\": null }
                 ]
             """
             let stubData = json.data(using: String.Encoding.utf8)
             return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
         }
+        
+        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(client.userToken)/connections/\(polarTrackerID)")) { request in
+            XCTAssertEqual(request.httpMethod, "DELETE")
+            let stubData = self.signingKeyResponse.data(using: String.Encoding.utf8)
+            return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
+        }
+
+        // Local state
+        let trackerConnections = [
+            TrackerConnection(id: polarTrackerID, tracker: "polar", createdAt: Date(), endedAt: nil)
+        ]
+
+        let connectionsLocalStore = ActivitySourceStore(userToken: client.userToken, persistor: persistor)
+        connectionsLocalStore.connections = trackerConnections
+
+        let promise = expectation(description: "Success disconnected request")
 
         // When
         sut.initialize(apiClient: client, config: config)
-
-        // Then
+        let activitySourceConnection = sut.mountedActivitySourceConnections.last
         
+        XCTAssertEqual(sut.mountedActivitySourceConnections.count, 1)
+        
+        // Then
+        sut.disconnect(activitySourceConnection: activitySourceConnection!) { result in
+            switch result {
+            case .success:
+                promise.fulfill()
+            case .failure(let err):
+                XCTFail("Error: \(err.localizedDescription)")
+            }
+        }
+        wait(for: [promise], timeout: 5)
+        
+        XCTAssertEqual(sut.mountedActivitySourceConnections.count, 0)
     }
 }

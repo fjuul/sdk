@@ -25,6 +25,9 @@ public class ActivitySourcesManagerConfig {
     @NonNull private GFBackgroundSyncMode gfSessionsBackgroundSyncMode;
     @Nullable private Duration gfSessionsBackgroundSyncMinSessionDuration;
 
+    @NonNull private List<FitnessMetricsType> collectableFitnessMetrics;
+
+
     @NonNull
     public GFBackgroundSyncMode getGfIntradayBackgroundSyncMode() {
         return gfIntradayBackgroundSyncMode;
@@ -43,6 +46,11 @@ public class ActivitySourcesManagerConfig {
     @Nullable
     public Duration getGfSessionsBackgroundSyncMinSessionDuration() {
         return gfSessionsBackgroundSyncMinSessionDuration;
+    }
+
+    @NonNull
+    public List<FitnessMetricsType> getCollectableFitnessMetrics() {
+        return collectableFitnessMetrics;
     }
 
     public static class Builder {
@@ -104,18 +112,25 @@ public class ActivitySourcesManagerConfig {
             return this;
         }
 
+        @SuppressLint("NewApi")
+        public Builder setCollectableFitnessMetrics(@NonNull Set<FitnessMetricsType> fitnessMetrics) {
+            Objects.requireNonNull(fitnessMetrics, "metrics must be not null");
+            // TODO: check if the set is empty ?
+            config.collectableFitnessMetrics = fitnessMetrics.stream().collect(Collectors.toList());
+            return this;
+        }
+
         public ActivitySourcesManagerConfig build() {
             if (created) {
                 throw new IllegalStateException("Do not reuse the builder for creating new instance");
             }
             Objects.requireNonNull(config.gfIntradayBackgroundSyncMode, "GF intraday background sync mode must be set");
             Objects.requireNonNull(config.gfSessionsBackgroundSyncMode, "GF sessions background sync mode must be set");
+            Objects.requireNonNull(config.collectableFitnessMetrics, "Collectable fitness metrics must be set");
             this.created = true;
             return config;
         }
     }
-
-    // todo: how to disable the background worker if a user did logout and there is not known credentials
 
     @SuppressLint("NewApi")
     public static ActivitySourcesManagerConfig buildDefault() {
@@ -125,8 +140,15 @@ public class ActivitySourcesManagerConfig {
             GFIntradaySyncOptions.METRICS_TYPE.STEPS
         ).collect(Collectors.toSet());
         final Duration minSessionDuration = Duration.ofMinutes(5);
+        final Set<FitnessMetricsType> fitnessMetrics = Stream.of(
+            FitnessMetricsType.INTRADAY_CALORIES,
+            FitnessMetricsType.INTRADAY_HEART_RATE,
+            FitnessMetricsType.INTRADAY_STEPS,
+            FitnessMetricsType.WORKOUTS
+        ).collect(Collectors.toSet());
         final ActivitySourcesManagerConfig config = new ActivitySourcesManagerConfig.Builder()
             .enableGFBackgroundSync(intradayMetrics, minSessionDuration)
+            .setCollectableFitnessMetrics(fitnessMetrics)
             .build();
         return config;
     }

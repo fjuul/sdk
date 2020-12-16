@@ -186,7 +186,7 @@ public class GoogleFitActivitySource extends ActivitySource {
     @SuppressLint("NewApi")
     public void syncIntradayMetrics(@NonNull final GFIntradaySyncOptions options, @Nullable final Callback<Void> callback) {
         final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
-        if (!areFitnessPermissionsGranted(account)) {
+        if (!areFitnessPermissionsGranted(account, options.getMetrics())) {
             if (callback != null) {
                 Result<Void> errorResult = Result.error(
                     new FitnessPermissionsNotGrantedException("Not all required GoogleFit permissions were granted"));
@@ -254,7 +254,11 @@ public class GoogleFitActivitySource extends ActivitySource {
     }
 
     private boolean areFitnessPermissionsGranted(@Nullable GoogleSignInAccount account) {
-        return GoogleFitActivitySource.areFitnessPermissionsGranted(account, requestOfflineAccess, serverClientId, collectableFitnessMetrics);
+        return areFitnessPermissionsGranted(account, collectableFitnessMetrics);
+    }
+
+    private boolean areFitnessPermissionsGranted(@Nullable GoogleSignInAccount account, @NonNull List<FitnessMetricsType> fitnessMetrics) {
+        return GoogleFitActivitySource.areFitnessPermissionsGranted(account, requestOfflineAccess, serverClientId, fitnessMetrics);
     }
 
     private <T> void performTaskAlongWithCallback(@NonNull Supplier<Task<T>> taskSupplier, @Nullable Callback<T> callback) {

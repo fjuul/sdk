@@ -12,18 +12,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public final class GFIntradaySyncOptions {
-    public enum METRICS_TYPE {
-        CALORIES,
-        STEPS,
-        HEART_RATE
-    }
-
-    @NonNull private final List<METRICS_TYPE> metrics;
+    @NonNull private final List<FitnessMetricsType> metrics;
     @NonNull private final LocalDate startDate;
     @NonNull private final LocalDate endDate;
 
     @NonNull
-    public List<METRICS_TYPE> getMetrics() {
+    public List<FitnessMetricsType> getMetrics() {
         return metrics;
     }
 
@@ -37,7 +31,7 @@ public final class GFIntradaySyncOptions {
         return endDate;
     }
 
-    private GFIntradaySyncOptions(@NonNull List<METRICS_TYPE> metrics, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
+    private GFIntradaySyncOptions(@NonNull List<FitnessMetricsType> metrics, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
         this.metrics = metrics;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -45,12 +39,18 @@ public final class GFIntradaySyncOptions {
 
 
     public static class Builder {
-        private Set<METRICS_TYPE> metrics = new HashSet<>();
+        private Set<FitnessMetricsType> metrics = new HashSet<>();
         @Nullable private LocalDate startDate;
         @Nullable private LocalDate endDate;
 
-        public Builder include(@NonNull METRICS_TYPE type) {
-            metrics.add(type);
+        public Builder include(@NonNull FitnessMetricsType type) {
+            if (FitnessMetricsType.INTRADAY_STEPS.equals(type) ||
+                FitnessMetricsType.INTRADAY_HEART_RATE.equals(type) ||
+                FitnessMetricsType.INTRADAY_CALORIES.equals(type)) {
+                metrics.add(type);
+            } else {
+                throw new IllegalStateException("Not supported fitness metric type for the intraday sync");
+            }
             return this;
         }
 
@@ -65,7 +65,7 @@ public final class GFIntradaySyncOptions {
             if (metrics.isEmpty() || startDate == null || endDate == null) {
                 throw new IllegalStateException("Date range and at least one metric type must be specified");
             }
-            List<METRICS_TYPE> metricsList = metrics.stream().collect(Collectors.toList());
+            List<FitnessMetricsType> metricsList = metrics.stream().collect(Collectors.toList());
             return new GFIntradaySyncOptions(metricsList, startDate, endDate);
         }
     }

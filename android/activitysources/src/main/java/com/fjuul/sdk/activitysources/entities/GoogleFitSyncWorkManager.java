@@ -10,7 +10,6 @@ import androidx.work.NetworkType;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
-import com.fjuul.sdk.activitysources.entities.GFIntradaySyncOptions.METRICS_TYPE;
 import com.fjuul.sdk.activitysources.workers.GoogleFitIntradaySyncWorker;
 import com.fjuul.sdk.activitysources.workers.GoogleFitSessionsSyncWorker;
 import com.fjuul.sdk.activitysources.workers.GoogleFitSyncWorker;
@@ -55,7 +54,7 @@ public class GoogleFitSyncWorkManager {
     }
 
     @SuppressLint("NewApi")
-    public synchronized void scheduleIntradaySyncWork(@NonNull List<METRICS_TYPE> intradayMetrics) {
+    public synchronized void scheduleIntradaySyncWork(@NonNull List<FitnessMetricsType> intradayMetrics) {
         if (intradaySyncWorkEnqueued) {
             return;
         }

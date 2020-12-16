@@ -59,23 +59,23 @@ class GoogleFitDataManager {
         Task<List<GFDataPointsBatch<GFHRSummaryDataPoint>>> getHRTask = Tasks.forResult(Collections.emptyList());
         final CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         final CancellationToken cancellationToken = cancellationTokenSource.getToken();
-        for (GFIntradaySyncOptions.METRICS_TYPE metric : options.getMetrics()) {
+        for (FitnessMetricsType metric : options.getMetrics()) {
             switch (metric) {
-                case CALORIES:
+                case INTRADAY_CALORIES:
                     getCaloriesTask = runAndAwaitTaskByExecutor(
                         () -> getNotSyncedCaloriesBatches(startDate, endDate, localBackgroundExecutor),
                         sequentialExecutorService,
                         cancellationTokenSource,
                         cancellationToken);
                     break;
-                case STEPS:
+                case INTRADAY_STEPS:
                     getStepsTask = runAndAwaitTaskByExecutor(
                         () -> getNotSyncedStepsBatches(startDate, endDate, localBackgroundExecutor),
                         sequentialExecutorService,
                         cancellationTokenSource,
                         cancellationToken);
                     break;
-                case HEART_RATE:
+                case INTRADAY_HEART_RATE:
                     getHRTask = runAndAwaitTaskByExecutor(
                         () -> getNotSyncedHRBatches(startDate, endDate, localBackgroundExecutor),
                         sequentialExecutorService,

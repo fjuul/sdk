@@ -20,13 +20,12 @@ public class ActivitySourcesManagerConfig {
     }
 
     @NonNull private GFBackgroundSyncMode gfIntradayBackgroundSyncMode;
-    @Nullable private List<GFIntradaySyncOptions.METRICS_TYPE> gfIntradayBackgroundSyncMetrics;
+    @Nullable private List<FitnessMetricsType> gfIntradayBackgroundSyncMetrics;
 
     @NonNull private GFBackgroundSyncMode gfSessionsBackgroundSyncMode;
     @Nullable private Duration gfSessionsBackgroundSyncMinSessionDuration;
 
     @NonNull private List<FitnessMetricsType> collectableFitnessMetrics;
-
 
     @NonNull
     public GFBackgroundSyncMode getGfIntradayBackgroundSyncMode() {
@@ -34,7 +33,7 @@ public class ActivitySourcesManagerConfig {
     }
 
     @Nullable
-    public List<GFIntradaySyncOptions.METRICS_TYPE> getGfIntradayBackgroundSyncMetrics() {
+    public List<FitnessMetricsType> getGfIntradayBackgroundSyncMetrics() {
         return gfIntradayBackgroundSyncMetrics;
     }
 
@@ -63,7 +62,7 @@ public class ActivitySourcesManagerConfig {
         }
 
         @SuppressLint("NewApi")
-        public Builder enableGFIntradayBackgroundSync(@NonNull Set<GFIntradaySyncOptions.METRICS_TYPE> intradayMetrics) {
+        public Builder enableGFIntradayBackgroundSync(@NonNull Set<FitnessMetricsType> intradayMetrics) {
             Objects.requireNonNull(intradayMetrics, "intraday metrics must be not null");
             if (intradayMetrics.isEmpty()) {
                 throw new IllegalArgumentException("Intraday metrics must be not empty");
@@ -80,7 +79,7 @@ public class ActivitySourcesManagerConfig {
             return this;
         }
 
-        public Builder enableGFBackgroundSync(@NonNull Set<GFIntradaySyncOptions.METRICS_TYPE> intradayMetrics, @NonNull Duration minSessionDuration) {
+        public Builder enableGFBackgroundSync(@NonNull Set<FitnessMetricsType> intradayMetrics, @NonNull Duration minSessionDuration) {
             enableGFIntradayBackgroundSync(intradayMetrics);
             enableGFSessionsBackgroundSync(minSessionDuration);
             return this;
@@ -134,13 +133,13 @@ public class ActivitySourcesManagerConfig {
 
     @SuppressLint("NewApi")
     public static ActivitySourcesManagerConfig buildDefault() {
-        final Set<GFIntradaySyncOptions.METRICS_TYPE> intradayMetrics = Stream.of(
-            GFIntradaySyncOptions.METRICS_TYPE.CALORIES,
-            GFIntradaySyncOptions.METRICS_TYPE.HEART_RATE,
-            GFIntradaySyncOptions.METRICS_TYPE.STEPS
+        final Set<FitnessMetricsType> intradayMetrics = Stream.of(
+            FitnessMetricsType.INTRADAY_CALORIES,
+            FitnessMetricsType.INTRADAY_HEART_RATE,
+            FitnessMetricsType.INTRADAY_STEPS
         ).collect(Collectors.toSet());
         final Duration minSessionDuration = Duration.ofMinutes(5);
-        final Set<FitnessMetricsType> fitnessMetrics = Stream.of(
+        final Set<FitnessMetricsType> allFitnessMetrics = Stream.of(
             FitnessMetricsType.INTRADAY_CALORIES,
             FitnessMetricsType.INTRADAY_HEART_RATE,
             FitnessMetricsType.INTRADAY_STEPS,
@@ -148,7 +147,7 @@ public class ActivitySourcesManagerConfig {
         ).collect(Collectors.toSet());
         final ActivitySourcesManagerConfig config = new ActivitySourcesManagerConfig.Builder()
             .enableGFBackgroundSync(intradayMetrics, minSessionDuration)
-            .setCollectableFitnessMetrics(fitnessMetrics)
+            .setCollectableFitnessMetrics(allFitnessMetrics)
             .build();
         return config;
     }

@@ -96,7 +96,7 @@ public class GoogleFitDataManagerTest {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
             final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder()
-                .include(GFIntradaySyncOptions.METRICS_TYPE.CALORIES)
+                .include(FitnessMetricsType.INTRADAY_CALORIES)
                 .setDateRange(startDate, endDate)
                 .build();
 
@@ -136,7 +136,7 @@ public class GoogleFitDataManagerTest {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
             final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder()
-                .include(GFIntradaySyncOptions.METRICS_TYPE.STEPS)
+                .include(FitnessMetricsType.INTRADAY_STEPS)
                 .setDateRange(startDate, endDate)
                 .build();
 
@@ -178,7 +178,7 @@ public class GoogleFitDataManagerTest {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
             final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder()
-                .include(GFIntradaySyncOptions.METRICS_TYPE.CALORIES)
+                .include(FitnessMetricsType.INTRADAY_CALORIES)
                 .setDateRange(startDate, endDate)
                 .build();
 
@@ -236,7 +236,7 @@ public class GoogleFitDataManagerTest {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
             final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder()
-                .include(GFIntradaySyncOptions.METRICS_TYPE.CALORIES)
+                .include(FitnessMetricsType.INTRADAY_CALORIES)
                 .setDateRange(startDate, endDate)
                 .build();
 
@@ -319,7 +319,7 @@ public class GoogleFitDataManagerTest {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
             final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder()
-                .include(GFIntradaySyncOptions.METRICS_TYPE.CALORIES)
+                .include(FitnessMetricsType.INTRADAY_CALORIES)
                 .setDateRange(startDate, endDate)
                 .build();
 
@@ -394,9 +394,9 @@ public class GoogleFitDataManagerTest {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
             final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder()
-                .include(GFIntradaySyncOptions.METRICS_TYPE.CALORIES)
-                .include(GFIntradaySyncOptions.METRICS_TYPE.HEART_RATE)
-                .include(GFIntradaySyncOptions.METRICS_TYPE.STEPS)
+                .include(FitnessMetricsType.INTRADAY_CALORIES)
+                .include(FitnessMetricsType.INTRADAY_HEART_RATE)
+                .include(FitnessMetricsType.INTRADAY_STEPS)
                 .setDateRange(startDate, endDate)
                 .build();
 

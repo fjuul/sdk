@@ -8,6 +8,7 @@ import androidx.work.WorkerParameters;
 
 import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
+import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
 import com.fjuul.sdk.activitysources.entities.GFIntradaySyncOptions;
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
 import com.google.android.gms.tasks.TaskCompletionSource;
@@ -60,7 +61,7 @@ public class GoogleFitIntradaySyncWorker extends GoogleFitSyncWorker {
         final GFIntradaySyncOptions.Builder syncOptionsBuilder = new GFIntradaySyncOptions.Builder();
         for (final String rawIntradayMetric : rawIntradayMetrics) {
             try {
-                final GFIntradaySyncOptions.METRICS_TYPE metric = GFIntradaySyncOptions.METRICS_TYPE.valueOf(rawIntradayMetric);
+                final FitnessMetricsType metric = FitnessMetricsType.valueOf(rawIntradayMetric);
                 if (metric != null) {
                     syncOptionsBuilder.include(metric);
                 }

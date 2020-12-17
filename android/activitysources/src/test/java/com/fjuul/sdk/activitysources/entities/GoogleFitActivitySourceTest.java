@@ -6,20 +6,20 @@ import android.os.Build;
 
 import androidx.test.core.app.ApplicationProvider;
 
-import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.FitnessPermissionsNotGrantedException;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.core.entities.Callback;
 import com.fjuul.sdk.core.entities.Result;
-import com.fjuul.sdk.core.exceptions.ApiExceptions;
 import com.fjuul.sdk.core.http.utils.ApiCall;
 import com.fjuul.sdk.core.http.utils.ApiCallCallback;
 import com.fjuul.sdk.core.http.utils.ApiCallResult;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.Scope;
+import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.tasks.Tasks;
@@ -39,6 +39,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,13 +47,14 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -70,11 +72,18 @@ public class GoogleFitActivitySourceTest {
         public static class AreFitnessPermissionsGrantedTests extends GivenRobolectricContext {
             GoogleFitActivitySource subject;
             ActivitySourcesService mockedActivitySourcesService;
+            List<FitnessMetricsType> collectableFitnessMetrics;
             Context context;
             GoogleFitDataManagerBuilder mockedGfDataManagerBuilder;
 
             @Before
             public void beforeTest() {
+                collectableFitnessMetrics = Stream.of(
+                    FitnessMetricsType.INTRADAY_CALORIES,
+                    FitnessMetricsType.INTRADAY_HEART_RATE,
+                    FitnessMetricsType.INTRADAY_STEPS,
+                    FitnessMetricsType.WORKOUTS
+                ).collect(Collectors.toList());
                 mockedActivitySourcesService = mock(ActivitySourcesService.class);
                 mockedGfDataManagerBuilder = mock(GoogleFitDataManagerBuilder.class);
             }
@@ -84,19 +93,15 @@ public class GoogleFitActivitySourceTest {
                 context = ApplicationProvider.getApplicationContext();
                 subject = new GoogleFitActivitySource(true,
                     DUMMY_SERVER_CLIENT_ID,
+                    collectableFitnessMetrics,
                     mockedActivitySourcesService,
                     context,
                     mockedGfDataManagerBuilder);
 
                 try (MockedStatic<GoogleSignIn> mockGoogleSignIn = mockStatic(GoogleSignIn.class)) {
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
-                    Set<Scope> grantedScopes = Stream.concat(
-                        Stream.of(new Scope(Scopes.FITNESS_ACTIVITY_READ),
-                            new Scope(Scopes.FITNESS_LOCATION_READ),
-                            new Scope(Scopes.FITNESS_BODY_READ),
-                            new Scope(Scopes.PROFILE),
-                            new Scope(Scopes.OPEN_ID)
-                        ),
+                    final Set<Scope> grantedScopes = Stream.concat(
+                        Stream.of(Fitness.SCOPE_ACTIVITY_READ, Fitness.SCOPE_LOCATION_READ, Fitness.SCOPE_BODY_READ, new Scope(Scopes.PROFILE)),
                         FitnessOptions.builder().addDataType(DataType.TYPE_HEART_RATE_BPM).build().getImpliedScopes().stream()
                     ).collect(Collectors.toSet());
                     when(mockedGoogleSignInAccount.getGrantedScopes()).thenReturn(grantedScopes);
@@ -106,21 +111,19 @@ public class GoogleFitActivitySourceTest {
             }
 
             @Test
-            public void areFitnessPermissionsGranted_whenRequireOfflineAccessAndNotAllPermissionsWereGranted_returnsTrue() {
+            public void areFitnessPermissionsGranted_whenRequireOfflineAccessAndNotAllPermissionsWereGranted_returnsFalse() {
                 context = ApplicationProvider.getApplicationContext();
                 subject = new GoogleFitActivitySource(true,
                     DUMMY_SERVER_CLIENT_ID,
-                    mockedActivitySourcesService,
+                    collectableFitnessMetrics, mockedActivitySourcesService,
                     context,
                     mockedGfDataManagerBuilder);
 
                 try (MockedStatic<GoogleSignIn> mockGoogleSignIn = mockStatic(GoogleSignIn.class)) {
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
+                    // NOTE: here the profile scope is missing that required for the access from the server
                     Set<Scope> grantedScopes = Stream.concat(
-                        Stream.of(new Scope(Scopes.FITNESS_ACTIVITY_READ),
-                            new Scope(Scopes.FITNESS_LOCATION_READ),
-                            new Scope(Scopes.FITNESS_BODY_READ)
-                        ),
+                        Stream.of(Fitness.SCOPE_ACTIVITY_READ, Fitness.SCOPE_LOCATION_READ),
                         FitnessOptions.builder().addDataType(DataType.TYPE_HEART_RATE_BPM).build().getImpliedScopes().stream()
                     ).collect(Collectors.toSet());
                     when(mockedGoogleSignInAccount.getGrantedScopes()).thenReturn(grantedScopes);
@@ -134,7 +137,7 @@ public class GoogleFitActivitySourceTest {
                 context = ApplicationProvider.getApplicationContext();
                 subject = new GoogleFitActivitySource(false,
                     null,
-                    mockedActivitySourcesService,
+                    collectableFitnessMetrics, mockedActivitySourcesService,
                     context,
                     mockedGfDataManagerBuilder);
 
@@ -142,10 +145,7 @@ public class GoogleFitActivitySourceTest {
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
                     // NOTE: here is not a scope with profile
                     Set<Scope> grantedScopes = Stream.concat(
-                        Stream.of(new Scope(Scopes.FITNESS_ACTIVITY_READ),
-                            new Scope(Scopes.FITNESS_LOCATION_READ),
-                            new Scope(Scopes.FITNESS_BODY_READ)
-                        ),
+                        Stream.of(Fitness.SCOPE_ACTIVITY_READ, Fitness.SCOPE_LOCATION_READ),
                         FitnessOptions.builder().addDataType(DataType.TYPE_HEART_RATE_BPM).build().getImpliedScopes().stream()
                     ).collect(Collectors.toSet());
                     when(mockedGoogleSignInAccount.getGrantedScopes()).thenReturn(grantedScopes);
@@ -159,17 +159,15 @@ public class GoogleFitActivitySourceTest {
                 context = ApplicationProvider.getApplicationContext();
                 subject = new GoogleFitActivitySource(false,
                     null,
-                    mockedActivitySourcesService,
+                    collectableFitnessMetrics, mockedActivitySourcesService,
                     context,
                     mockedGfDataManagerBuilder);
 
                 try (MockedStatic<GoogleSignIn> mockGoogleSignIn = mockStatic(GoogleSignIn.class)) {
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
-                    // NOTE: here is not a scope with profile
+                    // NOTE: here the location_read scope is missing that used for syncing sessions
                     Set<Scope> grantedScopes = Stream.concat(
-                        Stream.of(new Scope(Scopes.FITNESS_ACTIVITY_READ),
-                            new Scope(Scopes.FITNESS_BODY_READ)
-                        ),
+                        Stream.of(Fitness.SCOPE_ACTIVITY_READ),
                         FitnessOptions.builder().addDataType(DataType.TYPE_HEART_RATE_BPM).build().getImpliedScopes().stream()
                     ).collect(Collectors.toSet());
                     when(mockedGoogleSignInAccount.getGrantedScopes()).thenReturn(grantedScopes);
@@ -184,9 +182,16 @@ public class GoogleFitActivitySourceTest {
             ActivitySourcesService mockedActivitySourcesService;
             Context context;
             GoogleFitDataManagerBuilder mockedGfDataManagerBuilder;
+            List<FitnessMetricsType> collectableFitnessMetrics;
 
             @Before
             public void beforeTest() {
+                collectableFitnessMetrics = Stream.of(
+                    FitnessMetricsType.INTRADAY_CALORIES,
+                    FitnessMetricsType.INTRADAY_HEART_RATE,
+                    FitnessMetricsType.INTRADAY_STEPS,
+                    FitnessMetricsType.WORKOUTS
+                ).collect(Collectors.toList());
                 mockedActivitySourcesService = mock(ActivitySourcesService.class);
                 mockedGfDataManagerBuilder = mock(GoogleFitDataManagerBuilder.class);
             }
@@ -196,6 +201,7 @@ public class GoogleFitActivitySourceTest {
                 context = ApplicationProvider.getApplicationContext();
                 subject = new GoogleFitActivitySource(false,
                     null,
+                    collectableFitnessMetrics,
                     mockedActivitySourcesService,
                     context,
                     mockedGfDataManagerBuilder);
@@ -221,7 +227,7 @@ public class GoogleFitActivitySourceTest {
                     context = ApplicationProvider.getApplicationContext();
                     subject = new GoogleFitActivitySource(false,
                         null,
-                        mockedActivitySourcesService,
+                        collectableFitnessMetrics, mockedActivitySourcesService,
                         context,
                         mockedGfDataManagerBuilder);
 
@@ -254,7 +260,7 @@ public class GoogleFitActivitySourceTest {
                     context = ApplicationProvider.getApplicationContext();
                     subject = new GoogleFitActivitySource(true,
                         DUMMY_SERVER_CLIENT_ID,
-                        mockedActivitySourcesService,
+                        collectableFitnessMetrics, mockedActivitySourcesService,
                         context,
                         mockedGfDataManagerBuilder);
 
@@ -297,7 +303,7 @@ public class GoogleFitActivitySourceTest {
                     context = ApplicationProvider.getApplicationContext();
                     subject = new GoogleFitActivitySource(false,
                         DUMMY_SERVER_CLIENT_ID,
-                        mockedActivitySourcesService,
+                        collectableFitnessMetrics, mockedActivitySourcesService,
                         context,
                         mockedGfDataManagerBuilder);
 
@@ -345,7 +351,7 @@ public class GoogleFitActivitySourceTest {
                     context = ApplicationProvider.getApplicationContext();
                     subject = new GoogleFitActivitySource(true,
                         DUMMY_SERVER_CLIENT_ID,
-                        mockedActivitySourcesService,
+                        collectableFitnessMetrics, mockedActivitySourcesService,
                         context,
                         mockedGfDataManagerBuilder);
 
@@ -398,12 +404,19 @@ public class GoogleFitActivitySourceTest {
             ActivitySourcesService mockedActivitySourcesService;
             GoogleFitDataManagerBuilder mockedGfDataManagerBuilder;
             Context context;
+            List<FitnessMetricsType> collectableFitnessMetrics;
 
             @Before
             public void beforeTest() {
                 context = ApplicationProvider.getApplicationContext();
                 mockedActivitySourcesService = mock(ActivitySourcesService.class);
                 mockedGfDataManagerBuilder = mock(GoogleFitDataManagerBuilder.class);
+                collectableFitnessMetrics = Stream.of(
+                    FitnessMetricsType.INTRADAY_CALORIES,
+                    FitnessMetricsType.INTRADAY_HEART_RATE,
+                    FitnessMetricsType.INTRADAY_STEPS,
+                    FitnessMetricsType.WORKOUTS
+                ).collect(Collectors.toList());
             }
 
             @Test
@@ -411,7 +424,7 @@ public class GoogleFitActivitySourceTest {
                 try (MockedStatic<GoogleSignIn> mockGoogleSignIn = mockStatic(GoogleSignIn.class)) {
                     subject = new GoogleFitActivitySource(false,
                         null,
-                        mockedActivitySourcesService,
+                        collectableFitnessMetrics, mockedActivitySourcesService,
                         context,
                         mockedGfDataManagerBuilder);
 
@@ -421,9 +434,9 @@ public class GoogleFitActivitySourceTest {
 
                     final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder()
                         .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
-                        .include(GFIntradaySyncOptions.METRICS_TYPE.CALORIES)
-                        .include(GFIntradaySyncOptions.METRICS_TYPE.HEART_RATE)
-                        .include(GFIntradaySyncOptions.METRICS_TYPE.STEPS)
+                        .include(FitnessMetricsType.INTRADAY_CALORIES)
+                        .include(FitnessMetricsType.INTRADAY_HEART_RATE)
+                        .include(FitnessMetricsType.INTRADAY_STEPS)
                         .build();
                     subject.syncIntradayMetrics(options, mockedCallback);
 
@@ -435,6 +448,93 @@ public class GoogleFitActivitySourceTest {
                     // should not even interact with GoogleFitDataManager
                     verifyNoInteractions(mockedGfDataManagerBuilder);
                 }
+            }
+        }
+    }
+
+    @RunWith(Enclosed.class)
+    public static class StaticMethods {
+        public static class BuildGoogleSignInOptionsTests extends GivenRobolectricContext {
+            @Test
+            public void buildGoogleSignInOptions_whenNoOfflineAccessAndFitnessMetricsHasOnlyCalories_returnsOptionsWithScopes() {
+                final GoogleSignInOptions result = GoogleFitActivitySource.buildGoogleSignInOptions(false,
+                    null,
+                    Stream.of(FitnessMetricsType.INTRADAY_CALORIES).collect(Collectors.toList()));
+                assertEquals("should have only fitness.activity.read scope",
+                    Stream.of(Fitness.SCOPE_ACTIVITY_READ).collect(Collectors.toList()),
+                    result.getScopes());
+            }
+
+            @Test
+            public void buildGoogleSignInOptions_whenNoOfflineAccessAndFitnessMetricsHasOnlySteps_returnsOptionsWithScopes() {
+                final GoogleSignInOptions result = GoogleFitActivitySource.buildGoogleSignInOptions(false,
+                    null,
+                    Stream.of(FitnessMetricsType.INTRADAY_STEPS).collect(Collectors.toList()));
+                assertEquals("should have only fitness.activity.read scope",
+                    Stream.of(Fitness.SCOPE_ACTIVITY_READ).collect(Collectors.toList()),
+                    result.getScopes());
+            }
+
+            @Test
+            public void buildGoogleSignInOptions_whenNoOfflineAccessAndFitnessMetricsAreCaloriesAndSteps_returnsOptionsWithScopes() {
+                final GoogleSignInOptions result = GoogleFitActivitySource.buildGoogleSignInOptions(false,
+                    null,
+                    Stream.of(FitnessMetricsType.INTRADAY_STEPS, FitnessMetricsType.INTRADAY_CALORIES).collect(Collectors.toList()));
+                assertEquals("should have only fitness.activity.read scope",
+                    Stream.of(Fitness.SCOPE_ACTIVITY_READ).collect(Collectors.toList()),
+                    result.getScopes());
+            }
+
+            @Test
+            public void buildGoogleSignInOptions_whenNoOfflineAccessAndFitnessMetricsHasOnlyHeartRate_returnsOptionsWithScopes() {
+                final GoogleSignInOptions result = GoogleFitActivitySource.buildGoogleSignInOptions(false,
+                    null,
+                    Stream.of(FitnessMetricsType.INTRADAY_HEART_RATE).collect(Collectors.toList()));
+                assertEquals("should have only fitness.heart_rate.read scope",
+                    Stream.of(new Scope("https://www.googleapis.com/auth/fitness.heart_rate.read")).collect(Collectors.toList()),
+                    result.getScopes());
+            }
+
+            @Test
+            public void buildGoogleSignInOptions_whenNoOfflineAccessAndFitnessMetricsHasOnlyWorkouts_returnsOptionsWithScopes() {
+                final GoogleSignInOptions result = GoogleFitActivitySource.buildGoogleSignInOptions(false,
+                    null,
+                    Stream.of(FitnessMetricsType.WORKOUTS).collect(Collectors.toList()));
+                assertEquals("should have several scopes",
+                    Stream.of(Fitness.SCOPE_LOCATION_READ, Fitness.SCOPE_ACTIVITY_READ,
+                        new Scope("https://www.googleapis.com/auth/fitness.heart_rate.read")
+                    ).collect(Collectors.toList()),
+                    result.getScopes());
+            }
+
+            @Test
+            public void buildGoogleSignInOptions_whenOfflineAccessAndFitnessMetricsHasOnlyCalories_returnsOptionsWithAllScopes() {
+                final GoogleSignInOptions result = GoogleFitActivitySource.buildGoogleSignInOptions(true,
+                    DUMMY_SERVER_CLIENT_ID,
+                    Stream.of(FitnessMetricsType.INTRADAY_CALORIES).collect(Collectors.toList()));
+                // NOTE: currently implementation of the server will request all data to perform the sync,
+                // that's why we request all needed scopes.
+                assertEquals("should include all scopes anyways",
+                    Stream.of(new Scope(Scopes.PROFILE),
+                        Fitness.SCOPE_LOCATION_READ, Fitness.SCOPE_BODY_READ, Fitness.SCOPE_ACTIVITY_READ,
+                        new Scope("https://www.googleapis.com/auth/fitness.heart_rate.read")
+                    ).collect(Collectors.toList()),
+                    result.getScopes());
+            }
+
+            @Test
+            public void buildGoogleSignInOptions_whenFullIntegration_returnsOptionsWithAllScopes() {
+                final GoogleSignInOptions result = GoogleFitActivitySource.buildGoogleSignInOptions(true,
+                    DUMMY_SERVER_CLIENT_ID,
+                    // pass every possible fitness metrics
+                    Stream.of(FitnessMetricsType.class.getEnumConstants()).collect(Collectors.toList()));
+                assertEquals("should have all expected scopes",
+                    Stream.of(new Scope(Scopes.PROFILE),
+                        Fitness.SCOPE_LOCATION_READ, Fitness.SCOPE_BODY_READ, Fitness.SCOPE_ACTIVITY_READ,
+                        new Scope("https://www.googleapis.com/auth/fitness.heart_rate.read")
+                    ).collect(Collectors.toList()),
+                    result.getScopes());
+                assertTrue("should request the server auth code", result.isServerAuthCodeRequested());
             }
         }
     }

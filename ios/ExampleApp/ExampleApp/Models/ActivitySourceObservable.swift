@@ -3,7 +3,6 @@ import FjuulActivitySources
 import UIKit
 
 class ActivitySourceObservable: ObservableObject {
-
     @Published var error: ErrorHolder?
     @Published var currentConnections: [ActivitySourceConnection] = []
 
@@ -12,7 +11,7 @@ class ActivitySourceObservable: ObservableObject {
     }
 
     func getCurrentConnections() {
-        ActivitySourceManager.shared.getCurrentConnections { result in
+        ActivitySourceManager.current?.getCurrentConnections { result in
             switch result {
             case .success(let connections): self.currentConnections = connections
             case .failure(let err): self.error = ErrorHolder(error: err)
@@ -21,7 +20,7 @@ class ActivitySourceObservable: ObservableObject {
     }
 
     func connect(activitySource: ActivitySource) {
-        ActivitySourceManager.shared.connect(activitySource: activitySource) { result in
+        ActivitySourceManager.current?.connect(activitySource: activitySource) { result in
             switch result {
             case .success(let connectionResult):
                 switch connectionResult {
@@ -36,7 +35,7 @@ class ActivitySourceObservable: ObservableObject {
     }
 
     func disconnect(activitySourceConnection: ActivitySourceConnection) {
-        ActivitySourceManager.shared.disconnect(activitySourceConnection: activitySourceConnection) { result in
+        ActivitySourceManager.current?.disconnect(activitySourceConnection: activitySourceConnection) { result in
             switch result {
             case .success: self.getCurrentConnections()
             case .failure(let err): self.error = ErrorHolder(error: err)

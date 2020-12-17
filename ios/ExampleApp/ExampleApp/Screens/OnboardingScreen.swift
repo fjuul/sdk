@@ -58,7 +58,7 @@ struct OnboardingScreen: View {
                         }
 
                         if let apiClient = ApiClientHolder.default.apiClient {
-                            ActivitySourceManager.shared.initialize(apiClient: apiClient, config: config)
+                            ActivitySourceManager.initialize(apiClient: apiClient, config: config)
                         }
                     }
                     self.viewRouter.presentedView = .moduleSelection

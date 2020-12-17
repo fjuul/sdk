@@ -5,23 +5,47 @@ import FjuulCore
 // ActivitySourceManager.shared
 
 final public class ActivitySourceManager {
-    static public let shared = ActivitySourceManager()
+    static public var current: ActivitySourceManager?
 
-    var apiClient: ApiClient?
+    var apiClient: ActivitySourcesApi?
     var mountedActivitySourceConnections: [ActivitySourceConnection] = []
     var config: ActivitySourceConfigBuilder?
 
     private var persistor: Persistor?
     private var connectionsLocalStore: ActivitySourceStore?
 
-    private init() {}
+    static public func initialize(apiClient: ApiClient, config: ActivitySourceConfigBuilder) -> ActivitySourceManager {
+        let instance = ActivitySourceManager(userToken: apiClient.userToken, persistor: apiClient.persistor, apiClient: apiClient.activitySources, config: config)
 
-    public func initialize(apiClient: ApiClient, config: ActivitySourceConfigBuilder) {
+        ActivitySourceManager.current = instance
+
+        return instance
+//        self.apiClient = apiClient
+//        self.persistor = apiClient.persistor
+//        self.config = config
+//
+//        self.connectionsLocalStore = ActivitySourceStore(userToken: apiClient.userToken, persistor: apiClient.persistor)
+//
+//        self.restoreState { _ in
+//            self.getCurrentConnections { _ in
+//                print("Initial sync current connections")
+//            }
+//        }
+    }
+
+    static public func getInstance() -> Result<ActivitySourceManager, Error> {
+        guard let instance = current else {
+            return .failure(FjuulError.invalidConfig)
+        }
+
+        return .success(instance)
+    }
+
+    internal init(userToken: String, persistor: Persistor, apiClient: ActivitySourcesApi, config: ActivitySourceConfigBuilder) {
         self.apiClient = apiClient
-        self.persistor = apiClient.persistor
+        self.persistor = persistor
         self.config = config
-
-        self.connectionsLocalStore = ActivitySourceStore(userToken: apiClient.userToken, persistor: apiClient.persistor)
+        self.connectionsLocalStore = ActivitySourceStore(userToken: userToken, persistor: persistor)
 
         self.restoreState { _ in
             self.getCurrentConnections { _ in
@@ -49,13 +73,13 @@ final public class ActivitySourceManager {
                     completion(.failure(err))
                     return
                 case .success:
-                    apiClient.activitySources.connect(activitySourceItem: activitySource.tracker) { connectionResult in
+                    apiClient.connect(activitySourceItem: activitySource.tracker) { connectionResult in
                         completion(connectionResult)
                     }
                 }
             }
         } else {
-            apiClient.activitySources.connect(activitySourceItem: activitySource.tracker) { connectionResult in
+            apiClient.connect(activitySourceItem: activitySource.tracker) { connectionResult in
                 completion(connectionResult)
             }
         }
@@ -67,7 +91,7 @@ final public class ActivitySourceManager {
             return
         }
 
-        apiClient.activitySources.disconnect(activitySourceConnection: activitySourceConnection) { result in
+        apiClient.disconnect(activitySourceConnection: activitySourceConnection) { result in
             switch result {
             case .success:
                 activitySourceConnection.unmount { unmountResult in
@@ -91,7 +115,7 @@ final public class ActivitySourceManager {
             return
         }
 
-        apiClient.activitySources.getCurrentConnections { result in
+        apiClient.getCurrentConnections { result in
             switch result {
             case .success(let connections):
                 let activitySourceConnections = connections.compactMap { connection in

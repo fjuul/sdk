@@ -6,7 +6,7 @@ public final class ActivitySourceHK: ActivitySource {
     static public let shared = ActivitySourceHK()
 
     public var tracker = ActivitySourcesItem.healthkit
-    public var apiClient: ApiClient?
+    public var apiClient: ActivitySourcesApi?
     public var persistor: Persistor?
 
     private var healthKitManager: HealthKitManager?
@@ -19,7 +19,7 @@ public final class ActivitySourceHK: ActivitySource {
         }
     }
 
-    public func mount(apiClient: ApiClient, config: ActivitySourceConfigBuilder, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
+    public func mount(apiClient: ActivitySourcesApi, config: ActivitySourceConfigBuilder, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
         self.apiClient = apiClient
         self.persistor = persistor
 
@@ -67,13 +67,13 @@ public final class ActivitySourceHK: ActivitySource {
     private func sendBatch(data: HKRequestData, completion: @escaping (Result<Bool, Error>) -> Void) {
         guard let apiClient = self.apiClient else { return  completion(.failure(FjuulError.invalidConfig))}
 
-        let url = "\(apiClient.baseUrl)/sdk/activity-sources/v1/\(apiClient.userToken)/healthkit"
+        let url = "\(apiClient.apiClient.baseUrl)/sdk/activity-sources/v1/\(apiClient.apiClient.userToken)/healthkit"
 
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .formatted(DateFormatters.iso8601Full)
         let parameterEncoder = JSONParameterEncoder(encoder: encoder)
 
-        apiClient.signedSession.request(url, method: .post, parameters: data, encoder: parameterEncoder).response { response in
+        apiClient.apiClient.signedSession.request(url, method: .post, parameters: data, encoder: parameterEncoder).response { response in
             switch response.result {
             case .success:
                 return completion(.success(true))

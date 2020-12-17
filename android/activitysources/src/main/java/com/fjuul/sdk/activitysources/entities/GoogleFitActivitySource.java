@@ -278,8 +278,8 @@ public class GoogleFitActivitySource extends ActivitySource {
         });
     }
 
-    static GoogleSignInOptions buildGoogleSignInOptions(boolean offlineAccess, String serverClientId, @NonNull List<FitnessMetricsType> fitnessMetrics) {
-        FitnessOptions.Builder fitnessOptionsBuilder = FitnessOptions.builder();
+    static GoogleSignInOptions buildGoogleSignInOptions(boolean offlineAccess, @Nullable String serverClientId, @NonNull List<FitnessMetricsType> fitnessMetrics) {
+        final FitnessOptions.Builder fitnessOptionsBuilder = FitnessOptions.builder();
         if (fitnessMetrics.contains(FitnessMetricsType.INTRADAY_CALORIES)) {
             fitnessOptionsBuilder.addDataType(DataType.AGGREGATE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ);
         }
@@ -298,11 +298,24 @@ public class GoogleFitActivitySource extends ActivitySource {
                 .addDataType(DataType.TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
                 .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_READ);
         }
+        final FitnessOptions fitnessOptions = fitnessOptionsBuilder.build();
         GoogleSignInOptions.Builder googleSignInOptionsBuilder = new GoogleSignInOptions.Builder();
-        FitnessOptions fitnessOptions = fitnessOptionsBuilder.build();
         googleSignInOptionsBuilder.addExtension(fitnessOptions);
         if (offlineAccess) {
-            googleSignInOptionsBuilder = googleSignInOptionsBuilder.requestProfile().requestServerAuthCode(serverClientId, true);
+            // TODO: determine exactly scopes required by the server
+            // see https://github.com/fjuul/commons-js/blob/d067a458c4b1eb88497c5c4c5b961d4891f7f08e/src/services/trackers/googleFit/GoogleFitClient.ts#L49-L54
+            // NOTE: currently the server uses all scopes because it tries to sync every possible fitness data of a user.
+            // Since we are not sure about the future of the GF backend integration, scopes listed as-is (see the link above).
+            // Ideally, the server implementation of the syncing should safely request data only for the granted scopes.
+            final Scope[] hrScope = FitnessOptions.builder()
+                .addDataType(DataType.AGGREGATE_HEART_RATE_SUMMARY, FitnessOptions.ACCESS_READ)
+                .build()
+                .getImpliedScopes()
+                .toArray(new Scope[0]);
+            googleSignInOptionsBuilder = googleSignInOptionsBuilder.requestProfile()
+                .requestScopes(Fitness.SCOPE_ACTIVITY_READ, Fitness.SCOPE_BODY_READ)
+                .requestScopes(Fitness.SCOPE_LOCATION_READ, hrScope)
+                .requestServerAuthCode(serverClientId, true);
         }
         return googleSignInOptionsBuilder.build();
     }

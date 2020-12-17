@@ -37,7 +37,6 @@ public final class GFIntradaySyncOptions {
         this.endDate = endDate;
     }
 
-
     public static class Builder {
         private Set<FitnessMetricsType> metrics = new HashSet<>();
         @Nullable private LocalDate startDate;

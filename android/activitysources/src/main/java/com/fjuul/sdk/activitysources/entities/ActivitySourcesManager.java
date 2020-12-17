@@ -85,7 +85,7 @@ public final class ActivitySourcesManager {
         final WorkManager workManager = WorkManager.getInstance(client.getAppContext());
         final GoogleFitSyncWorkManager gfSyncWorkManager = new GoogleFitSyncWorkManager(workManager,
             client.getUserToken(), client.getUserSecret(), client.getApiKey(), client.getBaseUrl());
-        GoogleFitActivitySource.initialize(client);
+        GoogleFitActivitySource.initialize(client, config);
 
         final BackgroundWorkManager backgroundWorkManager = new BackgroundWorkManager(config, gfSyncWorkManager);
         setupBackgroundWorksByConnections(storedConnections, backgroundWorkManager);

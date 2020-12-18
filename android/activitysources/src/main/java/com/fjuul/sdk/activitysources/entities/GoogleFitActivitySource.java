@@ -35,6 +35,7 @@ import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -201,7 +202,7 @@ public class GoogleFitActivitySource extends ActivitySource {
     // TODO: javadoc (the expected error is FitnessPermissionsNotGrantedException, ActivityRecognitionPermissionNotGrantedException)
     public void syncSessions(@NonNull final GFSessionSyncOptions options, @Nullable final Callback<Void> callback) {
         final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
-        if (!areFitnessPermissionsGranted(account)) {
+        if (!areFitnessPermissionsGranted(account, Arrays.asList(FitnessMetricsType.WORKOUTS))) {
             if (callback != null) {
                 Result<Void> errorResult = Result.error(
                     new FitnessPermissionsNotGrantedException("Not all required GoogleFit permissions were granted"));

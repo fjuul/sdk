@@ -271,10 +271,13 @@ public class GoogleFitActivitySource extends ActivitySource {
                     callback.onResult(result);
                 }
             } catch (ExecutionException | InterruptedException exc) {
-                Result<T> errorResult = Result.error(exc);
-                if (callback != null) {
-                    callback.onResult(errorResult);
+                if (callback == null) { return; }
+                Throwable throwableToPropagate = exc;
+                if (exc instanceof ExecutionException && ((ExecutionException) exc).getCause() != null) {
+                    throwableToPropagate = ((ExecutionException) exc).getCause();
                 }
+                Result<T> errorResult = Result.error(throwableToPropagate);
+                callback.onResult(errorResult);
             }
         });
     }

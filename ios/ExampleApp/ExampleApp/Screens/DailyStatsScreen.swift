@@ -32,16 +32,22 @@ struct DailyStatsScreen: View {
                                 Image(systemName: "bolt")
                                     .frame(width: 30, height: 10, alignment: .leading)
                                 Text("low \(each.low.metMinutes, specifier: "%.1f")")
+                                Spacer()
+                                Text("\(self.formatTime(time: each.low.seconds))")
                             }
                             HStack {
                                 Image(systemName: "bolt")
                                     .frame(width: 30, height: 10, alignment: .leading)
                                 Text("mod \(each.moderate.metMinutes, specifier: "%.1f")")
+                                Spacer()
+                                Text("\(self.formatTime(time: each.moderate.seconds))")
                             }
                             HStack {
                                 Image(systemName: "bolt")
                                     .frame(width: 30, height: 10, alignment: .leading)
                                 Text("high \(each.high.metMinutes, specifier: "%.1f")")
+                                Spacer()
+                                Text("\(self.formatTime(time: each.high.seconds))")
                             }
                             HStack {
                                 Image(systemName: "flame")
@@ -64,6 +70,14 @@ struct DailyStatsScreen: View {
         .navigationBarTitle("Daily Stats")
     }
 
+    func formatTime(time: TimeInterval, units: NSCalendar.Unit = [.hour, .minute]) -> String {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = units
+        formatter.unitsStyle = .abbreviated
+        formatter.zeroFormattingBehavior = .pad
+
+        return formatter.string(from: time) ?? ""
+    }
 }
 
 struct DailyStatsScreen_Previews: PreviewProvider {

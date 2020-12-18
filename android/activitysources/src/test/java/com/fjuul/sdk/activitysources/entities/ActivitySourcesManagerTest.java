@@ -80,12 +80,12 @@ public class ActivitySourcesManagerTest {
                 final GoogleFitActivitySource googleFit = mock(GoogleFitActivitySource.class);
                 final Callback<Intent> mockedCallback = mock(Callback.class);
                 final Intent testIntent = new Intent();
-                when(googleFit.buildIntentRequestingPermissions()).thenReturn(testIntent);
+                when(googleFit.buildIntentRequestingFitnessPermissions()).thenReturn(testIntent);
 
                 subject.connect(googleFit, mockedCallback);
 
                 // should ask google fit activity source for building the connecting intent
-                verify(googleFit).buildIntentRequestingPermissions();
+                verify(googleFit).buildIntentRequestingFitnessPermissions();
                 verifyNoInteractions(mockedActivitySourcesService);
                 final ArgumentCaptor<Result<Intent>> callbackResultCaptor = ArgumentCaptor.forClass(Result.class);
                 verify(mockedCallback).onResult(callbackResultCaptor.capture());

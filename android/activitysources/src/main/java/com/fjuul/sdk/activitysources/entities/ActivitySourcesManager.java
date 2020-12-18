@@ -177,7 +177,7 @@ public final class ActivitySourcesManager {
      */
     public void connect(@NonNull final ActivitySource activitySource, @NonNull final Callback<Intent> callback) {
         if (activitySource instanceof GoogleFitActivitySource) {
-            final Intent intent = ((GoogleFitActivitySource) activitySource).buildIntentRequestingPermissions();
+            final Intent intent = ((GoogleFitActivitySource) activitySource).buildIntentRequestingFitnessPermissions();
             callback.onResult(Result.value(intent));
             return;
         }

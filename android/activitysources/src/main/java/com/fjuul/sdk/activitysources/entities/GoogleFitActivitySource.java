@@ -85,6 +85,13 @@ public class GoogleFitActivitySource extends ActivitySource {
         instance = new GoogleFitActivitySource(requestOfflineAccess, serverClientId, sourcesManagerConfig.getCollectableFitnessMetrics(), sourcesService, context, gfDataManagerBuilder);
     }
 
+    /**
+     * Return the initialized and configured instance of GoogleFitActivitySource. Make sure that this method is invoked
+     * after ActivitySourcesManager.initialize. Otherwise, it throws IllegalStateException.
+     *
+     * @throws IllegalStateException
+     * @return instance of GoogleFitActivitySource
+     */
     public static GoogleFitActivitySource getInstance() {
         if (instance == null) {
             throw new IllegalStateException("You must initialize ActivitySourceManager first before use GoogleFitActivitySource");
@@ -105,16 +112,35 @@ public class GoogleFitActivitySource extends ActivitySource {
         this.gfDataManagerBuilder = gfDataManagerBuilder;
     }
 
+    /**
+     * Checks whether all Google OAuth permissions are granted by the user to work with Google Fit. The list of all
+     * needed permissions is determined by the list of the collectable fitness metrics. <br>
+     * Note: an active current tracker connection to Google FIt does not always guarantee that the user grants all
+     * permissions at the moment (for example, the user may have revoked them since the previous app session).
+     * To request the needed permissions again, please use {@link GoogleFitActivitySource#buildIntentRequestingFitnessPermissions}.
+     * @return boolean result of the check
+     */
     public boolean areFitnessPermissionsGranted() {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         return areFitnessPermissionsGranted(account);
     }
 
+    /**
+     * Checks whether the Google Fit app is installed on the user's device. You don't have to have the installed application
+     * to work with the Google Fit API. However, this is the easiest way to record and detect the user's physical activity during the day.
+     * @return boolean result of the check
+     */
     public boolean isGoogleFitAppInstalled() {
         return isGoogleFitAppInstalled(context);
     }
 
-    // TODO: javadoc
+    /**
+     * Checks whether the android.permission.ACTIVITY_RECOGNITION permission is given to your app. Starting with Android
+     * 10 (API level 29), this permission is required to read session data. <br>
+     * The SDK does not provide functionality for requesting this permission and you should follow the official
+     * <a href="https://developers.google.com/fit/android/authorization#requesting_android_permissions">documentation</a>.
+     * @return boolean result of the check
+     */
     public boolean isActivityRecognitionPermissionGranted() {
         return isActivityRecognitionPermissionGranted(context);
     }

@@ -119,7 +119,7 @@ public final class ActivitySourcesManager {
      * #onActivityResult method of Activity or Fragment with the `requestCode` you specified to
      * #startActivityForResult.<br>
      * After you compared `requestCode` with your and checked `resultCode` with `Activity.RESULT_OK`, you need to pass
-     * the coming `data` (Intent) in #onActivityResult to GoogleFitActivitySource#handleGoogleSignIn method to complete
+     * the coming `data` (Intent) in #onActivityResult to {@link GoogleFitActivitySource#handleGoogleSignInResult} method to complete
      * the connection to the GoogleFit tracker.
      *
      * <pre>

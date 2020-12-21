@@ -2,15 +2,15 @@ package com.fjuul.sdk.activitysources.adapters;
 
 import android.os.Build;
 
-import com.fjuul.sdk.activitysources.entities.GFActivitySegmentDataPoint;
-import com.fjuul.sdk.activitysources.entities.GFCalorieDataPoint;
-import com.fjuul.sdk.activitysources.entities.GFHRDataPoint;
-import com.fjuul.sdk.activitysources.entities.GFHRSummaryDataPoint;
-import com.fjuul.sdk.activitysources.entities.GFPowerDataPoint;
-import com.fjuul.sdk.activitysources.entities.GFSessionBundle;
-import com.fjuul.sdk.activitysources.entities.GFSpeedDataPoint;
-import com.fjuul.sdk.activitysources.entities.GFStepsDataPoint;
-import com.fjuul.sdk.activitysources.entities.GFUploadData;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFActivitySegmentDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFCalorieDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRSummaryDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFPowerDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSessionBundle;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSpeedDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFStepsDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;

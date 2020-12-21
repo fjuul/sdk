@@ -1,6 +1,6 @@
 package com.fjuul.sdk.activitysources.http.apis;
 
-import com.fjuul.sdk.activitysources.entities.GFUploadData;
+import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.core.http.utils.ApiCall;
 

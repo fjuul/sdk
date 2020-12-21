@@ -2,11 +2,11 @@ package com.fjuul.sdk.activitysources.adapters;
 
 import android.annotation.SuppressLint;
 
-import com.fjuul.sdk.activitysources.entities.GFDataPoint;
-import com.fjuul.sdk.activitysources.entities.GFHRSummaryDataPoint;
-import com.fjuul.sdk.activitysources.entities.GFScalarDataPoint;
-import com.fjuul.sdk.activitysources.entities.GFSessionBundle;
-import com.fjuul.sdk.activitysources.entities.GFUploadData;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRSummaryDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFScalarDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSessionBundle;
+import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
 import com.fjuul.sdk.activitysources.json.GFUploadDataJson;
 import com.fjuul.sdk.activitysources.json.GFUploadDataJson.GFInstantMeasureSampleEntryJson;
 import com.fjuul.sdk.activitysources.json.GFUploadDataJson.GFIntradayHRSampleEntryJson;

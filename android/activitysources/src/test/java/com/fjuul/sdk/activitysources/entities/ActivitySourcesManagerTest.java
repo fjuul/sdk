@@ -4,6 +4,9 @@ import android.content.Intent;
 import android.os.Build;
 
 import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthenticationFlowRequired;
+import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
+import com.fjuul.sdk.activitysources.entities.internal.ActivitySourcesStateStore;
+import com.fjuul.sdk.activitysources.entities.internal.BackgroundWorkManager;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.core.entities.Callback;
 import com.fjuul.sdk.core.entities.Result;

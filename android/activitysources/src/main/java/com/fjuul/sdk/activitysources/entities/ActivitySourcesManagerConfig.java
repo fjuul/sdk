@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ActivitySourcesManagerConfig {
-    enum GFBackgroundSyncMode {
+    public enum GFBackgroundSyncMode {
         ENABLED,
         DISABLED,
         UNTOUCHED

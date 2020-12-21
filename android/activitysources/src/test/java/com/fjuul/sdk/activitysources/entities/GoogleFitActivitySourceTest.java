@@ -8,7 +8,15 @@ import android.os.Build;
 
 import androidx.test.core.app.ApplicationProvider;
 
-import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions;
+import com.fjuul.sdk.activitysources.entities.ActivitySource;
+import com.fjuul.sdk.activitysources.entities.ConnectionResult;
+import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
+import com.fjuul.sdk.activitysources.entities.GFIntradaySyncOptions;
+import com.fjuul.sdk.activitysources.entities.GFSessionSyncOptions;
+import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
+import com.fjuul.sdk.activitysources.entities.TrackerConnection;
+import com.fjuul.sdk.activitysources.entities.internal.GoogleFitDataManager;
+import com.fjuul.sdk.activitysources.entities.internal.GoogleFitDataManagerBuilder;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.ActivityRecognitionPermissionNotGrantedException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.FitnessPermissionsNotGrantedException;

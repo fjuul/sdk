@@ -6,7 +6,7 @@ import java.util.Map;
 
 import com.fjuul.sdk.activitysources.adapters.GFUploadDataJsonAdapter;
 import com.fjuul.sdk.activitysources.entities.ConnectionResult;
-import com.fjuul.sdk.activitysources.entities.GFUploadData;
+import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.activitysources.exceptions.ActivitySourcesApiExceptions;
 import com.fjuul.sdk.activitysources.http.ActivitySourcesApiResponseTransformer;

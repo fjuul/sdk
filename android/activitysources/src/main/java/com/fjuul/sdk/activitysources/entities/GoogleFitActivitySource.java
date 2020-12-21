@@ -56,7 +56,7 @@ public class GoogleFitActivitySource extends ActivitySource {
     static final String REQUEST_OFFLINE_ACCESS_METADATA_KEY = "com.fjuul.sdk.googlefit.request_offline_access";
     static final String GOOGLE_FIT_APP_PACKAGE_NAME = "com.google.android.apps.fitness";
 
-    private static final ExecutorService localSequentialBackgroundExecutor = createSequentialSingleCachedExecutor();
+    private static final ExecutorService sharedSequentialExecutor = createSequentialSingleCachedExecutor();
 
     private static volatile GoogleFitActivitySource instance;
 
@@ -66,6 +66,7 @@ public class GoogleFitActivitySource extends ActivitySource {
     private final @NonNull ActivitySourcesService sourcesService;
     private final @NonNull Context context;
     private final @NonNull GoogleFitDataManagerBuilder gfDataManagerBuilder;
+    private final @NonNull ExecutorService localSequentialBackgroundExecutor;
 
     static synchronized void initialize(@NonNull ApiClient client, @NonNull ActivitySourcesManagerConfig sourcesManagerConfig) {
         Context context = client.getAppContext();
@@ -85,7 +86,13 @@ public class GoogleFitActivitySource extends ActivitySource {
         final GFDataUtils gfUtils = new GFDataUtils();
         final GFSyncMetadataStore syncMetadataStore = new GFSyncMetadataStore(client.getStorage(), client.getUserToken());
         final GoogleFitDataManagerBuilder gfDataManagerBuilder = new GoogleFitDataManagerBuilder(context,gfUtils,syncMetadataStore,sourcesService);
-        instance = new GoogleFitActivitySource(requestOfflineAccess, serverClientId, sourcesManagerConfig.getCollectableFitnessMetrics(), sourcesService, context, gfDataManagerBuilder);
+        instance = new GoogleFitActivitySource(requestOfflineAccess,
+            serverClientId,
+            sourcesManagerConfig.getCollectableFitnessMetrics(),
+            sourcesService,
+            context,
+            gfDataManagerBuilder,
+            sharedSequentialExecutor);
     }
 
     /**
@@ -104,15 +111,18 @@ public class GoogleFitActivitySource extends ActivitySource {
 
     GoogleFitActivitySource(boolean requestOfflineAccess,
                             @NonNull String serverClientId,
-                            @NonNull List<FitnessMetricsType> collectableFitnessMetrics, @NonNull ActivitySourcesService sourcesService,
+                            @NonNull List<FitnessMetricsType> collectableFitnessMetrics,
+                            @NonNull ActivitySourcesService sourcesService,
                             @NonNull Context context,
-                            @NonNull GoogleFitDataManagerBuilder gfDataManagerBuilder) {
+                            @NonNull GoogleFitDataManagerBuilder gfDataManagerBuilder,
+                            @NonNull ExecutorService localSequentialBackgroundExecutor) {
         this.requestOfflineAccess = requestOfflineAccess;
         this.serverClientId = serverClientId;
         this.collectableFitnessMetrics = collectableFitnessMetrics;
         this.sourcesService = sourcesService;
         this.context = context;
         this.gfDataManagerBuilder = gfDataManagerBuilder;
+        this.localSequentialBackgroundExecutor = localSequentialBackgroundExecutor;
     }
 
     /**
@@ -329,8 +339,8 @@ public class GoogleFitActivitySource extends ActivitySource {
             } catch (ExecutionException | InterruptedException exc) {
                 if (callback == null) { return; }
                 Throwable throwableToPropagate = exc;
-                if (exc instanceof ExecutionException && ((ExecutionException) exc).getCause() != null) {
-                    throwableToPropagate = ((ExecutionException) exc).getCause();
+                if (exc instanceof ExecutionException && exc.getCause() != null) {
+                    throwableToPropagate = exc.getCause();
                 }
                 Result<T> errorResult = Result.error(throwableToPropagate);
                 callback.onResult(errorResult);

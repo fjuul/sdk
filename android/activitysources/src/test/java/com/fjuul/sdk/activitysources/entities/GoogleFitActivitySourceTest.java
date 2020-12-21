@@ -8,13 +8,6 @@ import android.os.Build;
 
 import androidx.test.core.app.ApplicationProvider;
 
-import com.fjuul.sdk.activitysources.entities.ActivitySource;
-import com.fjuul.sdk.activitysources.entities.ConnectionResult;
-import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
-import com.fjuul.sdk.activitysources.entities.GFIntradaySyncOptions;
-import com.fjuul.sdk.activitysources.entities.GFSessionSyncOptions;
-import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
-import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.activitysources.entities.internal.GoogleFitDataManager;
 import com.fjuul.sdk.activitysources.entities.internal.GoogleFitDataManagerBuilder;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.ActivityRecognitionPermissionNotGrantedException;
@@ -38,6 +31,7 @@ import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.tasks.Tasks;
 
 import org.hamcrest.CoreMatchers;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -46,6 +40,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.Shadows;
+import org.robolectric.android.util.concurrent.InlineExecutorService;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
 
@@ -58,6 +53,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -82,6 +78,12 @@ public class GoogleFitActivitySourceTest {
     public abstract static class GivenRobolectricContext { }
 
     static final String DUMMY_SERVER_CLIENT_ID = "google_server_client_id";
+    static ExecutorService testInlineExecutor = new InlineExecutorService();
+
+    @AfterClass
+    public static void afterTests() {
+        testInlineExecutor.shutdown();
+    }
 
     @RunWith(Enclosed.class)
     public static class InstanceMethods {
@@ -112,7 +114,8 @@ public class GoogleFitActivitySourceTest {
                     collectableFitnessMetrics,
                     mockedActivitySourcesService,
                     context,
-                    mockedGfDataManagerBuilder);
+                    mockedGfDataManagerBuilder,
+                    testInlineExecutor);
 
                 try (MockedStatic<GoogleSignIn> mockGoogleSignIn = mockStatic(GoogleSignIn.class)) {
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
@@ -133,7 +136,8 @@ public class GoogleFitActivitySourceTest {
                     DUMMY_SERVER_CLIENT_ID,
                     collectableFitnessMetrics, mockedActivitySourcesService,
                     context,
-                    mockedGfDataManagerBuilder);
+                    mockedGfDataManagerBuilder,
+                    testInlineExecutor);
 
                 try (MockedStatic<GoogleSignIn> mockGoogleSignIn = mockStatic(GoogleSignIn.class)) {
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
@@ -155,7 +159,8 @@ public class GoogleFitActivitySourceTest {
                     null,
                     collectableFitnessMetrics, mockedActivitySourcesService,
                     context,
-                    mockedGfDataManagerBuilder);
+                    mockedGfDataManagerBuilder,
+                    testInlineExecutor);
 
                 try (MockedStatic<GoogleSignIn> mockGoogleSignIn = mockStatic(GoogleSignIn.class)) {
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
@@ -177,7 +182,8 @@ public class GoogleFitActivitySourceTest {
                     null,
                     collectableFitnessMetrics, mockedActivitySourcesService,
                     context,
-                    mockedGfDataManagerBuilder);
+                    mockedGfDataManagerBuilder,
+                    testInlineExecutor);
 
                 try (MockedStatic<GoogleSignIn> mockGoogleSignIn = mockStatic(GoogleSignIn.class)) {
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
@@ -220,7 +226,8 @@ public class GoogleFitActivitySourceTest {
                     collectableFitnessMetrics,
                     mockedActivitySourcesService,
                     context,
-                    mockedGfDataManagerBuilder);
+                    mockedGfDataManagerBuilder,
+                    testInlineExecutor);
 
                 final Intent testDummyIntent = new Intent();
                 final Callback<Void> mockedCallback = mock(Callback.class);
@@ -245,7 +252,8 @@ public class GoogleFitActivitySourceTest {
                         null,
                         collectableFitnessMetrics, mockedActivitySourcesService,
                         context,
-                        mockedGfDataManagerBuilder);
+                        mockedGfDataManagerBuilder,
+                        testInlineExecutor);
 
                     final Intent testIntent = new Intent();
                     final Callback<Void> mockedCallback = mock(Callback.class);
@@ -278,7 +286,8 @@ public class GoogleFitActivitySourceTest {
                         DUMMY_SERVER_CLIENT_ID,
                         collectableFitnessMetrics, mockedActivitySourcesService,
                         context,
-                        mockedGfDataManagerBuilder);
+                        mockedGfDataManagerBuilder,
+                        testInlineExecutor);
 
                     final Intent testIntent = new Intent();
                     final Callback<Void> mockedCallback = mock(Callback.class);
@@ -321,7 +330,8 @@ public class GoogleFitActivitySourceTest {
                         DUMMY_SERVER_CLIENT_ID,
                         collectableFitnessMetrics, mockedActivitySourcesService,
                         context,
-                        mockedGfDataManagerBuilder);
+                        mockedGfDataManagerBuilder,
+                        testInlineExecutor);
 
                     final Intent testIntent = new Intent();
                     final Callback<Void> mockedCallback = mock(Callback.class);
@@ -369,7 +379,8 @@ public class GoogleFitActivitySourceTest {
                         DUMMY_SERVER_CLIENT_ID,
                         collectableFitnessMetrics, mockedActivitySourcesService,
                         context,
-                        mockedGfDataManagerBuilder);
+                        mockedGfDataManagerBuilder,
+                        testInlineExecutor);
 
                     final Intent testIntent = new Intent();
                     final Callback<Void> mockedCallback = mock(Callback.class);
@@ -439,7 +450,8 @@ public class GoogleFitActivitySourceTest {
                         null,
                         collectableFitnessMetrics, mockedActivitySourcesService,
                         context,
-                        mockedGfDataManagerBuilder);
+                        mockedGfDataManagerBuilder,
+                        testInlineExecutor);
 
                     final Callback<Void> mockedCallback = mock(Callback.class);
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
@@ -464,14 +476,15 @@ public class GoogleFitActivitySourceTest {
             }
 
             @Test
-            public void syncIntradayMetrics_whenGoogleFitReturnsError_bringsErrorToCallback() {
+            public void syncIntradayMetrics_whenGoogleFitReturnsError_bringsErrorToCallback() throws InterruptedException {
                 try (MockedStatic<GoogleSignIn> mockGoogleSignIn = mockStatic(GoogleSignIn.class)) {
                     subject = new GoogleFitActivitySource(false,
                         null,
                         collectableFitnessMetrics,
                         mockedActivitySourcesService,
                         context,
-                        mockedGfDataManagerBuilder);
+                        mockedGfDataManagerBuilder,
+                        testInlineExecutor);
 
                     final Callback<Void> mockedCallback = mock(Callback.class);
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
@@ -506,14 +519,15 @@ public class GoogleFitActivitySourceTest {
             }
 
             @Test
-            public void syncIntradayMetrics_whenGoogleFitReturnsSuccessfulTask_bringsResultToCallback() {
+            public void syncIntradayMetrics_whenGoogleFitReturnsSuccessfulTask_bringsResultToCallback() throws InterruptedException {
                 try (MockedStatic<GoogleSignIn> mockGoogleSignIn = mockStatic(GoogleSignIn.class)) {
                     subject = new GoogleFitActivitySource(false,
                         null,
                         collectableFitnessMetrics,
                         mockedActivitySourcesService,
                         context,
-                        mockedGfDataManagerBuilder);
+                        mockedGfDataManagerBuilder,
+                        testInlineExecutor);
 
                     final Callback<Void> mockedCallback = mock(Callback.class);
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
@@ -568,7 +582,8 @@ public class GoogleFitActivitySourceTest {
                         null,
                         collectableFitnessMetrics, mockedActivitySourcesService,
                         context,
-                        mockedGfDataManagerBuilder);
+                        mockedGfDataManagerBuilder,
+                        testInlineExecutor);
 
                     final Callback<Void> mockedCallback = mock(Callback.class);
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
@@ -600,7 +615,8 @@ public class GoogleFitActivitySourceTest {
                         collectableFitnessMetrics,
                         mockedActivitySourcesService,
                         context,
-                        mockedGfDataManagerBuilder);
+                        mockedGfDataManagerBuilder,
+                        testInlineExecutor);
 
                     final Callback<Void> mockedCallback = mock(Callback.class);
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
@@ -632,7 +648,7 @@ public class GoogleFitActivitySourceTest {
             }
 
             @Test
-            public void syncSessions_whenGoogleFitReturnsError_bringsErrorToCallback() {
+            public void syncSessions_whenGoogleFitReturnsError_bringsErrorToCallback() throws InterruptedException {
                 try (MockedStatic<GoogleSignIn> mockGoogleSignIn = mockStatic(GoogleSignIn.class)) {
                     ShadowApplication shadowApplication = Shadows.shadowOf((Application) context);
                     shadowApplication.grantPermissions(Manifest.permission.ACTIVITY_RECOGNITION);
@@ -641,7 +657,8 @@ public class GoogleFitActivitySourceTest {
                         collectableFitnessMetrics,
                         mockedActivitySourcesService,
                         context,
-                        mockedGfDataManagerBuilder);
+                        mockedGfDataManagerBuilder,
+                        testInlineExecutor);
 
                     final Callback<Void> mockedCallback = mock(Callback.class);
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
@@ -677,7 +694,7 @@ public class GoogleFitActivitySourceTest {
             }
 
             @Test
-            public void syncSessions_whenGoogleFitReturnsSuccessfulTask_bringsResultToCallback() {
+            public void syncSessions_whenGoogleFitReturnsSuccessfulTask_bringsResultToCallback() throws InterruptedException {
                 try (MockedStatic<GoogleSignIn> mockGoogleSignIn = mockStatic(GoogleSignIn.class)) {
                     ShadowApplication shadowApplication = Shadows.shadowOf((Application) context);
                     shadowApplication.grantPermissions(Manifest.permission.ACTIVITY_RECOGNITION);
@@ -686,7 +703,8 @@ public class GoogleFitActivitySourceTest {
                         collectableFitnessMetrics,
                         mockedActivitySourcesService,
                         context,
-                        mockedGfDataManagerBuilder);
+                        mockedGfDataManagerBuilder,
+                        testInlineExecutor);
 
                     final Callback<Void> mockedCallback = mock(Callback.class);
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);

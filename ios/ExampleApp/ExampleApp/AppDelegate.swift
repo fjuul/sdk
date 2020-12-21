@@ -19,7 +19,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             )
 
             let config = ActivitySourceConfigBuilder { builder in
-                builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.activeEnergyBurned ]) // , .heartRate, .distanceCycling, .distanceWalkingRunning, .stepCount, .workoutType,
+                builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [
+                                                                    .activeEnergyBurned, .heartRate,
+                                                                    .distanceCycling, .distanceWalkingRunning,
+                                                                    .stepCount, .workoutType,])
             }
 
             if let apiClient = ApiClientHolder.default.apiClient {
@@ -31,7 +34,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     // MARK: UISceneSession Lifecycle
-
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
         return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }

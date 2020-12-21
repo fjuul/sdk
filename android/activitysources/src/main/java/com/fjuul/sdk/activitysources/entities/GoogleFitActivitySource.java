@@ -145,12 +145,33 @@ public class GoogleFitActivitySource extends ActivitySource {
         return isActivityRecognitionPermissionGranted(context);
     }
 
+    /**
+     * Build the intent that requests Google OAuth permissions according to the specified collectable fitness metrics.
+     * You need to pass this intent to the #startActivityForResult method of Activity or Fragment in order to show the prompting window.
+     * <br>
+     * You don't need to call the {@link GoogleFitActivitySource#handleGoogleSignInResult} method in the method body of #onActivityResult as in the case of the tracker
+     * connection. After that, the common permission status of the collectable fitness metrics can be retrieved by using
+     * the {@link GoogleFitActivitySource#areFitnessPermissionsGranted()} method.
+     * @return intent requesting permissions
+     */
     public Intent buildIntentRequestingFitnessPermissions() {
         final GoogleSignInClient signInClient = GoogleSignIn.getClient(context,
             buildGoogleSignInOptions(requestOfflineAccess, serverClientId, collectableFitnessMetrics));
         return signInClient.getSignInIntent();
     }
 
+    /**
+     * It verifies the status of the user's grant and a list of permissions granted by the user and finally completes the
+     * connection to the GoogleFit tracker making a network request to the server.<br>
+     * A result of this call is available in the callback which will be executed in the main thread.
+     * Dedicated error results:
+     * <ul>
+     *     <li>{@link com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.FitnessPermissionsNotGrantedException};</li>
+     *     <li>{@link com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException}.</li>
+     * </ul>
+     * @param intent intent from the #onActivityResult method
+     * @param callback callback for the result
+     */
     public void handleGoogleSignInResult(@NonNull Intent intent, @NonNull Callback<Void> callback) {
         try {
             final Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(intent);
@@ -191,10 +212,16 @@ public class GoogleFitActivitySource extends ActivitySource {
         }
     }
 
+    /**
+     * Returns a boolean indicating whether the offline access should be requested from a user. The offline access is used
+     * for the GoogleFit connection supported by the server.
+     * @return boolean
+     */
     public boolean isOfflineAccessRequired() {
         return requestOfflineAccess;
     }
 
+    // note: can runs only one sync action simultaneously
     // TODO: javadoc (the expected error is FitnessPermissionsNotGrantedException)
     @SuppressLint("NewApi")
     public void syncIntradayMetrics(@NonNull final GFIntradaySyncOptions options, @Nullable final Callback<Void> callback) {

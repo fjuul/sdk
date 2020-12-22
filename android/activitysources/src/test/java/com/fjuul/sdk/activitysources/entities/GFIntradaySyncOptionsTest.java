@@ -21,8 +21,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 @RunWith(Enclosed.class)
-public class GFSessionSyncOptionsTest {
-
+public class GFIntradaySyncOptionsTest {
     @RunWith(RobolectricTestRunner.class)
     @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
     public abstract static class GivenRobolectricContext { }
@@ -38,7 +37,7 @@ public class GFSessionSyncOptionsTest {
 
         @Test
         public void setDateRange_whenStartDateIsAfterEndDate_throwsException() {
-            final GFSessionSyncOptions.Builder subject = new GFSessionSyncOptions.Builder(testClock);
+            final GFIntradaySyncOptions.Builder subject = new GFIntradaySyncOptions.Builder(testClock);
             try {
                 subject.setDateRange(LocalDate.parse("2020-12-05"), LocalDate.parse("2020-12-01"));
                 assertTrue("should throw the exception", false);
@@ -52,7 +51,7 @@ public class GFSessionSyncOptionsTest {
 
         @Test
         public void setDateRange_whenEndDatePointsAtTheFuture_throwsException() {
-            final GFSessionSyncOptions.Builder subject = new GFSessionSyncOptions.Builder(testClock);
+            final GFIntradaySyncOptions.Builder subject = new GFIntradaySyncOptions.Builder(testClock);
             try {
                 subject.setDateRange(LocalDate.parse("2020-11-27"), LocalDate.parse("2020-12-05"));
                 assertTrue("should throw the exception", false);
@@ -67,7 +66,7 @@ public class GFSessionSyncOptionsTest {
         @Test
         public void setDateRange_whenStartDateExceedsLimit_throwsException() {
             Clock clock1 = Clock.fixed(Instant.parse("2020-02-29T15:56:23Z"), ZoneId.of("UTC"));
-            GFSessionSyncOptions.Builder subject = new GFSessionSyncOptions.Builder(clock1);
+            GFIntradaySyncOptions.Builder subject = new GFIntradaySyncOptions.Builder(clock1);
 
             try {
                 subject.setDateRange(LocalDate.parse("2020-01-29"), LocalDate.parse("2020-02-29"));
@@ -80,7 +79,7 @@ public class GFSessionSyncOptionsTest {
             }
 
             Clock clock2 = Clock.fixed(Instant.parse("2020-02-28T15:56:23Z"), ZoneId.of("UTC"));
-            subject = new GFSessionSyncOptions.Builder(clock2);
+            subject = new GFIntradaySyncOptions.Builder(clock2);
             try {
                 subject.setDateRange(LocalDate.parse("2020-01-28"), LocalDate.parse("2020-02-28"));
                 assertTrue("should throw the exception", false);
@@ -92,7 +91,7 @@ public class GFSessionSyncOptionsTest {
             }
 
             Clock clock3 = Clock.fixed(Instant.parse("2020-02-15T15:56:23Z"), ZoneId.of("UTC"));
-            subject = new GFSessionSyncOptions.Builder(clock3);
+            subject = new GFIntradaySyncOptions.Builder(clock3);
             try {
                 subject.setDateRange(LocalDate.parse("2020-01-15"), LocalDate.parse("2020-02-15"));
                 assertTrue("should throw the exception", false);
@@ -104,7 +103,7 @@ public class GFSessionSyncOptionsTest {
             }
 
             Clock clock4 = Clock.fixed(Instant.parse("2020-08-31T15:56:23Z"), ZoneId.of("UTC"));
-            subject = new GFSessionSyncOptions.Builder(clock4);
+            subject = new GFIntradaySyncOptions.Builder(clock4);
             try {
                 subject.setDateRange(LocalDate.parse("2020-07-31"), LocalDate.parse("2020-08-31"));
                 assertTrue("should throw the exception", false);
@@ -118,7 +117,7 @@ public class GFSessionSyncOptionsTest {
 
         @Test
         public void setDateRange_whenDateRangeIsValid_doNotThrowException() {
-            final GFSessionSyncOptions.Builder subject = new GFSessionSyncOptions.Builder(testClock);
+            final GFIntradaySyncOptions.Builder subject = new GFIntradaySyncOptions.Builder(testClock);
             try {
                 subject.setDateRange(LocalDate.parse("2020-11-02"), LocalDate.parse("2020-12-01"));
                 assertTrue("shouldn't throw the exception", true);

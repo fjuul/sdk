@@ -38,7 +38,7 @@ public final class GFSessionSyncOptions extends GFSyncOptions {
         }
 
         /**
-         * Sets start and end dates of sessions to be synced. Method throws IllegalArgumentException in one of the following cases:
+         * Sets start and end dates of sessions to be synced. This method throws IllegalArgumentException in one of the following cases:
          * <ol>
          *     <li>the start date is after the end date</li>
          *     <li>the end date points to the future</li>

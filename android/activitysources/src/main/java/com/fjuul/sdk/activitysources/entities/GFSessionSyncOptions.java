@@ -5,28 +5,16 @@ import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDate;
 
-public final class GFSessionSyncOptions {
-    @NonNull private final LocalDate startDate;
-    @NonNull private final LocalDate endDate;
+public final class GFSessionSyncOptions extends GFSyncOptions {
     @NonNull private final Duration minimumSessionDuration;
 
     private GFSessionSyncOptions(@NonNull LocalDate startDate, @NonNull LocalDate endDate, @NonNull Duration minimumSessionDuration) {
-        this.startDate = startDate;
-        this.endDate = endDate;
+        super(startDate, endDate);
         this.minimumSessionDuration = minimumSessionDuration;
-    }
-
-    @NonNull
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-
-    @NonNull
-    public LocalDate getEndDate() {
-        return endDate;
     }
 
     @NonNull
@@ -35,11 +23,22 @@ public final class GFSessionSyncOptions {
     }
 
     public static class Builder {
+        @NonNull private Clock clock;
         @Nullable private LocalDate startDate;
         @Nullable private LocalDate endDate;
         @Nullable private Duration minimumSessionDuration;
 
+        @SuppressLint("NewApi")
+        public Builder() {
+            this(Clock.systemDefaultZone());
+        }
+
+        protected Builder(@NonNull Clock clock) {
+            this.clock = clock;
+        }
+
         public Builder setDateRange(@NonNull LocalDate startDate, @NonNull LocalDate endDate) {
+            validateDateInputs(clock, startDate, endDate);
             this.startDate = startDate;
             this.endDate = endDate;
             return this;

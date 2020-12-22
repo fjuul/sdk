@@ -5,42 +5,40 @@ import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public final class GFIntradaySyncOptions {
+public final class GFIntradaySyncOptions extends GFSyncOptions {
     @NonNull private final List<FitnessMetricsType> metrics;
-    @NonNull private final LocalDate startDate;
-    @NonNull private final LocalDate endDate;
 
     @NonNull
     public List<FitnessMetricsType> getMetrics() {
         return metrics;
     }
 
-    @NonNull
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-
-    @NonNull
-    public LocalDate getEndDate() {
-        return endDate;
-    }
-
     private GFIntradaySyncOptions(@NonNull List<FitnessMetricsType> metrics, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
+        super(startDate, endDate);
         this.metrics = metrics;
-        this.startDate = startDate;
-        this.endDate = endDate;
     }
 
     public static class Builder {
+        @NonNull private Clock clock;
         private Set<FitnessMetricsType> metrics = new HashSet<>();
         @Nullable private LocalDate startDate;
         @Nullable private LocalDate endDate;
+
+        @SuppressLint("NewApi")
+        public Builder() {
+            this(Clock.systemDefaultZone());
+        }
+
+        protected Builder(@NonNull Clock clock) {
+            this.clock = clock;
+        }
 
         public Builder include(@NonNull FitnessMetricsType type) {
             if (FitnessMetricsType.INTRADAY_STEPS.equals(type) ||
@@ -54,6 +52,7 @@ public final class GFIntradaySyncOptions {
         }
 
         public Builder setDateRange(@NonNull LocalDate startDate, @NonNull LocalDate endDate) {
+            validateDateInputs(clock, startDate, endDate);
             this.startDate = startDate;
             this.endDate = endDate;
             return this;

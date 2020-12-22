@@ -66,5 +66,11 @@ public final class GFIntradaySyncOptions extends GFSyncOptions {
             List<FitnessMetricsType> metricsList = metrics.stream().collect(Collectors.toList());
             return new GFIntradaySyncOptions(metricsList, startDate, endDate);
         }
+
+        @SuppressLint("NewApi")
+        @NonNull
+        public static LocalDate getMaxAllowedPastDate() {
+            return GFSyncOptions.getMaxAllowedPastDate(Clock.systemDefaultZone());
+        }
     }
 }

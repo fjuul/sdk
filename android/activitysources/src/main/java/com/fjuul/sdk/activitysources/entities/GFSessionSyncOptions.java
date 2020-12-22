@@ -23,7 +23,7 @@ public final class GFSessionSyncOptions extends GFSyncOptions {
     }
 
     public static class Builder {
-        @NonNull private Clock clock;
+        @NonNull private final Clock clock;
         @Nullable private LocalDate startDate;
         @Nullable private LocalDate endDate;
         @Nullable private Duration minimumSessionDuration;
@@ -37,6 +37,20 @@ public final class GFSessionSyncOptions extends GFSyncOptions {
             this.clock = clock;
         }
 
+        /**
+         * Sets start and end dates of sessions to be synced. Method throws IllegalArgumentException in one of the following cases:
+         * <ol>
+         *     <li>the start date is after the end date</li>
+         *     <li>the end date points to the future</li>
+         *     <li>dates exceed the allowed boundary to the past time which is a date of the next day number of the previous
+         *     month from today (for example, if today is 20th February, then the max allowed date in the past is 21th January).
+         *     In other words, the boundary can be calculated as `today - 1 month + 1 day`. Use {@link Builder#getMaxAllowedPastDate()} to get the last allowed date of the past for the sync.
+         *     </li>
+         * </ol>
+         * @param startDate start date of sessions to be synced
+         * @param endDate end date of sessions to be synced
+         * @return builder
+         */
         public Builder setDateRange(@NonNull LocalDate startDate, @NonNull LocalDate endDate) {
             validateDateInputs(clock, startDate, endDate);
             this.startDate = startDate;
@@ -44,6 +58,13 @@ public final class GFSessionSyncOptions extends GFSyncOptions {
             return this;
         }
 
+        /**
+         * Sets the minimum session duration to be taken into account when querying sessions during the synchronization.
+         * Sessions with a shorter duration than the specified one will be ignored.<br>
+         * Note: the duration that is too short may take a longer amount of synchronization time if a user has a lot of small sessions.
+         * @param duration min duration for sessions to be synced
+         * @return
+         */
         public Builder setMinimumSessionDuration(@NonNull Duration duration) {
             this.minimumSessionDuration = duration;
             return this;
@@ -55,6 +76,12 @@ public final class GFSessionSyncOptions extends GFSyncOptions {
                 throw new IllegalStateException("Date range and minimum session duration must be specified");
             }
             return new GFSessionSyncOptions(startDate, endDate, minimumSessionDuration);
+        }
+
+        @SuppressLint("NewApi")
+        @NonNull
+        public static LocalDate getMaxAllowedPastDate() {
+            return GFSyncOptions.getMaxAllowedPastDate(Clock.systemDefaultZone());
         }
     }
 }

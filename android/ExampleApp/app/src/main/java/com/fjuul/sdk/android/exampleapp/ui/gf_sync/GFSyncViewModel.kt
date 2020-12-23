@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
+import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.entities.GFIntradaySyncOptions
 import com.fjuul.sdk.activitysources.entities.GFSessionSyncOptions
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource
@@ -45,9 +46,9 @@ class GFSyncViewModel : ViewModel() {
         }
         val options = GFIntradaySyncOptions.Builder().apply {
             setDateRange(_startDate.value!!, _endDate.value!!)
-            if (calories) { include(GFIntradaySyncOptions.METRICS_TYPE.CALORIES) }
-            if (hr) { include(GFIntradaySyncOptions.METRICS_TYPE.HEART_RATE) }
-            if (steps) { include(GFIntradaySyncOptions.METRICS_TYPE.STEPS) }
+            if (calories) { include(FitnessMetricsType.INTRADAY_CALORIES) }
+            if (hr) { include(FitnessMetricsType.INTRADAY_HEART_RATE) }
+            if (steps) { include(FitnessMetricsType.INTRADAY_STEPS) }
         }.build()
         _syncingIntradayMetrics.postValue(true)
         (gfConnectionSource.activitySource as GoogleFitActivitySource).syncIntradayMetrics(options) { result ->

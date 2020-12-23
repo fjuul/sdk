@@ -234,8 +234,18 @@ public class GoogleFitActivitySource extends ActivitySource {
         return requestOfflineAccess;
     }
 
-    // note: can runs only one sync action simultaneously
-    // TODO: javadoc (the expected error is FitnessPermissionsNotGrantedException)
+    /**
+     * Puts the task of synchronizing intraday data in a sequential execution queue (i.e., only one sync task can be executed
+     * at a time) and will execute it when it comes to its turn. The synchronization result is available in the callback.<br>
+     * Dedicated result errors:
+     * <ul>
+     *      <li>{@link com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.FitnessPermissionsNotGrantedException};</li>
+     *      <li>{@link com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.MaxTriesCountExceededException};</li>
+     *      <li>{@link com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException}.</li>
+     * </ul>
+     * @param options intraday sync options
+     * @param callback callback for the result
+     */
     @SuppressLint("NewApi")
     public void syncIntradayMetrics(@NonNull final GFIntradaySyncOptions options, @Nullable final Callback<Void> callback) {
         final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
@@ -251,7 +261,19 @@ public class GoogleFitActivitySource extends ActivitySource {
         performTaskAlongWithCallback(() -> googleFitDataManager.syncIntradayMetrics(options), callback);
     }
 
-    // TODO: javadoc (the expected error is FitnessPermissionsNotGrantedException, ActivityRecognitionPermissionNotGrantedException)
+    /**
+     * Puts the task of synchronizing sessions in a sequential execution queue (i.e., only one sync task can be executed
+     * at a time) and will execute it when it comes to its turn. The synchronization result is available in the callback.<br>
+     * Dedicated result errors:
+     * <ul>
+     *      <li>{@link com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.FitnessPermissionsNotGrantedException};</li>
+     *      <li>{@link com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.ActivityRecognitionPermissionNotGrantedException};</li>
+     *      <li>{@link com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.MaxTriesCountExceededException};</li>
+     *      <li>{@link com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException}.</li>
+     * </ul>
+     * @param options session sync options
+     * @param callback callback for the result
+     */
     public void syncSessions(@NonNull final GFSessionSyncOptions options, @Nullable final Callback<Void> callback) {
         final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         if (!areFitnessPermissionsGranted(account, Stream.of(FitnessMetricsType.WORKOUTS).collect(Collectors.toSet()))) {
@@ -274,6 +296,12 @@ public class GoogleFitActivitySource extends ActivitySource {
         performTaskAlongWithCallback(() -> googleFitDataManager.syncSessions(options), callback);
     }
 
+    /**
+     * Check whether the Google Fit app is installed on the user's device. You don't have to have the installed application
+     * to work with the Google Fit API. However, this is the easiest way to record and detect the user's physical activity during the day.
+     * @param appContext application context
+     * @return boolean result of the check
+     */
     public static boolean isGoogleFitAppInstalled(@NonNull Context appContext) {
         PackageManager packageManager = appContext.getPackageManager();
         try {
@@ -284,7 +312,14 @@ public class GoogleFitActivitySource extends ActivitySource {
         }
     }
 
-    // TODO: javadoc
+    /**
+     * Checks whether the android.permission.ACTIVITY_RECOGNITION permission is given to your app. Starting with Android
+     * 10 (API level 29), this permission is required to read session data. <br>
+     * The SDK does not provide functionality for requesting this permission and you should follow the official
+     * <a href="https://developers.google.com/fit/android/authorization#requesting_android_permissions">documentation</a>.
+     * @param context application context
+     * @return boolean result of the check
+     */
     public static boolean isActivityRecognitionPermissionGranted(@NonNull Context context) {
         // NOTE: dangerous permissions (aka runtime permissions) appeared since android api level 23
         // (Android 6.0 Marshmallow). Before that, they granted automatically.

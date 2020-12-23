@@ -13,10 +13,10 @@ import com.fjuul.sdk.activitysources.entities.internal.ActivitySourcesStateStore
 import com.fjuul.sdk.activitysources.entities.internal.BackgroundWorkManager;
 import com.fjuul.sdk.activitysources.entities.internal.GoogleFitSyncWorkManager;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
+import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.Callback;
 import com.fjuul.sdk.core.entities.Result;
 import com.fjuul.sdk.core.exceptions.FjuulException;
-import com.fjuul.sdk.core.ApiClient;
 import com.google.android.gms.tasks.Task;
 
 import android.annotation.SuppressLint;
@@ -31,7 +31,32 @@ import androidx.work.WorkManager;
  * The `ActivitySourcesManager` encapsulates connection to fitness trackers, access to current user's tracker
  * connections. This is a high-level entity and entry point of the whole 'activity sources' module. The class designed
  * as the singleton, so you need first to initialize it before getting the instance. For the proper initialization, you
- * have to provide the configured api-client built with the user credentials.
+ * have to provide the configured api-client built with the user credentials.<br>
+ * One of the main functions of this module is to connect to activity sources. There are local (i.e. Google Fit) and
+ * external trackers (i.e. Polar, Garmin, Fitbit, etc). External trackers require user authentication in the web
+ * browser.<br>
+ * To use this module properly when connecting to the external activity source, you need to make sure about an Activity
+ * from which the connection will be initiated that:
+ * <ol>
+ * <li>it implements deep linking support. In short, Android Manifest should have an `intent-filter` inside the
+ * definition of activity like:
+ *
+ * <pre>
+ * {@code
+ *    <intent-filter>
+ *      <data android:scheme="YOUR_SCHEME" />
+ *      <action android:name="android.intent.action.VIEW" />
+ *      <category android:name="android.intent.category.DEFAULT" />
+ *      <category android:name="android.intent.category.BROWSABLE" />
+ *    </intent-filter>
+ * }
+ * </pre>
+ *
+ * where `YOUR_SCHEME` is the scheme provided to you or coordinated with you by Fjuul. For detailed instructions, you
+ * can follow the official <a href="https://developer.android.com/training/app-links/deep-linking">guide</a>.</li>
+ * <li>it has a `launchMode` declaration with the value `singleTask` or `singleTop` in AndroidManifest to return back
+ * from the web browser to the app after the connection is complete.</li>
+ * </ol>
  */
 public final class ActivitySourcesManager {
     @NonNull
@@ -51,9 +76,9 @@ public final class ActivitySourcesManager {
     private volatile static ActivitySourcesManager instance;
 
     ActivitySourcesManager(@NonNull ActivitySourcesManagerConfig config,
-                           @NonNull BackgroundWorkManager backgroundWorkManager, @NonNull ActivitySourcesService sourcesService,
-                           @NonNull ActivitySourcesStateStore stateStore, @NonNull ActivitySourceResolver activitySourceResolver,
-                           @Nullable List<TrackerConnection> connections) {
+        @NonNull BackgroundWorkManager backgroundWorkManager, @NonNull ActivitySourcesService sourcesService,
+        @NonNull ActivitySourcesStateStore stateStore, @NonNull ActivitySourceResolver activitySourceResolver,
+        @Nullable List<TrackerConnection> connections) {
         this.config = config;
         this.backgroundWorkManager = backgroundWorkManager;
         this.sourcesService = sourcesService;
@@ -65,8 +90,9 @@ public final class ActivitySourcesManager {
     /**
      * Initialize the singleton with the default config. With the default config:
      * <ul>
-     *     <li>all fitness metrics will be taken into account;</li>
-     *     <li>periodic background works for syncing intraday and session data of Google Fit will be automatically scheduled if a user has a current GoogleFit connection.</li>
+     * <li>all fitness metrics will be taken into account;</li>
+     * <li>periodic background works for syncing intraday and session data of Google Fit will be automatically scheduled
+     * if a user has a current GoogleFit connection.</li>
      * </ul>
      *
      * @param client configured client with signing ability and user credentials
@@ -97,8 +123,8 @@ public final class ActivitySourcesManager {
         final BackgroundWorkManager backgroundWorkManager = new BackgroundWorkManager(config, gfSyncWorkManager);
         setupBackgroundWorksByConnections(storedConnections, backgroundWorkManager);
         final ActivitySourceResolver activitySourceResolver = new ActivitySourceResolver();
-        instance =
-            new ActivitySourcesManager(config, backgroundWorkManager, sourcesService, stateStore, activitySourceResolver, storedConnections);
+        instance = new ActivitySourcesManager(config, backgroundWorkManager, sourcesService, stateStore,
+            activitySourceResolver, storedConnections);
     }
 
     /**
@@ -126,8 +152,8 @@ public final class ActivitySourcesManager {
      * #onActivityResult method of Activity or Fragment with the `requestCode` you specified to
      * #startActivityForResult.<br>
      * After you compared `requestCode` with your and checked `resultCode` with `Activity.RESULT_OK`, you need to pass
-     * the coming `data` (Intent) in #onActivityResult to {@link GoogleFitActivitySource#handleGoogleSignInResult} method to complete
-     * the connection to the GoogleFit tracker.
+     * the coming `data` (Intent) in #onActivityResult to {@link GoogleFitActivitySource#handleGoogleSignInResult}
+     * method to complete the connection to the GoogleFit tracker.
      *
      * <pre>
      *     {@code
@@ -174,7 +200,7 @@ public final class ActivitySourcesManager {
      * One important remark: Many functional parts of ActivitySourcesManager depend on the list of current connections.
      * Because of the complexity of the connection flow, there is not an automatic refreshing of the user's connection
      * list. Therefore, after a user succeeds in the connection, please invoke refreshing current connections of the
-     * user via the #refreshCurrent method.
+     * user via the {@link #refreshCurrent} method.
      *
      * @see ActivitySourcesManager#refreshCurrent
      * @see ExternalAuthenticationFlowHandler
@@ -246,7 +272,7 @@ public final class ActivitySourcesManager {
     /**
      * Returns a list of current connections of the user. The list with current user connections is automatically saved
      * in the persistent storage. This method returns null only if there are not stored connections for the user yet.
-     * After the successful call of #refreshCurrent here will be at least an empty list.
+     * After the successful call of {@link #refreshCurrent} here will be at least an empty list.
      *
      * @return list of activity source connections
      */
@@ -280,7 +306,8 @@ public final class ActivitySourcesManager {
             this.currentConnections = freshTrackerConnections;
             if (callback != null) {
                 final List<ActivitySourceConnection> sourceConnections =
-                    convertTrackerConnectionsToActivitySourcesConnections(activitySourceResolver, freshTrackerConnections);
+                    convertTrackerConnectionsToActivitySourcesConnections(activitySourceResolver,
+                        freshTrackerConnections);
                 callback.onResult(Result.value(sourceConnections));
             }
         });
@@ -299,8 +326,7 @@ public final class ActivitySourcesManager {
 
     @SuppressLint("NewApi")
     private static List<ActivitySourceConnection> convertTrackerConnectionsToActivitySourcesConnections(
-        @NonNull ActivitySourceResolver activitySourceResolver,
-        @NonNull List<TrackerConnection> trackerConnections) {
+        @NonNull ActivitySourceResolver activitySourceResolver, @NonNull List<TrackerConnection> trackerConnections) {
         Stream<ActivitySourceConnection> sourceConnectionsStream = trackerConnections.stream().map(connection -> {
             ActivitySource activitySource = activitySourceResolver.getInstanceByTrackerValue(connection.getTracker());
             if (activitySource == null) {

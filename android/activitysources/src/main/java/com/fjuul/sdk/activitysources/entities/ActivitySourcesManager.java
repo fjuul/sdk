@@ -63,8 +63,11 @@ public final class ActivitySourcesManager {
     }
 
     /**
-     * Initialize the singleton with default config. Periodic background works for syncing GoogleFit intraday and
-     * session data will be automatically scheduled if a user has a GoogleFit connection.
+     * Initialize the singleton with the default config. With the default config:
+     * <ul>
+     *     <li>all fitness metrics will be taken into account;</li>
+     *     <li>periodic background works for syncing intraday and session data of Google Fit will be automatically scheduled if a user has a current GoogleFit connection.</li>
+     * </ul>
      *
      * @param client configured client with signing ability and user credentials
      */

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -33,7 +34,13 @@ public final class GFSessionSyncOptions extends GFSyncOptions {
             this(Clock.systemDefaultZone());
         }
 
-        protected Builder(@NonNull Clock clock) {
+
+        /**
+         * Please use the default constructor (i.e. without any parameters) of Builder because this was added for testing purposes.
+         * @param clock system clock
+         */
+        @VisibleForTesting
+        public Builder(@NonNull Clock clock) {
             this.clock = clock;
         }
 

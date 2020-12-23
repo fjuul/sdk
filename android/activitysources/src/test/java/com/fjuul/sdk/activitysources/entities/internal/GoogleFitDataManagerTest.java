@@ -103,7 +103,7 @@ public class GoogleFitDataManagerTest {
         public void syncIntradayMetrics_emptyGFDataResponseForCalories_returnsSuccessfulTask() throws ExecutionException, InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
-            final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder()
+            final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder(fixedClock)
                 .include(FitnessMetricsType.INTRADAY_CALORIES)
                 .setDateRange(startDate, endDate)
                 .build();
@@ -143,7 +143,7 @@ public class GoogleFitDataManagerTest {
         public void syncIntradayMetrics_failedGFRequestForSteps_returnsFailedTask() throws InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
-            final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder()
+            final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder(fixedClock)
                 .include(FitnessMetricsType.INTRADAY_STEPS)
                 .setDateRange(startDate, endDate)
                 .build();
@@ -185,7 +185,7 @@ public class GoogleFitDataManagerTest {
         public void syncIntradayMetrics_alreadySyncedGFDataResponseForCalories_returnsSuccessfulTask() throws ExecutionException, InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
-            final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder()
+            final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder(fixedClock)
                 .include(FitnessMetricsType.INTRADAY_CALORIES)
                 .setDateRange(startDate, endDate)
                 .build();
@@ -243,7 +243,7 @@ public class GoogleFitDataManagerTest {
         public void syncIntradayMetrics_notSyncedGFDataResponseForCaloriesWithFailedApiRequest_returnsFailedTask() throws InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
-            final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder()
+            final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder(fixedClock)
                 .include(FitnessMetricsType.INTRADAY_CALORIES)
                 .setDateRange(startDate, endDate)
                 .build();
@@ -326,7 +326,7 @@ public class GoogleFitDataManagerTest {
         public void syncIntradayMetrics_notSyncedGFDataResponseForCaloriesWithSuccessfulApiRequest_returnsSuccessfulTask() throws InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
-            final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder()
+            final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder(fixedClock)
                 .include(FitnessMetricsType.INTRADAY_CALORIES)
                 .setDateRange(startDate, endDate)
                 .build();
@@ -401,7 +401,7 @@ public class GoogleFitDataManagerTest {
         public void syncIntradayMetrics_notSyncedGFDataResponseForAllMetricsWithSuccessfulApiRequest_returnsSuccessfulTask() throws InterruptedException, ExecutionException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
-            final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder()
+            final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder(fixedClock)
                 .include(FitnessMetricsType.INTRADAY_CALORIES)
                 .include(FitnessMetricsType.INTRADAY_HEART_RATE)
                 .include(FitnessMetricsType.INTRADAY_STEPS)
@@ -580,7 +580,7 @@ public class GoogleFitDataManagerTest {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
             final Duration minDuration = Duration.ofMinutes(5);
-            final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder()
+            final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder(fixedClock)
                 .setMinimumSessionDuration(minDuration)
                 .setDateRange(startDate, endDate)
                 .build();
@@ -612,7 +612,7 @@ public class GoogleFitDataManagerTest {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
             final Duration minDuration = Duration.ofMinutes(5);
-            final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder()
+            final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder(fixedClock)
                 .setMinimumSessionDuration(minDuration)
                 .setDateRange(startDate, endDate)
                 .build();
@@ -649,7 +649,7 @@ public class GoogleFitDataManagerTest {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
             final Duration minDuration = Duration.ofMinutes(5);
-            final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder()
+            final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder(fixedClock)
                 .setMinimumSessionDuration(minDuration)
                 .setDateRange(startDate, endDate)
                 .build();
@@ -710,7 +710,7 @@ public class GoogleFitDataManagerTest {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
             final Duration minDuration = Duration.ofMinutes(5);
-            final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder()
+            final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder(fixedClock)
                 .setMinimumSessionDuration(minDuration)
                 .setDateRange(startDate, endDate)
                 .build();

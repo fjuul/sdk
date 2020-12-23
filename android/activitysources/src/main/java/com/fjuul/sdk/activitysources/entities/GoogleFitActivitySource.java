@@ -13,18 +13,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
+import com.fjuul.sdk.activitysources.entities.internal.GFDataUtils;
 import com.fjuul.sdk.activitysources.entities.internal.GoogleFitDataManager;
 import com.fjuul.sdk.activitysources.entities.internal.GoogleFitDataManagerBuilder;
-import com.fjuul.sdk.activitysources.entities.internal.GFDataUtils;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata.GFSyncMetadataStore;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.ActivityRecognitionPermissionNotGrantedException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.FitnessPermissionsNotGrantedException;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
+import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.Callback;
 import com.fjuul.sdk.core.entities.Result;
 import com.fjuul.sdk.core.exceptions.FjuulException;
-import com.fjuul.sdk.core.ApiClient;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -38,9 +38,7 @@ import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -49,6 +47,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @SuppressLint("NewApi")
 public class GoogleFitActivitySource extends ActivitySource {
@@ -62,7 +62,7 @@ public class GoogleFitActivitySource extends ActivitySource {
 
     private final boolean requestOfflineAccess;
     private final @NonNull String serverClientId;
-    private final @NonNull List<FitnessMetricsType> collectableFitnessMetrics;
+    private final @NonNull Set<FitnessMetricsType> collectableFitnessMetrics;
     private final @NonNull ActivitySourcesService sourcesService;
     private final @NonNull Context context;
     private final @NonNull GoogleFitDataManagerBuilder gfDataManagerBuilder;
@@ -111,7 +111,7 @@ public class GoogleFitActivitySource extends ActivitySource {
 
     GoogleFitActivitySource(boolean requestOfflineAccess,
                             @NonNull String serverClientId,
-                            @NonNull List<FitnessMetricsType> collectableFitnessMetrics,
+                            @NonNull Set<FitnessMetricsType> collectableFitnessMetrics,
                             @NonNull ActivitySourcesService sourcesService,
                             @NonNull Context context,
                             @NonNull GoogleFitDataManagerBuilder gfDataManagerBuilder,
@@ -127,7 +127,7 @@ public class GoogleFitActivitySource extends ActivitySource {
 
     /**
      * Checks whether all Google OAuth permissions are granted by the user to work with Google Fit. The list of all
-     * needed permissions is determined by the list of the collectable fitness metrics. <br>
+     * needed permissions is determined by the set of the collectable fitness metrics. <br>
      * Note: an active current tracker connection to Google FIt does not always guarantee that the user grants all
      * permissions at the moment (for example, the user may have revoked them since the previous app session).
      * To request the needed permissions again, please use {@link GoogleFitActivitySource#buildIntentRequestingFitnessPermissions}.
@@ -254,7 +254,7 @@ public class GoogleFitActivitySource extends ActivitySource {
     // TODO: javadoc (the expected error is FitnessPermissionsNotGrantedException, ActivityRecognitionPermissionNotGrantedException)
     public void syncSessions(@NonNull final GFSessionSyncOptions options, @Nullable final Callback<Void> callback) {
         final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
-        if (!areFitnessPermissionsGranted(account, Arrays.asList(FitnessMetricsType.WORKOUTS))) {
+        if (!areFitnessPermissionsGranted(account, Stream.of(FitnessMetricsType.WORKOUTS).collect(Collectors.toSet()))) {
             if (callback != null) {
                 Result<Void> errorResult = Result.error(
                     new FitnessPermissionsNotGrantedException("Not all required GoogleFit permissions were granted"));
@@ -324,7 +324,7 @@ public class GoogleFitActivitySource extends ActivitySource {
         return areFitnessPermissionsGranted(account, collectableFitnessMetrics);
     }
 
-    private boolean areFitnessPermissionsGranted(@Nullable GoogleSignInAccount account, @NonNull List<FitnessMetricsType> fitnessMetrics) {
+    private boolean areFitnessPermissionsGranted(@Nullable GoogleSignInAccount account, @NonNull Set<FitnessMetricsType> fitnessMetrics) {
         return GoogleFitActivitySource.areFitnessPermissionsGranted(account, requestOfflineAccess, serverClientId, fitnessMetrics);
     }
 
@@ -348,7 +348,7 @@ public class GoogleFitActivitySource extends ActivitySource {
         });
     }
 
-    static GoogleSignInOptions buildGoogleSignInOptions(boolean offlineAccess, @Nullable String serverClientId, @NonNull List<FitnessMetricsType> fitnessMetrics) {
+    static GoogleSignInOptions buildGoogleSignInOptions(boolean offlineAccess, @Nullable String serverClientId, @NonNull Set<FitnessMetricsType> fitnessMetrics) {
         final FitnessOptions.Builder fitnessOptionsBuilder = FitnessOptions.builder();
         if (fitnessMetrics.contains(FitnessMetricsType.INTRADAY_CALORIES)) {
             fitnessOptionsBuilder.addDataType(DataType.AGGREGATE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ);
@@ -390,7 +390,7 @@ public class GoogleFitActivitySource extends ActivitySource {
         return googleSignInOptionsBuilder.build();
     }
 
-    static boolean areFitnessPermissionsGranted(@Nullable GoogleSignInAccount account, boolean offlineAccess, String serverClientId, @NonNull List<FitnessMetricsType> fitnessMetrics) {
+    static boolean areFitnessPermissionsGranted(@Nullable GoogleSignInAccount account, boolean offlineAccess, String serverClientId, @NonNull Set<FitnessMetricsType> fitnessMetrics) {
         if (account == null) {
             return false;
         }

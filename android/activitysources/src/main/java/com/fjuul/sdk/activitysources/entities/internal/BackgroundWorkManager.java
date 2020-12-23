@@ -1,9 +1,14 @@
 package com.fjuul.sdk.activitysources.entities.internal;
 
+import android.annotation.SuppressLint;
+
 import androidx.annotation.NonNull;
 
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig;
-import com.fjuul.sdk.activitysources.entities.internal.GoogleFitSyncWorkManager;
+import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BackgroundWorkManager {
     @NonNull private final ActivitySourcesManagerConfig config;
@@ -15,6 +20,7 @@ public class BackgroundWorkManager {
         this.gfSyncWorkManager = gfSyncWorkManager;
     }
 
+    @SuppressLint("NewApi")
     public void configureBackgroundGFSyncWorks() {
         switch (config.getGfIntradayBackgroundSyncMode()) {
             case DISABLED: {
@@ -22,7 +28,14 @@ public class BackgroundWorkManager {
                 break;
             }
             case ENABLED: {
-                gfSyncWorkManager.scheduleIntradaySyncWork(config.getGfIntradayBackgroundSyncMetrics());
+                final Set<FitnessMetricsType> intradayMetrics = config.getCollectableFitnessMetrics().stream()
+                    .filter(FitnessMetricsType::isIntradayMetricType)
+                    .collect(Collectors.toSet());
+                if (intradayMetrics.isEmpty()) {
+                    gfSyncWorkManager.cancelIntradaySyncWork();
+                } else {
+                    gfSyncWorkManager.scheduleIntradaySyncWork(intradayMetrics);
+                }
                 break;
             }
         }
@@ -32,7 +45,11 @@ public class BackgroundWorkManager {
                 break;
             }
             case ENABLED: {
-                gfSyncWorkManager.scheduleSessionsSyncWork(config.getGfSessionsBackgroundSyncMinSessionDuration());
+                if (config.getCollectableFitnessMetrics().contains(FitnessMetricsType.WORKOUTS)) {
+                    gfSyncWorkManager.scheduleSessionsSyncWork(config.getGfSessionsBackgroundSyncMinSessionDuration());
+                } else {
+                    gfSyncWorkManager.cancelSessionsSyncWork();
+                }
                 break;
             }
         }

@@ -4,23 +4,23 @@ import android.annotation.SuppressLint;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public final class GFIntradaySyncOptions extends GFSyncOptions {
-    @NonNull private final List<FitnessMetricsType> metrics;
+    @NonNull private final Set<FitnessMetricsType> metrics;
 
     @NonNull
-    public List<FitnessMetricsType> getMetrics() {
+    public Set<FitnessMetricsType> getMetrics() {
         return metrics;
     }
 
-    private GFIntradaySyncOptions(@NonNull List<FitnessMetricsType> metrics, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
+    private GFIntradaySyncOptions(@NonNull Set<FitnessMetricsType> metrics, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
         super(startDate, endDate);
         this.metrics = metrics;
     }
@@ -36,12 +36,17 @@ public final class GFIntradaySyncOptions extends GFSyncOptions {
             this(Clock.systemDefaultZone());
         }
 
-        protected Builder(@NonNull Clock clock) {
+        /**
+         * Please use the default constructor (i.e. without any parameters) of Builder because this was added for testing purposes.
+         * @param clock system clock
+         */
+        @VisibleForTesting
+        public Builder(@NonNull Clock clock) {
             this.clock = clock;
         }
 
         /**
-         * Adds the specified intraday fitness metric to the list of data to be synced. This method throws
+         * Adds the specified intraday fitness metric to the set of data to be synced. This method throws
          * IllegalArgumentException if the fitness metric is not supported for the intraday sync.
          * @param type intraday fitness metric (calories, steps, heart rate)
          * @return builder
@@ -83,8 +88,8 @@ public final class GFIntradaySyncOptions extends GFSyncOptions {
             if (metrics.isEmpty() || startDate == null || endDate == null) {
                 throw new IllegalStateException("Date range and at least one metric type must be specified");
             }
-            List<FitnessMetricsType> metricsList = metrics.stream().collect(Collectors.toList());
-            return new GFIntradaySyncOptions(metricsList, startDate, endDate);
+            Set<FitnessMetricsType> metricsToSync = metrics.stream().collect(Collectors.toSet());
+            return new GFIntradaySyncOptions(metricsToSync, startDate, endDate);
         }
 
         @SuppressLint("NewApi")

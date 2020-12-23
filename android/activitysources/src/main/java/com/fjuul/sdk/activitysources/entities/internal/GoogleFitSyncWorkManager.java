@@ -17,6 +17,7 @@ import com.fjuul.sdk.activitysources.workers.GoogleFitSyncWorker;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class GoogleFitSyncWorkManager {
@@ -55,17 +56,17 @@ public class GoogleFitSyncWorkManager {
     }
 
     @SuppressLint("NewApi")
-    public synchronized void scheduleIntradaySyncWork(@NonNull List<FitnessMetricsType> intradayMetrics) {
+    public synchronized void scheduleIntradaySyncWork(@NonNull Set<FitnessMetricsType> intradayMetrics) {
         if (intradaySyncWorkEnqueued) {
             return;
         }
-        String[] serializedIntradayMetrics = intradayMetrics.stream()
+        final String[] serializedIntradayMetrics = intradayMetrics.stream()
             .map(Enum::toString)
             .toArray(String[]::new);
-        Data inputWorkRequestData = buildEssentialInputData()
+        final Data inputWorkRequestData = buildEssentialInputData()
             .putStringArray(GoogleFitIntradaySyncWorker.KEY_INTRADAY_METRICS_ARG, serializedIntradayMetrics)
             .build();
-        PeriodicWorkRequest periodicWorkRequest = new PeriodicWorkRequest.Builder(GoogleFitIntradaySyncWorker.class, 1, TimeUnit.HOURS)
+        final PeriodicWorkRequest periodicWorkRequest = new PeriodicWorkRequest.Builder(GoogleFitIntradaySyncWorker.class, 1, TimeUnit.HOURS)
             .setConstraints(buildCommonWorkConstraints())
             .setInitialDelay(1, TimeUnit.HOURS)
             .setInputData(inputWorkRequestData)
@@ -85,11 +86,11 @@ public class GoogleFitSyncWorkManager {
         if (sessionsSyncWorkEnqueued) {
             return;
         }
-        String serializedDuration = minSessionDuration.toString();
-        Data inputWorkRequestData = buildEssentialInputData()
+        final String serializedDuration = minSessionDuration.toString();
+        final Data inputWorkRequestData = buildEssentialInputData()
             .putString(GoogleFitSessionsSyncWorker.KEY_MIN_SESSION_DURATION_ARG, serializedDuration)
             .build();
-        PeriodicWorkRequest periodicWorkRequest = new PeriodicWorkRequest.Builder(GoogleFitSessionsSyncWorker.class, 1, TimeUnit.HOURS)
+        final PeriodicWorkRequest periodicWorkRequest = new PeriodicWorkRequest.Builder(GoogleFitSessionsSyncWorker.class, 1, TimeUnit.HOURS)
             .setConstraints(buildCommonWorkConstraints())
             .setInitialDelay(1, TimeUnit.HOURS)
             .setInputData(inputWorkRequestData)

@@ -25,11 +25,8 @@ public class HKDataUtils {
         
         let calendar = Calendar.current
         
-        var newDate = Calendar.current.date(byAdding: .day, value: 1, to: date)!
-            //adding(.day, value: 1)
-        
-        //  calendar.date(byAdding: component, value: value, to: self)!
-        newDate = Calendar.current.startOfDay(for: newDate)
+        var newDate = calendar.date(byAdding: .day, value: 1, to: date)!
+        newDate = calendar.startOfDay(for: newDate)
         
         return Calendar.current.date(byAdding: .second, value: -1, to: newDate)!
     }

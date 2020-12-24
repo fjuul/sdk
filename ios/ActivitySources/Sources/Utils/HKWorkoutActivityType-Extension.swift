@@ -1,7 +1,7 @@
 import Foundation
 import HealthKit
 
-// https://github.com/georgegreenoflondon/HKWorkoutActivityType-Descriptions
+// Inspired from https://github.com/georgegreenoflondon/HKWorkoutActivityType-Descriptions
 extension HKWorkoutActivityType {
     /*
      Simple mapping of available workout types to a human readable name.

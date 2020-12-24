@@ -1,5 +1,3 @@
-// TODO: Refactoring to use protocol
-
 struct BatchDataPoint: Codable {
     var sourceBundleIdentifiers: [String]
     var entries: [AggregatedDataPoint]

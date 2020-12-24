@@ -8,7 +8,6 @@ public struct ConnectionStatus {
 final public class ExternalAuthenticationFlowHandler {
     public static func handle(url: URL) -> ConnectionStatus {
         guard
-            url.scheme == "fjuulsdk-exampleapp",
             let components = URLComponents(url: url, resolvingAgainstBaseURL: true)
         else {
             return ConnectionStatus(success: false)

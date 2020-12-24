@@ -1,5 +1,5 @@
 import Foundation
-import FjuulCore
+//import FjuulCore
 
 // Structure for aggregated values of
 // - activeEnergyBurned with unit kilocalorie

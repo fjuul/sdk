@@ -24,7 +24,7 @@ public final class ActivitySourceHK: MountableActivitySourceHK {
             completion(result)
         }
     }
-    
+
     func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void) {
         HealthKitManager.requestAccess(config: config) { result in
             completion(result)

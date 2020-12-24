@@ -1,7 +1,11 @@
 import Foundation
 import FjuulCore
 
-public final class ActivitySourceConnection: TrackerConnectionable {
+public final class ActivitySourceConnection: TrackerConnectionable, Equatable {
+    public static func ==(lhs: ActivitySourceConnection, rhs: ActivitySourceConnection) -> Bool {
+        return lhs.id == rhs.id
+    }
+
     public let id: String
     public let tracker: ActivitySourcesItem?
     public let createdAt: Date
@@ -38,11 +42,11 @@ public final class ActivitySourceConnection: TrackerConnectionable {
         }
     }
 
-    public func connected() -> Bool {
-        guard endedAt != nil else { return false }
-
-        return false
-    }
+//    public func connected() -> Bool {
+//        guard endedAt != nil else { return false }
+//
+//        return false
+//    }
 }
 
 enum ActivitySourceConnectionFactory {

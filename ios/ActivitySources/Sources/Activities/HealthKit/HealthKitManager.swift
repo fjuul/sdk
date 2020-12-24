@@ -62,7 +62,7 @@ class HealthKitManager {
         if config.healthKitConfig.dataTypesToRead.contains(.workoutType) {
             dataTypes.insert(HKObjectType.workoutType())
         }
-//
+
         return dataTypes
     }
 
@@ -107,7 +107,7 @@ class HealthKitManager {
                 self.dataHandler(data) { result in
                     switch result {
                     case .success:
-                        print("SUCESS sync for \(sampleType), with newAnchor: \(newAnchor)")
+                        print("SUCESS sync for \(sampleType), with newAnchor: \(String(describing: newAnchor))")
                         self.saveAnchorBySampleType(newAnchor: newAnchor, sampleType: sampleType)
                     case .failure(let err):
                         error = err

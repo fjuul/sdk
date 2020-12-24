@@ -22,6 +22,7 @@ public class GFSessionBundle {
     @NonNull private Date timeEnd;
 
     // string presentation of activity
+    // please keep `transient` for moshi
     @NonNull private transient String activityType;
 
     private int type;

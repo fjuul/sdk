@@ -8,6 +8,7 @@ import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.entities.GFIntradaySyncOptions
 import com.fjuul.sdk.activitysources.entities.GFSessionSyncOptions
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource
+import java.lang.Exception
 import java.time.Duration
 import java.time.LocalDate
 
@@ -44,12 +45,19 @@ class GFSyncViewModel : ViewModel() {
             _errorMessage.value = "No active Google Fit connection"
             return
         }
-        val options = GFIntradaySyncOptions.Builder().apply {
-            setDateRange(_startDate.value!!, _endDate.value!!)
-            if (calories) { include(FitnessMetricsType.INTRADAY_CALORIES) }
-            if (hr) { include(FitnessMetricsType.INTRADAY_HEART_RATE) }
-            if (steps) { include(FitnessMetricsType.INTRADAY_STEPS) }
-        }.build()
+        lateinit var options: GFIntradaySyncOptions
+        try {
+            options = GFIntradaySyncOptions.Builder().apply {
+                setDateRange(_startDate.value!!, _endDate.value!!)
+                if (calories) { include(FitnessMetricsType.INTRADAY_CALORIES) }
+                if (hr) { include(FitnessMetricsType.INTRADAY_HEART_RATE) }
+                if (steps) { include(FitnessMetricsType.INTRADAY_STEPS) }
+            }.build()
+        } catch (exc: Exception) {
+            _errorMessage.postValue(exc.message)
+            return
+        }
+
         _syncingIntradayMetrics.postValue(true)
         (gfConnectionSource.activitySource as GoogleFitActivitySource).syncIntradayMetrics(options) { result ->
             _syncingIntradayMetrics.postValue(false)
@@ -67,10 +75,17 @@ class GFSyncViewModel : ViewModel() {
             _errorMessage.value = "No active Google Fit connection"
             return
         }
-        val options = GFSessionSyncOptions.Builder()
-            .setDateRange(_startDate.value!!, _endDate.value!!)
-            .setMinimumSessionDuration(minSessionDuration)
-            .build()
+        lateinit var options: GFSessionSyncOptions
+        try {
+            options = GFSessionSyncOptions.Builder()
+                .setDateRange(_startDate.value!!, _endDate.value!!)
+                .setMinimumSessionDuration(minSessionDuration)
+                .build()
+        } catch (exc: Exception) {
+            _errorMessage.postValue(exc.message)
+            return
+        }
+
         _syncingSessions.postValue(true)
         (gfConnectionSource.activitySource as GoogleFitActivitySource).syncSessions(options) { result ->
             _syncingSessions.postValue(false)

@@ -6,9 +6,18 @@ public enum ConnectionResult {
     case externalAuthenticationFlowRequired(authenticationUrl: String)
     case connected(trackerConnection: TrackerConnection)
 }
+protocol AutoMockable { }
+
+protocol ActivitySourcesApiClient: AutoMockable {
+    var apiClient: ApiClient { get }
+
+    func connect(activitySourceItem: ActivitySourcesItem, completion: @escaping (Result<ConnectionResult, Error>) -> Void)
+    func disconnect(activitySourceConnection: ActivitySourceConnection, completion: @escaping (Result<Void, Error>) -> Void)
+    func getCurrentConnections(completion: @escaping (Result<[TrackerConnection], Error>) -> Void)
+}
 
 /// The `ActivitySourcesApi` encapsulates the management of a users activity sources.
-public class ActivitySourcesApi {
+public class ActivitySourcesApi: ActivitySourcesApiClient {
 
     let apiClient: ApiClient
 

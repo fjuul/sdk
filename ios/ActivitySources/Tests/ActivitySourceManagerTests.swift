@@ -108,6 +108,8 @@ final class ActivitySourceManagerTests: XCTestCase {
         // Given
         let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
         let activitySourcesApi = ActivitySourcesApiStub(apiClient: client)
+        
+        let mock = ActivitySourcesApiClientMock()
 
         let trackerConnections = [
             TrackerConnection(id: "polar", tracker: "polar", createdAt: Date(), endedAt: nil),
@@ -117,7 +119,7 @@ final class ActivitySourceManagerTests: XCTestCase {
         connectionsLocalStore.connections = trackerConnections
 
         // When
-        let sut = ActivitySourceManager(userToken: client.userToken, persistor: persistor, apiClient: activitySourcesApi, config: config)
+        let sut = ActivitySourceManager(userToken: client.userToken, persistor: persistor, apiClient: mock, config: config)
 
         // Then
         XCTAssert(sut.apiClient != nil, "Api client should not be empty")

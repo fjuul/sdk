@@ -2,11 +2,12 @@ import Foundation
 import FjuulCore
 import Alamofire
 
-public final class ActivitySourceHK: ActivitySource {
+public final class ActivitySourceHK: MountableActivitySource {
     static public let shared = ActivitySourceHK()
 
+    var apiClient: ActivitySourcesApi?
+
     public var tracker = ActivitySourcesItem.healthkit
-    public var apiClient: ActivitySourcesApi?
     public var persistor: Persistor?
 
     private var healthKitManager: HealthKitManager?
@@ -19,7 +20,7 @@ public final class ActivitySourceHK: ActivitySource {
         }
     }
 
-    public func mount(apiClient: ActivitySourcesApi, config: ActivitySourceConfigBuilder, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
+    func mount(apiClient: ActivitySourcesApi, config: ActivitySourceConfigBuilder, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
         self.apiClient = apiClient
         self.persistor = persistor
 
@@ -31,7 +32,7 @@ public final class ActivitySourceHK: ActivitySource {
         }
     }
 
-    public func unmount(completion: @escaping (Result<Bool, Error>) -> Void) {
+    func unmount(completion: @escaping (Result<Bool, Error>) -> Void) {
         guard let healthKitManager = self.healthKitManager else {
             completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
             return

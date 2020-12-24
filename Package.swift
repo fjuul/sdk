@@ -18,8 +18,8 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/Alamofire/Alamofire.git", .upToNextMajor(from: "5.2.0")),
-        .package(url: "https://github.com/AliSoftware/OHHTTPStubs.git", .upToNextMajor(from: "9.0.0")) //,
-//        .package(url: "https://github.com/MakeAWishFoundation/SwiftyMocky", from: "4.0.1"),
+        .package(url: "https://github.com/AliSoftware/OHHTTPStubs.git", .upToNextMajor(from: "9.0.0")),
+        .package(name: "swiftymocky", url: "https://github.com/MakeAWishFoundation/SwiftyMocky", from: "4.0.1"),
     ],
     targets: [
         .target(
@@ -39,7 +39,11 @@ let package = Package(
         ),
         .testTarget(
             name: "FjuulActivitySourcesTests",
-            dependencies: [.product(name: "OHHTTPStubsSwift", package: "OHHTTPStubs"), "FjuulActivitySources"],
+            dependencies: [
+                .product(name: "OHHTTPStubsSwift", package: "OHHTTPStubs"),
+                .product(name: "SwiftyMocky", package: "swiftymocky"),
+                "FjuulActivitySources"
+            ],
             path: "ios/ActivitySources/Tests"
         ),
         .target(

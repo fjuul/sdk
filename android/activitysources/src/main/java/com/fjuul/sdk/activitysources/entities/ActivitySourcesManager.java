@@ -242,7 +242,7 @@ public final class ActivitySourcesManager {
     public void disconnect(@NonNull final ActivitySourceConnection sourceConnection,
         @NonNull final Callback<List<ActivitySourceConnection>> callback) {
         // TODO: validate if sourceConnection was already ended ?
-        Runnable runnableDisconnect = () -> {
+        final Runnable runnableDisconnect = () -> {
             sourcesService.disconnect(sourceConnection).enqueue((call, apiCallResult) -> {
                 if (apiCallResult.isError()) {
                     if (callback != null) {
@@ -255,7 +255,7 @@ public final class ActivitySourcesManager {
         };
         final ActivitySource activitySource = sourceConnection.getActivitySource();
         if (activitySource instanceof GoogleFitActivitySource) {
-            Task<Void> disableGoogleFitTask = ((GoogleFitActivitySource) activitySource).disable();
+            final Task<Void> disableGoogleFitTask = ((GoogleFitActivitySource) activitySource).disable();
             disableGoogleFitTask.addOnCompleteListener((task) -> {
                 // TODO: run the disconnect if even there was an error?
                 if (task.isCanceled() || !task.isSuccessful()) {

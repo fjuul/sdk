@@ -30,7 +30,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.Scope;
-import com.google.android.gms.fitness.ConfigClient;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
 import com.google.android.gms.fitness.data.DataType;
@@ -355,25 +354,18 @@ public class GoogleFitActivitySource extends ActivitySource {
     }
 
     Task<Void> disable() {
-        final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
-        if (account == null) {
-            return Tasks.forResult(null);
-        }
-        final ConfigClient configClient = Fitness.getConfigClient(context, account);
-        // NOTE: for some weird reasons, ConfigClient#disableFit is not enough to revoke all
-        // granted OAuth permissions. Then we revoke these explicitly via GoogleSignInClient#revokeAccess.
-        // However then revokeAccess task resolves with error code 4 which is SIGN_IN_REQUIRED.
-        // The solution based on https://github.com/android/fit-samples/issues/28#issuecomment-557865949
-        final Task<Void> disableFitAndRevokeAccessTask =
-            configClient.disableFit().continueWithTask((disableFitTask) -> {
-                // TODO: disable the full list of permissions ?
-                final GoogleSignInOptions signInOptions =
-                    buildGoogleSignInOptions(requestOfflineAccess, serverClientId, collectableFitnessMetrics);
-                return GoogleSignIn.getClient(context, signInOptions)
-                    .revokeAccess()
-                    .continueWithTask((revokeAccessTask) -> Tasks.forResult(null));
-            });
-        return disableFitAndRevokeAccessTask;
+        // NOTE: for some weird reasons, ConfigClient#disableFit is not enough to revoke all granted OAuth permissions.
+        // For that we use GoogleSignInClient#revokeAccess.
+        // The GoogleSignInClient#revokeAccess task may be completed with error code 4 which is SIGN_IN_REQUIRED if a
+        // user is not signed in yet. We don't propagate the error and then resolve it successfully.
+        // The solution based on https://github.com/android/fit-samples/issues/28#issue-491885148
+
+        // TODO: always revoke the full list of permissions ?
+        final GoogleSignInOptions signInOptions =
+            buildGoogleSignInOptions(requestOfflineAccess, serverClientId, collectableFitnessMetrics);
+        return GoogleSignIn.getClient(context, signInOptions)
+            .revokeAccess()
+            .continueWithTask((revokeAccessTask) -> Tasks.forResult(null));
     }
 
     private boolean areFitnessPermissionsGranted(@Nullable GoogleSignInAccount account) {

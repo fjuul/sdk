@@ -83,6 +83,10 @@ class ActivitySourcesViewModel() : ViewModel() {
         _errorMessage.value = null
     }
 
+    fun postErrorMessage(errorMessage: String) {
+        _errorMessage.postValue(errorMessage)
+    }
+
     private fun isMatchedConnectionWithActivitySource(connection: ActivitySourceConnection, source: ActivitySource): Boolean {
         return connection.activitySource::class.java == source::class.java
     }

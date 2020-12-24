@@ -47,7 +47,7 @@ class ActivitySourcesFragment : Fragment() {
                 GoogleFitActivitySource.getInstance().handleGoogleSignInResult(data) { result ->
                     Log.d(TAG,"GoogleFit connect = Error: ${result.error}; value: ${result.value}")
                     if (result.isError) {
-                        // TODO: publish the error to the view model (or show the message in the alert)
+                        model.postErrorMessage(result.error?.message ?: "Something went wrong")
                         return@handleGoogleSignInResult
                     }
                     if (!GoogleFitActivitySource.getInstance().isActivityRecognitionPermissionGranted) {

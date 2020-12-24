@@ -13,9 +13,9 @@ public class GFActivitySegmentDataPoint extends GFScalarDataPoint<Integer> {
     @NonNull
     @Override
     public String toString() {
-        SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-        String startFormatted = myFormat.format(start);
-        String endFormatted = myFormat.format(end);
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        final String startFormatted = dateFormat.format(start);
+        final String endFormatted = dateFormat.format(end);
         return String.format("GFActivitySegmentDataPoint: type %d, start %s, end %s, dataSource %s", value, startFormatted, endFormatted, dataSource);
     }
 }

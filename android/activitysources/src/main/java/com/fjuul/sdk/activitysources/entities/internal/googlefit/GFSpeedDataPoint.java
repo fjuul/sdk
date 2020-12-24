@@ -13,8 +13,8 @@ public class GFSpeedDataPoint extends GFScalarDataPoint<Float> {
     @NonNull
     @Override
     public String toString() {
-        SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-        String startFormatted = myFormat.format(start);
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        final String startFormatted = dateFormat.format(start);
         return String.format("GFSpeedDataPoint: m/s %f, start %s, dataSource %s", value, startFormatted, dataSource);
     }
 }

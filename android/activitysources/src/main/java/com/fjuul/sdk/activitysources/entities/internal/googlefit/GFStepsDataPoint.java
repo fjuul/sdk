@@ -17,8 +17,8 @@ public class GFStepsDataPoint extends GFScalarDataPoint<Integer> {
     @NonNull
     @Override
     public String toString() {
-        SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-        String startFormatted = myFormat.format(start);
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        final String startFormatted = dateFormat.format(start);
         return String.format("GFStepsDataPoint: steps %d, start %s, dataSource %s", value, startFormatted, dataSource);
     }
 }

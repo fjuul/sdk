@@ -32,8 +32,8 @@ public class GFHRSummaryDataPoint extends GFDataPoint {
 
     @Override
     public String toString() {
-        SimpleDateFormat myFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-        String startFormatted = myFormat.format(start);
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        final String startFormatted = dateFormat.format(start);
         return String.format("GFHRSummaryDataPoint: avg BPM %f, min BPM %f, max BPM %f, start %s, dataSource %s", avg, min, max, startFormatted, dataSource);
     }
 }

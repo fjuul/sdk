@@ -131,6 +131,29 @@ public class GFSessionBundle {
         this.speed = speed;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final GFSessionBundle that = (GFSessionBundle) o;
+
+        if (type != that.type) return false;
+        if (!id.equals(that.id)) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (applicationIdentifier != null ? !applicationIdentifier.equals(that.applicationIdentifier) : that.applicationIdentifier != null)
+            return false;
+        if (!timeStart.equals(that.timeStart)) return false;
+        if (!timeEnd.equals(that.timeEnd)) return false;
+        if (!activityType.equals(that.activityType)) return false;
+        if (!activitySegments.equals(that.activitySegments)) return false;
+        if (!calories.equals(that.calories)) return false;
+        if (!steps.equals(that.steps)) return false;
+        if (!heartRate.equals(that.heartRate)) return false;
+        if (!power.equals(that.power)) return false;
+        return speed.equals(that.speed);
+    }
+
     @SuppressLint("NewApi")
     @Override
     public String toString() {

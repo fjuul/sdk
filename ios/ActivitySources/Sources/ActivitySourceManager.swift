@@ -7,7 +7,7 @@ import FjuulCore
 final public class ActivitySourceManager {
     static public var current: ActivitySourceManager?
 
-    var apiClient: ActivitySourcesApi?
+    var apiClient: ActivitySourcesApiClient?
     var mountedActivitySourceConnections: [ActivitySourceConnection] = []
     var config: ActivitySourceConfigBuilder?
 
@@ -41,7 +41,7 @@ final public class ActivitySourceManager {
         return .success(instance)
     }
 
-    internal init(userToken: String, persistor: Persistor, apiClient: ActivitySourcesApi, config: ActivitySourceConfigBuilder) {
+    internal init(userToken: String, persistor: Persistor, apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder) {
         self.apiClient = apiClient
         self.persistor = persistor
         self.config = config
@@ -66,8 +66,8 @@ final public class ActivitySourceManager {
         }
 
         // TODO Refactoring
-        if activitySource is ActivitySourceHK {
-            ActivitySourceHK.requestAccess(config: config) { result in
+        if let activitySource = activitySource as? MountableActivitySourceHK {
+            activitySource.requestAccess(config: config) { result in
                 switch result {
                 case .failure(let err):
                     completion(.failure(err))

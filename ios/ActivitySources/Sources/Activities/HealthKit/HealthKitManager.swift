@@ -3,7 +3,7 @@ import HealthKit
 import FjuulCore
 
 class HealthKitManager {
-    static var healthStore: HKHealthStore = HKHealthStore()
+    static let healthStore: HKHealthStore = HKHealthStore()
 
     private var persistor: Persistor
     private var hkAnchorStore: HKAnchorStore

@@ -18,7 +18,7 @@ public final class ActivitySourceConnection: TrackerConnectionable {
         self.activitySource = activitySource
     }
 
-    func mount(apiClient: ActivitySourcesApi, config: ActivitySourceConfigBuilder, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
+    func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
         if let mountableSource = activitySource as? MountableActivitySource {
             mountableSource.mount(apiClient: apiClient, config: config, persistor: persistor) { result in
                 completion(result)

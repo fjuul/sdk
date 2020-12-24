@@ -4,6 +4,7 @@ import FjuulCore
 import OHHTTPStubs
 import OHHTTPStubsSwift
 import HealthKit
+import SwiftyMocky
 
 @testable import FjuulActivitySources
 
@@ -107,7 +108,7 @@ final class ActivitySourceManagerTests: XCTestCase {
     func testInitializeWithExistsStoredActyvityConnections() {
         // Given
         let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
-        let activitySourcesApi = ActivitySourcesApiStub(apiClient: client)
+//        let activitySourcesApi = ActivitySourcesApiStub(apiClient: client)
         
         let mock = ActivitySourcesApiClientMock()
 
@@ -129,57 +130,47 @@ final class ActivitySourceManagerTests: XCTestCase {
         XCTAssert(sut.config != nil, "config should not be empty")
     }
 
-//    func testConnectHealthKitActivitySource() {
-//        // Given
+    func testConnectHealthKitActivitySource() {
+        // Given
 //        HealthKitManager.healthStore = StubHKHealthStore()
-//
-//        let client = ApiClientStub(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
-//
-////        stub(condition: isHost("apibase") && isPath("/sdk/signing/v1/issue-key/user")) { _ in
-////            let stubData = self.signingKeyResponse.data(using: String.Encoding.utf8)
-////            return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
-////        }
-//
-////        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(client.userToken)/connections")) { _ in
-////            let stubData = "[]".data(using: String.Encoding.utf8)
-////            return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
-////        }
-//
-////        let createStub = stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(client.userToken)/connections/\(ActivitySourcesItem.healthkit.rawValue)")) { request in
-////            XCTAssertEqual(request.httpMethod, "POST")
-////            let json = """
-////                {
-////                    \"id\": \"0ca60422-3626-4b50-aa70-43c91d8da731\", \"tracker\": \"healthkit\", \"createdAt\": \"2020-12-07T15:23:57.397Z\", \"endedAt\": null
-////                }
-////            """
-////            let stubData = json.data(using: String.Encoding.utf8)
-////            return HTTPStubsResponse(data: stubData!, statusCode: 201, headers: nil)
-////        }
-//
-//        let promise = expectation(description: "Success connect HealthKit activity source")
-//
-//        sut.initialize(apiClient: client, config: config)
-//
-//        // When
-//        sut.connect(activitySource: ActivitySourceHK.shared) { result in
-//            switch result {
-//            case .success(let connectionResult):
-//                switch connectionResult {
-//                case .connected(let trackerConnection):
-//                    XCTAssertEqual(trackerConnection.id, "0ca60422-3626-4b50-aa70-43c91d8da731")
-//                    XCTAssertEqual(trackerConnection.tracker, ActivitySourcesItem.healthkit.rawValue)
-//                    XCTAssertEqual(trackerConnection.endedAt, nil)
-//
-//                    promise.fulfill()
-//                case .externalAuthenticationFlowRequired:
-//                    XCTFail("Error: connection should not require external authentication flow")
-//                }
-//            case .failure(let err):
-//                XCTFail("Error: \(err.localizedDescription)")
-//            }
-//        }
-//        wait(for: [promise], timeout: 5)
-//    }
+
+        let promise = expectation(description: "Success connect HealthKit activity source")
+
+        let mock = ActivitySourcesApiClientMock()
+        let healthKitMock = MountableActivitySourceHKMock()
+        Given(healthKitMock, .tracker(getter: ActivitySourcesItem.healthkit))
+        
+        let sut = ActivitySourceManager(userToken: "b530b31f-74ca-4814-9e24-1bd35d5d1b61", persistor: persistor, apiClient: mock, config: config)
+        
+        Perform(mock, .connect(activitySourceItem: .value(ActivitySourcesItem.healthkit), completion: .any, perform: { (item, completion) in
+            let trackerConnection = TrackerConnection(id: "0ca60422-3626-4b50-aa70-43c91d8da731", tracker: "healthkit", createdAt: Date(), endedAt: nil)
+            completion(.success(.connected(trackerConnection: trackerConnection)))
+        }))
+        
+        Perform(healthKitMock, .requestAccess(config: .any, completion: .any, perform: { (item, completion) in
+           completion(.success(true))
+        }))
+
+        // When
+        sut.connect(activitySource: healthKitMock) { result in
+            switch result {
+            case .success(let connectionResult):
+                switch connectionResult {
+                case .connected(let trackerConnection):
+                    XCTAssertEqual(trackerConnection.id, "0ca60422-3626-4b50-aa70-43c91d8da731")
+                    XCTAssertEqual(trackerConnection.tracker, ActivitySourcesItem.healthkit.rawValue)
+                    XCTAssertEqual(trackerConnection.endedAt, nil)
+
+                    promise.fulfill()
+                case .externalAuthenticationFlowRequired:
+                    XCTFail("Error: connection should not require external authentication flow")
+                }
+            case .failure(let err):
+                XCTFail("Error: \(err.localizedDescription)")
+            }
+        }
+        wait(for: [promise], timeout: 5)
+    }
 //
 //    func testConnectExternalActivitySource() {
 //        // Given

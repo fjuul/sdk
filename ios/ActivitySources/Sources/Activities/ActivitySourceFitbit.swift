@@ -11,14 +11,14 @@ public final class ActivitySourceFitbit: ActivitySource {
 
     private init() {}
 
-    public func mount(apiClient: ActivitySourcesApi, config: ActivitySourceConfigBuilder, persistor: Persistor, completion: (Result<Bool, Error>) -> Void) {
-//        self.apiClient = apiClient
-        self.persistor = persistor
-
-        completion(.success(true))
-    }
-
-    public func unmount(completion: @escaping (Result<Bool, Error>) -> Void) {
-        completion(.success(true))
-    }
+//    public func mount(apiClient: ActivitySourcesApi, config: ActivitySourceConfigBuilder, persistor: Persistor, completion: (Result<Bool, Error>) -> Void) {
+////        self.apiClient = apiClient
+//        self.persistor = persistor
+//
+//        completion(.success(true))
+//    }
+//
+//    public func unmount(completion: @escaping (Result<Bool, Error>) -> Void) {
+//        completion(.success(true))
+//    }
 }

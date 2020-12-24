@@ -2,10 +2,15 @@ import Foundation
 import FjuulCore
 import Alamofire
 
-public final class ActivitySourceHK: MountableActivitySource {
+//sourcery: AutoMockable
+protocol MountableActivitySourceHK: MountableActivitySource {
+    func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void)
+}
+
+public final class ActivitySourceHK: MountableActivitySourceHK {
     static public let shared = ActivitySourceHK()
 
-    var apiClient: ActivitySourcesApi?
+    var apiClient: ActivitySourcesApiClient?
 
     public var tracker = ActivitySourcesItem.healthkit
     public var persistor: Persistor?
@@ -19,8 +24,14 @@ public final class ActivitySourceHK: MountableActivitySource {
             completion(result)
         }
     }
+    
+    func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void) {
+        HealthKitManager.requestAccess(config: config) { result in
+            completion(result)
+        }
+    }
 
-    func mount(apiClient: ActivitySourcesApi, config: ActivitySourceConfigBuilder, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
+    func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
         self.apiClient = apiClient
         self.persistor = persistor
 

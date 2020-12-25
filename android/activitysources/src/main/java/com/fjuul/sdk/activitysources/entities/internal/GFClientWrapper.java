@@ -87,8 +87,7 @@ class GFClientWrapper {
     private final HistoryClient historyClient;
     private final SessionsClient sessionsClient;
     private final GFDataUtils gfUtils;
-    // TODO: rename executor
-    private final Executor executor;
+    private final Executor localBackgroundExecutor;
     private final SimpleDateFormat dateFormatter;
 
     public GFClientWrapper(HistoryClient historyClient, SessionsClient sessionsClient, GFDataUtils gfUtils) {
@@ -100,7 +99,7 @@ class GFClientWrapper {
         this.sessionsClient = sessionsClient;
         this.gfUtils = gfUtils;
         this.config = config;
-        this.executor = Executors.newCachedThreadPool();
+        this.localBackgroundExecutor = Executors.newCachedThreadPool();
         this.dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
     }
 
@@ -116,7 +115,7 @@ class GFClientWrapper {
         }).collect(Collectors.toList());
 
         Task<List<GFCalorieDataPoint>> getCaloriesTask = flatMapTasksResults(tasks);
-        return shutdownExecutorsOnComplete(executor, getCaloriesTask, gfTaskWatcherExecutor);
+        return shutdownExecutorsOnComplete(localBackgroundExecutor, getCaloriesTask, gfTaskWatcherExecutor);
     }
 
     @SuppressLint("NewApi")
@@ -131,7 +130,7 @@ class GFClientWrapper {
         }).collect(Collectors.toList());
 
         Task<List<GFStepsDataPoint>> getStepsTask = flatMapTasksResults(tasks);
-        return shutdownExecutorsOnComplete(executor, getStepsTask, gfTaskWatcherExecutor);
+        return shutdownExecutorsOnComplete(localBackgroundExecutor, getStepsTask, gfTaskWatcherExecutor);
     }
 
     @SuppressLint("NewApi")
@@ -146,7 +145,7 @@ class GFClientWrapper {
         }).collect(Collectors.toList());
 
         Task<List<GFHRSummaryDataPoint>> getHRTask = flatMapTasksResults(tasks);
-        return shutdownExecutorsOnComplete(executor, getHRTask, gfTaskWatcherExecutor);
+        return shutdownExecutorsOnComplete(localBackgroundExecutor, getHRTask, gfTaskWatcherExecutor);
     }
 
     @SuppressLint("NewApi")
@@ -162,7 +161,7 @@ class GFClientWrapper {
         }).collect(Collectors.toList());
         Task<List<Session>> rawSessionListTask = flatMapTasksResults(readSessionListTasks);
 
-        Task<List<Session>> filteredSessionListTask = rawSessionListTask.onSuccessTask(executor, (sessions) -> {
+        Task<List<Session>> filteredSessionListTask = rawSessionListTask.onSuccessTask(localBackgroundExecutor, (sessions) -> {
             Stream<Session> completedValuableSessions = sessions.stream()
                 .filter(session -> {
                     if (session.isOngoing()) {
@@ -176,10 +175,10 @@ class GFClientWrapper {
             return Tasks.forResult(completedValuableSessions.collect(Collectors.toList()));
         });
 
-        Task<List<GFSessionBundle>> getSessionsTask = filteredSessionListTask.onSuccessTask(executor, (sessions -> {
+        Task<List<GFSessionBundle>> getSessionsTask = filteredSessionListTask.onSuccessTask(localBackgroundExecutor, (sessions -> {
             return runReadDetailedSessionBundles(sessions, gfReadSessionsWatcher);
         }));
-        return shutdownExecutorsOnComplete(executor, getSessionsTask, gfTaskWatcherExecutor);
+        return shutdownExecutorsOnComplete(localBackgroundExecutor, getSessionsTask, gfTaskWatcherExecutor);
         // TODO: check if sub-task watcher was shutdown
     }
 
@@ -188,7 +187,7 @@ class GFClientWrapper {
          final Supplier<SupervisedTask<List<GFCalorieDataPoint>>> taskSupplier = () -> {
             final Function<DataReadResponse, List<GFCalorieDataPoint>> convertData = response -> convertResponseBucketsToPoints(response, GFDataConverter::convertBucketToCalorie);
             Task<List<GFCalorieDataPoint>> task = readAggregatedCaloriesHistory(dateRange.first, dateRange.second)
-                .onSuccessTask(executor, convertData.andThen(Tasks::forResult)::apply);
+                .onSuccessTask(localBackgroundExecutor, convertData.andThen(Tasks::forResult)::apply);
              return buildSupervisedTask("fetch gf intraday calories", task, dateRange);
         };
         return runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
@@ -199,7 +198,7 @@ class GFClientWrapper {
          final Supplier<SupervisedTask<List<GFStepsDataPoint>>> taskSupplier = () -> {
             final Function<DataReadResponse, List<GFStepsDataPoint>> convertData = response -> convertResponseBucketsToPoints(response, GFDataConverter::convertBucketToSteps);
             final Task<List<GFStepsDataPoint>> task = readAggregatedStepsHistory(dateRange.first, dateRange.second)
-                .onSuccessTask(executor, convertData.andThen(Tasks::forResult)::apply);
+                .onSuccessTask(localBackgroundExecutor, convertData.andThen(Tasks::forResult)::apply);
             return buildSupervisedTask("fetch gf intraday steps", task, dateRange);
         };
         return runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
@@ -210,7 +209,7 @@ class GFClientWrapper {
         Supplier<SupervisedTask<List<GFHRSummaryDataPoint>>> taskSupplier = () -> {
             final Function<DataReadResponse, List<GFHRSummaryDataPoint>> convertData = response -> convertResponseBucketsToPoints(response, GFDataConverter::convertBucketToHRSummary);
             Task<List<GFHRSummaryDataPoint>> task = readAggregatedHRHistory(dateRange.first, dateRange.second)
-                .onSuccessTask(executor, convertData.andThen(Tasks::forResult)::apply);
+                .onSuccessTask(localBackgroundExecutor, convertData.andThen(Tasks::forResult)::apply);
             return buildSupervisedTask("fetch gf intraday hr", task, dateRange);
         };
         return runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
@@ -222,7 +221,7 @@ class GFClientWrapper {
             return buildSupervisedTask("fetch gf sessions", task, dateRange);
         };
         Task<List<Session>> readSessionsTask = runGFTaskUnderWatch(taskSupplier, gfTaskWatcher)
-            .onSuccessTask(executor, (response) -> Tasks.forResult(response.getSessions()));
+            .onSuccessTask(localBackgroundExecutor, (response) -> Tasks.forResult(response.getSessions()));
         return readSessionsTask;
     }
 
@@ -234,10 +233,10 @@ class GFClientWrapper {
         List<Task<GFSessionBundle>> sessionBundlesTasks = new ArrayList<>();
         for (Session session : sessions) {
             Task<GFSessionBundle> taskToContinue = sessionBundlesTasks.isEmpty() ? Tasks.forResult(null) : sessionBundlesTasks.get(sessionBundlesTasks.size() - 1);
-            Task<GFSessionBundle> nextTask = taskToContinue.continueWithTask(executor, (t) -> bundleSessionWithData(session, gfTaskWatcher));
+            Task<GFSessionBundle> nextTask = taskToContinue.continueWithTask(localBackgroundExecutor, (t) -> bundleSessionWithData(session, gfTaskWatcher));
             sessionBundlesTasks.add(nextTask);
         }
-        Task<List<GFSessionBundle>> completedSessionBundlesTasks = Tasks.whenAll(sessionBundlesTasks).continueWithTask(executor, (commonResultTask) -> {
+        Task<List<GFSessionBundle>> completedSessionBundlesTasks = Tasks.whenAll(sessionBundlesTasks).continueWithTask(localBackgroundExecutor, (commonResultTask) -> {
             if (commonResultTask.isCanceled() || !commonResultTask.isSuccessful()) {
                 return Tasks.forException(GoogleTaskUtils.extractGFExceptionFromTasks(sessionBundlesTasks).orElse(commonResultTask.getException()));
             }
@@ -291,7 +290,7 @@ class GFClientWrapper {
 
     @SuppressLint("NewApi")
     private <V, T extends List<V>> Task<T> flatMapTasksResults(List<Task<T>> tasks) {
-        Task<T> collectResultsTask = Tasks.whenAll(tasks).continueWithTask(executor, commonResult -> {
+        Task<T> collectResultsTask = Tasks.whenAll(tasks).continueWithTask(localBackgroundExecutor, commonResult -> {
             if (commonResult.isCanceled() || !commonResult.isSuccessful()) {
                 CommonException fallbackException = new CommonException("Pooling task was canceled");
                 Exception exception = GoogleTaskUtils.extractGFExceptionFromTasks(tasks).orElse(fallbackException);;
@@ -320,21 +319,21 @@ class GFClientWrapper {
         // be canceled.
         SupervisedExecutor dedicatedReadSessionTaskWatcher = new SupervisedExecutor(gfTaskWatcher.getExecutor(), new CancellationTokenSource());
         Task<SessionReadResponse> readSessionUnderWatch = runGFTaskUnderWatch(readSessionTaskSupplier, dedicatedReadSessionTaskWatcher);
-        Task<GFSessionBundle> collectSessionBundleTask = readSessionUnderWatch.onSuccessTask(executor, sessionReadResponse -> {
+        Task<GFSessionBundle> collectSessionBundleTask = readSessionUnderWatch.onSuccessTask(localBackgroundExecutor, sessionReadResponse -> {
             GFSessionBundle gfSessionBundle = collectSessionBundleFromSessionResponse(sessionReadResponse);
             return Tasks.forResult(gfSessionBundle);
         });
         // NOTE: It is possible that GF Session and its samples are too big for passing it through IPC Binder (TransactionTooLarge),
         // for example: android.os.TransactionTooLargeException: Error while delivering result of client request SessionReadRequest.
         // For this rare case, we have to try to fetch all related data points one by one.
-        Task<GFSessionBundle> rescueSessionBundleTask = collectSessionBundleTask.continueWithTask(executor, (task) -> {
+        Task<GFSessionBundle> rescueSessionBundleTask = collectSessionBundleTask.continueWithTask(localBackgroundExecutor, (task) -> {
             if (task.getException() instanceof MaxTriesCountExceededException) {
                 return collectSessionBundleWithDataReadRequests(session, gfTaskWatcher);
             }
             return task;
         });
 
-        rescueSessionBundleTask.addOnCompleteListener(executor, (commonResultTask) -> {
+        rescueSessionBundleTask.addOnCompleteListener(localBackgroundExecutor, (commonResultTask) -> {
             if (!commonResultTask.isSuccessful() || commonResultTask.isCanceled()) {
                 taskCompletionSource.trySetException(commonResultTask.getException());
                 return;
@@ -431,7 +430,7 @@ class GFClientWrapper {
             getSessionCaloriesTask,
             getSessionSegmentsTask
         );
-        Task<GFSessionBundle> collectSessionBundleTask = Tasks.whenAll(tasks).continueWithTask(executor, (commonResultTask) -> {
+        Task<GFSessionBundle> collectSessionBundleTask = Tasks.whenAll(tasks).continueWithTask(localBackgroundExecutor, (commonResultTask) -> {
             if (commonResultTask.isCanceled() || !commonResultTask.isSuccessful()) {
                 return Tasks.forException(GoogleTaskUtils.extractGFExceptionFromTasks(tasks).orElse(commonResultTask.getException()));
             }
@@ -467,7 +466,7 @@ class GFClientWrapper {
                     return convertDataSetToPoints(dataSet, dataPointMapper);
                 };
                 final Task<List<T>> task = historyClient.readData(request)
-                    .onSuccessTask(executor, convertData.andThen(Tasks::forResult)::apply);
+                    .onSuccessTask(localBackgroundExecutor, convertData.andThen(Tasks::forResult)::apply);
                 Date start = new Date(request.getStartTime(TimeUnit.MILLISECONDS));
                 Date end = new Date(request.getEndTime(TimeUnit.MILLISECONDS));
                 String jobName = taskNameGenerator.apply(request);

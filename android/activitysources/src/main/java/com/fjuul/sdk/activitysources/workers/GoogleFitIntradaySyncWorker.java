@@ -32,7 +32,7 @@ public class GoogleFitIntradaySyncWorker extends GoogleFitSyncWorker {
         final ActivitySourceConnection gfConnection = getGoogleFitActivitySourceConnection(sourcesManager);
         if (gfConnection == null) {
             // TODO: cancel next scheduled tasks because there is not current gf connection
-            // TODO: the task should be canceled on the next initialization of ActivitySourcesManager
+            // NOTE: currently, the task will be canceled on the next initialization of ActivitySourcesManager
             return Result.success();
         }
         final GoogleFitActivitySource gfSource = ((GoogleFitActivitySource)gfConnection.getActivitySource());

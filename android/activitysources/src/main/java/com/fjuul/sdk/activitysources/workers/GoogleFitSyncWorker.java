@@ -15,6 +15,8 @@ import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
 import com.fjuul.sdk.core.entities.UserCredentials;
 import com.fjuul.sdk.core.ApiClient;
 
+import java.util.Collections;
+
 public abstract class GoogleFitSyncWorker extends Worker {
     public static final String KEY_USER_TOKEN_ARG = "USER_TOKEN";
     public static final String KEY_USER_SECRET_ARG = "USER_SECRET";
@@ -30,7 +32,8 @@ public abstract class GoogleFitSyncWorker extends Worker {
         try {
             sourcesManager = ActivitySourcesManager.getInstance();
         } catch (IllegalStateException exception) {
-            // TODO: construct the isolated instance of activity sources manager to avoid the case ?
+            // TODO: construct the isolated instance of ActivitySourcesManager to avoid the situation when a resurrected
+            //  application has the wrong state after background workers?
             // ActivitySourcesManager is not initialized yet
             final String userToken = getInputData().getString(KEY_USER_TOKEN_ARG);
             final String userSecret = getInputData().getString(KEY_USER_SECRET_ARG);
@@ -40,9 +43,12 @@ public abstract class GoogleFitSyncWorker extends Worker {
                 .setUserCredentials(new UserCredentials(userToken, userSecret))
                 .build();
             // NOTE: here we build the config with the untouched mode because we don't want to reset
-            // previously scheduled periodic gf sync works
+            // previously scheduled periodic gf sync works.
+            // NOTE: the empty set is a workaround to initialize the sources manager from background workers.
+            // It would be good to create an internal non-static instance of ActivitySourcesManager for background workers with their own isolated state.
             final ActivitySourcesManagerConfig config = new ActivitySourcesManagerConfig.Builder()
                 .keepUntouchedGFBackgroundSync()
+                .setCollectableFitnessMetrics(Collections.emptySet())
                 .build();
             ActivitySourcesManager.initialize(client, config);
             sourcesManager = ActivitySourcesManager.getInstance();

@@ -257,7 +257,6 @@ public final class ActivitySourcesManager {
         if (activitySource instanceof GoogleFitActivitySource) {
             final Task<Void> disableGoogleFitTask = ((GoogleFitActivitySource) activitySource).disable();
             disableGoogleFitTask.addOnCompleteListener((task) -> {
-                // TODO: run the disconnect if even there was an error?
                 if (task.isCanceled() || !task.isSuccessful()) {
                     callback.onResult(Result.error(task.getException()));
                     return;

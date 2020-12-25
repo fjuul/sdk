@@ -82,6 +82,7 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:3.4.4'
     testImplementation('org.mockito:mockito-inline:3.4.4')
     testImplementation "com.squareup.okhttp3:mockwebserver:$rootProject.ext.okHttpVersion"
+    testImplementation "androidx.work:work-testing:$workVersion"
 
     testImplementation 'org.robolectric:robolectric:4.3.1'
     testImplementation 'androidx.test:core:1.2.0'

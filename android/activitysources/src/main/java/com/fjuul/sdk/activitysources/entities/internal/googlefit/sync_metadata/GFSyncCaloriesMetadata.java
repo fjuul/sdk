@@ -37,7 +37,6 @@ public final class GFSyncCaloriesMetadata extends GFSyncDatedEntityMetadata {
 
     @SuppressLint("NewApi")
     static public GFSyncCaloriesMetadata buildFromBatch(GFDataPointsBatch<GFCalorieDataPoint> batch, Clock clock) {
-        // TODO: move the sum calculation to batch class (or GFDataUtils)
         float totalKcals = batch.getPoints().stream()
             .map(c -> c.getValue())
             .reduce(0f, (acc, el) -> acc + el);

@@ -61,7 +61,6 @@ public class RequestSigner {
         OffsetDateTime offset = instant.atOffset(ZoneOffset.UTC);
         @SuppressLint({"NewApi", "LocalSuppress"})
         String formattedDate = offset.format(DateTimeFormatter.RFC_1123_DATE_TIME);
-        // TODO: assign date format to headers (check if retrofit do it by default) ?
         signedRequestBuilder.header("Date", formattedDate);
 
         String datePart = String.format("date: %s", formattedDate);

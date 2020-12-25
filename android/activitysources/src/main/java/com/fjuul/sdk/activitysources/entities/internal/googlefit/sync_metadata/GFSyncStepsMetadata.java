@@ -36,7 +36,6 @@ public class GFSyncStepsMetadata extends GFSyncDatedEntityMetadata {
 
     @SuppressLint("NewApi")
     static public GFSyncStepsMetadata buildFromBatch(GFDataPointsBatch<GFStepsDataPoint> batch, Clock clock) {
-        // TODO: move the sum calculation to batch class (or GFDataUtils)
         int totalSteps = batch.getPoints().stream().mapToInt(s -> s.getValue()).sum();
         int count = batch.getPoints().size();
         final Date editedAt = Date.from(clock.instant());

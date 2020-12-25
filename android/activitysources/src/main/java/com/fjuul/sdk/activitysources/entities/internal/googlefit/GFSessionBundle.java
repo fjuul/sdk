@@ -258,7 +258,6 @@ public class GFSessionBundle {
         @SuppressLint("NewApi")
         @NonNull
         public GFSessionBundle build() {
-            // TODO: validate fields ?
             return new GFSessionBundle(id, name, applicationIdentifier, timeStart, timeEnd, activityType, type,
                 Optional.ofNullable(activitySegments).orElse(Collections.emptyList()),
                 Optional.ofNullable(calories).orElse(Collections.emptyList()),

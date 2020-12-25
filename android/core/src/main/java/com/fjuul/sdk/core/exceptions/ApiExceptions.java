@@ -73,4 +73,8 @@ public final class ApiExceptions {
             super(message);
         }
     }
+
+    public static class ConflictException extends CommonException {
+        public ConflictException(@NonNull String message) { super(message); }
+    }
 }

@@ -33,6 +33,8 @@ public class DefaultApiResponseTransformer<T> implements IApiResponseTransformer
             exception = new ApiExceptions.UnauthorizedException(errorMessage, code);
         } else if (response.code() == HttpURLConnection.HTTP_BAD_REQUEST) {
             exception = new ApiExceptions.BadRequestException(errorMessage);
+        } else if (response.code() == HttpURLConnection.HTTP_CONFLICT) {
+            exception = new ApiExceptions.ConflictException(errorMessage);
         } else {
             exception = new ApiExceptions.CommonException(errorMessage);
         }

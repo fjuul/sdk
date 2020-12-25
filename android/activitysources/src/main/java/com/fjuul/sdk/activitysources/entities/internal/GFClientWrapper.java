@@ -179,7 +179,6 @@ class GFClientWrapper {
             return runReadDetailedSessionBundles(sessions, gfReadSessionsWatcher);
         }));
         return shutdownExecutorsOnComplete(localBackgroundExecutor, getSessionsTask, gfTaskWatcherExecutor);
-        // TODO: check if sub-task watcher was shutdown
     }
 
     @SuppressLint("NewApi")

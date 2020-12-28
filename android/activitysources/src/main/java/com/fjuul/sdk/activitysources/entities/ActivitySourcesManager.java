@@ -96,6 +96,7 @@ public final class ActivitySourcesManager {
      * </ul>
      *
      * @param client configured client with signing ability and user credentials
+     * @see #initialize(ApiClient, ActivitySourcesManagerConfig)
      */
     @SuppressLint("NewApi")
     public static synchronized void initialize(@NonNull ApiClient client) {
@@ -103,7 +104,12 @@ public final class ActivitySourcesManager {
     }
 
     /**
-     * Initialize the singleton.
+     * Initialize the singleton with the provided config. <br>
+     * Note: make sure that initialization occurs at each start of the user session of your application (most likely, at
+     * the start of the application, if the user is already in the system, or after logging in) to avoid using a state
+     * of the singleton created by background sync tasks. In other words, do not rely on the logic of checking for the
+     * presence of an initialized singleton at the very beginning of the session, initialize ActivitySourcesManager
+     * explicitly with the desired configuration.
      *
      * @param client configured client with signing ability and user credentials
      * @param config config for ActivitySourcesManager

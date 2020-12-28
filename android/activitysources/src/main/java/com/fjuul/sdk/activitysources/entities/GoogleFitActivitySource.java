@@ -98,7 +98,7 @@ public class GoogleFitActivitySource extends ActivitySource {
      * Return the initialized and configured instance of GoogleFitActivitySource. Make sure that this method is invoked
      * after ActivitySourcesManager.initialize. Otherwise, it throws IllegalStateException.
      *
-     * @throws IllegalStateException
+     * @throws IllegalStateException if not initialized yet
      * @return instance of GoogleFitActivitySource
      */
     public static GoogleFitActivitySource getInstance() {

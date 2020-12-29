@@ -19,6 +19,7 @@ import com.fjuul.sdk.activitysources.entities.FitbitActivitySource
 import com.fjuul.sdk.activitysources.entities.GarminActivitySource
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource
 import com.fjuul.sdk.activitysources.entities.PolarActivitySource
+import com.fjuul.sdk.activitysources.entities.SuuntoActivitySource
 import com.fjuul.sdk.android.exampleapp.R
 
 class ActivitySourcesFragment : Fragment() {
@@ -128,6 +129,7 @@ class ActivitySourcesFragment : Fragment() {
                 ActivitySourcesItem.GARMIN,
                 ActivitySourcesItem.POLAR,
                 ActivitySourcesItem.GOOGLE_FIT,
+                ActivitySourcesItem.SUUNTO,
                 ActivitySourcesItem.DISCONNECT
             )
         )
@@ -137,6 +139,7 @@ class ActivitySourcesFragment : Fragment() {
                 ActivitySourcesItem.FITBIT -> FitbitActivitySource.getInstance()
                 ActivitySourcesItem.POLAR -> PolarActivitySource.getInstance()
                 ActivitySourcesItem.GARMIN -> GarminActivitySource.getInstance()
+                ActivitySourcesItem.SUUNTO -> SuuntoActivitySource.getInstance()
                 ActivitySourcesItem.GOOGLE_FIT -> GoogleFitActivitySource.getInstance()
                 else -> {
                     model.disconnect()

@@ -247,6 +247,8 @@ public class GoogleFitActivitySource extends ActivitySource {
      * Puts the task of synchronizing intraday data in a sequential execution queue (i.e., only one sync task can be
      * executed at a time) and will execute it when it comes to its turn. The synchronization result is available in the
      * callback.<br>
+     * The task is atomic, so it will either succeed for all the specified types of metrics, or it will not succeed at
+     * all.<br>
      * Dedicated result errors:
      * <ul>
      * <li>{@link com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.FitnessPermissionsNotGrantedException};</li>

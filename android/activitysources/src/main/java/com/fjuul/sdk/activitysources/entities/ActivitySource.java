@@ -7,7 +7,18 @@ import androidx.annotation.Nullable;
 
 import java.util.stream.Stream;
 
+/**
+ * A base class for all activity source classes.
+ * @see FitbitActivitySource
+ * @see GarminActivitySource
+ * @see GoogleFitActivitySource
+ * @see PolarActivitySource
+ * @see SuuntoActivitySource
+ */
 public abstract class ActivitySource {
+    /**
+     * Enum which maps an activity source to the underlying string presentation (tracker value).
+     */
     public enum TrackerValue {
         FITBIT("fitbit"),
         GARMIN("garmin"),
@@ -36,6 +47,10 @@ public abstract class ActivitySource {
         }
     }
 
+    /**
+     * Returns the tracker value of the ActivitySource class.
+     * @return
+     */
     @NonNull
     protected abstract TrackerValue getTrackerValue();
 }

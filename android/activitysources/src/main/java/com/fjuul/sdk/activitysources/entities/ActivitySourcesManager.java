@@ -277,7 +277,10 @@ public final class ActivitySourcesManager {
     /**
      * Returns a list of current connections of the user. The list with current user connections is automatically saved
      * in the persistent storage. This method returns null only if there are not stored connections for the user yet.
-     * After the successful call of {@link #refreshCurrent} here will be at least an empty list.
+     * After the successful call of {@link #refreshCurrent} here will be at least an empty list.<br>
+     * NOTE: Although you can use singleton instances of the ActivitySource classes directly, it is recommended that you
+     * should use this method to work with their instances (for example, GoogleFitActivitySource) by getting them with
+     * the {@link ActivitySourceConnection#getActivitySource()} method.
      *
      * @return list of activity source connections
      */

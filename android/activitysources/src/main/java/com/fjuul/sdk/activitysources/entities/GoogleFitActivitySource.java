@@ -48,6 +48,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
+/**
+ * The ActivitySource class for the GoogleFit tracker. This is a local activity source (i.e. data that needs to be
+ * synced will be taken from the user device).
+ */
 @SuppressLint("NewApi")
 public class GoogleFitActivitySource extends ActivitySource {
     static final String SERVER_CLIENT_ID_METADATA_KEY = "com.fjuul.sdk.googlefit.server_client_id";

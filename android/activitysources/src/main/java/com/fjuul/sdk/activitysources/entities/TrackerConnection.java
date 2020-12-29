@@ -5,6 +5,9 @@ import java.util.Date;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+/**
+ * A class that represents information about the connected activity source.
+ */
 public class TrackerConnection {
     @NonNull
     private String id;
@@ -26,21 +29,37 @@ public class TrackerConnection {
         this.endedAt = endedAt;
     }
 
+    /**
+     * Returns the unique ID of the established connection.
+     * @return id
+     */
     @NonNull
     public String getId() {
         return id;
     }
 
+    /**
+     * Returns the underlying string presentation of the connected activity source. This value can be matched with
+     * {@link ActivitySource.TrackerValue#getValue()}.
+     * @return tracker value
+     */
     @NonNull
     public String getTracker() {
         return tracker;
     }
 
+    /** Returns the date when the connection was created.
+     * @return creation date
+     */
     @NonNull
     public Date getCreatedAt() {
         return createdAt;
     }
 
+    /**
+     * Returns the end date of the established connection. If it's null, then this tracker connection is still active.
+     * @return ending date
+     */
     @Nullable
     public Date getEndedAt() {
         return endedAt;

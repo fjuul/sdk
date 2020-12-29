@@ -12,6 +12,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * A class that encapsulates parameters for syncing intraday data of Google Fit. In order to build the instance of this
+ * class, use {@link Builder}.
+ */
 public final class GFIntradaySyncOptions extends GFSyncOptions {
     @NonNull private final Set<FitnessMetricsType> metrics;
 
@@ -25,6 +29,10 @@ public final class GFIntradaySyncOptions extends GFSyncOptions {
         this.metrics = metrics;
     }
 
+    /**
+     * Builder of {@link GFIntradaySyncOptions}. The start date, the end date, and at least one fitness metric must be
+     * specified during the building.
+     */
     public static class Builder {
         @NonNull private Clock clock;
         private Set<FitnessMetricsType> metrics = new HashSet<>();

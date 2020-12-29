@@ -10,6 +10,10 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDate;
 
+/**
+ * A class that encapsulates parameters for syncing sessions of Google Fit. In order to build the instance of this class,
+ * use {@link Builder}.
+ */
 public final class GFSessionSyncOptions extends GFSyncOptions {
     @NonNull private final Duration minimumSessionDuration;
 
@@ -23,6 +27,10 @@ public final class GFSessionSyncOptions extends GFSyncOptions {
         return minimumSessionDuration;
     }
 
+    /**
+     * Builder of {@link GFSessionSyncOptions}. The start date, the end date, and the minimum session duration must be
+     * specified during the building.
+     */
     public static class Builder {
         @NonNull private final Clock clock;
         @Nullable private LocalDate startDate;

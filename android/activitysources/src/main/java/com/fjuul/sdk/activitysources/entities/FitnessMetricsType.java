@@ -2,6 +2,9 @@ package com.fjuul.sdk.activitysources.entities;
 
 import androidx.annotation.NonNull;
 
+/**
+ * General enumeration of activity metrics used in Fjuul SDK.
+ */
 public enum FitnessMetricsType {
     INTRADAY_CALORIES,
     INTRADAY_HEART_RATE,

@@ -12,7 +12,8 @@ public abstract class ActivitySource {
         FITBIT("fitbit"),
         GARMIN("garmin"),
         POLAR("polar"),
-        GOOGLE_FIT("googlefit");
+        GOOGLE_FIT("googlefit"),
+        SUUNTO("suunto");
 
         @NonNull
         private final String value;

@@ -1,14 +1,14 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import android.annotation.SuppressLint;
+import java.util.stream.Stream;
 
+import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.util.stream.Stream;
-
 /**
  * A base class for all activity source classes.
+ *
  * @see FitbitActivitySource
  * @see GarminActivitySource
  * @see GoogleFitActivitySource
@@ -28,6 +28,7 @@ public abstract class ActivitySource {
 
         @NonNull
         private final String value;
+
         TrackerValue(@NonNull String value) {
             this.value = value;
         }
@@ -40,16 +41,14 @@ public abstract class ActivitySource {
         @SuppressLint("NewApi")
         @Nullable
         public static TrackerValue forValue(@NonNull String value) {
-            return Stream.of(TrackerValue.values())
-                .filter(t -> t.value.equals(value))
-                .findFirst()
-                .orElse(null);
+            return Stream.of(TrackerValue.values()).filter(t -> t.value.equals(value)).findFirst().orElse(null);
         }
     }
 
     /**
      * Returns the tracker value of the ActivitySource class.
-     * @return
+     *
+     * @return tracker value
      */
     @NonNull
     protected abstract TrackerValue getTrackerValue();

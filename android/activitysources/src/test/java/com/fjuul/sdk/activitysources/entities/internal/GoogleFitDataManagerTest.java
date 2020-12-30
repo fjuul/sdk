@@ -1,35 +1,20 @@
 package com.fjuul.sdk.activitysources.entities.internal;
 
-import android.os.Build;
-
-import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
-import com.fjuul.sdk.activitysources.entities.GFIntradaySyncOptions;
-import com.fjuul.sdk.activitysources.entities.GFSessionSyncOptions;
-import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFCalorieDataPoint;
-import com.fjuul.sdk.activitysources.entities.internal.GFClientWrapper;
-import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPointsBatch;
-import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRSummaryDataPoint;
-import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSessionBundle;
-import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFStepsDataPoint;
-import com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata.GFSyncMetadataStore;
-import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
-import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.MaxTriesCountExceededException;
-import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
-import com.fjuul.sdk.core.exceptions.ApiExceptions;
-import com.fjuul.sdk.core.http.utils.ApiCall;
-import com.fjuul.sdk.core.http.utils.ApiCallCallback;
-import com.fjuul.sdk.core.http.utils.ApiCallResult;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
-
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -48,21 +33,35 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
+import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
+import com.fjuul.sdk.activitysources.entities.GFIntradaySyncOptions;
+import com.fjuul.sdk.activitysources.entities.GFSessionSyncOptions;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFCalorieDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPointsBatch;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRSummaryDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSessionBundle;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFStepsDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata.GFSyncMetadataStore;
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.MaxTriesCountExceededException;
+import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
+import com.fjuul.sdk.core.exceptions.ApiExceptions;
+import com.fjuul.sdk.core.http.utils.ApiCall;
+import com.fjuul.sdk.core.http.utils.ApiCallCallback;
+import com.fjuul.sdk.core.http.utils.ApiCallResult;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
+
+import android.os.Build;
 
 @RunWith(Enclosed.class)
 public class GoogleFitDataManagerTest {
@@ -75,7 +74,7 @@ public class GoogleFitDataManagerTest {
 
     @RunWith(RobolectricTestRunner.class)
     @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
-    public abstract static class GivenRobolectricContext { }
+    public abstract static class GivenRobolectricContext {}
 
     public static class SyncIntradayMetricsTest extends GFClientWrapperTest.GivenRobolectricContext {
         final String currentInstant = "2020-10-05T09:30:00Z";
@@ -96,27 +95,29 @@ public class GoogleFitDataManagerTest {
             mockedActivitySourcesService = mock(ActivitySourcesService.class);
             GFDataUtils gfDataUtils = new GFDataUtils(testZoneId, fixedClock);
             gfDataUtilsSpy = spy(gfDataUtils);
-            subject = new GoogleFitDataManager(mockedGFClientWrapper, gfDataUtilsSpy, mockedGFSyncMetadataStore, mockedActivitySourcesService);
+            subject = new GoogleFitDataManager(mockedGFClientWrapper,
+                gfDataUtilsSpy,
+                mockedGFSyncMetadataStore,
+                mockedActivitySourcesService);
         }
 
         @Test
-        public void syncIntradayMetrics_emptyGFDataResponseForCalories_returnsSuccessfulTask() throws ExecutionException, InterruptedException {
+        public void syncIntradayMetrics_emptyGFDataResponseForCalories_returnsSuccessfulTask()
+            throws ExecutionException, InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
-            final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder(fixedClock)
-                .include(FitnessMetricsType.INTRADAY_CALORIES)
-                .setDateRange(startDate, endDate)
-                .build();
+            final GFIntradaySyncOptions options =
+                new GFIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_CALORIES)
+                    .setDateRange(startDate, endDate)
+                    .build();
 
-            final Date startRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()
-            );
-            final Date endRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant()
-            );
+            final Date startRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant());
+            final Date endRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant());
 
-            when(mockedGFClientWrapper.getCalories(startRequestDate, endRequestDate)).
-                thenReturn(Tasks.forResult(Collections.emptyList()));
+            when(mockedGFClientWrapper.getCalories(startRequestDate, endRequestDate))
+                .thenReturn(Tasks.forResult(Collections.emptyList()));
 
             Task<Void> result = subject.syncIntradayMetrics(options);
             testExecutor.submit(() -> Tasks.await(result)).get();
@@ -129,8 +130,7 @@ public class GoogleFitDataManagerTest {
                 Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()),
                 Date.from(LocalDateTime.parse("2020-10-03T00:00:00").atZone(testZoneId).toInstant()),
                 Collections.emptyList(),
-                Duration.ofMinutes(30)
-            );
+                Duration.ofMinutes(30));
             // should ask client-wrapper for data for the specified time interval in the local timezone
             verify(mockedGFClientWrapper).getCalories(startRequestDate, endRequestDate);
             // shouldn't interact with the activity sources service
@@ -143,17 +143,15 @@ public class GoogleFitDataManagerTest {
         public void syncIntradayMetrics_failedGFRequestForSteps_returnsFailedTask() throws InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
-            final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder(fixedClock)
-                .include(FitnessMetricsType.INTRADAY_STEPS)
-                .setDateRange(startDate, endDate)
-                .build();
+            final GFIntradaySyncOptions options =
+                new GFIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_STEPS)
+                    .setDateRange(startDate, endDate)
+                    .build();
 
-            final Date startRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()
-            );
-            final Date endRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant()
-            );
+            final Date startRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant());
+            final Date endRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant());
 
             when(mockedGFClientWrapper.getSteps(startRequestDate, endRequestDate))
                 .thenReturn(Tasks.forException(new MaxTriesCountExceededException("failed")));
@@ -161,14 +159,13 @@ public class GoogleFitDataManagerTest {
             Task<Void> result = subject.syncIntradayMetrics(options);
             try {
                 testExecutor.submit(() -> Tasks.await(result)).get();
-            } catch (ExecutionException exception) { /* expected exception */ }
+            } catch (ExecutionException exception) {
+                /* expected exception */ }
 
             assertFalse("should return failed task", result.isSuccessful());
             assertThat(result.getException(), instanceOf(MaxTriesCountExceededException.class));
             MaxTriesCountExceededException exception = (MaxTriesCountExceededException) result.getException();
-            assertEquals("exception should have message",
-                "failed",
-                exception.getMessage());
+            assertEquals("exception should have message", "failed", exception.getMessage());
 
             // should ask client-wrapper for data for the specified time interval in the local timezone
             verify(mockedGFClientWrapper).getSteps(startRequestDate, endRequestDate);
@@ -182,29 +179,25 @@ public class GoogleFitDataManagerTest {
         }
 
         @Test
-        public void syncIntradayMetrics_alreadySyncedGFDataResponseForCalories_returnsSuccessfulTask() throws ExecutionException, InterruptedException {
+        public void syncIntradayMetrics_alreadySyncedGFDataResponseForCalories_returnsSuccessfulTask()
+            throws ExecutionException, InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
-            final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder(fixedClock)
-                .include(FitnessMetricsType.INTRADAY_CALORIES)
-                .setDateRange(startDate, endDate)
-                .build();
+            final GFIntradaySyncOptions options =
+                new GFIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_CALORIES)
+                    .setDateRange(startDate, endDate)
+                    .build();
 
-            final Date startRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()
-            );
-            final Date endRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant()
-            );
+            final Date startRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant());
+            final Date endRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant());
 
-            List<GFCalorieDataPoint> calories = Stream.of(
-                new GFCalorieDataPoint(10f,
-                    Date.from(Instant.parse("2020-10-01T09:01:00Z")),
-                    "derived:com.google.calories.expended:Brand:tracker"
-                )
-            ).collect(Collectors.toList());
-            when(mockedGFClientWrapper.getCalories(startRequestDate, endRequestDate)).
-                thenReturn(Tasks.forResult(calories));
+            List<GFCalorieDataPoint> calories = Stream.of(new GFCalorieDataPoint(10f,
+                Date.from(Instant.parse("2020-10-01T09:01:00Z")),
+                "derived:com.google.calories.expended:Brand:tracker")).collect(Collectors.toList());
+            when(mockedGFClientWrapper.getCalories(startRequestDate, endRequestDate))
+                .thenReturn(Tasks.forResult(calories));
             when(mockedGFSyncMetadataStore.isNeededToSyncCaloriesBatch(any())).thenReturn(false);
 
             Task<Void> result = subject.syncIntradayMetrics(options);
@@ -218,15 +211,12 @@ public class GoogleFitDataManagerTest {
                 Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()),
                 Date.from(LocalDateTime.parse("2020-10-03T00:00:00").atZone(testZoneId).toInstant()),
                 calories,
-                Duration.ofMinutes(30)
-            );
+                Duration.ofMinutes(30));
             // should ask client-wrapper for data for the specified time interval in the local timezone
             verify(mockedGFClientWrapper).getCalories(startRequestDate, endRequestDate);
             // should ask the metadata store about the calories batch
             verify(mockedGFSyncMetadataStore).isNeededToSyncCaloriesBatch(argThat(caloriesBatch -> {
-                assertEquals("calories batch should have data points",
-                    calories,
-                    caloriesBatch.getPoints());
+                assertEquals("calories batch should have data points", calories, caloriesBatch.getPoints());
                 assertEquals("calories batch should have right start time",
                     Date.from(Instant.parse("2020-10-01T09:00:00Z")),
                     caloriesBatch.getStartTime());
@@ -240,55 +230,49 @@ public class GoogleFitDataManagerTest {
         }
 
         @Test
-        public void syncIntradayMetrics_notSyncedGFDataResponseForCaloriesWithFailedApiRequest_returnsFailedTask() throws InterruptedException {
+        public void syncIntradayMetrics_notSyncedGFDataResponseForCaloriesWithFailedApiRequest_returnsFailedTask()
+            throws InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
-            final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder(fixedClock)
-                .include(FitnessMetricsType.INTRADAY_CALORIES)
-                .setDateRange(startDate, endDate)
-                .build();
+            final GFIntradaySyncOptions options =
+                new GFIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_CALORIES)
+                    .setDateRange(startDate, endDate)
+                    .build();
 
-            final Date startRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()
-            );
-            final Date endRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant()
-            );
+            final Date startRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant());
+            final Date endRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant());
 
-            List<GFCalorieDataPoint> calories = Stream.of(
-                new GFCalorieDataPoint(10f,
-                    Date.from(Instant.parse("2020-10-01T09:01:00Z")),
-                    "derived:com.google.calories.expended:Brand:tracker"
-                )
-            ).collect(Collectors.toList());
-            when(mockedGFClientWrapper.getCalories(startRequestDate, endRequestDate)).
-                thenReturn(Tasks.forResult(calories));
+            List<GFCalorieDataPoint> calories = Stream.of(new GFCalorieDataPoint(10f,
+                Date.from(Instant.parse("2020-10-01T09:01:00Z")),
+                "derived:com.google.calories.expended:Brand:tracker")).collect(Collectors.toList());
+            when(mockedGFClientWrapper.getCalories(startRequestDate, endRequestDate))
+                .thenReturn(Tasks.forResult(calories));
             when(mockedGFSyncMetadataStore.isNeededToSyncCaloriesBatch(any())).thenReturn(true);
 
 
             final ApiCall<Void> mockedApiCall = mock(ApiCall.class);
-            final ApiExceptions.BadRequestException apiCallException = new ApiExceptions.BadRequestException("Bad request");
+            final ApiExceptions.BadRequestException apiCallException =
+                new ApiExceptions.BadRequestException("Bad request");
             doAnswer(invocation -> {
-                    final ApiCallCallback<Void> callback = invocation.getArgument(0, ApiCallCallback.class);
-                    callback.onResult(null, ApiCallResult.error(apiCallException));
-                    return null;
+                final ApiCallCallback<Void> callback = invocation.getArgument(0, ApiCallCallback.class);
+                callback.onResult(null, ApiCallResult.error(apiCallException));
+                return null;
             }).when(mockedApiCall).enqueue(any());
             when(mockedActivitySourcesService.uploadGoogleFitData(any())).thenReturn(mockedApiCall);
 
             Task<Void> result = subject.syncIntradayMetrics(options);
             try {
                 testExecutor.submit(() -> Tasks.await(result)).get();
-            } catch (ExecutionException exception) { /* expected exception */ }
+            } catch (ExecutionException exception) {
+                /* expected exception */ }
 
             assertFalse("should return failed task", result.isSuccessful());
             assertThat(result.getException(), instanceOf(CommonException.class));
             CommonException exception = (CommonException) result.getException();
-            assertEquals("should have exception message",
-                "Failed to send data to the server",
-                exception.getMessage());
-            assertEquals("should have exception cause",
-                apiCallException,
-                exception.getCause());
+            assertEquals("should have exception message", "Failed to send data to the server", exception.getMessage());
+            assertEquals("should have exception cause", apiCallException, exception.getCause());
             // should adjust input dates for the batching
             verify(gfDataUtilsSpy).adjustInputDatesForBatches(startDate, endDate, Duration.ofMinutes(30));
             // should split the gf response into 30-minutes batches taking into account the local timezone
@@ -296,15 +280,12 @@ public class GoogleFitDataManagerTest {
                 Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()),
                 Date.from(LocalDateTime.parse("2020-10-03T00:00:00").atZone(testZoneId).toInstant()),
                 calories,
-                Duration.ofMinutes(30)
-            );
+                Duration.ofMinutes(30));
             // should ask client-wrapper for data for the specified time interval in the local timezone
             verify(mockedGFClientWrapper).getCalories(startRequestDate, endRequestDate);
             // should ask the metadata store about the calories batch
             verify(mockedGFSyncMetadataStore).isNeededToSyncCaloriesBatch(argThat(caloriesBatch -> {
-                assertEquals("calories batch should have data points",
-                    calories,
-                    caloriesBatch.getPoints());
+                assertEquals("calories batch should have data points", calories, caloriesBatch.getPoints());
                 assertEquals("calories batch should have right start time",
                     Date.from(Instant.parse("2020-10-01T09:00:00Z")),
                     caloriesBatch.getStartTime());
@@ -323,29 +304,25 @@ public class GoogleFitDataManagerTest {
         }
 
         @Test
-        public void syncIntradayMetrics_notSyncedGFDataResponseForCaloriesWithSuccessfulApiRequest_returnsSuccessfulTask() throws InterruptedException {
+        public void syncIntradayMetrics_notSyncedGFDataResponseForCaloriesWithSuccessfulApiRequest_returnsSuccessfulTask()
+            throws InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
-            final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder(fixedClock)
-                .include(FitnessMetricsType.INTRADAY_CALORIES)
-                .setDateRange(startDate, endDate)
-                .build();
+            final GFIntradaySyncOptions options =
+                new GFIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_CALORIES)
+                    .setDateRange(startDate, endDate)
+                    .build();
 
-            final Date startRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()
-            );
-            final Date endRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant()
-            );
+            final Date startRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant());
+            final Date endRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant());
 
-            List<GFCalorieDataPoint> calories = Stream.of(
-                new GFCalorieDataPoint(10f,
-                    Date.from(Instant.parse("2020-10-01T09:01:00Z")),
-                    "derived:com.google.calories.expended:Brand:tracker"
-                )
-            ).collect(Collectors.toList());
-            when(mockedGFClientWrapper.getCalories(startRequestDate, endRequestDate)).
-                thenReturn(Tasks.forResult(calories));
+            List<GFCalorieDataPoint> calories = Stream.of(new GFCalorieDataPoint(10f,
+                Date.from(Instant.parse("2020-10-01T09:01:00Z")),
+                "derived:com.google.calories.expended:Brand:tracker")).collect(Collectors.toList());
+            when(mockedGFClientWrapper.getCalories(startRequestDate, endRequestDate))
+                .thenReturn(Tasks.forResult(calories));
             when(mockedGFSyncMetadataStore.isNeededToSyncCaloriesBatch(any())).thenReturn(true);
 
 
@@ -360,7 +337,8 @@ public class GoogleFitDataManagerTest {
             Task<Void> result = subject.syncIntradayMetrics(options);
             try {
                 testExecutor.submit(() -> Tasks.await(result)).get();
-            } catch (ExecutionException exception) { /* expected exception */ }
+            } catch (ExecutionException exception) {
+                /* expected exception */ }
 
             assertTrue("should return successful task", result.isSuccessful());
             // should adjust input dates for the batching
@@ -370,18 +348,16 @@ public class GoogleFitDataManagerTest {
                 Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()),
                 Date.from(LocalDateTime.parse("2020-10-03T00:00:00").atZone(testZoneId).toInstant()),
                 calories,
-                Duration.ofMinutes(30)
-            );
+                Duration.ofMinutes(30));
             // should ask client-wrapper for data for the specified time interval in the local timezone
             verify(mockedGFClientWrapper).getCalories(startRequestDate, endRequestDate);
 
             // should ask the metadata store about the calories batch
-            ArgumentCaptor<GFDataPointsBatch<GFCalorieDataPoint>> caloriesBatchCaptor = ArgumentCaptor.forClass(GFDataPointsBatch.class);
+            ArgumentCaptor<GFDataPointsBatch<GFCalorieDataPoint>> caloriesBatchCaptor =
+                ArgumentCaptor.forClass(GFDataPointsBatch.class);
             verify(mockedGFSyncMetadataStore).isNeededToSyncCaloriesBatch(caloriesBatchCaptor.capture());
             GFDataPointsBatch<GFCalorieDataPoint> caloriesBatch = caloriesBatchCaptor.getValue();
-            assertEquals("calories batch should have data points",
-                calories,
-                caloriesBatch.getPoints());
+            assertEquals("calories batch should have data points", calories, caloriesBatch.getPoints());
             assertEquals("calories batch should have right start time",
                 Date.from(Instant.parse("2020-10-01T09:00:00Z")),
                 caloriesBatch.getStartTime());
@@ -398,48 +374,37 @@ public class GoogleFitDataManagerTest {
         }
 
         @Test
-        public void syncIntradayMetrics_notSyncedGFDataResponseForAllMetricsWithSuccessfulApiRequest_returnsSuccessfulTask() throws InterruptedException, ExecutionException {
+        public void syncIntradayMetrics_notSyncedGFDataResponseForAllMetricsWithSuccessfulApiRequest_returnsSuccessfulTask()
+            throws InterruptedException, ExecutionException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
-            final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder(fixedClock)
-                .include(FitnessMetricsType.INTRADAY_CALORIES)
-                .include(FitnessMetricsType.INTRADAY_HEART_RATE)
-                .include(FitnessMetricsType.INTRADAY_STEPS)
-                .setDateRange(startDate, endDate)
-                .build();
+            final GFIntradaySyncOptions options =
+                new GFIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_CALORIES)
+                    .include(FitnessMetricsType.INTRADAY_HEART_RATE)
+                    .include(FitnessMetricsType.INTRADAY_STEPS)
+                    .setDateRange(startDate, endDate)
+                    .build();
 
-            final Date startRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()
-            );
-            final Date endRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant()
-            );
+            final Date startRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant());
+            final Date endRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant());
 
-            List<GFCalorieDataPoint> calories = Stream.of(
-                new GFCalorieDataPoint(10f,
-                    Date.from(LocalDateTime.parse("2020-10-01T09:01:00").atZone(testZoneId).toInstant()),
-                    "derived:com.google.calories.expended:Brand:tracker"
-                )
-            ).collect(Collectors.toList());
-            List<GFStepsDataPoint> steps = Stream.of(
-                new GFStepsDataPoint(
-                    185,
-                    Date.from(LocalDateTime.parse("2020-10-01T09:01:00").atZone(testZoneId).toInstant()),
-                    "derived:com.google.step_count.delta:Brand:tracker")
-            ).collect(Collectors.toList());
-            List<GFHRSummaryDataPoint> hr = Stream.of(
-                new GFHRSummaryDataPoint(
-                    70f,
-                    69f,
-                    71f,
-                    Date.from(LocalDateTime.parse("2020-10-01T09:01:00").atZone(testZoneId).toInstant()),
-                    "derived:com.google.heart_rate.summary:Brand:tracker")
-            ).collect(Collectors.toList());
+            List<GFCalorieDataPoint> calories = Stream.of(new GFCalorieDataPoint(10f,
+                Date.from(LocalDateTime.parse("2020-10-01T09:01:00").atZone(testZoneId).toInstant()),
+                "derived:com.google.calories.expended:Brand:tracker")).collect(Collectors.toList());
+            List<GFStepsDataPoint> steps = Stream.of(new GFStepsDataPoint(185,
+                Date.from(LocalDateTime.parse("2020-10-01T09:01:00").atZone(testZoneId).toInstant()),
+                "derived:com.google.step_count.delta:Brand:tracker")).collect(Collectors.toList());
+            List<GFHRSummaryDataPoint> hr = Stream.of(new GFHRSummaryDataPoint(70f,
+                69f,
+                71f,
+                Date.from(LocalDateTime.parse("2020-10-01T09:01:00").atZone(testZoneId).toInstant()),
+                "derived:com.google.heart_rate.summary:Brand:tracker")).collect(Collectors.toList());
 
-            when(mockedGFClientWrapper.getCalories(startRequestDate, endRequestDate)).
-                thenReturn(Tasks.forResult(calories));
-            when(mockedGFClientWrapper.getSteps(startRequestDate,endRequestDate))
-                .thenReturn(Tasks.forResult(steps));
+            when(mockedGFClientWrapper.getCalories(startRequestDate, endRequestDate))
+                .thenReturn(Tasks.forResult(calories));
+            when(mockedGFClientWrapper.getSteps(startRequestDate, endRequestDate)).thenReturn(Tasks.forResult(steps));
             when(mockedGFClientWrapper.getHRSummaries(startRequestDate, endRequestDate))
                 .thenReturn(Tasks.forResult(hr));
 
@@ -470,22 +435,19 @@ public class GoogleFitDataManagerTest {
                 Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()),
                 Date.from(LocalDateTime.parse("2020-10-03T00:00:00").atZone(testZoneId).toInstant()),
                 calories,
-                Duration.ofMinutes(30)
-            );
+                Duration.ofMinutes(30));
             // should split the gf steps into 6-hours batches taking into account the local timezone
             verify(gfDataUtilsSpy).groupPointsIntoBatchesByDuration(
                 Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()),
                 Date.from(LocalDateTime.parse("2020-10-03T00:00:00").atZone(testZoneId).toInstant()),
                 steps,
-                Duration.ofHours(6)
-            );
+                Duration.ofHours(6));
             // should split the gf hr into 30-minutes batches taking into account the local timezone
             verify(gfDataUtilsSpy).groupPointsIntoBatchesByDuration(
                 Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()),
                 Date.from(LocalDateTime.parse("2020-10-03T00:00:00").atZone(testZoneId).toInstant()),
                 hr,
-                Duration.ofMinutes(30)
-            );
+                Duration.ofMinutes(30));
 
             // should ask client-wrapper for calories data for the specified time interval in the local timezone
             verify(mockedGFClientWrapper).getCalories(startRequestDate, endRequestDate);
@@ -495,12 +457,11 @@ public class GoogleFitDataManagerTest {
             verify(mockedGFClientWrapper).getHRSummaries(startRequestDate, endRequestDate);
 
             // should ask the metadata store about the calories batch
-            ArgumentCaptor<GFDataPointsBatch<GFCalorieDataPoint>> caloriesBatchCaptor = ArgumentCaptor.forClass(GFDataPointsBatch.class);
+            ArgumentCaptor<GFDataPointsBatch<GFCalorieDataPoint>> caloriesBatchCaptor =
+                ArgumentCaptor.forClass(GFDataPointsBatch.class);
             verify(mockedGFSyncMetadataStore).isNeededToSyncCaloriesBatch(caloriesBatchCaptor.capture());
             GFDataPointsBatch<GFCalorieDataPoint> caloriesBatch = caloriesBatchCaptor.getValue();
-            assertEquals("calories batch should have data points",
-                caloriesBatch.getPoints(),
-                calories);
+            assertEquals("calories batch should have data points", caloriesBatch.getPoints(), calories);
             assertEquals("calories batch should have right start time",
                 Date.from(LocalDateTime.parse("2020-10-01T09:00:00").atZone(testZoneId).toInstant()),
                 caloriesBatch.getStartTime());
@@ -509,12 +470,11 @@ public class GoogleFitDataManagerTest {
                 caloriesBatch.getEndTime());
 
             // should ask the metadata store about the steps batch
-            ArgumentCaptor<GFDataPointsBatch<GFStepsDataPoint>> stepsBatchCaptor = ArgumentCaptor.forClass(GFDataPointsBatch.class);
+            ArgumentCaptor<GFDataPointsBatch<GFStepsDataPoint>> stepsBatchCaptor =
+                ArgumentCaptor.forClass(GFDataPointsBatch.class);
             verify(mockedGFSyncMetadataStore).isNeededToSyncStepsBatch(stepsBatchCaptor.capture());
             GFDataPointsBatch<GFStepsDataPoint> stepsBatch = stepsBatchCaptor.getValue();
-            assertEquals("steps batch should have data points",
-                steps,
-                stepsBatch.getPoints());
+            assertEquals("steps batch should have data points", steps, stepsBatch.getPoints());
             assertEquals("steps batch should have right start time",
                 Date.from(LocalDateTime.parse("2020-10-01T06:00:00").atZone(testZoneId).toInstant()),
                 stepsBatch.getStartTime());
@@ -523,12 +483,11 @@ public class GoogleFitDataManagerTest {
                 stepsBatch.getEndTime());
 
             // should ask the metadata store about the hr batch
-            ArgumentCaptor<GFDataPointsBatch<GFHRSummaryDataPoint>> hrBatchCaptor = ArgumentCaptor.forClass(GFDataPointsBatch.class);
+            ArgumentCaptor<GFDataPointsBatch<GFHRSummaryDataPoint>> hrBatchCaptor =
+                ArgumentCaptor.forClass(GFDataPointsBatch.class);
             verify(mockedGFSyncMetadataStore).isNeededToSyncHRBatch(hrBatchCaptor.capture());
             GFDataPointsBatch<GFHRSummaryDataPoint> hrBatch = hrBatchCaptor.getValue();
-            assertEquals("hr batch should have data points",
-                hrBatch.getPoints(),
-                hr);
+            assertEquals("hr batch should have data points", hrBatch.getPoints(), hr);
             assertEquals("hr batch should have right start time",
                 Date.from(LocalDateTime.parse("2020-10-01T09:00:00").atZone(testZoneId).toInstant()),
                 hrBatch.getStartTime());
@@ -572,28 +531,30 @@ public class GoogleFitDataManagerTest {
             mockedActivitySourcesService = mock(ActivitySourcesService.class);
             GFDataUtils gfDataUtils = new GFDataUtils(testZoneId, fixedClock);
             gfDataUtilsSpy = spy(gfDataUtils);
-            subject = new GoogleFitDataManager(mockedGFClientWrapper, gfDataUtilsSpy, mockedGFSyncMetadataStore, mockedActivitySourcesService);
+            subject = new GoogleFitDataManager(mockedGFClientWrapper,
+                gfDataUtilsSpy,
+                mockedGFSyncMetadataStore,
+                mockedActivitySourcesService);
         }
 
         @Test
-        public void syncSessions_emptyGFResponse_returnsSuccessfulTask() throws ExecutionException, InterruptedException {
+        public void syncSessions_emptyGFResponse_returnsSuccessfulTask()
+            throws ExecutionException, InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
             final Duration minDuration = Duration.ofMinutes(5);
-            final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder(fixedClock)
-                .setMinimumSessionDuration(minDuration)
-                .setDateRange(startDate, endDate)
-                .build();
+            final GFSessionSyncOptions options =
+                new GFSessionSyncOptions.Builder(fixedClock).setMinimumSessionDuration(minDuration)
+                    .setDateRange(startDate, endDate)
+                    .build();
 
-            final Date startRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()
-            );
-            final Date endRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant()
-            );
+            final Date startRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant());
+            final Date endRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant());
 
-            when(mockedGFClientWrapper.getSessions(startRequestDate, endRequestDate, minDuration)).
-                thenReturn(Tasks.forResult(Collections.emptyList()));
+            when(mockedGFClientWrapper.getSessions(startRequestDate, endRequestDate, minDuration))
+                .thenReturn(Tasks.forResult(Collections.emptyList()));
 
             Task<Void> result = subject.syncSessions(options);
             testExecutor.submit(() -> Tasks.await(result)).get();
@@ -608,28 +569,26 @@ public class GoogleFitDataManagerTest {
         }
 
         @Test
-        public void syncSessions_whenAlreadySyncedSession_returnsSuccessfulTask() throws ExecutionException, InterruptedException {
+        public void syncSessions_whenAlreadySyncedSession_returnsSuccessfulTask()
+            throws ExecutionException, InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
             final Duration minDuration = Duration.ofMinutes(5);
-            final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder(fixedClock)
-                .setMinimumSessionDuration(minDuration)
-                .setDateRange(startDate, endDate)
-                .build();
+            final GFSessionSyncOptions options =
+                new GFSessionSyncOptions.Builder(fixedClock).setMinimumSessionDuration(minDuration)
+                    .setDateRange(startDate, endDate)
+                    .build();
 
-            final Date startRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()
-            );
-            final Date endRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant()
-            );
+            final Date startRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant());
+            final Date endRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant());
 
             final GFSessionBundle stubSessionBundle = mock(GFSessionBundle.class);
 
             when(mockedGFClientWrapper.getSessions(startRequestDate, endRequestDate, minDuration))
                 .thenReturn(Tasks.forResult(Arrays.asList(stubSessionBundle)));
-            when(mockedGFSyncMetadataStore.isNeededToSyncSessionBundle(stubSessionBundle))
-                .thenReturn(false);
+            when(mockedGFSyncMetadataStore.isNeededToSyncSessionBundle(stubSessionBundle)).thenReturn(false);
 
             Task<Void> result = subject.syncSessions(options);
             testExecutor.submit(() -> Tasks.await(result)).get();
@@ -645,30 +604,29 @@ public class GoogleFitDataManagerTest {
         }
 
         @Test
-        public void syncSessions_whenNotSyncedSessionWithFailedApiRequest_returnsSuccessfulTask() throws ExecutionException, InterruptedException {
+        public void syncSessions_whenNotSyncedSessionWithFailedApiRequest_returnsSuccessfulTask()
+            throws ExecutionException, InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
             final Duration minDuration = Duration.ofMinutes(5);
-            final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder(fixedClock)
-                .setMinimumSessionDuration(minDuration)
-                .setDateRange(startDate, endDate)
-                .build();
+            final GFSessionSyncOptions options =
+                new GFSessionSyncOptions.Builder(fixedClock).setMinimumSessionDuration(minDuration)
+                    .setDateRange(startDate, endDate)
+                    .build();
 
-            final Date startRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()
-            );
-            final Date endRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant()
-            );
+            final Date startRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant());
+            final Date endRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant());
 
             final GFSessionBundle stubSessionBundle = mock(GFSessionBundle.class);
 
             when(mockedGFClientWrapper.getSessions(startRequestDate, endRequestDate, minDuration))
                 .thenReturn(Tasks.forResult(Arrays.asList(stubSessionBundle)));
-            when(mockedGFSyncMetadataStore.isNeededToSyncSessionBundle(stubSessionBundle))
-                .thenReturn(true);
+            when(mockedGFSyncMetadataStore.isNeededToSyncSessionBundle(stubSessionBundle)).thenReturn(true);
             final ApiCall mockedApiCall = mock(ApiCall.class);
-            final ApiExceptions.BadRequestException requestException = new ApiExceptions.BadRequestException("Bad request");
+            final ApiExceptions.BadRequestException requestException =
+                new ApiExceptions.BadRequestException("Bad request");
             doAnswer(invocation -> {
                 final ApiCallCallback<Void> callback = invocation.getArgument(0, ApiCallCallback.class);
                 callback.onResult(null, ApiCallResult.error(requestException));
@@ -679,17 +637,14 @@ public class GoogleFitDataManagerTest {
             Task<Void> result = subject.syncSessions(options);
             try {
                 testExecutor.submit(() -> Tasks.await(result)).get();
-            } catch (ExecutionException exc) { /* expected exception */ }
+            } catch (ExecutionException exc) {
+                /* expected exception */ }
 
             assertFalse("should return unsuccessful task", result.isSuccessful());
             assertThat(result.getException(), instanceOf(CommonException.class));
-            CommonException exception = (CommonException)result.getException();
-            assertEquals("exception should have message",
-                "Failed to send data to the server",
-                exception.getMessage());
-            assertEquals("exception should carry original cause",
-                requestException,
-                exception.getCause());
+            CommonException exception = (CommonException) result.getException();
+            assertEquals("exception should have message", "Failed to send data to the server", exception.getMessage());
+            assertEquals("exception should carry original cause", requestException, exception.getCause());
             // should ask client-wrapper for data for the specified time interval in the local timezone
             verify(mockedGFClientWrapper).getSessions(startRequestDate, endRequestDate, minDuration);
             // should ask the sync metadata store about session
@@ -706,28 +661,26 @@ public class GoogleFitDataManagerTest {
         }
 
         @Test
-        public void syncSessions_whenNotSyncedSessionWithSuccessfulApiRequest_returnsSuccessfulTask() throws ExecutionException, InterruptedException {
+        public void syncSessions_whenNotSyncedSessionWithSuccessfulApiRequest_returnsSuccessfulTask()
+            throws ExecutionException, InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
             final Duration minDuration = Duration.ofMinutes(5);
-            final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder(fixedClock)
-                .setMinimumSessionDuration(minDuration)
-                .setDateRange(startDate, endDate)
-                .build();
+            final GFSessionSyncOptions options =
+                new GFSessionSyncOptions.Builder(fixedClock).setMinimumSessionDuration(minDuration)
+                    .setDateRange(startDate, endDate)
+                    .build();
 
-            final Date startRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()
-            );
-            final Date endRequestDate = Date.from(
-                LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant()
-            );
+            final Date startRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant());
+            final Date endRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant());
 
             final GFSessionBundle stubSessionBundle = mock(GFSessionBundle.class);
 
             when(mockedGFClientWrapper.getSessions(startRequestDate, endRequestDate, minDuration))
                 .thenReturn(Tasks.forResult(Arrays.asList(stubSessionBundle)));
-            when(mockedGFSyncMetadataStore.isNeededToSyncSessionBundle(stubSessionBundle))
-                .thenReturn(true);
+            when(mockedGFSyncMetadataStore.isNeededToSyncSessionBundle(stubSessionBundle)).thenReturn(true);
             final ApiCall mockedApiCall = mock(ApiCall.class);
             doAnswer(invocation -> {
                 final ApiCallCallback<Void> callback = invocation.getArgument(0, ApiCallCallback.class);

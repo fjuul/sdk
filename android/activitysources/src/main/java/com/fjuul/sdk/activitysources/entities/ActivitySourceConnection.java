@@ -31,7 +31,9 @@ public class ActivitySourceConnection extends TrackerConnection {
 
     public ActivitySourceConnection(@NonNull TrackerConnection trackerConnection,
         @NonNull ActivitySource activitySource) {
-        super(trackerConnection.getId(), trackerConnection.getTracker(), trackerConnection.getCreatedAt(),
+        super(trackerConnection.getId(),
+            trackerConnection.getTracker(),
+            trackerConnection.getCreatedAt(),
             trackerConnection.getEndedAt());
         this.activitySource = activitySource;
     }

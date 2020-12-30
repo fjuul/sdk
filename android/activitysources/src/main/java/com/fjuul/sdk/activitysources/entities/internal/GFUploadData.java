@@ -1,34 +1,42 @@
 package com.fjuul.sdk.activitysources.entities.internal;
 
-import androidx.annotation.NonNull;
+import java.util.Collections;
+import java.util.List;
 
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFCalorieDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRSummaryDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSessionBundle;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFStepsDataPoint;
 
-import java.util.Collections;
-import java.util.List;
+import androidx.annotation.NonNull;
 
 public class GFUploadData {
-    @NonNull List<GFCalorieDataPoint> caloriesData = Collections.emptyList();
-    @NonNull List<GFStepsDataPoint> stepsData = Collections.emptyList();
-    @NonNull List<GFHRSummaryDataPoint> hrData = Collections.emptyList();
-    @NonNull List<GFSessionBundle> sessionsData = Collections.emptyList();
+    @NonNull
+    List<GFCalorieDataPoint> caloriesData = Collections.emptyList();
+    @NonNull
+    List<GFStepsDataPoint> stepsData = Collections.emptyList();
+    @NonNull
+    List<GFHRSummaryDataPoint> hrData = Collections.emptyList();
+    @NonNull
+    List<GFSessionBundle> sessionsData = Collections.emptyList();
 
-    @NonNull public List<GFCalorieDataPoint> getCaloriesData() {
+    @NonNull
+    public List<GFCalorieDataPoint> getCaloriesData() {
         return caloriesData;
     }
 
-    @NonNull public List<GFStepsDataPoint> getStepsData() {
+    @NonNull
+    public List<GFStepsDataPoint> getStepsData() {
         return stepsData;
     }
 
-    @NonNull public List<GFHRSummaryDataPoint> getHrData() {
+    @NonNull
+    public List<GFHRSummaryDataPoint> getHrData() {
         return hrData;
     }
 
-    @NonNull public List<GFSessionBundle> getSessionsData() {
+    @NonNull
+    public List<GFSessionBundle> getSessionsData() {
         return sessionsData;
     }
 

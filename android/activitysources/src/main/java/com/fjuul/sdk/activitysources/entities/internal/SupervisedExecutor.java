@@ -1,11 +1,11 @@
 package com.fjuul.sdk.activitysources.entities.internal;
 
-import androidx.annotation.NonNull;
+import java.util.concurrent.ExecutorService;
 
 import com.google.android.gms.tasks.CancellationToken;
 import com.google.android.gms.tasks.CancellationTokenSource;
 
-import java.util.concurrent.ExecutorService;
+import androidx.annotation.NonNull;
 
 class SupervisedExecutor {
     private ExecutorService executor;
@@ -14,13 +14,16 @@ class SupervisedExecutor {
 
     private CancellationToken cancellationToken;
 
-    public SupervisedExecutor(@NonNull ExecutorService executor, @NonNull CancellationTokenSource cancellationTokenSource, @NonNull CancellationToken cancellationToken) {
+    public SupervisedExecutor(@NonNull ExecutorService executor,
+        @NonNull CancellationTokenSource cancellationTokenSource,
+        @NonNull CancellationToken cancellationToken) {
         this.executor = executor;
         this.cancellationTokenSource = cancellationTokenSource;
         this.cancellationToken = cancellationToken;
     }
 
-    public SupervisedExecutor(@NonNull ExecutorService executor, @NonNull CancellationTokenSource cancellationTokenSource) {
+    public SupervisedExecutor(@NonNull ExecutorService executor,
+        @NonNull CancellationTokenSource cancellationTokenSource) {
         this(executor, cancellationTokenSource, cancellationTokenSource.getToken());
     }
 

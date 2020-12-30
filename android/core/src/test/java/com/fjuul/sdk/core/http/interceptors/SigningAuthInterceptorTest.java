@@ -72,11 +72,14 @@ public class SigningAuthInterceptorTest {
             .authenticator(interceptorWithAuthenticator)
             .build();
         okhttp3.Response returnedResponse = okHttpClient.newCall(outboundRequest).execute();
-        assertEquals("returns raw response of the issue request", mockedSigningKeyResponse.errorBody(),
+        assertEquals("returns raw response of the issue request",
+            mockedSigningKeyResponse.errorBody(),
             returnedResponse.body());
-        assertEquals("returns raw response of the issue request", mockedSigningKeyResponse.raw().message(),
+        assertEquals("returns raw response of the issue request",
+            mockedSigningKeyResponse.raw().message(),
             returnedResponse.message());
-        assertEquals("returns raw response of the issue request", mockedSigningKeyResponse.raw().code(),
+        assertEquals("returns raw response of the issue request",
+            mockedSigningKeyResponse.raw().code(),
             returnedResponse.code());
         mockWebServer.shutdown();
     }
@@ -155,7 +158,8 @@ public class SigningAuthInterceptorTest {
         for (int i = 0; i < THREAD_POOL_SIZE; i++) {
             // check all outbound requests from threads
             RecordedRequest request = mockWebServer.takeRequest();
-            assertThat("each request carries new key-id", request.getHeader("Signature"),
+            assertThat("each request carries new key-id",
+                request.getHeader("Signature"),
                 CoreMatchers.containsString("valid-key-id"));
         }
     }

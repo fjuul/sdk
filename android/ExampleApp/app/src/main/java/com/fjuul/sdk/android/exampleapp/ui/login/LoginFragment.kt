@@ -24,8 +24,8 @@ import com.fjuul.sdk.android.exampleapp.data.SDKConfigViewModel
 import com.fjuul.sdk.android.exampleapp.data.SDKConfigViewModelFactory
 import com.fjuul.sdk.android.exampleapp.data.SdkEnvironment
 import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
-import com.fjuul.sdk.core.entities.UserCredentials
 import com.fjuul.sdk.core.ApiClient
+import com.fjuul.sdk.core.entities.UserCredentials
 
 class LoginFragment : Fragment() {
     private val sdkConfigViewModel: SDKConfigViewModel by activityViewModels {
@@ -108,8 +108,10 @@ class LoginFragment : Fragment() {
 
             continueButton.setOnClickListener {
                 val (env, apiKey, token, secret) = sdkConfigViewModel.sdkUserConfigState().value!!
-                val apiClient = ApiClient.Builder(context,
-                    ApiClientHolder.getBaseUrlByEnv(env!!), apiKey!!)
+                val apiClient = ApiClient.Builder(
+                    context,
+                    ApiClientHolder.getBaseUrlByEnv(env!!), apiKey!!
+                )
                     .setUserCredentials(UserCredentials(token!!, secret!!))
                     .build()
                 authorizedUserDataViewModel.fetchUserProfile(apiClient) { success, exception ->

@@ -1,11 +1,10 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
-
 import java.time.Clock;
 import java.time.LocalDate;
+
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
 
 public abstract class GFSyncOptions {
     @NonNull
@@ -29,7 +28,9 @@ public abstract class GFSyncOptions {
     }
 
     @SuppressLint("NewApi")
-    protected static void validateDateInputs(@NonNull Clock clock, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
+    protected static void validateDateInputs(@NonNull Clock clock,
+        @NonNull LocalDate startDate,
+        @NonNull LocalDate endDate) {
         if (startDate.isAfter(endDate)) {
             throw new IllegalArgumentException("The start date must be less or equal to the end date");
         }

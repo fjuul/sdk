@@ -1,14 +1,13 @@
 package com.fjuul.sdk.activitysources.http.apis;
 
-import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
+import java.util.Map;
+
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
+import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
 import com.fjuul.sdk.core.http.utils.ApiCall;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import java.util.Map;
-
 import okhttp3.ResponseBody;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;

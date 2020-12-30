@@ -1,43 +1,54 @@
 package com.fjuul.sdk.activitysources.entities.internal.googlefit;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 public class GFSessionBundle {
-    @NonNull private String id;
+    @NonNull
+    private String id;
 
-    @Nullable private String name;
+    @Nullable
+    private String name;
 
-    @Nullable private String applicationIdentifier;
+    @Nullable
+    private String applicationIdentifier;
 
-    @NonNull private Date timeStart;
+    @NonNull
+    private Date timeStart;
 
-    @NonNull private Date timeEnd;
+    @NonNull
+    private Date timeEnd;
 
     // string presentation of activity
     // please keep `transient` for moshi
-    @NonNull private transient String activityType;
+    @NonNull
+    private transient String activityType;
 
     private int type;
 
-    @NonNull private List<GFActivitySegmentDataPoint> activitySegments;
+    @NonNull
+    private List<GFActivitySegmentDataPoint> activitySegments;
 
-    @NonNull private List<GFCalorieDataPoint> calories;
+    @NonNull
+    private List<GFCalorieDataPoint> calories;
 
-    @NonNull private List<GFStepsDataPoint> steps;
+    @NonNull
+    private List<GFStepsDataPoint> steps;
 
-    @NonNull private List<GFHRDataPoint> heartRate;
+    @NonNull
+    private List<GFHRDataPoint> heartRate;
 
-    @NonNull private List<GFPowerDataPoint> power;
+    @NonNull
+    private List<GFPowerDataPoint> power;
 
-    @NonNull private List<GFSpeedDataPoint> speed;
+    @NonNull
+    private List<GFSpeedDataPoint> speed;
 
     @NonNull
     public String getId() {
@@ -104,18 +115,18 @@ public class GFSessionBundle {
     }
 
     private GFSessionBundle(@NonNull String id,
-                            @Nullable String name,
-                            @Nullable String applicationIdentifier,
-                            @NonNull Date timeStart,
-                            @NonNull Date timeEnd,
-                            @NonNull String activityType,
-                            int type,
-                            @NonNull List<GFActivitySegmentDataPoint> activitySegments,
-                            @NonNull List<GFCalorieDataPoint> calories,
-                            @NonNull List<GFStepsDataPoint> steps,
-                            @NonNull List<GFHRDataPoint> heartRate,
-                            @NonNull List<GFPowerDataPoint> power,
-                            @NonNull List<GFSpeedDataPoint> speed) {
+        @Nullable String name,
+        @Nullable String applicationIdentifier,
+        @NonNull Date timeStart,
+        @NonNull Date timeEnd,
+        @NonNull String activityType,
+        int type,
+        @NonNull List<GFActivitySegmentDataPoint> activitySegments,
+        @NonNull List<GFCalorieDataPoint> calories,
+        @NonNull List<GFStepsDataPoint> steps,
+        @NonNull List<GFHRDataPoint> heartRate,
+        @NonNull List<GFPowerDataPoint> power,
+        @NonNull List<GFSpeedDataPoint> speed) {
         this.id = id;
         this.name = name;
         this.applicationIdentifier = applicationIdentifier;
@@ -141,8 +152,8 @@ public class GFSessionBundle {
         if (type != that.type) return false;
         if (!id.equals(that.id)) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (applicationIdentifier != null ? !applicationIdentifier.equals(that.applicationIdentifier) : that.applicationIdentifier != null)
-            return false;
+        if (applicationIdentifier != null ? !applicationIdentifier.equals(that.applicationIdentifier)
+            : that.applicationIdentifier != null) return false;
         if (!timeStart.equals(that.timeStart)) return false;
         if (!timeEnd.equals(that.timeEnd)) return false;
         if (!activityType.equals(that.activityType)) return false;
@@ -157,6 +168,7 @@ public class GFSessionBundle {
     @SuppressLint("NewApi")
     @Override
     public String toString() {
+        //@formatter:off
         return "GFSessionBundle{" +
             "id='" + id + '\'' +
             ", name='" + name + '\'' +
@@ -172,23 +184,36 @@ public class GFSessionBundle {
             ", power= size " + Optional.ofNullable(power).map(List::size) +
             ", speed= size " + Optional.ofNullable(speed).map(List::size) +
             '}';
+        //@formatter:on
     }
 
     public static class Builder {
-        @NonNull private String id;
-        @Nullable private String name;
-        @Nullable private String applicationIdentifier;
-        @NonNull private Date timeStart;
-        @NonNull private Date timeEnd;
-        @NonNull private String activityType;
+        @NonNull
+        private String id;
+        @Nullable
+        private String name;
+        @Nullable
+        private String applicationIdentifier;
+        @NonNull
+        private Date timeStart;
+        @NonNull
+        private Date timeEnd;
+        @NonNull
+        private String activityType;
         private int type;
 
-        @Nullable private List<GFActivitySegmentDataPoint> activitySegments;
-        @Nullable private List<GFCalorieDataPoint> calories;
-        @Nullable private List<GFStepsDataPoint> steps;
-        @Nullable private List<GFHRDataPoint> heartRate;
-        @Nullable private List<GFPowerDataPoint> power;
-        @Nullable private List<GFSpeedDataPoint> speed;
+        @Nullable
+        private List<GFActivitySegmentDataPoint> activitySegments;
+        @Nullable
+        private List<GFCalorieDataPoint> calories;
+        @Nullable
+        private List<GFStepsDataPoint> steps;
+        @Nullable
+        private List<GFHRDataPoint> heartRate;
+        @Nullable
+        private List<GFPowerDataPoint> power;
+        @Nullable
+        private List<GFSpeedDataPoint> speed;
 
         public Builder setId(@NonNull String id) {
             this.id = id;
@@ -258,7 +283,13 @@ public class GFSessionBundle {
         @SuppressLint("NewApi")
         @NonNull
         public GFSessionBundle build() {
-            return new GFSessionBundle(id, name, applicationIdentifier, timeStart, timeEnd, activityType, type,
+            return new GFSessionBundle(id,
+                name,
+                applicationIdentifier,
+                timeStart,
+                timeEnd,
+                activityType,
+                type,
                 Optional.ofNullable(activitySegments).orElse(Collections.emptyList()),
                 Optional.ofNullable(calories).orElse(Collections.emptyList()),
                 Optional.ofNullable(steps).orElse(Collections.emptyList()),

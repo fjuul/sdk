@@ -1,21 +1,20 @@
 package com.fjuul.sdk.activitysources.workers;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.work.Worker;
-import androidx.work.WorkerParameters;
+import java.util.Collections;
 
 import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig;
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
-import com.fjuul.sdk.core.entities.UserCredentials;
 import com.fjuul.sdk.core.ApiClient;
+import com.fjuul.sdk.core.entities.UserCredentials;
 
-import java.util.Collections;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.work.Worker;
+import androidx.work.WorkerParameters;
 
 public abstract class GoogleFitSyncWorker extends Worker {
     public static final String KEY_USER_TOKEN_ARG = "USER_TOKEN";
@@ -33,7 +32,7 @@ public abstract class GoogleFitSyncWorker extends Worker {
             sourcesManager = ActivitySourcesManager.getInstance();
         } catch (IllegalStateException exception) {
             // TODO: construct the isolated instance of ActivitySourcesManager to avoid the situation when a resurrected
-            //  application has the wrong state after background workers?
+            // application has the wrong state after background workers?
             // ActivitySourcesManager is not initialized yet
             final String userToken = getInputData().getString(KEY_USER_TOKEN_ARG);
             final String userSecret = getInputData().getString(KEY_USER_SECRET_ARG);
@@ -45,11 +44,12 @@ public abstract class GoogleFitSyncWorker extends Worker {
             // NOTE: here we build the config with the untouched mode because we don't want to reset
             // previously scheduled periodic gf sync works.
             // NOTE: the empty set is a workaround to initialize the sources manager from background workers.
-            // It would be good to create an internal non-static instance of ActivitySourcesManager for background workers with their own isolated state.
-            final ActivitySourcesManagerConfig config = new ActivitySourcesManagerConfig.Builder()
-                .keepUntouchedGFBackgroundSync()
-                .setCollectableFitnessMetrics(Collections.emptySet())
-                .build();
+            // It would be good to create an internal non-static instance of ActivitySourcesManager for background
+            // workers with their own isolated state.
+            final ActivitySourcesManagerConfig config =
+                new ActivitySourcesManagerConfig.Builder().keepUntouchedGFBackgroundSync()
+                    .setCollectableFitnessMetrics(Collections.emptySet())
+                    .build();
             ActivitySourcesManager.initialize(client, config);
             sourcesManager = ActivitySourcesManager.getInstance();
         }
@@ -59,7 +59,8 @@ public abstract class GoogleFitSyncWorker extends Worker {
     @SuppressLint("NewApi")
     @Nullable
     protected static ActivitySourceConnection getGoogleFitActivitySourceConnection(ActivitySourcesManager manager) {
-        return manager.getCurrent().stream()
+        return manager.getCurrent()
+            .stream()
             .filter(connection -> connection.getActivitySource() instanceof GoogleFitActivitySource)
             .findFirst()
             .orElse(null);

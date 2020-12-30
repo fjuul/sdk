@@ -25,7 +25,8 @@ class GFSyncFragment : Fragment() {
     private lateinit var viewModel: GFSyncViewModel
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.gf_sync_fragment, container, false)

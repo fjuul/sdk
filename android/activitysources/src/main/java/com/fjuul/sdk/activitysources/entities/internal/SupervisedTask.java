@@ -1,8 +1,8 @@
 package com.fjuul.sdk.activitysources.entities.internal;
 
-import androidx.annotation.NonNull;
-
 import com.google.android.gms.tasks.Task;
+
+import androidx.annotation.NonNull;
 
 public class SupervisedTask<T> {
     private final @NonNull String name;

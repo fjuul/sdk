@@ -1,8 +1,10 @@
 package com.fjuul.sdk.activitysources.entities.internal;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.core.entities.IStorage;
@@ -11,16 +13,16 @@ import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
 
 public class ActivitySourcesStateStore {
-    @NonNull IStorage storage;
-    @NonNull String lookupKey;
-    @NonNull JsonAdapter<List<TrackerConnection>> connectionsJsonAdapter;
+    @NonNull
+    IStorage storage;
+    @NonNull
+    String lookupKey;
+    @NonNull
+    JsonAdapter<List<TrackerConnection>> connectionsJsonAdapter;
 
     public ActivitySourcesStateStore(@NonNull IStorage storage, @NonNull String userToken) {
         this.storage = storage;

@@ -17,4 +17,3 @@ public final class Result<T> extends AbstractResult<T, Throwable> {
         super(value, error);
     }
 }
-

@@ -3,7 +3,6 @@ package com.fjuul.sdk.android.exampleapp.ui.activity_sources
 import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-
 import androidx.lifecycle.ViewModel
 import com.fjuul.sdk.activitysources.entities.ActivitySource
 import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection

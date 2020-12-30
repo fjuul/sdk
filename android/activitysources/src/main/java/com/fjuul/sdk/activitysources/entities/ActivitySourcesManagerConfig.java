@@ -220,8 +220,10 @@ public class ActivitySourcesManagerConfig {
         final Duration minSessionDuration = Duration.ofMinutes(5);
         final Set<FitnessMetricsType> allFitnessMetrics =
             Stream
-                .of(FitnessMetricsType.INTRADAY_CALORIES, FitnessMetricsType.INTRADAY_HEART_RATE,
-                    FitnessMetricsType.INTRADAY_STEPS, FitnessMetricsType.WORKOUTS)
+                .of(FitnessMetricsType.INTRADAY_CALORIES,
+                    FitnessMetricsType.INTRADAY_HEART_RATE,
+                    FitnessMetricsType.INTRADAY_STEPS,
+                    FitnessMetricsType.WORKOUTS)
                 .collect(Collectors.toSet());
         final ActivitySourcesManagerConfig config =
             new ActivitySourcesManagerConfig.Builder().enableGFBackgroundSync(minSessionDuration)

@@ -1,7 +1,30 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import android.content.Intent;
-import android.os.Build;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthenticationFlowRequired;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
@@ -16,47 +39,17 @@ import com.fjuul.sdk.core.http.utils.ApiCallCallback;
 import com.fjuul.sdk.core.http.utils.ApiCallResult;
 import com.google.android.gms.tasks.Tasks;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
-
-import java.time.Instant;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
+import android.content.Intent;
+import android.os.Build;
 import edu.emory.mathcs.backport.java.util.Arrays;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
 public class ActivitySourcesManagerTest {
 
     @RunWith(RobolectricTestRunner.class)
     @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
-    public abstract static class GivenRobolectricContext { }
+    public abstract static class GivenRobolectricContext {}
 
-    public static ActivitySourceResolver mockActivitySourceResolverWithDefaultBehavior() {
-        final ActivitySourceResolver mockedResolver = mock(ActivitySourceResolver.class);
-//        final commonActivitySource
-//        when(resolver.getInstanceByTrackerValue());
-        return mockedResolver;
-    }
     @RunWith(Enclosed.class)
     public static class InstanceMethods {
         public static class ConnectTests extends GivenRobolectricContext {
@@ -75,7 +68,12 @@ public class ActivitySourcesManagerTest {
                 mockedStateStore = mock(ActivitySourcesStateStore.class);
                 final ActivitySourceResolver activitySourceResolver = new ActivitySourceResolver();
                 trackerConnections = Collections.emptyList();
-                subject = new ActivitySourcesManager(mockedConfig, mockedBackgroundWorkManager, mockedActivitySourcesService, mockedStateStore, activitySourceResolver, trackerConnections);
+                subject = new ActivitySourcesManager(mockedConfig,
+                    mockedBackgroundWorkManager,
+                    mockedActivitySourcesService,
+                    mockedStateStore,
+                    activitySourceResolver,
+                    trackerConnections);
             }
 
             @Test
@@ -104,7 +102,8 @@ public class ActivitySourcesManagerTest {
                 final GarminActivitySource garmin = GarminActivitySource.getInstance();
                 final Callback<Intent> mockedCallback = mock(Callback.class);
 
-                final ExternalAuthenticationFlowRequired mockedConnectionResult = mock(ExternalAuthenticationFlowRequired.class);
+                final ExternalAuthenticationFlowRequired mockedConnectionResult =
+                    mock(ExternalAuthenticationFlowRequired.class);
                 final String externalConnectionUrl = "https://garmin.com/follow-me";
                 when(mockedConnectionResult.getUrl()).thenReturn(externalConnectionUrl);
                 final ApiCall<ConnectionResult> mockedApiCall = mock(ApiCall.class);
@@ -137,7 +136,8 @@ public class ActivitySourcesManagerTest {
                 final GarminActivitySource garmin = GarminActivitySource.getInstance();
                 final Callback<Intent> mockedCallback = mock(Callback.class);
 
-                final ApiExceptions.BadRequestException apiCallException = new ApiExceptions.BadRequestException("Bad request");
+                final ApiExceptions.BadRequestException apiCallException =
+                    new ApiExceptions.BadRequestException("Bad request");
                 final ApiCall<ConnectionResult> mockedApiCall = mock(ApiCall.class);
                 doAnswer(invocation -> {
                     final ApiCallCallback<ConnectionResult> callback = invocation.getArgument(0, ApiCallCallback.class);
@@ -182,10 +182,16 @@ public class ActivitySourcesManagerTest {
                     ActivitySource.TrackerValue.GOOGLE_FIT.getValue(),
                     Date.from(Instant.parse("2020-09-10T10:05:00Z")),
                     null);
-                final ActivitySourceConnection gfConnection = new ActivitySourceConnection(gfTrackerConnection, googleFit);
-                final List<TrackerConnection> trackerConnections = Stream.of(gfTrackerConnection)
-                    .collect(Collectors.toList());
-                subject = new ActivitySourcesManager(mockedConfig, mockedBackgroundWorkManager, mockedSourcesService, mockedStateStore, activitySourceResolver, trackerConnections);
+                final ActivitySourceConnection gfConnection =
+                    new ActivitySourceConnection(gfTrackerConnection, googleFit);
+                final List<TrackerConnection> trackerConnections =
+                    Stream.of(gfTrackerConnection).collect(Collectors.toList());
+                subject = new ActivitySourcesManager(mockedConfig,
+                    mockedBackgroundWorkManager,
+                    mockedSourcesService,
+                    mockedStateStore,
+                    activitySourceResolver,
+                    trackerConnections);
                 final Callback<List<ActivitySourceConnection>> mockedCallback = mock(Callback.class);
                 when(googleFit.disable()).thenReturn(Tasks.forResult(null));
                 final ApiCall<Void> mockedDisconnectApiCall = mock(ApiCall.class);
@@ -199,7 +205,8 @@ public class ActivitySourcesManagerTest {
 
                 final ApiCall<TrackerConnection[]> mockedGetConnectionsApiCall = mock(ApiCall.class);
                 doAnswer(invocation -> {
-                    final ApiCallCallback<TrackerConnection[]> callback = invocation.getArgument(0, ApiCallCallback.class);
+                    final ApiCallCallback<TrackerConnection[]> callback =
+                        invocation.getArgument(0, ApiCallCallback.class);
                     callback.onResult(null, ApiCallResult.value(new TrackerConnection[0]));
                     return null;
                 }).when(mockedGetConnectionsApiCall).enqueue(any());
@@ -220,7 +227,8 @@ public class ActivitySourcesManagerTest {
                 assertEquals("should set new connections in the subject",
                     Collections.emptyList(),
                     subject.getCurrent());
-                final ArgumentCaptor<Result<List<ActivitySourceConnection>>> callbackResultCaptor = ArgumentCaptor.forClass(Result.class);
+                final ArgumentCaptor<Result<List<ActivitySourceConnection>>> callbackResultCaptor =
+                    ArgumentCaptor.forClass(Result.class);
                 verify(mockedCallback).onResult(callbackResultCaptor.capture());
                 final Result<List<ActivitySourceConnection>> callbackResult = callbackResultCaptor.getValue();
                 assertFalse("callback should have successful result", callbackResult.isError());
@@ -236,10 +244,16 @@ public class ActivitySourcesManagerTest {
                     ActivitySource.TrackerValue.FITBIT.getValue(),
                     Date.from(Instant.parse("2020-09-10T10:05:00Z")),
                     null);
-                final ActivitySourceConnection fitbitConnection = new ActivitySourceConnection(fitbitTrackerConnection, fitbit);
-                final List<TrackerConnection> trackerConnections = Stream.of(fitbitTrackerConnection)
-                    .collect(Collectors.toList());
-                subject = new ActivitySourcesManager(mockedConfig, mockedBackgroundWorkManager, mockedSourcesService, mockedStateStore, activitySourceResolver, trackerConnections);
+                final ActivitySourceConnection fitbitConnection =
+                    new ActivitySourceConnection(fitbitTrackerConnection, fitbit);
+                final List<TrackerConnection> trackerConnections =
+                    Stream.of(fitbitTrackerConnection).collect(Collectors.toList());
+                subject = new ActivitySourcesManager(mockedConfig,
+                    mockedBackgroundWorkManager,
+                    mockedSourcesService,
+                    mockedStateStore,
+                    activitySourceResolver,
+                    trackerConnections);
                 final Callback<List<ActivitySourceConnection>> mockedCallback = mock(Callback.class);
                 final ApiCall<Void> mockedDisconnectApiCall = mock(ApiCall.class);
                 doAnswer(invocation -> {
@@ -251,7 +265,8 @@ public class ActivitySourcesManagerTest {
 
                 final ApiCall<TrackerConnection[]> mockedGetConnectionsApiCall = mock(ApiCall.class);
                 doAnswer(invocation -> {
-                    final ApiCallCallback<TrackerConnection[]> callback = invocation.getArgument(0, ApiCallCallback.class);
+                    final ApiCallCallback<TrackerConnection[]> callback =
+                        invocation.getArgument(0, ApiCallCallback.class);
                     callback.onResult(null, ApiCallResult.value(new TrackerConnection[0]));
                     return null;
                 }).when(mockedGetConnectionsApiCall).enqueue(any());
@@ -270,7 +285,8 @@ public class ActivitySourcesManagerTest {
                 assertEquals("should set new connections in the subject",
                     Collections.emptyList(),
                     subject.getCurrent());
-                final ArgumentCaptor<Result<List<ActivitySourceConnection>>> callbackResultCaptor = ArgumentCaptor.forClass(Result.class);
+                final ArgumentCaptor<Result<List<ActivitySourceConnection>>> callbackResultCaptor =
+                    ArgumentCaptor.forClass(Result.class);
                 verify(mockedCallback).onResult(callbackResultCaptor.capture());
                 final Result<List<ActivitySourceConnection>> callbackResult = callbackResultCaptor.getValue();
                 assertFalse("callback should have successful result", callbackResult.isError());
@@ -299,7 +315,12 @@ public class ActivitySourcesManagerTest {
 
             @Test
             public void getCurrent_whenNoCurrentConnections_returnsNull() {
-                subject = new ActivitySourcesManager(mockedConfig, mockedBackgroundWorkManager, mockedSourcesService, mockedStateStore, activitySourceResolver, null);
+                subject = new ActivitySourcesManager(mockedConfig,
+                    mockedBackgroundWorkManager,
+                    mockedSourcesService,
+                    mockedStateStore,
+                    activitySourceResolver,
+                    null);
                 assertNull(subject.getCurrent());
             }
 
@@ -309,8 +330,14 @@ public class ActivitySourcesManagerTest {
                     ActivitySource.TrackerValue.FITBIT.getValue(),
                     Date.from(Instant.parse("2020-09-10T10:05:00Z")),
                     null);
-                final List<TrackerConnection> trackerConnections = Stream.of(fitbitTrackerConnection).collect(Collectors.toList());
-                subject = new ActivitySourcesManager(mockedConfig, mockedBackgroundWorkManager, mockedSourcesService, mockedStateStore, activitySourceResolver, trackerConnections);
+                final List<TrackerConnection> trackerConnections =
+                    Stream.of(fitbitTrackerConnection).collect(Collectors.toList());
+                subject = new ActivitySourcesManager(mockedConfig,
+                    mockedBackgroundWorkManager,
+                    mockedSourcesService,
+                    mockedStateStore,
+                    activitySourceResolver,
+                    trackerConnections);
                 final List<ActivitySourceConnection> activitySourceConnections = subject.getCurrent();
                 assertEquals("should have 1 activity source connection", 1, activitySourceConnections.size());
                 ActivitySourceConnection fitbitActivitySourceConnection = activitySourceConnections.get(0);
@@ -342,17 +369,23 @@ public class ActivitySourcesManagerTest {
 
             @Test
             public void refreshCurrent_whenGetNewConnectionsWithGoogleFitAndCallbackIsNull_refreshesCurrentConnections() {
-                subject = new ActivitySourcesManager(mockedConfig, mockedBackgroundWorkManager, mockedSourcesService, mockedStateStore, mockedActivitySourceResolver, null);
+                subject = new ActivitySourcesManager(mockedConfig,
+                    mockedBackgroundWorkManager,
+                    mockedSourcesService,
+                    mockedStateStore,
+                    mockedActivitySourceResolver,
+                    null);
 
                 final TrackerConnection gfTrackerConnection = new TrackerConnection("gf_c_id",
                     ActivitySource.TrackerValue.GOOGLE_FIT.getValue(),
                     Date.from(Instant.parse("2020-09-10T10:05:00Z")),
                     null);
 
-                final TrackerConnection[] newConnections = new TrackerConnection[] { gfTrackerConnection };
+                final TrackerConnection[] newConnections = new TrackerConnection[] {gfTrackerConnection};
                 final ApiCall<TrackerConnection[]> mockedGetConnectionsApiCall = mock(ApiCall.class);
                 doAnswer(invocation -> {
-                    final ApiCallCallback<TrackerConnection[]> callback = invocation.getArgument(0, ApiCallCallback.class);
+                    final ApiCallCallback<TrackerConnection[]> callback =
+                        invocation.getArgument(0, ApiCallCallback.class);
                     callback.onResult(null, ApiCallResult.value(newConnections));
                     return null;
                 }).when(mockedGetConnectionsApiCall).enqueue(any());
@@ -385,17 +418,23 @@ public class ActivitySourcesManagerTest {
 
             @Test
             public void refreshCurrent_whenGetNewConnectionsWithPolarAndCallbackIsNotNull_refreshesCurrentConnections() {
-                subject = new ActivitySourcesManager(mockedConfig, mockedBackgroundWorkManager, mockedSourcesService, mockedStateStore, mockedActivitySourceResolver, null);
+                subject = new ActivitySourcesManager(mockedConfig,
+                    mockedBackgroundWorkManager,
+                    mockedSourcesService,
+                    mockedStateStore,
+                    mockedActivitySourceResolver,
+                    null);
 
                 final TrackerConnection polarTrackerConnection = new TrackerConnection("polar_c_id",
                     ActivitySource.TrackerValue.POLAR.getValue(),
                     Date.from(Instant.parse("2020-09-10T10:05:00Z")),
                     null);
 
-                final TrackerConnection[] newConnections = new TrackerConnection[] { polarTrackerConnection };
+                final TrackerConnection[] newConnections = new TrackerConnection[] {polarTrackerConnection};
                 final ApiCall<TrackerConnection[]> mockedGetConnectionsApiCall = mock(ApiCall.class);
                 doAnswer(invocation -> {
-                    final ApiCallCallback<TrackerConnection[]> callback = invocation.getArgument(0, ApiCallCallback.class);
+                    final ApiCallCallback<TrackerConnection[]> callback =
+                        invocation.getArgument(0, ApiCallCallback.class);
                     callback.onResult(null, ApiCallResult.value(newConnections));
                     return null;
                 }).when(mockedGetConnectionsApiCall).enqueue(any());
@@ -425,7 +464,8 @@ public class ActivitySourcesManagerTest {
                     polarActivitySourceConnection.getTracker());
                 // should cancel background works because of the absence of the google-fit tracker
                 verify(mockedBackgroundWorkManager).cancelBackgroundGFSyncWorks();
-                final ArgumentCaptor<Result<List<ActivitySourceConnection>>> callbackResultArgumentCaptor = ArgumentCaptor.forClass(Result.class);
+                final ArgumentCaptor<Result<List<ActivitySourceConnection>>> callbackResultArgumentCaptor =
+                    ArgumentCaptor.forClass(Result.class);
                 // should pass new connections to the callback
                 verify(mockedCallback).onResult(callbackResultArgumentCaptor.capture());
                 final Result<List<ActivitySourceConnection>> callbackResult = callbackResultArgumentCaptor.getValue();
@@ -437,12 +477,19 @@ public class ActivitySourcesManagerTest {
 
             @Test
             public void refreshCurrent_whenApiCallFailsAndCallbackIsNotNull_bringsApiCallExceptionToCallback() {
-                subject = new ActivitySourcesManager(mockedConfig, mockedBackgroundWorkManager, mockedSourcesService, mockedStateStore, mockedActivitySourceResolver, null);
+                subject = new ActivitySourcesManager(mockedConfig,
+                    mockedBackgroundWorkManager,
+                    mockedSourcesService,
+                    mockedStateStore,
+                    mockedActivitySourceResolver,
+                    null);
 
-                final ApiExceptions.BadRequestException apiCallException = new ApiExceptions.BadRequestException("Bad request");
+                final ApiExceptions.BadRequestException apiCallException =
+                    new ApiExceptions.BadRequestException("Bad request");
                 final ApiCall<TrackerConnection[]> mockedGetConnectionsApiCall = mock(ApiCall.class);
                 doAnswer(invocation -> {
-                    final ApiCallCallback<TrackerConnection[]> callback = invocation.getArgument(0, ApiCallCallback.class);
+                    final ApiCallCallback<TrackerConnection[]> callback =
+                        invocation.getArgument(0, ApiCallCallback.class);
                     callback.onResult(null, ApiCallResult.error(apiCallException));
                     return null;
                 }).when(mockedGetConnectionsApiCall).enqueue(any());
@@ -458,7 +505,8 @@ public class ActivitySourcesManagerTest {
                 verifyNoInteractions(mockedStateStore);
                 // should not interact with background work manager
                 verifyNoInteractions(mockedBackgroundWorkManager);
-                final ArgumentCaptor<Result<List<ActivitySourceConnection>>> callbackResultArgumentCaptor = ArgumentCaptor.forClass(Result.class);
+                final ArgumentCaptor<Result<List<ActivitySourceConnection>>> callbackResultArgumentCaptor =
+                    ArgumentCaptor.forClass(Result.class);
                 verify(mockedCallback).onResult(callbackResultArgumentCaptor.capture());
                 final Result<List<ActivitySourceConnection>> callbackResult = callbackResultArgumentCaptor.getValue();
                 assertTrue("callback should have unsuccessful result", callbackResult.isError());

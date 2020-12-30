@@ -1,8 +1,8 @@
 package com.fjuul.sdk.activitysources.exceptions;
 
-import androidx.annotation.NonNull;
-
 import com.fjuul.sdk.core.exceptions.FjuulException;
+
+import androidx.annotation.NonNull;
 
 public final class GoogleFitActivitySourceExceptions {
     public static class CommonException extends FjuulException {

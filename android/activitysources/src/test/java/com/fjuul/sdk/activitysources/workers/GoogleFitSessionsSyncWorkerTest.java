@@ -1,42 +1,5 @@
 package com.fjuul.sdk.activitysources.workers;
 
-import android.content.Context;
-import android.os.Build;
-
-import androidx.test.core.app.ApplicationProvider;
-import androidx.work.Data;
-import androidx.work.ListenableWorker;
-import androidx.work.testing.TestWorkerBuilder;
-
-import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
-import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
-import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig;
-import com.fjuul.sdk.activitysources.entities.GFSessionSyncOptions;
-import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
-import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions;
-import com.fjuul.sdk.core.ApiClient;
-import com.fjuul.sdk.core.entities.Callback;
-
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.android.util.concurrent.PausedExecutorService;
-import org.robolectric.annotation.Config;
-
-import java.time.Duration;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -50,13 +13,50 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.android.util.concurrent.PausedExecutorService;
+import org.robolectric.annotation.Config;
+
+import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig;
+import com.fjuul.sdk.activitysources.entities.GFSessionSyncOptions;
+import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions;
+import com.fjuul.sdk.core.ApiClient;
+import com.fjuul.sdk.core.entities.Callback;
+
+import android.content.Context;
+import android.os.Build;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.work.Data;
+import androidx.work.ListenableWorker;
+import androidx.work.testing.TestWorkerBuilder;
+
 @RunWith(Enclosed.class)
 public class GoogleFitSessionsSyncWorkerTest {
     @RunWith(RobolectricTestRunner.class)
     @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
-    public abstract static class GivenRobolectricContext { }
+    public abstract static class GivenRobolectricContext {}
 
-    public static class GetOrInitializeActivitySourcesManagerTests extends GoogleFitIntradaySyncWorkerTest.GivenRobolectricContext {
+    public static class GetOrInitializeActivitySourcesManagerTests
+        extends GoogleFitIntradaySyncWorkerTest.GivenRobolectricContext {
         GoogleFitSessionsSyncWorker subject;
         TestWorkerBuilder<GoogleFitSessionsSyncWorker> workerBuilder;
 
@@ -69,13 +69,13 @@ public class GoogleFitSessionsSyncWorkerTest {
 
         @Test
         public void getOrInitializeActivitySourcesManager_whenNoInitializedInstance_initializesAndReturnsIt() {
-            try (MockedStatic<ActivitySourcesManager> sourcesManagerStaticMock = mockStatic(ActivitySourcesManager.class)) {
+            try (MockedStatic<ActivitySourcesManager> sourcesManagerStaticMock =
+                mockStatic(ActivitySourcesManager.class)) {
                 sourcesManagerStaticMock.when(ActivitySourcesManager::getInstance)
                     .thenThrow(IllegalStateException.class)
                     .thenReturn(null);
 
-                Data inputData = new Data.Builder()
-                    .putString("USER_TOKEN", "USER1")
+                Data inputData = new Data.Builder().putString("USER_TOKEN", "USER1")
                     .putString("USER_SECRET", "TOP_SECRET")
                     .putString("API_KEY", "FJUUL_API_KEY")
                     .putString("BASE_URL", "https://fjuul.com")
@@ -84,7 +84,8 @@ public class GoogleFitSessionsSyncWorkerTest {
                 subject.getOrInitializeActivitySourcesManager();
 
                 final ArgumentCaptor<ApiClient> apiClientCaptor = ArgumentCaptor.forClass(ApiClient.class);
-                final ArgumentCaptor<ActivitySourcesManagerConfig> configCaptor = ArgumentCaptor.forClass(ActivitySourcesManagerConfig.class);
+                final ArgumentCaptor<ActivitySourcesManagerConfig> configCaptor =
+                    ArgumentCaptor.forClass(ActivitySourcesManagerConfig.class);
                 sourcesManagerStaticMock.verify(() -> {
                     ActivitySourcesManager.initialize(apiClientCaptor.capture(), configCaptor.capture());
                 });
@@ -134,7 +135,8 @@ public class GoogleFitSessionsSyncWorkerTest {
         }
 
         @Test
-        public void doWork_whenNoCurrentGFConnection_returnsSuccessfulResult() throws ExecutionException, InterruptedException {
+        public void doWork_whenNoCurrentGFConnection_returnsSuccessfulResult()
+            throws ExecutionException, InterruptedException {
             final ActivitySourcesManager mockedSourcesManager = mock(ActivitySourcesManager.class);
             when(mockedSourcesManager.getCurrent()).thenReturn(Collections.emptyList());
 
@@ -153,11 +155,13 @@ public class GoogleFitSessionsSyncWorkerTest {
         }
 
         @Test
-        public void doWork_whenTheSyncReturnsException_returnsFailedResult() throws ExecutionException, InterruptedException {
+        public void doWork_whenTheSyncReturnsException_returnsFailedResult()
+            throws ExecutionException, InterruptedException {
             final ActivitySourcesManager mockedSourcesManager = mock(ActivitySourcesManager.class);
             final ActivitySourceConnection mockedGfSourceConnection = mock(ActivitySourceConnection.class);
             final GoogleFitActivitySource mockedGoogleFit = mock(GoogleFitActivitySource.class);
-            final GoogleFitActivitySourceExceptions.CommonException gfException = new GoogleFitActivitySourceExceptions.CommonException("Something went wrong");
+            final GoogleFitActivitySourceExceptions.CommonException gfException =
+                new GoogleFitActivitySourceExceptions.CommonException("Something went wrong");
             doAnswer((invocation -> {
                 Callback<Void> callback = invocation.getArgument(1, Callback.class);
                 callback.onResult(com.fjuul.sdk.core.entities.Result.error(gfException));
@@ -166,10 +170,8 @@ public class GoogleFitSessionsSyncWorkerTest {
             when(mockedGfSourceConnection.getActivitySource()).thenReturn(mockedGoogleFit);
             when(mockedSourcesManager.getCurrent()).thenReturn(Arrays.asList(mockedGfSourceConnection));
 
-            final Data inputData = new Data.Builder()
-                .putString("MIN_SESSION_DURATION", "PT5M")
-                .build();
-            spySubject = spy((GoogleFitSessionsSyncWorker)workerBuilder.setInputData(inputData).build());
+            final Data inputData = new Data.Builder().putString("MIN_SESSION_DURATION", "PT5M").build();
+            spySubject = spy((GoogleFitSessionsSyncWorker) workerBuilder.setInputData(inputData).build());
             doReturn(mockedSourcesManager).when(spySubject).getOrInitializeActivitySourcesManager();
 
             final Future<ListenableWorker.Result> futureResult = pausedExecutor.submit(spySubject::doWork);
@@ -181,22 +183,22 @@ public class GoogleFitSessionsSyncWorkerTest {
             verify(mockedSourcesManager).getCurrent();
             // no more interactions with the sources manager
             verifyNoMoreInteractions(mockedSourcesManager);
-            final ArgumentCaptor<GFSessionSyncOptions> syncOptionsCaptor = ArgumentCaptor.forClass(GFSessionSyncOptions.class);
+            final ArgumentCaptor<GFSessionSyncOptions> syncOptionsCaptor =
+                ArgumentCaptor.forClass(GFSessionSyncOptions.class);
             verify(mockedGoogleFit).syncSessions(syncOptionsCaptor.capture(), any());
             final GFSessionSyncOptions syncOptions = syncOptionsCaptor.getValue();
             assertEquals("sync options should have the right start time",
                 LocalDate.now().minusDays(2),
                 syncOptions.getStartDate());
-            assertEquals("sync options should have the right end time",
-                LocalDate.now(),
-                syncOptions.getEndDate());
+            assertEquals("sync options should have the right end time", LocalDate.now(), syncOptions.getEndDate());
             assertEquals("should transform raw input data to the min session duration",
                 Duration.ofMinutes(5),
                 syncOptions.getMinimumSessionDuration());
         }
 
         @Test
-        public void doWork_whenGoogleFitSyncSucceeds_returnsSuccessfulResult() throws ExecutionException, InterruptedException {
+        public void doWork_whenGoogleFitSyncSucceeds_returnsSuccessfulResult()
+            throws ExecutionException, InterruptedException {
             final ActivitySourcesManager mockedSourcesManager = mock(ActivitySourcesManager.class);
             final ActivitySourceConnection mockedGfSourceConnection = mock(ActivitySourceConnection.class);
             final GoogleFitActivitySource mockedGoogleFit = mock(GoogleFitActivitySource.class);
@@ -208,10 +210,8 @@ public class GoogleFitSessionsSyncWorkerTest {
             when(mockedGfSourceConnection.getActivitySource()).thenReturn(mockedGoogleFit);
             when(mockedSourcesManager.getCurrent()).thenReturn(Arrays.asList(mockedGfSourceConnection));
 
-            final Data inputData = new Data.Builder()
-                .putString("MIN_SESSION_DURATION", "PT300S")
-                .build();
-            spySubject = spy((GoogleFitSessionsSyncWorker)workerBuilder.setInputData(inputData).build());
+            final Data inputData = new Data.Builder().putString("MIN_SESSION_DURATION", "PT300S").build();
+            spySubject = spy((GoogleFitSessionsSyncWorker) workerBuilder.setInputData(inputData).build());
             doReturn(mockedSourcesManager).when(spySubject).getOrInitializeActivitySourcesManager();
 
             final Future<ListenableWorker.Result> futureResult = pausedExecutor.submit(spySubject::doWork);
@@ -223,15 +223,14 @@ public class GoogleFitSessionsSyncWorkerTest {
             verify(mockedSourcesManager).getCurrent();
             // no more interactions with the sources manager
             verifyNoMoreInteractions(mockedSourcesManager);
-            final ArgumentCaptor<GFSessionSyncOptions> syncOptionsCaptor = ArgumentCaptor.forClass(GFSessionSyncOptions.class);
+            final ArgumentCaptor<GFSessionSyncOptions> syncOptionsCaptor =
+                ArgumentCaptor.forClass(GFSessionSyncOptions.class);
             verify(mockedGoogleFit).syncSessions(syncOptionsCaptor.capture(), any());
             final GFSessionSyncOptions syncOptions = syncOptionsCaptor.getValue();
             assertEquals("sync options should have the right start time",
                 LocalDate.now().minusDays(2),
                 syncOptions.getStartDate());
-            assertEquals("sync options should have the right end time",
-                LocalDate.now(),
-                syncOptions.getEndDate());
+            assertEquals("sync options should have the right end time", LocalDate.now(), syncOptions.getEndDate());
             assertEquals("should transform raw input data to the min session duration",
                 Duration.ofMinutes(5),
                 syncOptions.getMinimumSessionDuration());

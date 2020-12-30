@@ -1,7 +1,5 @@
 package com.fjuul.sdk.activitysources.http;
 
-import android.annotation.SuppressLint;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Date;
@@ -18,6 +16,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
+import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 import okhttp3.ResponseBody;
 import retrofit2.Response;

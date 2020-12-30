@@ -21,7 +21,9 @@ public class TrackerConnection {
     @Nullable
     private Date endedAt;
 
-    public TrackerConnection(@NonNull String id, @NonNull String tracker, @NonNull Date createdAt,
+    public TrackerConnection(@NonNull String id,
+        @NonNull String tracker,
+        @NonNull Date createdAt,
         @NonNull Date endedAt) {
         this.id = id;
         this.tracker = tracker;
@@ -31,6 +33,7 @@ public class TrackerConnection {
 
     /**
      * Returns the unique ID of the established connection.
+     *
      * @return id
      */
     @NonNull
@@ -41,6 +44,7 @@ public class TrackerConnection {
     /**
      * Returns the underlying string presentation of the connected activity source. This value can be matched with
      * {@link ActivitySource.TrackerValue#getValue()}.
+     *
      * @return tracker value
      */
     @NonNull
@@ -48,7 +52,9 @@ public class TrackerConnection {
         return tracker;
     }
 
-    /** Returns the date when the connection was created.
+    /**
+     * Returns the date when the connection was created.
+     *
      * @return creation date
      */
     @NonNull
@@ -58,6 +64,7 @@ public class TrackerConnection {
 
     /**
      * Returns the end date of the established connection. If it's null, then this tracker connection is still active.
+     *
      * @return ending date
      */
     @Nullable

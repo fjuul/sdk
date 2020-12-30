@@ -81,7 +81,9 @@ public class RequestSigner {
         String signingString = signingStringBuilder.toString();
         String signature = buildEncodedEncryptedSignature(signingString, key.getSecret());
         String signatureHeader = String.format("keyId=\"%s\",algorithm=\"hmac-sha256\",headers=\"%s\",signature=\"%s\"",
-            key.getId(), checkingRequestHeaders, signature);
+            key.getId(),
+            checkingRequestHeaders,
+            signature);
         signedRequestBuilder.header("Signature", signatureHeader);
         return signedRequestBuilder.build();
     }

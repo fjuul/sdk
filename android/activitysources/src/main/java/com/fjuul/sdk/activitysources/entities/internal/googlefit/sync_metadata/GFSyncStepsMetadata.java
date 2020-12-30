@@ -1,17 +1,16 @@
 package com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
-
-import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPointsBatch;
-import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFStepsDataPoint;
-
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.Objects;
+
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPointsBatch;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFStepsDataPoint;
+
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
 
 public class GFSyncStepsMetadata extends GFSyncDatedEntityMetadata {
     public static final int CURRENT_SCHEMA_VERSION = 1;

@@ -6,8 +6,8 @@ import java.util.Map;
 
 import com.fjuul.sdk.activitysources.adapters.GFUploadDataJsonAdapter;
 import com.fjuul.sdk.activitysources.entities.ConnectionResult;
-import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
+import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
 import com.fjuul.sdk.activitysources.exceptions.ActivitySourcesApiExceptions;
 import com.fjuul.sdk.activitysources.http.ActivitySourcesApiResponseTransformer;
 import com.fjuul.sdk.activitysources.http.apis.ActivitySourcesApi;
@@ -42,8 +42,7 @@ public class ActivitySourcesService {
     public ActivitySourcesService(@NonNull ApiClient client) {
         this.clientBuilder = client;
         OkHttpClient httpClient = client.buildSigningClient();
-        Moshi moshi = new Moshi.Builder()
-            .add(Date.class, new Rfc3339DateJsonAdapter())
+        Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter())
             .add(new GFUploadDataJsonAdapter())
             .build();
         ActivitySourcesApiResponseTransformer responseTransformer = new ActivitySourcesApiResponseTransformer();
@@ -56,17 +55,18 @@ public class ActivitySourcesService {
     }
 
     /**
-     * Builds the call to create a connection to the given activity source. Returning connection result
-     * (ConnectionResult) has 2 cases:<br>
-     * 1) requirement for external authentication: the implementor needs to take this URL and call it via an external
+     * Builds the call to create a connection to the given activity source. The returning connection result
+     * ({@link ConnectionResult}) has 2 possible cases:
+     * <ol>
+     * <li>requirement for external authentication: the implementor needs to take this URL and call it via an external
      * web browser (not a web view!). This initiates the oauth handshake. If successfully concluded the user is
      * redirected into the app to a URL that looks like this:
-     * {@literal `fjuulsdk://external_connect?service=[tracker]&success=[true|false]`}. Depending on the outcome the
-     * flag `success` is set to true or false. The "protocol" depends on the tenant the user belongs to.<br>
-     * 2) no need for authentication: connection to the given tracker was created.
-     *
-     * In case of attempt to connect to the already connected tracker, the api call result will have error
-     * ActivitySourcesApiExceptions.SourceAlreadyConnectedException.
+     * {@code fjuulsdk://external_connect?service=[tracker]&success=[true|false]}. Depending on the outcome the flag
+     * `success` is set to true or false. The "protocol" depends on the tenant the user belongs to.</li>
+     * <li>no need for authentication: connection to the given tracker was created.</li>
+     * </ol>
+     * In case of an attempt to connect to the already connected tracker, the api call result will have
+     * {@link ActivitySourcesApiExceptions.SourceAlreadyConnectedException}.
      *
      * @see ConnectionResult
      * @see ActivitySourcesApiExceptions.SourceAlreadyConnectedException
@@ -106,6 +106,7 @@ public class ActivitySourcesService {
 
     /**
      * Build the call to send the GoogleFit fitness data for processing.
+     *
      * @param dataToUpload GoogleFit data to upload
      * @return ApiCall for uploading the fitness data
      */

@@ -46,7 +46,7 @@ class ActivitySourcesFragment : Fragment() {
         if (requestCode == GOOGLE_SIGN_IN_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK && data != null) {
                 GoogleFitActivitySource.getInstance().handleGoogleSignInResult(data) { result ->
-                    Log.d(TAG,"GoogleFit connect = Error: ${result.error}; value: ${result.value}")
+                    Log.d(TAG, "GoogleFit connect = Error: ${result.error}; value: ${result.value}")
                     if (result.isError) {
                         model.postErrorMessage(result.error?.message ?: "Something went wrong")
                         return@handleGoogleSignInResult

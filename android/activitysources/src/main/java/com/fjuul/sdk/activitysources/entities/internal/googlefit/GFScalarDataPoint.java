@@ -1,15 +1,17 @@
 package com.fjuul.sdk.activitysources.entities.internal.googlefit;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import java.lang.reflect.ParameterizedType;
 import java.util.Date;
 
-public abstract class GFScalarDataPoint<TValue extends Number> extends GFDataPoint {
-    @NonNull protected final TValue value;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
-    @NonNull public TValue getValue() {
+public abstract class GFScalarDataPoint<TValue extends Number> extends GFDataPoint {
+    @NonNull
+    protected final TValue value;
+
+    @NonNull
+    public TValue getValue() {
         return value;
     }
 
@@ -18,7 +20,10 @@ public abstract class GFScalarDataPoint<TValue extends Number> extends GFDataPoi
         this.value = value;
     }
 
-    public GFScalarDataPoint(@NonNull TValue value, @NonNull Date start, @Nullable Date end, @Nullable String dataSource) {
+    public GFScalarDataPoint(@NonNull TValue value,
+        @NonNull Date start,
+        @Nullable Date end,
+        @Nullable String dataSource) {
         super(start, end, dataSource);
         this.value = value;
     }
@@ -30,10 +35,10 @@ public abstract class GFScalarDataPoint<TValue extends Number> extends GFDataPoi
 
         final GFScalarDataPoint<?> that = (GFScalarDataPoint<?>) o;
 
-        Class<TValue> valueClass = (Class<TValue>) ((ParameterizedType) this.getClass().getGenericSuperclass())
-            .getActualTypeArguments()[0];
-        Class<TValue> thatValueClass = (Class<TValue>) ((ParameterizedType) that.getClass().getGenericSuperclass())
-            .getActualTypeArguments()[0];
+        Class<TValue> valueClass =
+            (Class<TValue>) ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        Class<TValue> thatValueClass =
+            (Class<TValue>) ((ParameterizedType) that.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
         if (!valueClass.equals(thatValueClass)) {
             return false;
         }

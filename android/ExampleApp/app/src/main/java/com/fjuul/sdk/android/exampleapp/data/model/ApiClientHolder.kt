@@ -2,14 +2,13 @@ package com.fjuul.sdk.android.exampleapp.data.model
 import android.content.Context
 import com.fjuul.sdk.android.exampleapp.data.SdkEnvironment
 import com.fjuul.sdk.core.ApiClient
-import com.fjuul.sdk.core.entities.UserCredentials
 
 object ApiClientHolder {
     lateinit var sdkClient: ApiClient
         private set
 
     fun setup(apiClient: ApiClient) {
-        sdkClient = apiClient;
+        sdkClient = apiClient
     }
 
     fun setup(context: Context, env: SdkEnvironment, apiKey: String) {

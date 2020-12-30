@@ -1,17 +1,16 @@
 package com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
-
-import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFCalorieDataPoint;
-import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPointsBatch;
-
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.Objects;
+
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFCalorieDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPointsBatch;
+
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
 
 public final class GFSyncCaloriesMetadata extends GFSyncDatedEntityMetadata {
     public static final int CURRENT_SCHEMA_VERSION = 1;
@@ -37,9 +36,7 @@ public final class GFSyncCaloriesMetadata extends GFSyncDatedEntityMetadata {
 
     @SuppressLint("NewApi")
     static public GFSyncCaloriesMetadata buildFromBatch(GFDataPointsBatch<GFCalorieDataPoint> batch, Clock clock) {
-        float totalKcals = batch.getPoints().stream()
-            .map(c -> c.getValue())
-            .reduce(0f, (acc, el) -> acc + el);
+        float totalKcals = batch.getPoints().stream().map(c -> c.getValue()).reduce(0f, (acc, el) -> acc + el);
         int count = batch.getPoints().size();
         final Date editedAt = Date.from(clock.instant());
         final LocalDate date = batch.getStartTime().toInstant().atOffset(ZoneOffset.UTC).toLocalDate();
@@ -51,6 +48,7 @@ public final class GFSyncCaloriesMetadata extends GFSyncDatedEntityMetadata {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GFSyncCaloriesMetadata that = (GFSyncCaloriesMetadata) o;
-        return Objects.equals(date, that.date) && count == that.count && Math.abs(totalKcals - that.totalKcals) <= TOTAL_CALORIES_ACCURACY;
+        return Objects.equals(date, that.date) && count == that.count
+            && Math.abs(totalKcals - that.totalKcals) <= TOTAL_CALORIES_ACCURACY;
     }
 }

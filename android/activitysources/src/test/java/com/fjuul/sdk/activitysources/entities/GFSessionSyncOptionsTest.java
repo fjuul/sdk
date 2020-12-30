@@ -1,6 +1,15 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import android.os.Build;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -9,23 +18,14 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import android.os.Build;
 
 @RunWith(Enclosed.class)
 public class GFSessionSyncOptionsTest {
 
     @RunWith(RobolectricTestRunner.class)
     @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
-    public abstract static class GivenRobolectricContext { }
+    public abstract static class GivenRobolectricContext {}
 
     public static class BuilderTest extends GivenRobolectricContext {
         static final String fixedInstant = "2020-12-01T15:56:23Z";
@@ -58,9 +58,7 @@ public class GFSessionSyncOptionsTest {
                 assertTrue("should throw the exception", false);
             } catch (Exception exc) {
                 assertThat(exc, instanceOf(IllegalArgumentException.class));
-                assertEquals("should have message",
-                    "The end date must not point at the future",
-                    exc.getMessage());
+                assertEquals("should have message", "The end date must not point at the future", exc.getMessage());
             }
         }
 

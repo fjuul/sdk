@@ -1,15 +1,14 @@
 package com.fjuul.sdk.activitysources.entities.internal;
 
-import android.content.Context;
-
-import androidx.annotation.NonNull;
-
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata.GFSyncMetadataStore;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.HistoryClient;
 import com.google.android.gms.fitness.SessionsClient;
+
+import android.content.Context;
+import androidx.annotation.NonNull;
 
 public class GoogleFitDataManagerBuilder {
     @NonNull
@@ -22,9 +21,9 @@ public class GoogleFitDataManagerBuilder {
     private final ActivitySourcesService sourcesService;
 
     public GoogleFitDataManagerBuilder(@NonNull Context context,
-                                       @NonNull GFDataUtils gfDataUtils,
-                                       @NonNull GFSyncMetadataStore syncMetadataStore,
-                                       @NonNull ActivitySourcesService sourcesService) {
+        @NonNull GFDataUtils gfDataUtils,
+        @NonNull GFSyncMetadataStore syncMetadataStore,
+        @NonNull ActivitySourcesService sourcesService) {
         this.context = context;
         this.gfDataUtils = gfDataUtils;
         this.syncMetadataStore = syncMetadataStore;

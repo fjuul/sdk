@@ -1,10 +1,13 @@
 package com.fjuul.sdk.user.http.services;
 
+import java.util.Date;
+import java.util.TimeZone;
+
 import com.fjuul.sdk.core.ApiClient;
-import com.fjuul.sdk.core.http.utils.ApiCall;
-import com.fjuul.sdk.core.http.utils.ApiCallAdapterFactory;
 import com.fjuul.sdk.core.adapters.LocalDateJsonAdapter;
 import com.fjuul.sdk.core.adapters.TimeZoneJsonAdapter;
+import com.fjuul.sdk.core.http.utils.ApiCall;
+import com.fjuul.sdk.core.http.utils.ApiCallAdapterFactory;
 import com.fjuul.sdk.user.entities.UserCreationResult;
 import com.fjuul.sdk.user.entities.UserProfile;
 import com.fjuul.sdk.user.http.apis.UserApi;
@@ -13,10 +16,6 @@ import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.core.os.LocaleListCompat;
-
-import java.util.Date;
-import java.util.TimeZone;
-
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;

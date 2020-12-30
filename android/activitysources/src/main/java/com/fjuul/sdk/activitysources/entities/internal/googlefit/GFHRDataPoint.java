@@ -1,9 +1,9 @@
 package com.fjuul.sdk.activitysources.entities.internal.googlefit;
 
-import androidx.annotation.NonNull;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import androidx.annotation.NonNull;
 
 public class GFHRDataPoint extends GFScalarDataPoint<Float> {
     public GFHRDataPoint(@NonNull Float value, @NonNull Date start, @NonNull String dataSource) {

@@ -1,20 +1,7 @@
 package com.fjuul.sdk.activitysources.entities.internal;
 
-import android.os.Build;
-
-import androidx.core.util.Pair;
-
-
-import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFCalorieDataPoint;
-import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPointsBatch;
-import com.fjuul.sdk.activitysources.entities.internal.GFDataUtils;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.*;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -27,25 +14,36 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFCalorieDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPointsBatch;
+
+import android.os.Build;
+import androidx.core.util.Pair;
 
 @RunWith(Enclosed.class)
 public class GFDataUtilsTest {
-    public static final String dataSourceId = "derived:com.google.calories.expended:com.google.android.gms:from_activities";
+    public static final String dataSourceId =
+        "derived:com.google.calories.expended:com.google.android.gms:from_activities";
 
     @RunWith(RobolectricTestRunner.class)
     @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
-    public abstract static class GivenRobolectricContext { }
+    public abstract static class GivenRobolectricContext {}
 
     public static class GroupCaloriesIntoBatchesByDurationTest extends GivenRobolectricContext {
         GFDataUtils gfDataUtils;
-        List<GFCalorieDataPoint> calories = Stream.of(
-            new GFCalorieDataPoint(5.2751f, Date.from(Instant.parse("2020-01-01T10:05:00Z")), dataSourceId),
-            new GFCalorieDataPoint(1.2698f, Date.from(Instant.parse("2020-01-01T10:07:00Z")), dataSourceId),
-            new GFCalorieDataPoint(8.2698f, Date.from(Instant.parse("2020-01-01T10:31:00Z")), dataSourceId),
-            new GFCalorieDataPoint(2.5421f, Date.from(Instant.parse("2020-01-01T10:34:00Z")), dataSourceId)
-        ).collect(Collectors.toList());
+        List<GFCalorieDataPoint> calories = Stream
+            .of(new GFCalorieDataPoint(5.2751f, Date.from(Instant.parse("2020-01-01T10:05:00Z")), dataSourceId),
+                new GFCalorieDataPoint(1.2698f, Date.from(Instant.parse("2020-01-01T10:07:00Z")), dataSourceId),
+                new GFCalorieDataPoint(8.2698f, Date.from(Instant.parse("2020-01-01T10:31:00Z")), dataSourceId),
+                new GFCalorieDataPoint(2.5421f, Date.from(Instant.parse("2020-01-01T10:34:00Z")), dataSourceId))
+            .collect(Collectors.toList());
 
         @Test
         public void groupPointsIntoBatchesByDuration_bigDurationCoversAllPoints_returnsOneBatchWithAllPoints() {
@@ -53,10 +51,9 @@ public class GFDataUtilsTest {
             Date end = Date.from(Instant.parse("2020-01-01T11:00:00Z"));
             Duration duration = Duration.ofHours(1);
             GFDataUtils gfDataUtils = new GFDataUtils();
-            List<GFDataPointsBatch<GFCalorieDataPoint>> batches = gfDataUtils.groupPointsIntoBatchesByDuration(start, end, calories, duration);
-            assertEquals("should have only one batch",
-                1,
-                batches.size());
+            List<GFDataPointsBatch<GFCalorieDataPoint>> batches =
+                gfDataUtils.groupPointsIntoBatchesByDuration(start, end, calories, duration);
+            assertEquals("should have only one batch", 1, batches.size());
             assertEquals("batch should have all calories", calories.size(), batches.get(0).getPoints().size());
         }
 
@@ -66,22 +63,13 @@ public class GFDataUtilsTest {
             Date end = Date.from(Instant.parse("2020-01-01T11:00:00Z"));
             Duration duration = Duration.ofMinutes(30);
             GFDataUtils gfDataUtils = new GFDataUtils();
-            List<GFDataPointsBatch<GFCalorieDataPoint>> batches = gfDataUtils.groupPointsIntoBatchesByDuration(start, end, calories, duration);
-            assertEquals("should have 2 batches",
-                2,
-                batches.size());
-            assertEquals("first batch has 2 points",
-                2,
-                batches.get(0).getPoints().size());
-            assertThat("first batch has two first points",
-                calories.subList(0, 2),
-                equalTo(batches.get(0).getPoints()));
-            assertEquals("second batch has 2 points",
-                2,
-                batches.get(1).getPoints().size());
-            assertThat("second batch has 2 last points",
-                calories.subList(2, 4),
-                equalTo(batches.get(1).getPoints()));
+            List<GFDataPointsBatch<GFCalorieDataPoint>> batches =
+                gfDataUtils.groupPointsIntoBatchesByDuration(start, end, calories, duration);
+            assertEquals("should have 2 batches", 2, batches.size());
+            assertEquals("first batch has 2 points", 2, batches.get(0).getPoints().size());
+            assertThat("first batch has two first points", calories.subList(0, 2), equalTo(batches.get(0).getPoints()));
+            assertEquals("second batch has 2 points", 2, batches.get(1).getPoints().size());
+            assertThat("second batch has 2 last points", calories.subList(2, 4), equalTo(batches.get(1).getPoints()));
         }
 
         @Test
@@ -90,81 +78,52 @@ public class GFDataUtilsTest {
             Date end = Date.from(Instant.parse("2020-01-01T11:00:00Z"));
             Duration duration = Duration.ofMinutes(20);
             GFDataUtils gfDataUtils = new GFDataUtils();
-            List<GFDataPointsBatch<GFCalorieDataPoint>> batches = gfDataUtils.groupPointsIntoBatchesByDuration(start, end, calories, duration);
-            assertEquals("should have 3 batches",
-                3,
-                batches.size());
-            assertEquals("first batch has 2 points",
-                2,
-                batches.get(0).getPoints().size());
-            assertThat("first batch has two first points",
-                calories.subList(0, 2),
-                equalTo(batches.get(0).getPoints()));
-            assertEquals("second batch has 2 points",
-                2,
-                batches.get(1).getPoints().size());
-            assertThat("second batch has two last points",
-                calories.subList(2, 4),
-                equalTo(batches.get(1).getPoints()));
-            assertEquals("third batch has no points",
-                0,
-                batches.get(2).getPoints().size());
+            List<GFDataPointsBatch<GFCalorieDataPoint>> batches =
+                gfDataUtils.groupPointsIntoBatchesByDuration(start, end, calories, duration);
+            assertEquals("should have 3 batches", 3, batches.size());
+            assertEquals("first batch has 2 points", 2, batches.get(0).getPoints().size());
+            assertThat("first batch has two first points", calories.subList(0, 2), equalTo(batches.get(0).getPoints()));
+            assertEquals("second batch has 2 points", 2, batches.get(1).getPoints().size());
+            assertThat("second batch has two last points", calories.subList(2, 4), equalTo(batches.get(1).getPoints()));
+            assertEquals("third batch has no points", 0, batches.get(2).getPoints().size());
         }
 
         @Test
         public void groupPointsIntoBatchesByDuration_leftBorderIsInclusiveAndRightBorderIsExclusive_returnsBatches() {
-            List<GFCalorieDataPoint> calories = Stream.of(
-                new GFCalorieDataPoint(5.2751f, Date.from(Instant.parse("2020-01-01T10:05:00Z")), dataSourceId),
-                new GFCalorieDataPoint(2.5421f, Date.from(Instant.parse("2020-01-01T10:30:00Z")), dataSourceId)
-            ).collect(Collectors.toList());
+            List<GFCalorieDataPoint> calories = Stream
+                .of(new GFCalorieDataPoint(5.2751f, Date.from(Instant.parse("2020-01-01T10:05:00Z")), dataSourceId),
+                    new GFCalorieDataPoint(2.5421f, Date.from(Instant.parse("2020-01-01T10:30:00Z")), dataSourceId))
+                .collect(Collectors.toList());
             Date start = Date.from(Instant.parse("2020-01-01T10:00:00Z"));
             Date end = Date.from(Instant.parse("2020-01-01T11:00:00Z"));
             Duration duration = Duration.ofMinutes(30);
             GFDataUtils gfDataUtils = new GFDataUtils();
-            List<GFDataPointsBatch<GFCalorieDataPoint>> batches = gfDataUtils.groupPointsIntoBatchesByDuration(start, end, calories, duration);
-            assertEquals("should have 2 batches",
-                2,
-                batches.size());
-            assertEquals("first batch has 1 point",
-                1,
-                batches.get(0).getPoints().size());
-            assertThat("first batch has the first point",
-                calories.subList(0, 1),
-                equalTo(batches.get(0).getPoints()));
-            assertEquals("second batch has 1 point",
-                1,
-                batches.get(1).getPoints().size());
-            assertThat("second batch has the last point",
-                calories.subList(1, 2),
-                equalTo(batches.get(1).getPoints()));
+            List<GFDataPointsBatch<GFCalorieDataPoint>> batches =
+                gfDataUtils.groupPointsIntoBatchesByDuration(start, end, calories, duration);
+            assertEquals("should have 2 batches", 2, batches.size());
+            assertEquals("first batch has 1 point", 1, batches.get(0).getPoints().size());
+            assertThat("first batch has the first point", calories.subList(0, 1), equalTo(batches.get(0).getPoints()));
+            assertEquals("second batch has 1 point", 1, batches.get(1).getPoints().size());
+            assertThat("second batch has the last point", calories.subList(1, 2), equalTo(batches.get(1).getPoints()));
         }
 
         @Test
         public void groupPointsIntoBatchesByDuration_durationСrossesEndTime_returnsBatchWithEndTime() {
-            List<GFCalorieDataPoint> calories = Stream.of(
-                new GFCalorieDataPoint(5.2751f, Date.from(Instant.parse("2020-01-01T10:05:00Z")), dataSourceId),
-                new GFCalorieDataPoint(2.5421f, Date.from(Instant.parse("2020-01-01T10:30:00Z")), dataSourceId)
-            ).collect(Collectors.toList());
+            List<GFCalorieDataPoint> calories = Stream
+                .of(new GFCalorieDataPoint(5.2751f, Date.from(Instant.parse("2020-01-01T10:05:00Z")), dataSourceId),
+                    new GFCalorieDataPoint(2.5421f, Date.from(Instant.parse("2020-01-01T10:30:00Z")), dataSourceId))
+                .collect(Collectors.toList());
             Date start = Date.from(Instant.parse("2020-01-01T10:00:00Z"));
             Date end = Date.from(Instant.parse("2020-01-01T10:45:00Z"));
             Duration duration = Duration.ofMinutes(30);
             GFDataUtils gfDataUtils = new GFDataUtils();
-            List<GFDataPointsBatch<GFCalorieDataPoint>> batches = gfDataUtils.groupPointsIntoBatchesByDuration(start, end, calories, duration);
-            assertEquals("should have 2 batches",
-                2,
-                batches.size());
-            assertEquals("first batch has 1 point",
-                1,
-                batches.get(0).getPoints().size());
-            assertThat("first batch has the first point",
-                calories.subList(0, 1),
-                equalTo(batches.get(0).getPoints()));
-            assertEquals("second batch has 1 point",
-                1,
-                batches.get(1).getPoints().size());
-            assertThat("second batch has the last point",
-                calories.subList(1, 2),
-                equalTo(batches.get(1).getPoints()));
+            List<GFDataPointsBatch<GFCalorieDataPoint>> batches =
+                gfDataUtils.groupPointsIntoBatchesByDuration(start, end, calories, duration);
+            assertEquals("should have 2 batches", 2, batches.size());
+            assertEquals("first batch has 1 point", 1, batches.get(0).getPoints().size());
+            assertThat("first batch has the first point", calories.subList(0, 1), equalTo(batches.get(0).getPoints()));
+            assertEquals("second batch has 1 point", 1, batches.get(1).getPoints().size());
+            assertThat("second batch has the last point", calories.subList(1, 2), equalTo(batches.get(1).getPoints()));
             assertThat("the last batch should have end time according to the duration",
                 batches.get(1).getEndTime(),
                 equalTo(Date.from(Instant.parse("2020-01-01T11:00:00Z"))));
@@ -172,21 +131,18 @@ public class GFDataUtilsTest {
 
         @Test
         public void groupPointsIntoBatchesByDuration_singleDurationСrossesEndTime_returnsOneBatchWithCorrectEndTimeOfDuration() {
-            List<GFCalorieDataPoint> calories = Stream.of(
-                new GFCalorieDataPoint(5.2751f, Date.from(Instant.parse("2020-01-01T10:05:00Z")), dataSourceId),
-                new GFCalorieDataPoint(2.5421f, Date.from(Instant.parse("2020-01-01T10:30:00Z")), dataSourceId)
-            ).collect(Collectors.toList());
+            List<GFCalorieDataPoint> calories = Stream
+                .of(new GFCalorieDataPoint(5.2751f, Date.from(Instant.parse("2020-01-01T10:05:00Z")), dataSourceId),
+                    new GFCalorieDataPoint(2.5421f, Date.from(Instant.parse("2020-01-01T10:30:00Z")), dataSourceId))
+                .collect(Collectors.toList());
             Date start = Date.from(Instant.parse("2020-01-01T10:00:00Z"));
             Date end = Date.from(Instant.parse("2020-01-01T10:45:00Z"));
             Duration duration = Duration.ofHours(1);
             GFDataUtils gfDataUtils = new GFDataUtils();
-            List<GFDataPointsBatch<GFCalorieDataPoint>> batches = gfDataUtils.groupPointsIntoBatchesByDuration(start, end, calories, duration);
-            assertEquals("should return single batch",
-                1,
-                batches.size());
-            assertThat("batch has all points",
-                calories,
-                equalTo(batches.get(0).getPoints()));
+            List<GFDataPointsBatch<GFCalorieDataPoint>> batches =
+                gfDataUtils.groupPointsIntoBatchesByDuration(start, end, calories, duration);
+            assertEquals("should return single batch", 1, batches.size());
+            assertThat("batch has all points", calories, equalTo(batches.get(0).getPoints()));
             assertThat("batch should have correct end time (start time + duration)",
                 Date.from(Instant.parse("2020-01-01T11:00:00Z")),
                 equalTo(batches.get(0).getEndTime()));
@@ -348,17 +304,9 @@ public class GFDataUtilsTest {
             final Date date = Date.from(Instant.parse("2020-08-31T14:00:00Z"));
             final Duration duration = Duration.ofHours(12);
             List<Pair<Date, Date>> chunks = gfDataUtils.splitDateRangeIntoChunks(date, date, duration);
-            assertEquals("should return only one pair",
-                1,
-                chunks.size());
-            assertThat("first entry should be the time",
-                chunks.get(0).first,
-                equalTo(date)
-            );
-            assertThat("second entry should be the time",
-                chunks.get(0).second,
-                equalTo(date)
-            );
+            assertEquals("should return only one pair", 1, chunks.size());
+            assertThat("first entry should be the time", chunks.get(0).first, equalTo(date));
+            assertThat("second entry should be the time", chunks.get(0).second, equalTo(date));
         }
 
         @Test
@@ -368,17 +316,9 @@ public class GFDataUtilsTest {
             final Date end = Date.from(Instant.parse("2020-08-31T17:00:00Z"));
             final Duration duration = Duration.ofHours(12);
             List<Pair<Date, Date>> chunks = gfDataUtils.splitDateRangeIntoChunks(start, end, duration);
-            assertEquals("should return only one pair",
-                1,
-                chunks.size());
-            assertThat("first entry should be the start",
-                chunks.get(0).first,
-                equalTo(start)
-            );
-            assertThat("second entry should be the end",
-                chunks.get(0).second,
-                equalTo(end)
-            );
+            assertEquals("should return only one pair", 1, chunks.size());
+            assertThat("first entry should be the start", chunks.get(0).first, equalTo(start));
+            assertThat("second entry should be the end", chunks.get(0).second, equalTo(end));
         }
 
         @Test
@@ -388,17 +328,9 @@ public class GFDataUtilsTest {
             final Date end = Date.from(Instant.parse("2020-09-01T02:00:00Z"));
             final Duration duration = Duration.ofHours(12);
             List<Pair<Date, Date>> chunks = gfDataUtils.splitDateRangeIntoChunks(start, end, duration);
-            assertEquals("should return only one pair",
-                1,
-                chunks.size());
-            assertThat("first entry should be the start",
-                chunks.get(0).first,
-                equalTo(start)
-            );
-            assertThat("second entry should be the end",
-                chunks.get(0).second,
-                equalTo(end)
-            );
+            assertEquals("should return only one pair", 1, chunks.size());
+            assertThat("first entry should be the start", chunks.get(0).first, equalTo(start));
+            assertThat("second entry should be the end", chunks.get(0).second, equalTo(end));
         }
 
         @Test
@@ -408,26 +340,16 @@ public class GFDataUtilsTest {
             final Date end = Date.from(Instant.parse("2020-09-01T09:00:00Z"));
             final Duration duration = Duration.ofHours(12);
             List<Pair<Date, Date>> chunks = gfDataUtils.splitDateRangeIntoChunks(start, end, duration);
-            assertEquals("should return 2 pairs",
-                2,
-                chunks.size());
-            assertThat("first entry should be the start",
-                chunks.get(0).first,
-                equalTo(start)
-            );
+            assertEquals("should return 2 pairs", 2, chunks.size());
+            assertThat("first entry should be the start", chunks.get(0).first, equalTo(start));
             assertThat("second entry should be the start + duration",
                 chunks.get(0).second,
-                equalTo(Date.from(Instant.parse("2020-09-01T02:00:00Z")))
-            );
+                equalTo(Date.from(Instant.parse("2020-09-01T02:00:00Z"))));
 
             assertThat("first entry of the next pair should be the start + duration",
                 chunks.get(1).first,
-                equalTo(Date.from(Instant.parse("2020-09-01T02:00:00Z")))
-            );
-            assertThat("second entry of the next pair should be the end",
-                chunks.get(1).second,
-                equalTo(end)
-            );
+                equalTo(Date.from(Instant.parse("2020-09-01T02:00:00Z"))));
+            assertThat("second entry of the next pair should be the end", chunks.get(1).second, equalTo(end));
         }
     }
 

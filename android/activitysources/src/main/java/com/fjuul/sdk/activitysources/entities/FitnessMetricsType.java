@@ -15,8 +15,10 @@ public enum FitnessMetricsType {
         switch (metricType) {
             case INTRADAY_HEART_RATE:
             case INTRADAY_CALORIES:
-            case INTRADAY_STEPS: return true;
-            default: return false;
+            case INTRADAY_STEPS:
+                return true;
+            default:
+                return false;
         }
     }
 }

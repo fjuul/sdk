@@ -166,7 +166,8 @@ public class AnalyticsServiceTest {
         assertThat(exception, IsInstanceOf.instanceOf(ApiExceptions.UnauthorizedException.class));
         ApiExceptions.UnauthorizedException authException = (ApiExceptions.UnauthorizedException) exception;
         assertEquals("has wrong_credentials error code",
-            ApiExceptions.UnauthorizedException.ErrorCode.wrong_credentials, authException.getErrorCode());
+            ApiExceptions.UnauthorizedException.ErrorCode.wrong_credentials,
+            authException.getErrorCode());
         assertEquals("has error message from response body", "Unauthorized request", authException.getMessage());
     }
 
@@ -206,7 +207,8 @@ public class AnalyticsServiceTest {
         assertThat(exception, IsInstanceOf.instanceOf(ApiExceptions.UnauthorizedException.class));
         ApiExceptions.UnauthorizedException authException = (ApiExceptions.UnauthorizedException) exception;
         assertEquals("has wrong_credentials error code",
-            ApiExceptions.UnauthorizedException.ErrorCode.wrong_credentials, authException.getErrorCode());
+            ApiExceptions.UnauthorizedException.ErrorCode.wrong_credentials,
+            authException.getErrorCode());
         assertEquals("has error message from response body", "Unauthorized request", authException.getMessage());
     }
 
@@ -226,9 +228,11 @@ public class AnalyticsServiceTest {
         Exception exception = result.getError();
         assertThat(exception, IsInstanceOf.instanceOf(ApiExceptions.UnauthorizedException.class));
         ApiExceptions.UnauthorizedException authException = (ApiExceptions.UnauthorizedException) exception;
-        assertEquals("has wrong_credentials error code", ApiExceptions.UnauthorizedException.ErrorCode.clock_skew,
+        assertEquals("has wrong_credentials error code",
+            ApiExceptions.UnauthorizedException.ErrorCode.clock_skew,
             authException.getErrorCode());
-        assertEquals("has error message from response body", "Unauthorized: clock skew of 301s was greater than 300s",
+        assertEquals("has error message from response body",
+            "Unauthorized: clock skew of 301s was greater than 300s",
             authException.getMessage());
     }
 }

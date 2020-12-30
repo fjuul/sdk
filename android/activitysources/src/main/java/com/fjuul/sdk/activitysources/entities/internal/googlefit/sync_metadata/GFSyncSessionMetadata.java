@@ -1,24 +1,28 @@
 package com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSessionBundle;
-
 import java.time.Clock;
 import java.util.Date;
 import java.util.Objects;
 
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSessionBundle;
+
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 class GFSyncSessionMetadata extends GFSyncEntityMetadata {
     public static final int CURRENT_SCHEMA_VERSION = 1;
 
-    @NonNull private final String id;
-    @Nullable private final String name;
-    @Nullable private final String applicationIdentifier;
-    @NonNull private final Date timeStart;
-    @NonNull private final Date timeEnd;
+    @NonNull
+    private final String id;
+    @Nullable
+    private final String name;
+    @Nullable
+    private final String applicationIdentifier;
+    @NonNull
+    private final Date timeStart;
+    @NonNull
+    private final Date timeEnd;
     private final int type;
     private final int activitySegmentsCount;
     private final int caloriesCount;
@@ -27,10 +31,19 @@ class GFSyncSessionMetadata extends GFSyncEntityMetadata {
     private final int speedCount;
     private final int powerCount;
 
-    public GFSyncSessionMetadata(@NonNull String id, @Nullable String name, @Nullable String applicationIdentifier,
-                                 @NonNull Date timeStart, @NonNull Date timeEnd, int type,
-                                 int activitySegmentsCount, int caloriesCount, int stepsCount,
-                                 int heartRateCount, int speedCount, int powerCount, Date editedAt) {
+    public GFSyncSessionMetadata(@NonNull String id,
+        @Nullable String name,
+        @Nullable String applicationIdentifier,
+        @NonNull Date timeStart,
+        @NonNull Date timeEnd,
+        int type,
+        int activitySegmentsCount,
+        int caloriesCount,
+        int stepsCount,
+        int heartRateCount,
+        int speedCount,
+        int powerCount,
+        Date editedAt) {
         super(CURRENT_SCHEMA_VERSION, editedAt);
         this.id = id;
         this.name = name;
@@ -47,7 +60,8 @@ class GFSyncSessionMetadata extends GFSyncEntityMetadata {
     }
 
     @SuppressLint("NewApi")
-    static public GFSyncSessionMetadata buildFromSessionBundle(@NonNull GFSessionBundle sessionBundle, @NonNull Clock clock) {
+    static public GFSyncSessionMetadata buildFromSessionBundle(@NonNull GFSessionBundle sessionBundle,
+        @NonNull Clock clock) {
         final int activitySegmentsCount = sessionBundle.getActivitySegments().size();
         final int caloriesCount = sessionBundle.getCalories().size();
         final int stepsCount = sessionBundle.getSteps().size();
@@ -55,8 +69,7 @@ class GFSyncSessionMetadata extends GFSyncEntityMetadata {
         final int speedCount = sessionBundle.getSpeed().size();
         final int powerCount = sessionBundle.getPower().size();
         final Date editedAt = Date.from(clock.instant());
-        return new GFSyncSessionMetadata(
-            sessionBundle.getId(),
+        return new GFSyncSessionMetadata(sessionBundle.getId(),
             sessionBundle.getName(),
             sessionBundle.getApplicationIdentifier(),
             sessionBundle.getTimeStart(),
@@ -76,6 +89,7 @@ class GFSyncSessionMetadata extends GFSyncEntityMetadata {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GFSyncSessionMetadata that = (GFSyncSessionMetadata) o;
+        //@formatter:off
         return type == that.type &&
             activitySegmentsCount == that.activitySegmentsCount &&
             caloriesCount == that.caloriesCount &&
@@ -88,5 +102,6 @@ class GFSyncSessionMetadata extends GFSyncEntityMetadata {
             Objects.equals(applicationIdentifier, that.applicationIdentifier) &&
             timeStart.equals(that.timeStart) &&
             timeEnd.equals(that.timeEnd);
+        //@formatter:on
     }
 }

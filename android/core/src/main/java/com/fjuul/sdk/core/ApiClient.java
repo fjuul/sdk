@@ -18,10 +18,8 @@ import okhttp3.OkHttpClient;
 
 /**
  * Main entry point to communicate with Fjuul API from a user identity.
- *
  * <p>
  * Use ApiClient.Builder to create instance of this class.
- *
  * <p>
  * NOTE: reuse the created instance as much as possible to share the same signing mechanism between services and prevent
  * refreshing collision.
@@ -37,7 +35,12 @@ public class ApiClient {
     private @Nullable UserCredentials userCredentials;
     private @Nullable SigningAuthInterceptor signingAuthInterceptor;
 
-    private ApiClient(String baseUrl, String apiKey, Context appContext, IStorage storage, Keystore userKeystore, UserCredentials credentials) {
+    private ApiClient(String baseUrl,
+        String apiKey,
+        Context appContext,
+        IStorage storage,
+        Keystore userKeystore,
+        UserCredentials credentials) {
         this.baseUrl = baseUrl;
         this.apiKey = apiKey;
         this.appContext = appContext;

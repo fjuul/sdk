@@ -1,10 +1,7 @@
 package com.fjuul.sdk.activitysources.workers;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-
-import androidx.annotation.NonNull;
-import androidx.work.WorkerParameters;
+import java.time.LocalDate;
+import java.util.concurrent.ExecutionException;
 
 import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
@@ -14,8 +11,10 @@ import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 
-import java.time.LocalDate;
-import java.util.concurrent.ExecutionException;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import androidx.annotation.NonNull;
+import androidx.work.WorkerParameters;
 
 public class GoogleFitIntradaySyncWorker extends GoogleFitSyncWorker {
     public static final String KEY_INTRADAY_METRICS_ARG = "INTRADAY_METRICS";
@@ -35,12 +34,12 @@ public class GoogleFitIntradaySyncWorker extends GoogleFitSyncWorker {
             // NOTE: currently, the task will be canceled on the next initialization of ActivitySourcesManager
             return Result.success();
         }
-        final GoogleFitActivitySource gfSource = ((GoogleFitActivitySource)gfConnection.getActivitySource());
+        final GoogleFitActivitySource gfSource = ((GoogleFitActivitySource) gfConnection.getActivitySource());
         final TaskCompletionSource<Void> taskCompletionSource = new TaskCompletionSource<>();
         final GFIntradaySyncOptions syncOptions = buildIntradaySyncOptions();
         gfSource.syncIntradayMetrics(syncOptions, (result -> {
             if (result.isError() && result.getError() instanceof Exception) {
-                taskCompletionSource.trySetException((Exception)result.getError());
+                taskCompletionSource.trySetException((Exception) result.getError());
                 return;
             }
             taskCompletionSource.trySetResult(null);
@@ -51,7 +50,7 @@ public class GoogleFitIntradaySyncWorker extends GoogleFitSyncWorker {
         } catch (ExecutionException exception) {
             Exception originCause = (Exception) exception.getCause();
             // TODO: figure out what caused the exception and handle this
-        } catch (InterruptedException e) { }
+        } catch (InterruptedException e) {}
         return Result.failure();
     }
 
@@ -65,7 +64,7 @@ public class GoogleFitIntradaySyncWorker extends GoogleFitSyncWorker {
                 if (metric != null) {
                     syncOptionsBuilder.include(metric);
                 }
-            } catch (Exception e) { }
+            } catch (Exception e) {}
         }
         return syncOptionsBuilder.setDateRange(LocalDate.now().minusDays(2), LocalDate.now()).build();
     }

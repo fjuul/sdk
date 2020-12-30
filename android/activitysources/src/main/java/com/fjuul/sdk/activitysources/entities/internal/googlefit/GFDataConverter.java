@@ -1,7 +1,7 @@
 package com.fjuul.sdk.activitysources.entities.internal.googlefit;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import com.google.android.gms.fitness.data.Bucket;
 import com.google.android.gms.fitness.data.DataPoint;
@@ -10,8 +10,8 @@ import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
 
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class GFDataConverter {
     private static final String TAG = "GFDataConverter";
@@ -105,7 +105,7 @@ public class GFDataConverter {
         final Date start = new Date(dataPoint.getStartTime(TimeUnit.MILLISECONDS));
         final Date end = new Date(dataPoint.getEndTime(TimeUnit.MILLISECONDS));
         final int activityType = dataPoint.getValue(Field.FIELD_ACTIVITY).asInt();
-        return new GFActivitySegmentDataPoint(activityType, start,end,dataSourceId);
+        return new GFActivitySegmentDataPoint(activityType, start, end, dataSourceId);
     }
 
     public static GFSpeedDataPoint convertDataPointToSpeed(DataPoint dataPoint) {

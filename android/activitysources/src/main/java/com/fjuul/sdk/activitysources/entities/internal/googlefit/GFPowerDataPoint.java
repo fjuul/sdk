@@ -1,9 +1,9 @@
 package com.fjuul.sdk.activitysources.entities.internal.googlefit;
 
-import androidx.annotation.NonNull;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import androidx.annotation.NonNull;
 
 public class GFPowerDataPoint extends GFScalarDataPoint<Float> {
     public GFPowerDataPoint(@NonNull Float value, @NonNull Date start, @NonNull String dataSource) {

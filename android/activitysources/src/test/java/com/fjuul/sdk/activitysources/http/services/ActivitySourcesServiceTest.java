@@ -49,8 +49,7 @@ public class ActivitySourcesServiceTest {
 
     @RunWith(RobolectricTestRunner.class)
     @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
-    public abstract static class GivenRobolectricContext {
-    }
+    public abstract static class GivenRobolectricContext {}
 
     public static class ConnectToTracker extends GivenRobolectricContext {
         ActivitySourcesService sourcesService;
@@ -94,7 +93,8 @@ public class ActivitySourcesServiceTest {
             assertThat(result.getValue(), instanceOf(ExternalAuthenticationFlowRequired.class));
             ExternalAuthenticationFlowRequired trackerAuthentication =
                 (ExternalAuthenticationFlowRequired) result.getValue();
-            assertEquals("should have auth url", "https://connect.garmin.com/oauthConfirm?oauth_token=9be0741a",
+            assertEquals("should have auth url",
+                "https://connect.garmin.com/oauthConfirm?oauth_token=9be0741a",
                 trackerAuthentication.getUrl());
         }
 
@@ -145,7 +145,8 @@ public class ActivitySourcesServiceTest {
             assertTrue("unsuccessful result", result.isError());
             assertThat(result.getError(), instanceOf(SourceAlreadyConnectedException.class));
             SourceAlreadyConnectedException exception = (SourceAlreadyConnectedException) result.getError();
-            assertEquals("should have error message", "tracker \"googlefit\" already connected",
+            assertEquals("should have error message",
+                "tracker \"googlefit\" already connected",
                 exception.getMessage());
         }
     }
@@ -262,13 +263,15 @@ public class ActivitySourcesServiceTest {
             assertEquals("should have tracker name", "fitbit", connections[0].getTracker());
             assertEquals("should have tracker id", "0c98f062-055e-42fe-9c30-3a9645716d6f", connections[0].getId());
             assertEquals("should have createdAt",
-                Date.from(ZonedDateTime.parse("2020-05-18T15:08:06.602Z").toInstant()), connections[0].getCreatedAt());
+                Date.from(ZonedDateTime.parse("2020-05-18T15:08:06.602Z").toInstant()),
+                connections[0].getCreatedAt());
             assertNull("should not have endedAt", connections[0].getEndedAt());
 
             assertEquals("should have tracker name", "suunto", connections[1].getTracker());
             assertEquals("should have tracker id", "09f6e64b-63cc-41a2-8a4a-076bbd981077", connections[1].getId());
             assertEquals("should have createdAt",
-                Date.from(ZonedDateTime.parse("2020-05-18T15:30:53.978Z").toInstant()), connections[1].getCreatedAt());
+                Date.from(ZonedDateTime.parse("2020-05-18T15:30:53.978Z").toInstant()),
+                connections[1].getCreatedAt());
             assertNull("should not have endedAt", connections[1].getEndedAt());
         }
     }

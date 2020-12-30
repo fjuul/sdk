@@ -93,8 +93,12 @@ public class GoogleFitActivitySource extends ActivitySource {
             new GFSyncMetadataStore(client.getStorage(), client.getUserToken());
         final GoogleFitDataManagerBuilder gfDataManagerBuilder =
             new GoogleFitDataManagerBuilder(context, gfUtils, syncMetadataStore, sourcesService);
-        instance = new GoogleFitActivitySource(requestOfflineAccess, serverClientId,
-            sourcesManagerConfig.getCollectableFitnessMetrics(), sourcesService, context, gfDataManagerBuilder,
+        instance = new GoogleFitActivitySource(requestOfflineAccess,
+            serverClientId,
+            sourcesManagerConfig.getCollectableFitnessMetrics(),
+            sourcesService,
+            context,
+            gfDataManagerBuilder,
             sharedSequentialExecutor);
     }
 
@@ -113,9 +117,12 @@ public class GoogleFitActivitySource extends ActivitySource {
         return instance;
     }
 
-    GoogleFitActivitySource(boolean requestOfflineAccess, @NonNull String serverClientId,
-        @NonNull Set<FitnessMetricsType> collectableFitnessMetrics, @NonNull ActivitySourcesService sourcesService,
-        @NonNull Context context, @NonNull GoogleFitDataManagerBuilder gfDataManagerBuilder,
+    GoogleFitActivitySource(boolean requestOfflineAccess,
+        @NonNull String serverClientId,
+        @NonNull Set<FitnessMetricsType> collectableFitnessMetrics,
+        @NonNull ActivitySourcesService sourcesService,
+        @NonNull Context context,
+        @NonNull GoogleFitDataManagerBuilder gfDataManagerBuilder,
         @NonNull ExecutorService localSequentialBackgroundExecutor) {
         this.requestOfflineAccess = requestOfflineAccess;
         this.serverClientId = serverClientId;
@@ -380,8 +387,8 @@ public class GoogleFitActivitySource extends ActivitySource {
 
     private boolean areFitnessPermissionsGranted(@Nullable GoogleSignInAccount account,
         @NonNull Set<FitnessMetricsType> fitnessMetrics) {
-        return GoogleFitActivitySource.areFitnessPermissionsGranted(account, requestOfflineAccess, serverClientId,
-            fitnessMetrics);
+        return GoogleFitActivitySource
+            .areFitnessPermissionsGranted(account, requestOfflineAccess, serverClientId, fitnessMetrics);
     }
 
     private <T> void performTaskAlongWithCallback(@NonNull Supplier<Task<T>> taskSupplier,
@@ -407,7 +414,8 @@ public class GoogleFitActivitySource extends ActivitySource {
         });
     }
 
-    static GoogleSignInOptions buildGoogleSignInOptions(boolean offlineAccess, @Nullable String serverClientId,
+    static GoogleSignInOptions buildGoogleSignInOptions(boolean offlineAccess,
+        @Nullable String serverClientId,
         @NonNull Set<FitnessMetricsType> fitnessMetrics) {
         final FitnessOptions.Builder fitnessOptionsBuilder = FitnessOptions.builder();
         if (fitnessMetrics.contains(FitnessMetricsType.INTRADAY_CALORIES)) {
@@ -453,8 +461,10 @@ public class GoogleFitActivitySource extends ActivitySource {
         return googleSignInOptionsBuilder.build();
     }
 
-    static boolean areFitnessPermissionsGranted(@Nullable GoogleSignInAccount account, boolean offlineAccess,
-        String serverClientId, @NonNull Set<FitnessMetricsType> fitnessMetrics) {
+    static boolean areFitnessPermissionsGranted(@Nullable GoogleSignInAccount account,
+        boolean offlineAccess,
+        String serverClientId,
+        @NonNull Set<FitnessMetricsType> fitnessMetrics) {
         if (account == null) {
             return false;
         }

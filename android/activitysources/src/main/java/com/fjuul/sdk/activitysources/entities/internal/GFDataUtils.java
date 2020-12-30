@@ -1,12 +1,5 @@
 package com.fjuul.sdk.activitysources.entities.internal;
 
-import android.annotation.SuppressLint;
-
-import androidx.core.util.Pair;
-
-import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPoint;
-import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPointsBatch;
-
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -20,6 +13,12 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPointsBatch;
+
+import android.annotation.SuppressLint;
+import androidx.core.util.Pair;
 
 /**
  * Utility class for processing and querying google fit data.
@@ -39,16 +38,22 @@ public class GFDataUtils {
     }
 
     /**
-     * Generates a list of batches with the duration for the specified time interval containing GF data points according to the start time of a data point.
-     * A batch will be created even if there are not any points matched with the time interval of the batch.
+     * Generates a list of batches with the duration for the specified time interval containing GF data points according
+     * to the start time of a data point. A batch will be created even if there are not any points matched with the time
+     * interval of the batch.
+     *
      * @param start start time since the first batch will be created.
-     * @param end end time of the batching. If this parameter doesn't satisfy the strict batch division then the end time of the last batch will be rounded by the duration.
+     * @param end end time of the batching. If this parameter doesn't satisfy the strict batch division then the end
+     *        time of the last batch will be rounded by the duration.
      * @param points data points that need to group into batches
      * @param duration duration of a batch
      * @return list of batches
      */
     @SuppressLint("NewApi")
-    public <T extends GFDataPoint> List<GFDataPointsBatch<T>> groupPointsIntoBatchesByDuration(Date start, Date end, List<T> points, Duration duration) {
+    public <T extends GFDataPoint> List<GFDataPointsBatch<T>> groupPointsIntoBatchesByDuration(Date start,
+        Date end,
+        List<T> points,
+        Duration duration) {
         Date leftBorderRange = start;
         Date rightBorderRange = Date.from(start.toInstant().plusMillis(duration.toMillis()));
         List<GFDataPointsBatch<T>> batches = new ArrayList<>();
@@ -56,7 +61,8 @@ public class GFDataUtils {
             Date finalLeftBorderRange = leftBorderRange;
             Date finalRightBorderRange = rightBorderRange;
             List<T> groupedPoints = points.stream().filter((dataPoint) -> {
-                return dataPoint.getStart().compareTo(finalLeftBorderRange) >= 0 && dataPoint.getStart().compareTo(finalRightBorderRange) == -1;
+                return dataPoint.getStart().compareTo(finalLeftBorderRange) >= 0
+                    && dataPoint.getStart().compareTo(finalRightBorderRange) == -1;
             }).collect(Collectors.toList());
             batches.add(new GFDataPointsBatch(groupedPoints, leftBorderRange, rightBorderRange));
             leftBorderRange = rightBorderRange;
@@ -66,8 +72,9 @@ public class GFDataUtils {
     }
 
     /**
-     * Transforms dates of a request to a pair of dates in the local timezone.
-     * The input start date will be considered as the start of a day, and the input end date as the end of a day or the current moment if it belongs to today.
+     * Transforms dates of a request to a pair of dates in the local timezone. The input start date will be considered
+     * as the start of a day, and the input end date as the end of a day or the current moment if it belongs to today.
+     *
      * @param start local start date
      * @param end local end date
      * @return pair of adjusted input dates
@@ -84,10 +91,11 @@ public class GFDataUtils {
 
 
     /**
-     * Transforms dates of a request to a pair of dates for the batching in the local timezone.
-     * The input start date will be considered as the start of a day.
-     * The input end date will be considered as the end of a day or the current moment rounded up by
-     * the duration if it belongs to today (for example, the current moment at 10:45 will be rounded up 11:00 for 30 minutes duration).
+     * Transforms dates of a request to a pair of dates for the batching in the local timezone. The input start date
+     * will be considered as the start of a day. The input end date will be considered as the end of a day or the
+     * current moment rounded up by the duration if it belongs to today (for example, the current moment at 10:45 will
+     * be rounded up 11:00 for 30 minutes duration).
+     *
      * @param start local start date
      * @param end local start date
      * @param batchDuration duration of batches

@@ -1,9 +1,9 @@
 package com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata;
 
-import androidx.annotation.NonNull;
-
 import java.time.LocalDate;
 import java.util.Date;
+
+import androidx.annotation.NonNull;
 
 public abstract class GFSyncDatedEntityMetadata extends GFSyncEntityMetadata {
     @NonNull

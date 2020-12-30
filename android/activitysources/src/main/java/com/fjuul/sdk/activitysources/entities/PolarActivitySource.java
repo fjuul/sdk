@@ -23,4 +23,3 @@ public class PolarActivitySource extends ActivitySource {
         private static final PolarActivitySource instance = new PolarActivitySource();
     }
 }
-

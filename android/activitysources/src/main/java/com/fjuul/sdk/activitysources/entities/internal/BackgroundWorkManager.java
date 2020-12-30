@@ -1,21 +1,22 @@
 package com.fjuul.sdk.activitysources.entities.internal;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig;
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
 
 public class BackgroundWorkManager {
-    @NonNull private final ActivitySourcesManagerConfig config;
-    @NonNull private final GoogleFitSyncWorkManager gfSyncWorkManager;
+    @NonNull
+    private final ActivitySourcesManagerConfig config;
+    @NonNull
+    private final GoogleFitSyncWorkManager gfSyncWorkManager;
 
     public BackgroundWorkManager(@NonNull ActivitySourcesManagerConfig config,
-                                 @NonNull GoogleFitSyncWorkManager gfSyncWorkManager) {
+        @NonNull GoogleFitSyncWorkManager gfSyncWorkManager) {
         this.config = config;
         this.gfSyncWorkManager = gfSyncWorkManager;
     }
@@ -28,7 +29,8 @@ public class BackgroundWorkManager {
                 break;
             }
             case ENABLED: {
-                final Set<FitnessMetricsType> intradayMetrics = config.getCollectableFitnessMetrics().stream()
+                final Set<FitnessMetricsType> intradayMetrics = config.getCollectableFitnessMetrics()
+                    .stream()
                     .filter(FitnessMetricsType::isIntradayMetricType)
                     .collect(Collectors.toSet());
                 if (intradayMetrics.isEmpty()) {

@@ -1,12 +1,14 @@
 package com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata;
 
-import androidx.annotation.NonNull;
-
 import java.util.Date;
 
+import androidx.annotation.NonNull;
+
 public abstract class GFSyncEntityMetadata {
-    @NonNull protected final int schemaVersion;
-    @NonNull protected final Date editedAt;
+    @NonNull
+    protected final int schemaVersion;
+    @NonNull
+    protected final Date editedAt;
 
     public GFSyncEntityMetadata(int schemaVersion, @NonNull Date editedAt) {
         this.schemaVersion = schemaVersion;

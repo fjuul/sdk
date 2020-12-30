@@ -1,14 +1,17 @@
 package com.fjuul.sdk.activitysources.entities.internal.googlefit;
 
+import java.util.Date;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.util.Date;
-
 public abstract class GFDataPoint {
-    @NonNull protected final Date start;
-    @Nullable protected final Date end;
-    @Nullable protected final String dataSource;
+    @NonNull
+    protected final Date start;
+    @Nullable
+    protected final Date end;
+    @Nullable
+    protected final String dataSource;
 
     @NonNull
     public Date getStart() {

@@ -76,8 +76,10 @@ public final class ActivitySourcesManager {
     private volatile static ActivitySourcesManager instance;
 
     ActivitySourcesManager(@NonNull ActivitySourcesManagerConfig config,
-        @NonNull BackgroundWorkManager backgroundWorkManager, @NonNull ActivitySourcesService sourcesService,
-        @NonNull ActivitySourcesStateStore stateStore, @NonNull ActivitySourceResolver activitySourceResolver,
+        @NonNull BackgroundWorkManager backgroundWorkManager,
+        @NonNull ActivitySourcesService sourcesService,
+        @NonNull ActivitySourcesStateStore stateStore,
+        @NonNull ActivitySourceResolver activitySourceResolver,
         @Nullable List<TrackerConnection> connections) {
         this.config = config;
         this.backgroundWorkManager = backgroundWorkManager;
@@ -123,14 +125,21 @@ public final class ActivitySourcesManager {
         final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
         final WorkManager workManager = WorkManager.getInstance(client.getAppContext());
         final GoogleFitSyncWorkManager gfSyncWorkManager = new GoogleFitSyncWorkManager(workManager,
-            client.getUserToken(), client.getUserSecret(), client.getApiKey(), client.getBaseUrl());
+            client.getUserToken(),
+            client.getUserSecret(),
+            client.getApiKey(),
+            client.getBaseUrl());
         GoogleFitActivitySource.initialize(client, config);
 
         final BackgroundWorkManager backgroundWorkManager = new BackgroundWorkManager(config, gfSyncWorkManager);
         setupBackgroundWorksByConnections(storedConnections, backgroundWorkManager);
         final ActivitySourceResolver activitySourceResolver = new ActivitySourceResolver();
-        instance = new ActivitySourcesManager(config, backgroundWorkManager, sourcesService, stateStore,
-            activitySourceResolver, storedConnections);
+        instance = new ActivitySourcesManager(config,
+            backgroundWorkManager,
+            sourcesService,
+            stateStore,
+            activitySourceResolver,
+            storedConnections);
     }
 
     /**
@@ -334,7 +343,8 @@ public final class ActivitySourcesManager {
 
     @SuppressLint("NewApi")
     private static List<ActivitySourceConnection> convertTrackerConnectionsToActivitySourcesConnections(
-        @NonNull ActivitySourceResolver activitySourceResolver, @NonNull List<TrackerConnection> trackerConnections) {
+        @NonNull ActivitySourceResolver activitySourceResolver,
+        @NonNull List<TrackerConnection> trackerConnections) {
         Stream<ActivitySourceConnection> sourceConnectionsStream = trackerConnections.stream().map(connection -> {
             ActivitySource activitySource = activitySourceResolver.getInstanceByTrackerValue(connection.getTracker());
             if (activitySource == null) {

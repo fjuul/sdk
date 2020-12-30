@@ -12,6 +12,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Locale;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -42,8 +43,8 @@ public class RequestSigner {
         Request.Builder signedRequestBuilder = request.newBuilder();
         String checkingRequestHeaders =
             this.isRequestWithDigestChecking(request) ? "(request-target) date digest" : "(request-target) date";
-        StringBuilder encodedRequestTargetBuilder =
-            new StringBuilder(String.format("%s %s", request.method().toLowerCase(), request.url().encodedPath()));
+        StringBuilder encodedRequestTargetBuilder = new StringBuilder(
+            String.format("%s %s", request.method().toLowerCase(Locale.ROOT), request.url().encodedPath()));
         String encodedQuery = request.url().encodedQuery();
         if (encodedQuery != null) {
             encodedRequestTargetBuilder.append("?").append(encodedQuery);

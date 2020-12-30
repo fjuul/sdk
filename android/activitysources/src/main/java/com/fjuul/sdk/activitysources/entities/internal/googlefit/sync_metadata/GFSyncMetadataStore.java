@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.time.Clock;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
@@ -32,7 +33,7 @@ public class GFSyncMetadataStore {
         @Nullable
         @Override
         protected SimpleDateFormat initialValue() {
-            final SimpleDateFormat format = new SimpleDateFormat("'D'dd'T'HH:mm");
+            final SimpleDateFormat format = new SimpleDateFormat("'D'dd'T'HH:mm", Locale.US);
             format.setTimeZone(TimeZone.getTimeZone("UTC"));
             return format;
         }
@@ -41,7 +42,7 @@ public class GFSyncMetadataStore {
         @Nullable
         @Override
         protected SimpleDateFormat initialValue() {
-            final SimpleDateFormat format = new SimpleDateFormat("'D'dd");
+            final SimpleDateFormat format = new SimpleDateFormat("'D'dd", Locale.US);
             format.setTimeZone(TimeZone.getTimeZone("UTC"));
             return format;
         }

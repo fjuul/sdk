@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -53,6 +54,7 @@ import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 
 import android.annotation.SuppressLint;
+import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.core.util.Supplier;
 
@@ -96,7 +98,13 @@ class GFClientWrapper {
     private final SessionsClient sessionsClient;
     private final GFDataUtils gfUtils;
     private final Executor localBackgroundExecutor;
-    private final SimpleDateFormat dateFormatter;
+    private final ThreadLocal<SimpleDateFormat> dateFormatter = new ThreadLocal<SimpleDateFormat>() {
+        @Nullable
+        @Override
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm", Locale.US);
+        }
+    };
 
     public GFClientWrapper(HistoryClient historyClient, SessionsClient sessionsClient, GFDataUtils gfUtils) {
         this(DEFAULT_CONFIG, historyClient, sessionsClient, gfUtils);
@@ -108,7 +116,6 @@ class GFClientWrapper {
         this.gfUtils = gfUtils;
         this.config = config;
         this.localBackgroundExecutor = Executors.newCachedThreadPool();
-        this.dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
     }
 
     @SuppressLint("NewApi")
@@ -304,7 +311,8 @@ class GFClientWrapper {
             if (cancellationToken.isCancellationRequested()) {
                 return Tasks.forCanceled();
             }
-            String exceptionMessage = String.format("Possible tries count (%d) exceeded for task \"%s\"",
+            String exceptionMessage = String.format(Locale.US,
+                "Possible tries count (%d) exceeded for task \"%s\"",
                 supervisedTask.getRetriesCount() + 1,
                 supervisedTask.getName());
             cancellationTokenSource.cancel();
@@ -333,7 +341,7 @@ class GFClientWrapper {
         Supplier<SupervisedTask<SessionReadResponse>> readSessionTaskSupplier = () -> {
             SessionReadRequest detailedSessionReadRequest = buildDetailedSessionReadRequest(session);
             Task<SessionReadResponse> task = sessionsClient.readSession(detailedSessionReadRequest);
-            String taskName = String.format("fetch detailed gf session %s", session.getIdentifier());
+            String taskName = String.format(Locale.US, "fetch detailed gf session %s", session.getIdentifier());
             return new SupervisedTask<>(taskName,
                 task,
                 config.detailedSessionQueryTimeoutSeconds,
@@ -434,28 +442,28 @@ class GFClientWrapper {
 
         Task<List<GFHRDataPoint>> getSessionHRTask = runAndConcatSoleDataReadRequests(readHrRequests,
             GFDataConverter::convertDataPointToHR,
-            (req) -> String.format("fetch gf HR for session %s", session.getIdentifier()),
+            (req) -> String.format(Locale.US, "fetch gf HR for session %s", session.getIdentifier()),
             gfTaskWatcher);
         Task<List<GFStepsDataPoint>> getSessionStepsTask = runAndConcatSoleDataReadRequests(readStepsRequests,
             GFDataConverter::convertDataPointToSteps,
-            (req) -> String.format("fetch gf steps for session %s", session.getIdentifier()),
+            (req) -> String.format(Locale.US, "fetch gf steps for session %s", session.getIdentifier()),
             gfTaskWatcher);
         Task<List<GFSpeedDataPoint>> getSessionSpeedTask = runAndConcatSoleDataReadRequests(readSpeedRequests,
             GFDataConverter::convertDataPointToSpeed,
-            (req) -> String.format("fetch gf speed for session %s", session.getIdentifier()),
+            (req) -> String.format(Locale.US, "fetch gf speed for session %s", session.getIdentifier()),
             gfTaskWatcher);
         Task<List<GFPowerDataPoint>> getSessionPowerTask = runAndConcatSoleDataReadRequests(readPowerRequests,
             GFDataConverter::convertDataPointToPower,
-            (req) -> String.format("fetch gf power for session %s", session.getIdentifier()),
+            (req) -> String.format(Locale.US, "fetch gf power for session %s", session.getIdentifier()),
             gfTaskWatcher);
         Task<List<GFCalorieDataPoint>> getSessionCaloriesTask = runAndConcatSoleDataReadRequests(readCaloriesRequests,
             GFDataConverter::convertDataPointToCalorie,
-            (req) -> String.format("fetch gf calories for session %s", session.getIdentifier()),
+            (req) -> String.format(Locale.US, "fetch gf calories for session %s", session.getIdentifier()),
             gfTaskWatcher);
         Task<List<GFActivitySegmentDataPoint>> getSessionSegmentsTask =
             runAndConcatSoleDataReadRequests(readSegmentsRequests,
                 GFDataConverter::convertDataPointToActivitySegment,
-                (req) -> String.format("fetch gf activity segments for session %s", session.getIdentifier()),
+                (req) -> String.format(Locale.US, "fetch gf activity segments for session %s", session.getIdentifier()),
                 gfTaskWatcher);
 
         List<Task<?>> tasks = Arrays.asList(getSessionHRTask,
@@ -539,8 +547,11 @@ class GFClientWrapper {
     private <T> SupervisedTask<T> buildSupervisedTask(String jobName, Task<T> task, Pair<Date, Date> dateRange) {
         Date start = dateRange.first;
         Date end = dateRange.second;
-        String taskName =
-            String.format("'%s' for %s-%s", jobName, dateFormatter.format(start), dateFormatter.format(end));
+        String taskName = String.format(Locale.US,
+            "'%s' for %s-%s",
+            jobName,
+            dateFormatter.get().format(start),
+            dateFormatter.get().format(end));
         return new SupervisedTask<>(taskName, task, config.queryTimeoutSeconds, config.queryRetriesCount);
     }
 

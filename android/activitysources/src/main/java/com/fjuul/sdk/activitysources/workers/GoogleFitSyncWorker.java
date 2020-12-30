@@ -1,6 +1,7 @@
 package com.fjuul.sdk.activitysources.workers;
 
 import java.util.Collections;
+import java.util.List;
 
 import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
@@ -58,9 +59,13 @@ public abstract class GoogleFitSyncWorker extends Worker {
 
     @SuppressLint("NewApi")
     @Nullable
-    protected static ActivitySourceConnection getGoogleFitActivitySourceConnection(ActivitySourcesManager manager) {
-        return manager.getCurrent()
-            .stream()
+    protected static ActivitySourceConnection getGoogleFitActivitySourceConnection(
+        @NonNull ActivitySourcesManager manager) {
+        final List<ActivitySourceConnection> currentConnections = manager.getCurrent();
+        if (currentConnections == null) {
+            return null;
+        }
+        return currentConnections.stream()
             .filter(connection -> connection.getActivitySource() instanceof GoogleFitActivitySource)
             .findFirst()
             .orElse(null);

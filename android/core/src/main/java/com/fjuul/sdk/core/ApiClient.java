@@ -66,7 +66,7 @@ public class ApiClient {
          */
         // TODO: add the overloaded constructor with an environment parameter
         public Builder(@NonNull Context appContext, @NonNull String baseUrl, @NonNull String apiKey) {
-            this.appContext = appContext;
+            this.appContext = appContext.getApplicationContext();
             this.baseUrl = baseUrl;
             this.apiKey = apiKey;
         }

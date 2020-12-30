@@ -18,7 +18,7 @@ public final class GFSyncCaloriesMetadata extends GFSyncDatedEntityMetadata {
     private int count;
     private float totalKcals;
 
-    public GFSyncCaloriesMetadata(int count, float totalKcals, LocalDate date, Date editedAt) {
+    public GFSyncCaloriesMetadata(int count, float totalKcals, @NonNull LocalDate date, @NonNull Date editedAt) {
         super(CURRENT_SCHEMA_VERSION, date, editedAt);
         this.count = count;
         this.totalKcals = totalKcals;
@@ -35,7 +35,9 @@ public final class GFSyncCaloriesMetadata extends GFSyncDatedEntityMetadata {
     }
 
     @SuppressLint("NewApi")
-    static public GFSyncCaloriesMetadata buildFromBatch(GFDataPointsBatch<GFCalorieDataPoint> batch, Clock clock) {
+    @NonNull
+    static public GFSyncCaloriesMetadata buildFromBatch(@NonNull GFDataPointsBatch<GFCalorieDataPoint> batch,
+        @NonNull Clock clock) {
         float totalKcals = batch.getPoints().stream().map(c -> c.getValue()).reduce(0f, (acc, el) -> acc + el);
         int count = batch.getPoints().size();
         final Date editedAt = Date.from(clock.instant());

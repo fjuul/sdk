@@ -76,6 +76,7 @@ public final class GFSessionSyncOptions extends GFSyncOptions {
          * @param endDate end date of sessions to be synced
          * @return builder
          */
+        @NonNull
         public Builder setDateRange(@NonNull LocalDate startDate, @NonNull LocalDate endDate) {
             validateDateInputs(clock, startDate, endDate);
             this.startDate = startDate;
@@ -92,12 +93,14 @@ public final class GFSessionSyncOptions extends GFSyncOptions {
          * @param duration min duration for sessions to be synced
          * @return
          */
+        @NonNull
         public Builder setMinimumSessionDuration(@NonNull Duration duration) {
             this.minimumSessionDuration = duration;
             return this;
         }
 
         @SuppressLint("NewApi")
+        @NonNull
         public GFSessionSyncOptions build() {
             if (startDate == null || endDate == null || minimumSessionDuration == null) {
                 throw new IllegalStateException("Date range and minimum session duration must be specified");

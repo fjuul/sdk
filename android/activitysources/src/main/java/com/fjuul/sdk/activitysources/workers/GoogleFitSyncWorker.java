@@ -27,6 +27,7 @@ public abstract class GoogleFitSyncWorker extends Worker {
         super(context, workerParams);
     }
 
+    @NonNull
     protected ActivitySourcesManager getOrInitializeActivitySourcesManager() {
         ActivitySourcesManager sourcesManager;
         try {

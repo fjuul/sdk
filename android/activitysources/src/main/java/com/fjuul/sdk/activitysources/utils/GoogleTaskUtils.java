@@ -14,11 +14,13 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
 import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
 import androidx.core.util.Supplier;
 
 public final class GoogleTaskUtils {
     @SuppressLint("NewApi")
-    public static <T extends Task<?>> Optional<Exception> extractGFExceptionFromTasks(List<T> tasks) {
+    @NonNull
+    public static <T extends Task<?>> Optional<Exception> extractGFExceptionFromTasks(@NonNull List<T> tasks) {
         Optional<Exception> failedTaskOpt = tasks.stream()
             .filter(t -> t.getException() != null
                 && t.getException() instanceof GoogleFitActivitySourceExceptions.CommonException)
@@ -28,24 +30,26 @@ public final class GoogleTaskUtils {
     }
 
     @SuppressLint("NewApi")
-    public static <T> Task<T> shutdownExecutorsOnComplete(Executor shutdownExecutor,
-        Task<T> task,
-        ExecutorService... executors) {
+    @NonNull
+    public static <T> Task<T> shutdownExecutorsOnComplete(@NonNull Executor shutdownExecutor,
+        @NonNull Task<T> task,
+        @NonNull ExecutorService... executors) {
         return task.addOnCompleteListener(shutdownExecutor, (t) -> {
             Arrays.stream(executors).forEach(executor -> executor.shutdownNow());
         });
     }
 
-    public static <T> Task<T> runAndAwaitTaskByExecutor(Executor executor,
-        CancellationTokenSource cancellationTokenSource,
-        CancellationToken cancellationToken,
-        Supplier<Task<T>> taskSupplier) {
+    @NonNull
+    public static <T> Task<T> runAndAwaitTaskByExecutor(@NonNull Executor executor,
+        @NonNull CancellationTokenSource cancellationTokenSource,
+        @NonNull CancellationToken cancellationToken,
+        @NonNull Supplier<Task<T>> taskSupplier) {
         return Tasks.forResult(null).continueWithTask(executor, t -> {
             if (cancellationToken.isCancellationRequested()) {
                 return Tasks.forCanceled();
             }
             try {
-                T result = Tasks.await(taskSupplier.get());
+                final T result = Tasks.await(taskSupplier.get());
                 if (cancellationToken.isCancellationRequested()) {
                     return Tasks.forCanceled();
                 }

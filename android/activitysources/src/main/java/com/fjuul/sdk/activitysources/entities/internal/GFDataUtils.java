@@ -18,13 +18,16 @@ import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPointsBatch;
 
 import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 
 /**
  * Utility class for processing and querying google fit data.
  */
 public class GFDataUtils {
+    @NonNull
     private ZoneId zoneId;
+    @NonNull
     private Clock clock;
 
     @SuppressLint("NewApi")
@@ -32,7 +35,7 @@ public class GFDataUtils {
         this(ZoneId.systemDefault(), Clock.systemUTC());
     }
 
-    GFDataUtils(ZoneId zoneId, Clock clock) {
+    GFDataUtils(@NonNull ZoneId zoneId, @NonNull Clock clock) {
         this.zoneId = zoneId;
         this.clock = clock;
     }
@@ -50,17 +53,18 @@ public class GFDataUtils {
      * @return list of batches
      */
     @SuppressLint("NewApi")
-    public <T extends GFDataPoint> List<GFDataPointsBatch<T>> groupPointsIntoBatchesByDuration(Date start,
-        Date end,
-        List<T> points,
-        Duration duration) {
+    @NonNull
+    public <T extends GFDataPoint> List<GFDataPointsBatch<T>> groupPointsIntoBatchesByDuration(@NonNull Date start,
+        @NonNull Date end,
+        @NonNull List<T> points,
+        @NonNull Duration duration) {
         Date leftBorderRange = start;
         Date rightBorderRange = Date.from(start.toInstant().plusMillis(duration.toMillis()));
-        List<GFDataPointsBatch<T>> batches = new ArrayList<>();
+        final List<GFDataPointsBatch<T>> batches = new ArrayList<>();
         while (leftBorderRange.before(end)) {
-            Date finalLeftBorderRange = leftBorderRange;
-            Date finalRightBorderRange = rightBorderRange;
-            List<T> groupedPoints = points.stream().filter((dataPoint) -> {
+            final Date finalLeftBorderRange = leftBorderRange;
+            final Date finalRightBorderRange = rightBorderRange;
+            final List<T> groupedPoints = points.stream().filter((dataPoint) -> {
                 return dataPoint.getStart().compareTo(finalLeftBorderRange) >= 0
                     && dataPoint.getStart().compareTo(finalRightBorderRange) == -1;
             }).collect(Collectors.toList());
@@ -80,7 +84,8 @@ public class GFDataUtils {
      * @return pair of adjusted input dates
      */
     @SuppressLint("NewApi")
-    public Pair<Date, Date> adjustInputDatesForGFRequest(LocalDate start, LocalDate end) {
+    @NonNull
+    public Pair<Date, Date> adjustInputDatesForGFRequest(@NonNull LocalDate start, @NonNull LocalDate end) {
         final Date startDate = Date.from(start.atStartOfDay(zoneId).toInstant());
         final Date endOfDayOfEndDate = Date.from(end.atTime(LocalTime.MAX).atZone(zoneId).toInstant());
         final Date currentMoment = Date.from(clock.instant());
@@ -102,7 +107,10 @@ public class GFDataUtils {
      * @return pair of adjusted input dates
      */
     @SuppressLint("NewApi")
-    public Pair<Date, Date> adjustInputDatesForBatches(LocalDate start, LocalDate end, Duration batchDuration) {
+    @NonNull
+    public Pair<Date, Date> adjustInputDatesForBatches(@NonNull LocalDate start,
+        @NonNull LocalDate end,
+        @NonNull Duration batchDuration) {
         final Date startDate = Date.from(start.atStartOfDay(zoneId).toInstant());
         Date roundedCurrentDate;
         final Instant currentInstant = Instant.now(clock);
@@ -122,7 +130,10 @@ public class GFDataUtils {
     }
 
     @SuppressLint("NewApi")
-    public List<Pair<Date, Date>> splitDateRangeIntoChunks(Date start, Date end, Duration duration) {
+    @NonNull
+    public List<Pair<Date, Date>> splitDateRangeIntoChunks(@NonNull Date start,
+        @NonNull Date end,
+        @NonNull Duration duration) {
         if (start.equals(end)) {
             return Arrays.asList(new Pair<>(start, end));
         }

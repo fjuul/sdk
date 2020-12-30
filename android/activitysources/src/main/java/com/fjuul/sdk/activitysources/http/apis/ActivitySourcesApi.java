@@ -22,7 +22,7 @@ public interface ActivitySourcesApi {
     @NonNull
     ApiCall<ResponseBody> connect(@Path("userToken") @NonNull String userToken,
         @Path("activitySource") @NonNull String activitySource,
-        @QueryMap Map<String, String> queryMap);
+        @QueryMap @NonNull Map<String, String> queryMap);
 
     @DELETE("/sdk/activity-sources/v1/{userToken}/connections/{connectionId}")
     @NonNull
@@ -34,6 +34,7 @@ public interface ActivitySourcesApi {
     ApiCall<TrackerConnection[]> getConnections(@Path("userToken") @NonNull String userToken,
         @Query("show") @Nullable String show);
 
+    @NonNull
     @POST("/sdk/activity-sources/v1/{userToken}/googlefit")
-    ApiCall<Void> uploadGoogleFitData(@Path("userToken") @NonNull String userToken, @Body GFUploadData data);
+    ApiCall<Void> uploadGoogleFitData(@Path("userToken") @NonNull String userToken, @Body @NonNull GFUploadData data);
 }

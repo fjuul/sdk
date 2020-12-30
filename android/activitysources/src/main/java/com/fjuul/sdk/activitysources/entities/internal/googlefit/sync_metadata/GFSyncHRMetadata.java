@@ -18,7 +18,7 @@ public class GFSyncHRMetadata extends GFSyncDatedEntityMetadata {
     private int count;
     private float sumOfAverages;
 
-    public GFSyncHRMetadata(int count, float sumOfAverages, LocalDate date, Date editedAt) {
+    public GFSyncHRMetadata(int count, float sumOfAverages, @NonNull LocalDate date, @NonNull Date editedAt) {
         super(CURRENT_SCHEMA_VERSION, date, editedAt);
         this.count = count;
         this.sumOfAverages = sumOfAverages;
@@ -35,7 +35,9 @@ public class GFSyncHRMetadata extends GFSyncDatedEntityMetadata {
     }
 
     @SuppressLint("NewApi")
-    static public GFSyncHRMetadata buildFromBatch(GFDataPointsBatch<GFHRSummaryDataPoint> batch, Clock clock) {
+    @NonNull
+    static public GFSyncHRMetadata buildFromBatch(@NonNull GFDataPointsBatch<GFHRSummaryDataPoint> batch,
+        @NonNull Clock clock) {
         float totalSum = batch.getPoints().stream().map(hr -> hr.getAvg()).reduce(0f, (acc, el) -> acc + el);
         int count = batch.getPoints().size();
         final Date editedAt = Date.from(clock.instant());

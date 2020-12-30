@@ -93,6 +93,7 @@ public class ActivitySourcesManagerConfig {
          * @return configured builder
          */
         @SuppressLint("NewApi")
+        @NonNull
         public Builder enableGFIntradayBackgroundSync() {
             config.gfIntradayBackgroundSyncMode = GFBackgroundSyncMode.ENABLED;
             return this;
@@ -106,6 +107,7 @@ public class ActivitySourcesManagerConfig {
          * @param minSessionDuration min duration for sessions to be synced
          * @return configured builder
          */
+        @NonNull
         public Builder enableGFSessionsBackgroundSync(@NonNull Duration minSessionDuration) {
             Objects.requireNonNull(minSessionDuration, "duration must be not null");
             config.gfSessionsBackgroundSyncMode = GFBackgroundSyncMode.ENABLED;
@@ -121,6 +123,7 @@ public class ActivitySourcesManagerConfig {
          * @param minSessionDuration min duration for sessions to be synced
          * @return configured builder
          */
+        @NonNull
         public Builder enableGFBackgroundSync(@NonNull Duration minSessionDuration) {
             enableGFIntradayBackgroundSync();
             enableGFSessionsBackgroundSync(minSessionDuration);
@@ -132,6 +135,7 @@ public class ActivitySourcesManagerConfig {
          *
          * @return configured builder
          */
+        @NonNull
         public Builder disableGFIntradayBackgroundSync() {
             config.gfIntradayBackgroundSyncMode = GFBackgroundSyncMode.DISABLED;
             return this;
@@ -142,6 +146,7 @@ public class ActivitySourcesManagerConfig {
          *
          * @return configured builder
          */
+        @NonNull
         public Builder disableGFSessionsBackgroundSync() {
             config.gfSessionsBackgroundSyncMode = GFBackgroundSyncMode.DISABLED;
             config.gfSessionsBackgroundSyncMinSessionDuration = null;
@@ -153,6 +158,7 @@ public class ActivitySourcesManagerConfig {
          *
          * @return configured builder
          */
+        @NonNull
         public Builder disableGFBackgroundSync() {
             disableGFIntradayBackgroundSync();
             disableGFSessionsBackgroundSync();
@@ -165,6 +171,7 @@ public class ActivitySourcesManagerConfig {
          *
          * @return configured builder
          */
+        @NonNull
         public Builder keepUntouchedGFBackgroundSync() {
             config.gfIntradayBackgroundSyncMode = GFBackgroundSyncMode.UNTOUCHED;
             config.gfSessionsBackgroundSyncMode = GFBackgroundSyncMode.UNTOUCHED;
@@ -183,6 +190,7 @@ public class ActivitySourcesManagerConfig {
          * @return configured builder
          */
         @SuppressLint("NewApi")
+        @NonNull
         public Builder setCollectableFitnessMetrics(@NonNull Set<FitnessMetricsType> fitnessMetrics) {
             Objects.requireNonNull(fitnessMetrics, "metrics must be not null");
             final Set<FitnessMetricsType> fitnessMetricsReadOnlyCopy =
@@ -197,6 +205,7 @@ public class ActivitySourcesManagerConfig {
          *
          * @return config
          */
+        @NonNull
         public ActivitySourcesManagerConfig build() {
             if (created) {
                 throw new IllegalStateException("Do not reuse the builder for creating new instance");
@@ -216,6 +225,7 @@ public class ActivitySourcesManagerConfig {
      * @return config
      */
     @SuppressLint("NewApi")
+    @NonNull
     public static ActivitySourcesManagerConfig buildDefault() {
         final Duration minSessionDuration = Duration.ofMinutes(5);
         final Set<FitnessMetricsType> allFitnessMetrics =

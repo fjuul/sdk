@@ -17,7 +17,7 @@ public class GFDataConverter {
     private static final String TAG = "GFDataConverter";
 
     @Nullable
-    public static GFCalorieDataPoint convertBucketToCalorie(Bucket bucket) {
+    public static GFCalorieDataPoint convertBucketToCalorie(@NonNull Bucket bucket) {
         final Date start = new Date(bucket.getStartTime(TimeUnit.MILLISECONDS));
         if (bucket.getDataSets().isEmpty()) {
             return null;
@@ -33,7 +33,7 @@ public class GFDataConverter {
     }
 
     @NonNull
-    public static GFCalorieDataPoint convertDataPointToCalorie(DataPoint dataPoint) {
+    public static GFCalorieDataPoint convertDataPointToCalorie(@NonNull DataPoint dataPoint) {
         final String dataSourceId = tryToExtractDataSourceStreamId(dataPoint);
         final Date start = new Date(dataPoint.getStartTime(TimeUnit.MILLISECONDS));
         final Date end = new Date(dataPoint.getEndTime(TimeUnit.MILLISECONDS));
@@ -42,7 +42,7 @@ public class GFDataConverter {
     }
 
     @Nullable
-    public static GFStepsDataPoint convertBucketToSteps(Bucket bucket) {
+    public static GFStepsDataPoint convertBucketToSteps(@NonNull Bucket bucket) {
         final Date start = new Date(bucket.getStartTime(TimeUnit.MILLISECONDS));
         if (bucket.getDataSets().isEmpty()) {
             return null;
@@ -58,7 +58,7 @@ public class GFDataConverter {
     }
 
     @NonNull
-    public static GFStepsDataPoint convertDataPointToSteps(DataPoint dataPoint) {
+    public static GFStepsDataPoint convertDataPointToSteps(@NonNull DataPoint dataPoint) {
         final Date start = new Date(dataPoint.getStartTime(TimeUnit.MILLISECONDS));
         final Date end = new Date(dataPoint.getEndTime(TimeUnit.MILLISECONDS));
         final String dataSourceId = tryToExtractDataSourceStreamId(dataPoint);
@@ -67,7 +67,7 @@ public class GFDataConverter {
     }
 
     @Nullable
-    public static GFHRSummaryDataPoint convertBucketToHRSummary(Bucket bucket) {
+    public static GFHRSummaryDataPoint convertBucketToHRSummary(@NonNull Bucket bucket) {
         Date start = new Date(bucket.getStartTime(TimeUnit.MILLISECONDS));
         if (bucket.getDataSets().isEmpty()) {
             return null;
@@ -85,7 +85,7 @@ public class GFDataConverter {
     }
 
     @NonNull
-    public static GFHRDataPoint convertDataPointToHR(DataPoint dataPoint) {
+    public static GFHRDataPoint convertDataPointToHR(@NonNull DataPoint dataPoint) {
         String dataSourceId = tryToExtractDataSourceStreamId(dataPoint);
         Date start = new Date(dataPoint.getTimestamp(TimeUnit.MILLISECONDS));
         float bpm = dataPoint.getValue(Field.FIELD_BPM).asFloat();
@@ -93,14 +93,15 @@ public class GFDataConverter {
     }
 
     @NonNull
-    public static GFPowerDataPoint convertDataPointToPower(DataPoint dataPoint) {
+    public static GFPowerDataPoint convertDataPointToPower(@NonNull DataPoint dataPoint) {
         String dataSourceId = tryToExtractDataSourceStreamId(dataPoint);
         Date start = new Date(dataPoint.getTimestamp(TimeUnit.MILLISECONDS));
         float watts = dataPoint.getValue(Field.FIELD_WATTS).asFloat();
         return new GFPowerDataPoint(watts, start, dataSourceId);
     }
 
-    public static GFActivitySegmentDataPoint convertDataPointToActivitySegment(DataPoint dataPoint) {
+    @NonNull
+    public static GFActivitySegmentDataPoint convertDataPointToActivitySegment(@NonNull DataPoint dataPoint) {
         final String dataSourceId = tryToExtractDataSourceStreamId(dataPoint);
         final Date start = new Date(dataPoint.getStartTime(TimeUnit.MILLISECONDS));
         final Date end = new Date(dataPoint.getEndTime(TimeUnit.MILLISECONDS));
@@ -108,7 +109,8 @@ public class GFDataConverter {
         return new GFActivitySegmentDataPoint(activityType, start, end, dataSourceId);
     }
 
-    public static GFSpeedDataPoint convertDataPointToSpeed(DataPoint dataPoint) {
+    @NonNull
+    public static GFSpeedDataPoint convertDataPointToSpeed(@NonNull DataPoint dataPoint) {
         String dataSourceId = tryToExtractDataSourceStreamId(dataPoint);
         Date start = new Date(dataPoint.getTimestamp(TimeUnit.MILLISECONDS));
         float metersPerSecond = dataPoint.getValue(Field.FIELD_SPEED).asFloat();
@@ -116,7 +118,7 @@ public class GFDataConverter {
     }
 
     @Nullable
-    private static String tryToExtractDataSourceStreamId(DataPoint point) {
+    private static String tryToExtractDataSourceStreamId(@NonNull DataPoint point) {
         final DataSource dataSource = point.getOriginalDataSource();
         if (dataSource == null) {
             return null;

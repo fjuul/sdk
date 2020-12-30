@@ -67,6 +67,7 @@ public final class GFIntradaySyncOptions extends GFSyncOptions {
          * @param type intraday fitness metric (calories, steps, heart rate)
          * @return builder
          */
+        @NonNull
         public Builder include(@NonNull FitnessMetricsType type) {
             if (FitnessMetricsType.INTRADAY_STEPS.equals(type) || FitnessMetricsType.INTRADAY_HEART_RATE.equals(type)
                 || FitnessMetricsType.INTRADAY_CALORIES.equals(type)) {
@@ -94,6 +95,7 @@ public final class GFIntradaySyncOptions extends GFSyncOptions {
          * @param endDate end date of intraday data to be synced
          * @return builder
          */
+        @NonNull
         public Builder setDateRange(@NonNull LocalDate startDate, @NonNull LocalDate endDate) {
             validateDateInputs(clock, startDate, endDate);
             this.startDate = startDate;
@@ -102,6 +104,7 @@ public final class GFIntradaySyncOptions extends GFSyncOptions {
         }
 
         @SuppressLint("NewApi")
+        @NonNull
         public GFIntradaySyncOptions build() {
             if (metrics.isEmpty() || startDate == null || endDate == null) {
                 throw new IllegalStateException("Date range and at least one metric type must be specified");

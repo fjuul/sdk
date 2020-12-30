@@ -28,6 +28,7 @@ public class GFSyncSessionsMetadata extends GFSyncDatedEntityMetadata {
     }
 
     @SuppressLint("NewApi")
+    @NonNull
     public static GFSyncSessionsMetadata buildFromList(@NonNull List<GFSessionBundle> sessionBundleList,
         @NonNull Clock clock) {
         final Date start = sessionBundleList.get(0).getTimeStart();

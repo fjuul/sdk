@@ -17,7 +17,7 @@ public class GFSyncStepsMetadata extends GFSyncDatedEntityMetadata {
     private int count;
     private int totalSteps;
 
-    public GFSyncStepsMetadata(int count, int totalSteps, LocalDate date, Date editedAt) {
+    public GFSyncStepsMetadata(int count, int totalSteps, @NonNull LocalDate date, @NonNull Date editedAt) {
         super(CURRENT_SCHEMA_VERSION, date, editedAt);
         this.count = count;
         this.totalSteps = totalSteps;
@@ -34,7 +34,9 @@ public class GFSyncStepsMetadata extends GFSyncDatedEntityMetadata {
     }
 
     @SuppressLint("NewApi")
-    static public GFSyncStepsMetadata buildFromBatch(GFDataPointsBatch<GFStepsDataPoint> batch, Clock clock) {
+    @NonNull
+    static public GFSyncStepsMetadata buildFromBatch(@NonNull GFDataPointsBatch<GFStepsDataPoint> batch,
+        @NonNull Clock clock) {
         int totalSteps = batch.getPoints().stream().mapToInt(s -> s.getValue()).sum();
         int count = batch.getPoints().size();
         final Date editedAt = Date.from(clock.instant());

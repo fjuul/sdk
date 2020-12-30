@@ -167,6 +167,7 @@ public class GFSessionBundle {
 
     @SuppressLint("NewApi")
     @Override
+    @NonNull
     public String toString() {
         //@formatter:off
         return "GFSessionBundle{" +
@@ -215,66 +216,79 @@ public class GFSessionBundle {
         @Nullable
         private List<GFSpeedDataPoint> speed;
 
+        @NonNull
         public Builder setId(@NonNull String id) {
             this.id = id;
             return this;
         }
 
+        @NonNull
         public Builder setName(@Nullable String name) {
             this.name = name;
             return this;
         }
 
+        @NonNull
         public Builder setApplicationIdentifier(@Nullable String applicationIdentifier) {
             this.applicationIdentifier = applicationIdentifier;
             return this;
         }
 
+        @NonNull
         public Builder setTimeStart(@NonNull Date timeStart) {
             this.timeStart = timeStart;
             return this;
         }
 
+        @NonNull
         public Builder setTimeEnd(@NonNull Date timeEnd) {
             this.timeEnd = timeEnd;
             return this;
         }
 
+        @NonNull
         public Builder setActivityType(@NonNull String activityType) {
             this.activityType = activityType;
             return this;
         }
 
+        @NonNull
         public Builder setType(int type) {
             this.type = type;
             return this;
         }
 
+        @NonNull
         public Builder setActivitySegments(@Nullable List<GFActivitySegmentDataPoint> activitySegments) {
             this.activitySegments = activitySegments;
             return this;
         }
 
+        @NonNull
         public Builder setCalories(@Nullable List<GFCalorieDataPoint> calories) {
             this.calories = calories;
             return this;
         }
 
+        @NonNull
         public Builder setSteps(@Nullable List<GFStepsDataPoint> steps) {
             this.steps = steps;
             return this;
         }
 
+        @NonNull
         public Builder setHeartRate(@Nullable List<GFHRDataPoint> heartRate) {
             this.heartRate = heartRate;
             return this;
         }
 
+        @NonNull
         public Builder setPower(@Nullable List<GFPowerDataPoint> power) {
             this.power = power;
             return this;
         }
 
+        @NonNull
         public Builder setSpeed(@Nullable List<GFSpeedDataPoint> speed) {
             this.speed = speed;
             return this;

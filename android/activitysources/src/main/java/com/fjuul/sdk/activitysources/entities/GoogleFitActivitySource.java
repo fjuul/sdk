@@ -72,7 +72,7 @@ public class GoogleFitActivitySource extends ActivitySource {
 
     static synchronized void initialize(@NonNull ApiClient client,
         @NonNull ActivitySourcesManagerConfig sourcesManagerConfig) {
-        Context context = client.getAppContext();
+        final Context context = client.getAppContext();
         ApplicationInfo app;
         try {
             app =
@@ -109,6 +109,7 @@ public class GoogleFitActivitySource extends ActivitySource {
      * @throws IllegalStateException if not initialized yet
      * @return instance of GoogleFitActivitySource
      */
+    @NonNull
     public static GoogleFitActivitySource getInstance() {
         if (instance == null) {
             throw new IllegalStateException(
@@ -182,6 +183,7 @@ public class GoogleFitActivitySource extends ActivitySource {
      *
      * @return intent requesting permissions
      */
+    @NonNull
     public Intent buildIntentRequestingFitnessPermissions() {
         final GoogleSignInClient signInClient = GoogleSignIn.getClient(context,
             buildGoogleSignInOptions(requestOfflineAccess, serverClientId, collectableFitnessMetrics));
@@ -362,10 +364,12 @@ public class GoogleFitActivitySource extends ActivitySource {
     }
 
     @Override
+    @NonNull
     protected TrackerValue getTrackerValue() {
         return TrackerValue.GOOGLE_FIT;
     }
 
+    @NonNull
     Task<Void> disable() {
         // NOTE: for some weird reasons, ConfigClient#disableFit is not enough to revoke all granted OAuth permissions.
         // For that we use GoogleSignInClient#revokeAccess.
@@ -414,6 +418,7 @@ public class GoogleFitActivitySource extends ActivitySource {
         });
     }
 
+    @NonNull
     static GoogleSignInOptions buildGoogleSignInOptions(boolean offlineAccess,
         @Nullable String serverClientId,
         @NonNull Set<FitnessMetricsType> fitnessMetrics) {

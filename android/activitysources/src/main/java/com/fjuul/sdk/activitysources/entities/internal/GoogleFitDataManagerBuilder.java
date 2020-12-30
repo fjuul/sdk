@@ -30,6 +30,7 @@ public class GoogleFitDataManagerBuilder {
         this.sourcesService = sourcesService;
     }
 
+    @NonNull
     public GoogleFitDataManager build(@NonNull GoogleSignInAccount account) {
         final HistoryClient historyClient = Fitness.getHistoryClient(context, account);
         final SessionsClient sessionsClient = Fitness.getSessionsClient(context, account);

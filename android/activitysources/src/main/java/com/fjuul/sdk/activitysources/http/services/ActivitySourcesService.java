@@ -78,7 +78,7 @@ public class ActivitySourcesService {
     }
 
     @NonNull
-    public ApiCall<ConnectionResult> connect(@NonNull String activitySource, Map<String, String> queryParams) {
+    public ApiCall<ConnectionResult> connect(@NonNull String activitySource, @NonNull Map<String, String> queryParams) {
         return (ApiCall) apiClient.connect(clientBuilder.getUserToken(), activitySource, queryParams);
     }
 
@@ -110,7 +110,8 @@ public class ActivitySourcesService {
      * @param dataToUpload GoogleFit data to upload
      * @return ApiCall for uploading the fitness data
      */
-    public ApiCall<Void> uploadGoogleFitData(GFUploadData dataToUpload) {
+    @NonNull
+    public ApiCall<Void> uploadGoogleFitData(@NonNull GFUploadData dataToUpload) {
         return apiClient.uploadGoogleFitData(clientBuilder.getUserToken(), dataToUpload);
     }
 }

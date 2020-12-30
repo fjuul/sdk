@@ -59,7 +59,8 @@ public class GoogleFitDataManager {
     }
 
     @SuppressLint("NewApi")
-    public Task<Void> syncIntradayMetrics(GFIntradaySyncOptions options) {
+    @NonNull
+    public Task<Void> syncIntradayMetrics(@NonNull GFIntradaySyncOptions options) {
         // todo: consider returning metadata of the sent data
         final ExecutorService sequentialExecutorService = Executors.newSingleThreadExecutor();
         final LocalDate startDate = options.getStartDate();
@@ -139,7 +140,8 @@ public class GoogleFitDataManager {
     }
 
     @SuppressLint("NewApi")
-    public Task<Void> syncSessions(GFSessionSyncOptions options) {
+    @NonNull
+    public Task<Void> syncSessions(@NonNull GFSessionSyncOptions options) {
         final Pair<Date, Date> gfQueryDates =
             gfUtils.adjustInputDatesForGFRequest(options.getStartDate(), options.getEndDate());
         final Task<List<GFSessionBundle>> getNotSyncedSessionsTask =
@@ -177,9 +179,10 @@ public class GoogleFitDataManager {
     }
 
     @SuppressLint("NewApi")
-    private Task<List<GFDataPointsBatch<GFCalorieDataPoint>>> getNotSyncedCaloriesBatches(LocalDate start,
-        LocalDate end,
-        Executor executor) {
+    @NonNull
+    private Task<List<GFDataPointsBatch<GFCalorieDataPoint>>> getNotSyncedCaloriesBatches(@NonNull LocalDate start,
+        @NonNull LocalDate end,
+        @NonNull Executor executor) {
         final Pair<Date, Date> gfQueryDates = gfUtils.adjustInputDatesForGFRequest(start, end);
         return client.getCalories(gfQueryDates.first, gfQueryDates.second).onSuccessTask(executor, (calories) -> {
             Duration batchDuration = Duration.ofMinutes(30);
@@ -196,9 +199,10 @@ public class GoogleFitDataManager {
     }
 
     @SuppressLint("NewApi")
-    private Task<List<GFDataPointsBatch<GFStepsDataPoint>>> getNotSyncedStepsBatches(LocalDate start,
-        LocalDate end,
-        Executor executor) {
+    @NonNull
+    private Task<List<GFDataPointsBatch<GFStepsDataPoint>>> getNotSyncedStepsBatches(@NonNull LocalDate start,
+        @NonNull LocalDate end,
+        @NonNull Executor executor) {
         final Pair<Date, Date> gfQueryDates = gfUtils.adjustInputDatesForGFRequest(start, end);
         return client.getSteps(gfQueryDates.first, gfQueryDates.second).onSuccessTask(executor, (steps) -> {
             final Duration batchDuration = Duration.ofHours(6);
@@ -214,9 +218,10 @@ public class GoogleFitDataManager {
     }
 
     @SuppressLint("NewApi")
-    private Task<List<GFDataPointsBatch<GFHRSummaryDataPoint>>> getNotSyncedHRBatches(LocalDate start,
-        LocalDate end,
-        Executor executor) {
+    @NonNull
+    private Task<List<GFDataPointsBatch<GFHRSummaryDataPoint>>> getNotSyncedHRBatches(@NonNull LocalDate start,
+        @NonNull LocalDate end,
+        @NonNull Executor executor) {
         final Pair<Date, Date> gfQueryDates = gfUtils.adjustInputDatesForGFRequest(start, end);
         return client.getHRSummaries(gfQueryDates.first, gfQueryDates.second).onSuccessTask(executor, (hr) -> {
             final Duration batchDuration = Duration.ofMinutes(30);
@@ -231,7 +236,8 @@ public class GoogleFitDataManager {
         });
     }
 
-    private Task<ApiCallResult<Void>> sendGFUploadData(GFUploadData uploadData) {
+    @NonNull
+    private Task<ApiCallResult<Void>> sendGFUploadData(@NonNull GFUploadData uploadData) {
         final TaskCompletionSource<ApiCallResult<Void>> sendDataTaskCompletionSource = new TaskCompletionSource<>();
         activitySourcesService.uploadGoogleFitData(uploadData).enqueue((apiCall, result) -> {
             if (result.isError()) {

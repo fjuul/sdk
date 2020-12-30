@@ -44,6 +44,7 @@ public abstract class GFSyncOptions {
     }
 
     @SuppressLint("NewApi")
+    @NonNull
     protected static LocalDate getMaxAllowedPastDate(@NonNull Clock clock) {
         return LocalDate.now(clock).minusMonths(1).plusDays(1);
     }

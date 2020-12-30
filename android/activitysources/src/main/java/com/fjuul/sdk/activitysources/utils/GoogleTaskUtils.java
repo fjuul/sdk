@@ -36,10 +36,10 @@ public final class GoogleTaskUtils {
         });
     }
 
-    public static <T> Task<T> runAndAwaitTaskByExecutor(Supplier<Task<T>> taskSupplier,
-        Executor executor,
+    public static <T> Task<T> runAndAwaitTaskByExecutor(Executor executor,
         CancellationTokenSource cancellationTokenSource,
-        CancellationToken cancellationToken) {
+        CancellationToken cancellationToken,
+        Supplier<Task<T>> taskSupplier) {
         return Tasks.forResult(null).continueWithTask(executor, t -> {
             if (cancellationToken.isCancellationRequested()) {
                 return Tasks.forCanceled();

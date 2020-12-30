@@ -72,25 +72,22 @@ public class GoogleFitDataManager {
         for (FitnessMetricsType metric : options.getMetrics()) {
             switch (metric) {
                 case INTRADAY_CALORIES:
-                    getCaloriesTask = runAndAwaitTaskByExecutor(
-                        () -> getNotSyncedCaloriesBatches(startDate, endDate, localBackgroundExecutor),
-                        sequentialExecutorService,
+                    getCaloriesTask = runAndAwaitTaskByExecutor(sequentialExecutorService,
                         cancellationTokenSource,
-                        cancellationToken);
+                        cancellationToken,
+                        () -> getNotSyncedCaloriesBatches(startDate, endDate, localBackgroundExecutor));
                     break;
                 case INTRADAY_STEPS:
-                    getStepsTask = runAndAwaitTaskByExecutor(
-                        () -> getNotSyncedStepsBatches(startDate, endDate, localBackgroundExecutor),
-                        sequentialExecutorService,
+                    getStepsTask = runAndAwaitTaskByExecutor(sequentialExecutorService,
                         cancellationTokenSource,
-                        cancellationToken);
+                        cancellationToken,
+                        () -> getNotSyncedStepsBatches(startDate, endDate, localBackgroundExecutor));
                     break;
                 case INTRADAY_HEART_RATE:
-                    getHRTask = runAndAwaitTaskByExecutor(
-                        () -> getNotSyncedHRBatches(startDate, endDate, localBackgroundExecutor),
-                        sequentialExecutorService,
+                    getHRTask = runAndAwaitTaskByExecutor(sequentialExecutorService,
                         cancellationTokenSource,
-                        cancellationToken);
+                        cancellationToken,
+                        () -> getNotSyncedHRBatches(startDate, endDate, localBackgroundExecutor));
                     break;
             }
         }

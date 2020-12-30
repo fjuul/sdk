@@ -121,7 +121,7 @@ public final class ActivitySourcesManager {
         @NonNull ActivitySourcesManagerConfig config) {
         final ActivitySourcesStateStore stateStore =
             new ActivitySourcesStateStore(client.getStorage(), client.getUserToken());
-        final List<TrackerConnection> storedConnections = stateStore.getConnections().orElse(null);
+        final List<TrackerConnection> storedConnections = stateStore.getConnections();
         final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
         final WorkManager workManager = WorkManager.getInstance(client.getAppContext());
         final GoogleFitSyncWorkManager gfSyncWorkManager = new GoogleFitSyncWorkManager(workManager,

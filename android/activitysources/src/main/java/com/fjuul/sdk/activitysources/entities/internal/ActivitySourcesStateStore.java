@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.core.entities.IStorage;
@@ -15,6 +14,7 @@ import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
 import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class ActivitySourcesStateStore {
     @NonNull
@@ -42,17 +42,17 @@ public class ActivitySourcesStateStore {
     }
 
     @SuppressLint("NewApi")
-    @NonNull
-    public Optional<List<TrackerConnection>> getConnections() {
-        String connectionsJSON = storage.get(lookupKey);
+    @Nullable
+    public List<TrackerConnection> getConnections() {
+        final String connectionsJSON = storage.get(lookupKey);
         if (connectionsJSON == null) {
-            return Optional.empty();
+            return null;
         }
         try {
-            List<TrackerConnection> connections = connectionsJsonAdapter.fromJson(connectionsJSON);
-            return Optional.ofNullable(connections);
+            final List<TrackerConnection> connections = connectionsJsonAdapter.fromJson(connectionsJSON);
+            return connections;
         } catch (IOException e) {
-            return Optional.empty();
+            return null;
         }
     }
 }

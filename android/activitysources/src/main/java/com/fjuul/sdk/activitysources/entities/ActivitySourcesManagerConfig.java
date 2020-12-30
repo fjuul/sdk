@@ -151,7 +151,7 @@ public class ActivitySourcesManagerConfig {
         /**
          * Disables background syncing of intraday and session data from Google Fit.
          *
-         * @return
+         * @return configured builder
          */
         public Builder disableGFBackgroundSync() {
             disableGFIntradayBackgroundSync();

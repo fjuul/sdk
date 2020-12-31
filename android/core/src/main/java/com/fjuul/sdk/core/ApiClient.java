@@ -87,9 +87,9 @@ public class ApiClient {
             if (appContext == null) {
                 throw new IllegalArgumentException("Application context must not be null");
             }
-            storage = new PersistentStorage(appContext);
             if (userCredentials != null) {
-                this.keystore = new Keystore(new PersistentStorage(appContext), userCredentials.getToken());
+                this.storage = new PersistentStorage(appContext, userCredentials.getToken());
+                this.keystore = new Keystore(storage, userCredentials.getToken());
             }
         }
 

@@ -22,8 +22,8 @@ public class PersistentStorage implements IStorage {
 
     public PersistentStorage(@NonNull Context context, @NonNull String userToken) {
         this.context = context;
-        this.preferences = context.getSharedPreferences(BASE_PREFERENCES_NAME, Context.MODE_PRIVATE);
         this.userToken = userToken;
+        this.preferences = context.getSharedPreferences(getSharedPrefsName(), Context.MODE_PRIVATE);
     }
 
     @Nullable

@@ -99,6 +99,19 @@ public class ApiClient {
         }
     }
 
+    /**
+     * Deletes the stored user file of the shared preferences created internally for persisting the state of Fjuul SDK.
+     * Note that if you want to perform the logout, then you need also to disable all background works in
+     * {@code ActivitySourcesManager} in the {@code activitysources} module. Otherwise, the file will be re-created
+     * again on the next background work.
+     * @param context application context
+     * @param userToken token of a user to delete
+     * @return boolean which indicates the success of the operation
+     */
+    public static boolean clearPersistentStorage(@NonNull Context context, @NonNull String userToken) {
+        return new PersistentStorage(context, userToken).remove();
+    }
+
     public @NonNull String getBaseUrl() {
         return baseUrl;
     }
@@ -119,6 +132,21 @@ public class ApiClient {
             throw new IllegalStateException("The builder needed user credentials");
         }
         return userCredentials.getSecret();
+    }
+
+    /**
+     * Deletes the stored user file of the shared preferences created internally for persisting the state of Fjuul SDK.
+     * Note that if you want to perform the logout, then you need also to disable all background works in
+     * {@code ActivitySourcesManager} in the {@code activitysources} module. Otherwise, the file will be re-created
+     * again on the next background work.<br>
+     * This method throws IllegalStateException if no set user credentials.<br>
+     * After calling this you must be sure that nothing doesn't refer to this instance of {@code ApiClient} because
+     * after the storage is removed, any write/read operations will throw the exception.
+     * @throws IllegalStateException when no user credentials
+     * @return boolean which indicates the success of the operation
+     */
+    public boolean clearPersistentStorage() {
+        return clearPersistentStorage(appContext, getUserToken());
     }
 
     public @NonNull IStorage getStorage() {

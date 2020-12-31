@@ -95,8 +95,8 @@ public class KeystoreTest {
         @Before
         public void beforeSetup() {
             Context context = ApplicationProvider.getApplicationContext();
-            preferences = context.getSharedPreferences("com.fjuul.sdk.persistence", Context.MODE_PRIVATE);
-            storage = new PersistentStorage(context);
+            preferences = context.getSharedPreferences("com.fjuul.sdk.persistence." + DUMMY_USER_TOKEN, Context.MODE_PRIVATE);
+            storage = new PersistentStorage(context, DUMMY_USER_TOKEN);
             keystore = new Keystore(storage, DUMMY_USER_TOKEN);
         }
 

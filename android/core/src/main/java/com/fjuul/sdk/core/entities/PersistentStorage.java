@@ -50,19 +50,21 @@ public class PersistentStorage implements IStorage {
     }
 
     @Override
-    public synchronized void remove() {
-        getPreferences().edit().clear().commit();
+    public synchronized boolean remove() {
+        final boolean editorResult = getPreferences().edit().clear().commit();
+        boolean deleteFileResult = false;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            context.deleteSharedPreferences(getSharedPrefsName());
+            deleteFileResult = context.deleteSharedPreferences(getSharedPrefsName());
         } else {
             final File sharedPrefsDir = new File(context.getFilesDir().getParent() + "/shared_prefs/");
             final File[] sharedPrefsFiles = sharedPrefsDir.listFiles((dir, name) -> name.startsWith(getSharedPrefsName()));
             if (sharedPrefsFiles.length > 0) {
                 final File sharedPrefsFile = sharedPrefsFiles[0];
-                sharedPrefsFile.delete();
+                deleteFileResult = sharedPrefsFile.delete();
             }
         }
         preferences = null;
+        return editorResult && deleteFileResult;
     }
 
     @SuppressLint("NewApi")

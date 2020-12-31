@@ -34,8 +34,9 @@ public class InMemoryStorage implements IStorage {
     }
 
     @Override
-    public synchronized void remove() {
+    public synchronized boolean remove() {
         getStore().clear();
         store = null;
+        return true;
     }
 }

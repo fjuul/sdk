@@ -9,5 +9,5 @@ public interface IStorage {
     @Nullable
     String get(@NonNull String key);
 
-    void remove();
+    boolean remove();
 }

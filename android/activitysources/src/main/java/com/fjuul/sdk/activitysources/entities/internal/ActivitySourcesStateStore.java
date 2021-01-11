@@ -24,9 +24,9 @@ public class ActivitySourcesStateStore {
     @NonNull
     JsonAdapter<List<TrackerConnection>> connectionsJsonAdapter;
 
-    public ActivitySourcesStateStore(@NonNull IStorage storage, @NonNull String userToken) {
+    public ActivitySourcesStateStore(@NonNull IStorage storage) {
         this.storage = storage;
-        this.lookupKey = String.format("activity-sources-state.%s", userToken);
+        this.lookupKey = "activity-sources-state";
         Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).build();
         Type listMyData = Types.newParameterizedType(List.class, TrackerConnection.class);
         JsonAdapter<List<TrackerConnection>> adapter = moshi.adapter(listMyData);

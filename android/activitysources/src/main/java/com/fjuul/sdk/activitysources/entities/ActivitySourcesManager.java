@@ -119,7 +119,7 @@ public final class ActivitySourcesManager {
     public static synchronized void initialize(@NonNull ApiClient client,
         @NonNull ActivitySourcesManagerConfig config) {
         final ActivitySourcesStateStore stateStore =
-            new ActivitySourcesStateStore(client.getStorage(), client.getUserToken());
+            new ActivitySourcesStateStore(client.getStorage());
         final List<TrackerConnection> storedConnections = stateStore.getConnections();
         final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
         final WorkManager workManager = WorkManager.getInstance(client.getAppContext());

@@ -16,9 +16,9 @@ public class PersistentStorage implements IStorage {
     @Nullable
     private volatile SharedPreferences preferences;
     @NonNull
-    private Context context;
+    private final Context context;
     @NonNull
-    private String userToken;
+    private final String userToken;
 
     public PersistentStorage(@NonNull Context context, @NonNull String userToken) {
         this.context = context;

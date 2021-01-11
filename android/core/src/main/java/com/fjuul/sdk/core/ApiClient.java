@@ -89,7 +89,7 @@ public class ApiClient {
             }
             if (userCredentials != null) {
                 this.storage = new PersistentStorage(appContext, userCredentials.getToken());
-                this.keystore = new Keystore(storage, userCredentials.getToken());
+                this.keystore = new Keystore(storage);
             }
         }
 

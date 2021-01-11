@@ -43,15 +43,13 @@ import retrofit2.Response;
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
 public class SigningAuthInterceptorTest {
-    static final String USER_TOKEN = "USER_TOKEN";
-
     @Test
     public void intercept_EmptyKeystoreWithFailedIssueResult_returnIssueResponse() throws Exception {
         MockWebServer mockWebServer = new MockWebServer();
         mockWebServer.start();
         mockWebServer.enqueue(new MockResponse());
 
-        Keystore testKeychain = new Keystore(new InMemoryStorage(), USER_TOKEN);
+        Keystore testKeychain = new Keystore(new InMemoryStorage());
         UserSigningService mockedSigningService = mock(UserSigningService.class, Mockito.RETURNS_DEEP_STUBS);
         Request outboundRequest = new Request.Builder().url(mockWebServer.url("/sdk/v1/analytics")).build();
         okhttp3.Response incomingRawResponse =
@@ -91,7 +89,7 @@ public class SigningAuthInterceptorTest {
         mockWebServer.enqueue(new MockResponse());
 
         SigningKey testExpiredSigningKey = new SigningKey("expired-key-id", "TOP_SECRET", new Date());
-        Keystore testKeychain = new Keystore(new InMemoryStorage(), USER_TOKEN);
+        Keystore testKeychain = new Keystore(new InMemoryStorage());
         testKeychain.setKey(testExpiredSigningKey);
 
         SigningKey newValidSigningKey = new SigningKey("valid-key-id", "TOP_SECRET1", new Date());
@@ -119,7 +117,7 @@ public class SigningAuthInterceptorTest {
 
         MockWebServer mockWebServer = new MockWebServer();
         mockWebServer.start();
-        Keystore testKeychain = new Keystore(new InMemoryStorage(), USER_TOKEN);
+        Keystore testKeychain = new Keystore(new InMemoryStorage());
 
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.HOUR, 2);
@@ -178,7 +176,7 @@ public class SigningAuthInterceptorTest {
         Date expiresAt = calendar.getTime();
 
         SigningKey signingKey = new SigningKey("previous-key-id", "TOP_SECRET", expiresAt);
-        Keystore testKeychain = new Keystore(new InMemoryStorage(), USER_TOKEN);
+        Keystore testKeychain = new Keystore(new InMemoryStorage());
         testKeychain.setKey(signingKey);
 
         UserSigningService mockedSigningService = mock(UserSigningService.class, Mockito.RETURNS_DEEP_STUBS);

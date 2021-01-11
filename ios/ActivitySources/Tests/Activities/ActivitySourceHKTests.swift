@@ -8,5 +8,4 @@ import SwiftyMocky
 final class ActivitySourceHKTests: XCTestCase {
     var sut: ActivitySourceHK!
     
-    
 }

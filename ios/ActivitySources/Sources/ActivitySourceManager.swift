@@ -10,7 +10,13 @@ final public class ActivitySourceManager {
 
     private var persistor: Persistor
     private var connectionsLocalStore: ActivitySourceStore
-
+    
+    /// Initialize ActivitySourceManager before start to work with it.
+    /// Should be Initialized once as soon as possible after run app, for setup backgroundDelivery for the HealthKit - as example in AppDelegate (didFinishLaunchingWithOptions)
+    /// - Parameters:
+    ///   - apiClient: ApiClient
+    ///   - config: ActivitySourceConfigBuilder
+    /// - Returns: An instance of ActivitySourceManager
     static public func initialize(apiClient: ApiClient, config: ActivitySourceConfigBuilder) -> ActivitySourceManager {
         let instance = ActivitySourceManager(userToken: apiClient.userToken, persistor: apiClient.persistor, apiClient: apiClient.activitySources, config: config)
 
@@ -18,14 +24,6 @@ final public class ActivitySourceManager {
 
         return instance
     }
-
-//    static public func getInstance() -> Result<ActivitySourceManager, Error> {
-//        guard let instance = current else {
-//            return .failure(FjuulError.invalidConfig)
-//        }
-//
-//        return .success(instance)
-//    }
 
     internal init(userToken: String, persistor: Persistor, apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder) {
         self.apiClient = apiClient
@@ -39,7 +37,12 @@ final public class ActivitySourceManager {
             }
         }
     }
-
+    
+    /// Connect new activitySource with request to back-end server.
+    /// Don't forget call getCurrentConnections for update local state and mount new activitySource
+    /// - Parameters:
+    ///   - activitySource: ActivitySource instance (ActivitySourcePolar.shared, ActivitySourceHK.shared, etc...)
+    ///   - completion: completion with ConnectionResult or Error
     public func connect(activitySource: ActivitySource, completion: @escaping (Result<ConnectionResult, Error>) -> Void) {
         if let activitySource = activitySource as? MountableActivitySourceHK {
             activitySource.requestAccess(config: config) { result in
@@ -59,7 +62,11 @@ final public class ActivitySourceManager {
             }
         }
     }
-
+    
+    /// Disconnect activitySource with request to back-end server and unmount source
+    /// - Parameters:
+    ///   - activitySourceConnection: ActivitySourceConnection
+    ///   - completion: completion with status or error
     public func disconnect(activitySourceConnection: ActivitySourceConnection, completion: @escaping (Result<Bool, Error>) -> Void) {
         apiClient.disconnect(activitySourceConnection: activitySourceConnection) { result in
             switch result {
@@ -78,7 +85,9 @@ final public class ActivitySourceManager {
             }
         }
     }
-
+    
+    /// Get current connections from back-end and refresh local state (mount/unmount)
+    /// - Parameter completion: completion with [ActivitySourceConnection] or Error
     public func getCurrentConnections(completion: @escaping (Result<[ActivitySourceConnection], Error>) -> Void) {
         apiClient.getCurrentConnections { result in
             switch result {

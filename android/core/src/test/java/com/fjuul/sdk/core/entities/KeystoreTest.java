@@ -50,8 +50,7 @@ public class KeystoreTest {
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.MINUTE, -1);
             Date expiresAt = calendar.getTime();
-            storage.set("signing-key",
-                keyJsonAdapter.toJson(new SigningKey("key-id", "REAL_SECRET", expiresAt)));
+            storage.set("signing-key", keyJsonAdapter.toJson(new SigningKey("key-id", "REAL_SECRET", expiresAt)));
             assertFalse("returns empty optional", keystore.getValidKey().isPresent());
         }
 
@@ -75,9 +74,7 @@ public class KeystoreTest {
             Date expiresAt = calendar.getTime();
             SigningKey key = new SigningKey("key-id", "REAL_SECRET", expiresAt);
             keystore.setKey(key);
-            assertThat("saves signing key in the storage",
-                storage.get("signing-key"),
-                not(isEmptyOrNullString()));
+            assertThat("saves signing key in the storage", storage.get("signing-key"), not(isEmptyOrNullString()));
             SigningKey savedKey = keyJsonAdapter.fromJson(storage.get("signing-key"));
             assertEquals(key.getId(), savedKey.getId());
             assertEquals(key.getSecret(), savedKey.getSecret());
@@ -95,7 +92,8 @@ public class KeystoreTest {
         @Before
         public void beforeSetup() {
             Context context = ApplicationProvider.getApplicationContext();
-            preferences = context.getSharedPreferences("com.fjuul.sdk.persistence." + DUMMY_USER_TOKEN, Context.MODE_PRIVATE);
+            preferences =
+                context.getSharedPreferences("com.fjuul.sdk.persistence." + DUMMY_USER_TOKEN, Context.MODE_PRIVATE);
             storage = new PersistentStorage(context, DUMMY_USER_TOKEN);
             keystore = new Keystore(storage);
         }

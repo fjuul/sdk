@@ -200,8 +200,7 @@ public class GFSyncMetadataStoreTest {
                 "{\"date\":\"2020-10-16\",\"editedAt\":\"2020-10-16T21:30:00.000Z\",\"identifiers\":[\"679acf3c-3d38-4931-8822-0b355d8134e1\"],\"schemaVersion\":1}";
             verify(mockedStorage).set(expectedSessionListKey, expectedListMetadataJson);
             // should save each session metadata
-            final String expectedSessionKey =
-                "gf-sync-metadata.session.679acf3c-3d38-4931-8822-0b355d8134e1";
+            final String expectedSessionKey = "gf-sync-metadata.session.679acf3c-3d38-4931-8822-0b355d8134e1";
             final String expectedSessionMetadataJson =
                 "{\"activitySegmentsCount\":0,\"applicationIdentifier\":\"com.google.android.apps.fitness\",\"caloriesCount\":0,\"editedAt\":\"2020-10-16T21:30:00.000Z\",\"heartRateCount\":0,\"id\":\"679acf3c-3d38-4931-8822-0b355d8134e1\",\"name\":\"short walk\",\"powerCount\":0,\"schemaVersion\":1,\"speedCount\":0,\"stepsCount\":0,\"timeEnd\":\"2020-10-16T13:00:00.000Z\",\"timeStart\":\"2020-10-16T11:20:00.000Z\",\"type\":7}";
             verify(mockedStorage).set(expectedSessionKey, expectedSessionMetadataJson);
@@ -235,8 +234,7 @@ public class GFSyncMetadataStoreTest {
                 "{\"date\":\"2020-10-16\",\"editedAt\":\"2020-10-16T21:30:00.000Z\",\"identifiers\":[\"679acf3c-3d38-4931-8822-0b355d8134e1\"],\"schemaVersion\":1}";
             verify(mockedStorage).set(expectedSessionListKey, expectedListMetadataJson);
             // should save each new session metadata
-            final String expectedSessionKey =
-                "gf-sync-metadata.session.679acf3c-3d38-4931-8822-0b355d8134e1";
+            final String expectedSessionKey = "gf-sync-metadata.session.679acf3c-3d38-4931-8822-0b355d8134e1";
             final String expectedSessionMetadataJson =
                 "{\"activitySegmentsCount\":0,\"applicationIdentifier\":\"com.google.android.apps.fitness\",\"caloriesCount\":0,\"editedAt\":\"2020-10-16T21:30:00.000Z\",\"heartRateCount\":0,\"id\":\"679acf3c-3d38-4931-8822-0b355d8134e1\",\"name\":\"short walk\",\"powerCount\":0,\"schemaVersion\":1,\"speedCount\":0,\"stepsCount\":0,\"timeEnd\":\"2020-10-16T13:00:00.000Z\",\"timeStart\":\"2020-10-16T11:20:00.000Z\",\"type\":7}";
             verify(mockedStorage).set(expectedSessionKey, expectedSessionMetadataJson);

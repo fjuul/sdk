@@ -1,6 +1,7 @@
 import Foundation
 import FjuulCore
 
+/// A tracker connection bound with ActivitySource
 public final class ActivitySourceConnection: TrackerConnectionable, Equatable {
     public static func ==(lhs: ActivitySourceConnection, rhs: ActivitySourceConnection) -> Bool {
         return lhs.id == rhs.id
@@ -24,7 +25,9 @@ public final class ActivitySourceConnection: TrackerConnectionable, Equatable {
 
     func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
         if let mountableSource = activitySource as? MountableActivitySource {
-            mountableSource.mount(apiClient: apiClient, config: config, persistor: persistor) { result in
+            let healthKitManagerBuilder = HealthKitManagerBuilder(persistor: persistor, config: config)
+
+            mountableSource.mount(apiClient: apiClient, config: config, persistor: persistor, healthKitManagerBuilder: healthKitManagerBuilder) { result in
                 completion(result)
             }
         } else {
@@ -41,12 +44,6 @@ public final class ActivitySourceConnection: TrackerConnectionable, Equatable {
             completion(.success(true))
         }
     }
-
-//    public func connected() -> Bool {
-//        guard endedAt != nil else { return false }
-//
-//        return false
-//    }
 }
 
 enum ActivitySourceConnectionFactory {
@@ -69,3 +66,12 @@ enum ActivitySourceConnectionFactory {
         }
     }
 }
+
+//
+//var start = new Date("2021-01-10 16:00:00 UTC")
+//var end = new Date("2021-01-10 16:59:59 UTC")
+//test.sort((a, b) => (new Date(a.createdAt)) - (new Date(b.createdAt))).filter((item) => {
+//    var date = new Date(item.entries[0].start)
+//    
+//    return date >= start && date <= end
+//})

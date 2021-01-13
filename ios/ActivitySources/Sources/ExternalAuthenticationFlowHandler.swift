@@ -5,7 +5,12 @@ public struct ConnectionStatus {
     public var success: Bool
 }
 
+/// Handler for the result of connecting to external activity sources.
+/// Before calling the call ExternalAuthenticationFlowHandler.handle function, you should check that the schema of the incoming intent matches the expected for Fjuul SDK.
 final public class ExternalAuthenticationFlowHandler {
+    /// Determines the status of connecting to the external activity source and returns ConnectionStatus
+    /// - Parameter url: URL
+    /// - Returns: ConnectionStatus
     public static func handle(url: URL) -> ConnectionStatus {
         guard
             let components = URLComponents(url: url, resolvingAgainstBaseURL: true)

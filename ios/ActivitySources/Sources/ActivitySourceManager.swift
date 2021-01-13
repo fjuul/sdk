@@ -11,8 +11,8 @@ final public class ActivitySourceManager {
     private var persistor: Persistor
     private var connectionsLocalStore: ActivitySourceStore
     
-    /// Initialize ActivitySourceManager before start to work with it.
-    /// Should be Initialized once as soon as possible after run app, for setup backgroundDelivery for the HealthKit - as example in AppDelegate (didFinishLaunchingWithOptions)
+    /// Initialize the singleton with the provided config.
+    /// Should be Initialize once as soon as possible after up app, for setup backgroundDelivery for the HealthKit - as example in AppDelegate (didFinishLaunchingWithOptions)
     /// - Parameters:
     ///   - apiClient: ApiClient
     ///   - config: ActivitySourceConfigBuilder
@@ -41,7 +41,7 @@ final public class ActivitySourceManager {
     /// Connect new activitySource with request to back-end server.
     /// Don't forget call getCurrentConnections for update local state and mount new activitySource
     /// - Parameters:
-    ///   - activitySource: ActivitySource instance (ActivitySourcePolar.shared, ActivitySourceHK.shared, etc...)
+    ///   - activitySource: ActivitySource instance to connect (ActivitySourcePolar.shared, ActivitySourceHK.shared, etc...)
     ///   - completion: completion with ConnectionResult or Error
     public func connect(activitySource: ActivitySource, completion: @escaping (Result<ConnectionResult, Error>) -> Void) {
         if let activitySource = activitySource as? MountableActivitySourceHK {
@@ -63,7 +63,7 @@ final public class ActivitySourceManager {
         }
     }
     
-    /// Disconnect activitySource with request to back-end server and unmount source
+    /// Disconnects the activity source connection and refreshes current connection list.
     /// - Parameters:
     ///   - activitySourceConnection: ActivitySourceConnection
     ///   - completion: completion with status or error
@@ -86,7 +86,8 @@ final public class ActivitySourceManager {
         }
     }
     
-    /// Get current connections from back-end and refresh local state (mount/unmount)
+    /// Returns a list of current connections of the user (from back-end) and mount new activitySource if they not exists in local state.
+    /// Saves connections lists on local persisted store.
     /// - Parameter completion: completion with [ActivitySourceConnection] or Error
     public func getCurrentConnections(completion: @escaping (Result<[ActivitySourceConnection], Error>) -> Void) {
         apiClient.getCurrentConnections { result in

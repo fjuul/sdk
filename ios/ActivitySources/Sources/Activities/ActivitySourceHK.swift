@@ -31,11 +31,11 @@ public final class ActivitySourceHK: MountableActivitySourceHK {
         }
     }
 
-    func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
+    func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder, persistor: Persistor, healthKitManagerBuilder: HealthKitManagerBuilder, completion: @escaping (Result<Bool, Error>) -> Void) {
         self.apiClient = apiClient
         self.persistor = persistor
 
-        let healthKitManager = HealthKitManager(persistor: persistor, config: config, dataHandler: self.hkDataHandler)
+        let healthKitManager = healthKitManagerBuilder.create(dataHandler: self.dataHandler)
         self.healthKitManager = healthKitManager
 
         healthKitManager.mount { result in
@@ -65,7 +65,7 @@ public final class ActivitySourceHK: MountableActivitySourceHK {
         }
     }
 
-    private func hkDataHandler(_ requestData: HKRequestData?, completion: @escaping (Result<Bool, Error>) -> Void) {
+    private func dataHandler(_ requestData: HKRequestData?, completion: @escaping (Result<Bool, Error>) -> Void) {
         guard let requestData = requestData else {
             completion(.success(true))
             return

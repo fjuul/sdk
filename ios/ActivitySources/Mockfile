@@ -11,3 +11,9 @@ unit.tests.mock:    # Name of your mock
     - FjuulActivitySourcesTests
   testable: ["FjuulActivitySources"]      # Specify  list of imported/@testable modules referenced in mock
   import: ["FjuulActivitySources", "FjuulCore"]        # You can use 'swiftymocky autoimport' to update it automatically
+args:
+  git:
+    - force_cast
+    - function_body_length
+    - line_length
+    - vertical_whitespace

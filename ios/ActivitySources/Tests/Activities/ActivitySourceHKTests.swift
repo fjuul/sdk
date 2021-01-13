@@ -8,4 +8,11 @@ import SwiftyMocky
 final class ActivitySourceHKTests: XCTestCase {
     var sut: ActivitySourceHK!
     
+    override func setUp() {
+        super.setUp()
+    }
+    
+    override func tearDown() {
+        super.tearDown()
+    }
 }

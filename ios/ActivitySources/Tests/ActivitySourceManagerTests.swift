@@ -103,13 +103,13 @@ final class ActivitySourceManagerTests: XCTestCase {
     func testConnectExternalActivitySource() {
         // Given
         let promise = expectation(description: "Success get external authentication URL")
-        
+
         let polarAuthUrl = "https://flow.polar.com/oauth2/authorization?response_type=code&client_id=71fyfQ"
         Perform(apiClientMock, .connect(activitySourceItem: .value(ActivitySourcesItem.polar), completion: .any, perform: { (item, completion) in
 
             completion(.success(.externalAuthenticationFlowRequired(authenticationUrl: polarAuthUrl)))
         }))
-        
+
         // When
         sut.connect(activitySource: ActivitySourcePolar.shared) { result in
             switch result {

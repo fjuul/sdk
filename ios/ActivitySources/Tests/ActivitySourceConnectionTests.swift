@@ -59,7 +59,7 @@ final class ActivitySourceConnectionTests: XCTestCase {
         let promise = expectation(description: "Success mount")
 
         // When
-        Perform(activitySourceHKMock, .mount(apiClient: .value(apiClientMock), config: .value(self.config), persistor: .value(self.persistor), completion: .any, perform: { (_, _, _, completion) in
+        Perform(activitySourceHKMock, .mount(apiClient: .value(apiClientMock), config: .value(self.config), persistor: .value(self.persistor), healthKitManagerBuilder: .any, completion: .any, perform: { (_, _, _, _, completion) in
 
             completion(.success(true))
         }))
@@ -82,7 +82,7 @@ final class ActivitySourceConnectionTests: XCTestCase {
         let promise = expectation(description: "Failure mount")
 
         // When
-        Perform(activitySourceHKMock, .mount(apiClient: .value(apiClientMock), config: .value(self.config), persistor: .value(self.persistor), completion: .any, perform: { (_, _, _, completion) in
+        Perform(activitySourceHKMock, .mount(apiClient: .value(apiClientMock), config: .value(self.config), persistor: .value(self.persistor), healthKitManagerBuilder: .any, completion: .any, perform: { (_, _, _, _, completion) in
 
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
         }))

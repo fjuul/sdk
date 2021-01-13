@@ -6,7 +6,7 @@ class HealthKitManager {
     static let healthStore: HKHealthStore = HKHealthStore()
 
     private var persistor: Persistor
-    private var hkAnchorStore: HKAnchorStore
+    private var anchorStore: HKAnchorStore
     private var dataHandler: ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)
     private let serialQueue = DispatchQueue(label: "com.fjuul.sdk.queues.backgroundDelivery", qos: .userInitiated)
     private let config: ActivitySourceConfigBuilder
@@ -14,7 +14,7 @@ class HealthKitManager {
     init(persistor: Persistor, config: ActivitySourceConfigBuilder, dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) {
         self.config = config
         self.persistor = persistor
-        self.hkAnchorStore = HKAnchorStore(persistor: persistor)
+        self.anchorStore = HKAnchorStore(persistor: persistor)
         self.dataHandler = dataHandler
     }
 
@@ -235,7 +235,7 @@ class HealthKitManager {
     }
 
     private func samplesPredicate() -> NSCompoundPredicate {
-        let fromDate = Calendar.current.date(byAdding: .day, value: -30, to: Date())
+        let fromDate = Calendar.current.date(byAdding: .hour, value: -2, to: Date())
         let startDatePredicate = HKQuery.predicateForSamples(withStart: fromDate, end: Date(), options: .strictStartDate)
 
         if self.config.healthKitConfig.syncUserEnteredData {
@@ -273,17 +273,17 @@ class HealthKitManager {
     private func getAnchorBySampleType(sampleType: HKObjectType) -> HKQueryAnchor {
         switch sampleType {
         case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned):
-            return self.hkAnchorStore.anchors?[.activeEnergyBurned] ?? HKQueryAnchor.init(fromValue: 0)
+            return self.anchorStore.anchors?[.activeEnergyBurned] ?? HKQueryAnchor.init(fromValue: 0)
         case HKObjectType.quantityType(forIdentifier: .stepCount):
-            return self.hkAnchorStore.anchors?[.stepCount] ?? HKQueryAnchor.init(fromValue: 0)
+            return self.anchorStore.anchors?[.stepCount] ?? HKQueryAnchor.init(fromValue: 0)
         case HKObjectType.quantityType(forIdentifier: .distanceCycling):
-            return self.hkAnchorStore.anchors?[.distanceCycling] ?? HKQueryAnchor.init(fromValue: 0)
+            return self.anchorStore.anchors?[.distanceCycling] ?? HKQueryAnchor.init(fromValue: 0)
         case HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning):
-            return self.hkAnchorStore.anchors?[.distanceWalkingRunning] ?? HKQueryAnchor.init(fromValue: 0)
+            return self.anchorStore.anchors?[.distanceWalkingRunning] ?? HKQueryAnchor.init(fromValue: 0)
         case HKObjectType.quantityType(forIdentifier: .heartRate):
-            return self.hkAnchorStore.anchors?[.heartRate] ?? HKQueryAnchor.init(fromValue: 0)
+            return self.anchorStore.anchors?[.heartRate] ?? HKQueryAnchor.init(fromValue: 0)
         case HKObjectType.workoutType():
-            return self.hkAnchorStore.anchors?[.workout] ?? HKQueryAnchor.init(fromValue: 0)
+            return self.anchorStore.anchors?[.workout] ?? HKQueryAnchor.init(fromValue: 0)
         default:
             return HKQueryAnchor.init(fromValue: 0)
         }
@@ -296,17 +296,17 @@ class HealthKitManager {
 
         switch sampleType {
         case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned):
-            self.hkAnchorStore.anchors?[.activeEnergyBurned] = newAnchor
+            self.anchorStore.anchors?[.activeEnergyBurned] = newAnchor
         case HKObjectType.quantityType(forIdentifier: .stepCount):
-            self.hkAnchorStore.anchors?[.stepCount] = newAnchor
+            self.anchorStore.anchors?[.stepCount] = newAnchor
         case HKObjectType.quantityType(forIdentifier: .distanceCycling):
-            self.hkAnchorStore.anchors?[.distanceCycling] = newAnchor
+            self.anchorStore.anchors?[.distanceCycling] = newAnchor
         case HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning):
-            self.hkAnchorStore.anchors?[.distanceWalkingRunning] = newAnchor
+            self.anchorStore.anchors?[.distanceWalkingRunning] = newAnchor
         case HKObjectType.quantityType(forIdentifier: .heartRate):
-            self.hkAnchorStore.anchors?[.heartRate] = newAnchor
+            self.anchorStore.anchors?[.heartRate] = newAnchor
         case HKObjectType.workoutType():
-            self.hkAnchorStore.anchors?[.workout] = newAnchor
+            self.anchorStore.anchors?[.workout] = newAnchor
         default:
             return
         }

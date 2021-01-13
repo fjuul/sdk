@@ -3,14 +3,19 @@ package com.fjuul.sdk.analytics.entities;
 import androidx.annotation.NonNull;
 
 public class DailyStats {
+    @NonNull
     String date;
     float activeKcal;
-    float totalKcal;
+    float bmr;
     int steps;
 
+    @NonNull
     ActivityMeasure lowest;
+    @NonNull
     ActivityMeasure low;
+    @NonNull
     ActivityMeasure moderate;
+    @NonNull
     ActivityMeasure high;
 
     @NonNull
@@ -24,8 +29,8 @@ public class DailyStats {
     }
 
     @NonNull
-    public float getTotalKcal() {
-        return totalKcal;
+    public float getBmr() {
+        return bmr;
     }
 
     @NonNull

@@ -38,7 +38,7 @@ public class ActivitySourcesApiResponseTransformer extends DefaultApiResponseTra
     public ApiCallResult transform(@NonNull Response response) {
         final String requestPath = response.raw().request().url().encodedPath();
         final String requestMethod = response.raw().request().method();
-        if (requestMethod.equals("POST") && createConnectionPathPattern.asPredicate().test(requestPath)) {
+        if (requestMethod.equals("POST") && createConnectionPathPattern.matcher(requestPath).find()) {
             ResponseBody responseBody = (ResponseBody) response.body();
             if (response.code() == HttpURLConnection.HTTP_OK) {
                 try {

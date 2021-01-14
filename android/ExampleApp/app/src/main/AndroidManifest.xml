@@ -3,6 +3,7 @@
     package="com.fjuul.sdk.android.exampleapp">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
 
     <application
         android:name="androidx.multidex.MultiDexApplication"

@@ -1,7 +1,9 @@
 package com.fjuul.sdk.activitysources.entities;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -41,6 +43,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -164,7 +167,9 @@ public class GoogleFitActivitySource extends ActivitySource {
      * Checks whether the android.permission.ACTIVITY_RECOGNITION permission is given to your app. Starting with Android
      * 10 (API level 29), this permission is required to read session data. <br>
      * The SDK does not provide functionality for requesting this permission and you should follow the official <a href=
-     * "https://developers.google.com/fit/android/authorization#requesting_android_permissions">documentation</a>.
+     * "https://developers.google.com/fit/android/authorization#requesting_android_permissions">documentation</a>.<br/>
+     * Note: you must have the declared permission {@code android.permission.ACTIVITY_RECOGNITION} in AndroidManifest
+     * regardless of the target API. Otherwise, this method will return false.
      *
      * @return boolean result of the check
      */
@@ -348,19 +353,33 @@ public class GoogleFitActivitySource extends ActivitySource {
      * Checks whether the android.permission.ACTIVITY_RECOGNITION permission is given to your app. Starting with Android
      * 10 (API level 29), this permission is required to read session data. <br>
      * The SDK does not provide functionality for requesting this permission and you should follow the official <a href=
-     * "https://developers.google.com/fit/android/authorization#requesting_android_permissions">documentation</a>.
+     * "https://developers.google.com/fit/android/authorization#requesting_android_permissions">documentation</a>.<br/>
+     * Note: you must have the declared permission {@code android.permission.ACTIVITY_RECOGNITION} in AndroidManifest
+     * regardless of the target API. Otherwise, this method will return false.
      *
      * @param context application context
      * @return boolean result of the check
      */
     public static boolean isActivityRecognitionPermissionGranted(@NonNull Context context) {
+        boolean activityRecognitionListedInManifest = false;
+        try {
+            final PackageManager packageManager = context.getPackageManager();
+            final PackageInfo packageInfo =
+                packageManager.getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS);
+            activityRecognitionListedInManifest =
+                Optional.ofNullable(packageInfo.requestedPermissions).map((permissions) -> {
+                    return Arrays.stream(permissions).anyMatch(Manifest.permission.ACTIVITY_RECOGNITION::equals);
+                }).orElse(false);
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new IllegalStateException(e);
+        }
         // NOTE: dangerous permissions (aka runtime permissions) appeared since android api level 23
         // (Android 6.0 Marshmallow). Before that, they granted automatically.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return true;
+            return activityRecognitionListedInManifest;
         }
-        int result = ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION);
-        return result == PackageManager.PERMISSION_GRANTED;
+        final int result = ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION);
+        return activityRecognitionListedInManifest && result == PackageManager.PERMISSION_GRANTED;
     }
 
     @Override

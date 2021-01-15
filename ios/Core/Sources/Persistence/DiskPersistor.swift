@@ -40,7 +40,7 @@ public class DiskPersistor: Persistor {
         }
     }
     
-    public func clearPersistentStorage(matchKey: String) -> Bool {
+    public func remove(matchKey: String) -> Bool {
         do {
             let storeFolder = getFullPathForKey("").path
             let paths = try FileManager.default.contentsOfDirectory(atPath: storeFolder)

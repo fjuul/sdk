@@ -167,7 +167,7 @@ public class GoogleFitActivitySource extends ActivitySource {
      * Checks whether the android.permission.ACTIVITY_RECOGNITION permission is given to your app. Starting with Android
      * 10 (API level 29), this permission is required to read session data. <br>
      * The SDK does not provide functionality for requesting this permission and you should follow the official <a href=
-     * "https://developers.google.com/fit/android/authorization#requesting_android_permissions">documentation</a>.<br/>
+     * "https://developers.google.com/fit/android/authorization#requesting_android_permissions">documentation</a>.<br>
      * Note: you must have the declared permission {@code android.permission.ACTIVITY_RECOGNITION} in AndroidManifest
      * regardless of the target API. Otherwise, this method will return false.
      *
@@ -353,7 +353,7 @@ public class GoogleFitActivitySource extends ActivitySource {
      * Checks whether the android.permission.ACTIVITY_RECOGNITION permission is given to your app. Starting with Android
      * 10 (API level 29), this permission is required to read session data. <br>
      * The SDK does not provide functionality for requesting this permission and you should follow the official <a href=
-     * "https://developers.google.com/fit/android/authorization#requesting_android_permissions">documentation</a>.<br/>
+     * "https://developers.google.com/fit/android/authorization#requesting_android_permissions">documentation</a>.<br>
      * Note: you must have the declared permission {@code android.permission.ACTIVITY_RECOGNITION} in AndroidManifest
      * regardless of the target API. Otherwise, this method will return false.
      *

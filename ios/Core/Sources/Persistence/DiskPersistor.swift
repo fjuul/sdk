@@ -39,6 +39,21 @@ public class DiskPersistor: Persistor {
             return nil
         }
     }
+    
+    public func clearPersistentStorage(matchKey: String) -> Bool {
+        do {
+            let storeFolder = getFullPathForKey("").path
+            let paths = try FileManager.default.contentsOfDirectory(atPath: storeFolder)
+            
+            let fileteredPaths = paths.filter { patn in patn.contains(".\(matchKey)") }
+            
+            try fileteredPaths.forEach { filePath in
+                try FileManager.default.removeItem(atPath: filePath)
+            }
+        } catch {}
+        
+        return false
+    }
 
     private func getStorageDirectory() -> URL {
         let paths = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)

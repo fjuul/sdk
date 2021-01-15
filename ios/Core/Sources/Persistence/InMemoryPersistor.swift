@@ -17,5 +17,14 @@ public class InMemoryPersistor: Persistor {
     public func get<T: Decodable>(key: String) -> T? {
         return store[key] as? T
     }
+    
+    public func clearPersistentStorage(matchKey: String) -> Bool {
+        store.keys.forEach { key in
+            if key.contains(".\(matchKey)") {
+                store.removeValue(forKey: key)
+            }
+        }
+        return true
+    }
 
 }

@@ -13,7 +13,6 @@ public final class ActivitySourceHK: MountableActivitySourceHK {
     var apiClient: ActivitySourcesApiClient?
 
     public var tracker = ActivitySourcesItem.healthkit
-    public var persistor: Persistor?
 
     private var healthKitManager: HealthKitManaging?
 
@@ -25,9 +24,8 @@ public final class ActivitySourceHK: MountableActivitySourceHK {
         }
     }
 
-    func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder, persistor: Persistor, healthKitManagerBuilder: HealthKitManagerBuildering, completion: @escaping (Result<Bool, Error>) -> Void) {
+    func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder, healthKitManagerBuilder: HealthKitManagerBuildering, completion: @escaping (Result<Bool, Error>) -> Void) {
         self.apiClient = apiClient
-        self.persistor = persistor
 
         let healthKitManager = healthKitManagerBuilder.create(dataHandler: self.dataHandler)
         self.healthKitManager = healthKitManager

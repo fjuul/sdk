@@ -5,11 +5,9 @@ import SwiftyMocky
 
 @testable import FjuulActivitySources
 
-
 extension ActivitySourceHK {
     func reset() {
         self.apiClient = nil
-        self.persistor = nil
     }
 }
 
@@ -43,7 +41,6 @@ final class ActivitySourceHKTests: XCTestCase {
     func testInit() {
         //Then
         XCTAssertNil(sut.apiClient)
-        XCTAssertNil(sut.persistor)
         XCTAssertEqual(sut.tracker, ActivitySourcesItem.healthkit)
     }
     
@@ -62,7 +59,7 @@ final class ActivitySourceHKTests: XCTestCase {
         }))
 
         //When
-        sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, persistor: self.persistor, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
+        sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success(let success):
                 XCTAssert(success)
@@ -85,7 +82,7 @@ final class ActivitySourceHKTests: XCTestCase {
         }))
 
         //When
-        sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, persistor: self.persistor, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
+        sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
                 XCTFail("Error: should not unmount")
@@ -106,7 +103,7 @@ final class ActivitySourceHKTests: XCTestCase {
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
         }))
         
-        sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, persistor: self.persistor, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
+        sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
                 XCTFail("Error: should mount activitySource")
@@ -142,7 +139,7 @@ final class ActivitySourceHKTests: XCTestCase {
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
         }))
         
-        sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, persistor: self.persistor, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
+        sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
                 XCTFail("Error: should mount activitySource")
@@ -203,7 +200,7 @@ final class ActivitySourceHKTests: XCTestCase {
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
         }))
         
-        sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, persistor: self.persistor, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
+        sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
                 XCTFail("Error: should mount activitySource")
@@ -239,7 +236,7 @@ final class ActivitySourceHKTests: XCTestCase {
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
         }))
         
-        sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, persistor: self.persistor, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
+        sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
                 XCTFail("Error: should mount activitySource")

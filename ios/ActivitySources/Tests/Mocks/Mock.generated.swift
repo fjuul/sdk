@@ -279,7 +279,7 @@ open class HealthKitManagerBuilderingMock: HealthKitManagerBuildering, Mock {
 
 
 
-    public required init(persistor: Persistor, config: ActivitySourceConfigBuilder) { }
+    public required init(apiClient: ActivitySourcesApiClient, persistor: Persistor, config: ActivitySourceConfigBuilder) { }
 
     open func create(dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) -> HealthKitManaging {
         addInvocation(.m_create__dataHandler_dataHandler(Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void>.value(`dataHandler`)))
@@ -498,7 +498,7 @@ open class HealthKitManagingMock: HealthKitManaging, Mock, StaticMock {
 		perform?(`config`, `completion`)
     }
 
-    public required init(persistor: Persistor, config: ActivitySourceConfigBuilder, dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) { }
+    public required init(anchorStore: HKAnchorStore, config: ActivitySourceConfigBuilder, dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) { }
 
     open func mount(completion: @escaping (Result<Bool, Error>) -> Void) {
         addInvocation(.m_mount__completion_completion(Parameter<(Result<Bool, Error>) -> Void>.value(`completion`)))
@@ -849,10 +849,10 @@ open class MountableActivitySourceHKMock: MountableActivitySourceHK, Mock {
 		perform?(`config`, `completion`)
     }
 
-    open func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder, persistor: Persistor, healthKitManagerBuilder: HealthKitManagerBuildering, completion: @escaping (Result<Bool, Error>) -> Void) {
-        addInvocation(.m_mount__apiClient_apiClientconfig_configpersistor_persistorhealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(Parameter<ActivitySourcesApiClient>.value(`apiClient`), Parameter<ActivitySourceConfigBuilder>.value(`config`), Parameter<Persistor>.value(`persistor`), Parameter<HealthKitManagerBuildering>.value(`healthKitManagerBuilder`), Parameter<(Result<Bool, Error>) -> Void>.value(`completion`)))
-		let perform = methodPerformValue(.m_mount__apiClient_apiClientconfig_configpersistor_persistorhealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(Parameter<ActivitySourcesApiClient>.value(`apiClient`), Parameter<ActivitySourceConfigBuilder>.value(`config`), Parameter<Persistor>.value(`persistor`), Parameter<HealthKitManagerBuildering>.value(`healthKitManagerBuilder`), Parameter<(Result<Bool, Error>) -> Void>.value(`completion`))) as? (ActivitySourcesApiClient, ActivitySourceConfigBuilder, Persistor, HealthKitManagerBuildering, @escaping (Result<Bool, Error>) -> Void) -> Void
-		perform?(`apiClient`, `config`, `persistor`, `healthKitManagerBuilder`, `completion`)
+    open func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder, healthKitManagerBuilder: HealthKitManagerBuildering, completion: @escaping (Result<Bool, Error>) -> Void) {
+        addInvocation(.m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(Parameter<ActivitySourcesApiClient>.value(`apiClient`), Parameter<ActivitySourceConfigBuilder>.value(`config`), Parameter<HealthKitManagerBuildering>.value(`healthKitManagerBuilder`), Parameter<(Result<Bool, Error>) -> Void>.value(`completion`)))
+		let perform = methodPerformValue(.m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(Parameter<ActivitySourcesApiClient>.value(`apiClient`), Parameter<ActivitySourceConfigBuilder>.value(`config`), Parameter<HealthKitManagerBuildering>.value(`healthKitManagerBuilder`), Parameter<(Result<Bool, Error>) -> Void>.value(`completion`))) as? (ActivitySourcesApiClient, ActivitySourceConfigBuilder, HealthKitManagerBuildering, @escaping (Result<Bool, Error>) -> Void) -> Void
+		perform?(`apiClient`, `config`, `healthKitManagerBuilder`, `completion`)
     }
 
     open func unmount(completion: @escaping (Result<Bool, Error>) -> Void) {
@@ -864,7 +864,7 @@ open class MountableActivitySourceHKMock: MountableActivitySourceHK, Mock {
 
     fileprivate enum MethodType {
         case m_requestAccess__config_configcompletion_completion(Parameter<ActivitySourceConfigBuilder>, Parameter<(Result<Bool, Error>) -> Void>)
-        case m_mount__apiClient_apiClientconfig_configpersistor_persistorhealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(Parameter<ActivitySourcesApiClient>, Parameter<ActivitySourceConfigBuilder>, Parameter<Persistor>, Parameter<HealthKitManagerBuildering>, Parameter<(Result<Bool, Error>) -> Void>)
+        case m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(Parameter<ActivitySourcesApiClient>, Parameter<ActivitySourceConfigBuilder>, Parameter<HealthKitManagerBuildering>, Parameter<(Result<Bool, Error>) -> Void>)
         case m_unmount__completion_completion(Parameter<(Result<Bool, Error>) -> Void>)
         case p_tracker_get
         case p_apiClient_get
@@ -877,11 +877,10 @@ open class MountableActivitySourceHKMock: MountableActivitySourceHK, Mock {
 				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsCompletion, rhs: rhsCompletion, with: matcher), lhsCompletion, rhsCompletion, "completion"))
 				return Matcher.ComparisonResult(results)
 
-            case (.m_mount__apiClient_apiClientconfig_configpersistor_persistorhealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(let lhsApiclient, let lhsConfig, let lhsPersistor, let lhsHealthkitmanagerbuilder, let lhsCompletion), .m_mount__apiClient_apiClientconfig_configpersistor_persistorhealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(let rhsApiclient, let rhsConfig, let rhsPersistor, let rhsHealthkitmanagerbuilder, let rhsCompletion)):
+            case (.m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(let lhsApiclient, let lhsConfig, let lhsHealthkitmanagerbuilder, let lhsCompletion), .m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(let rhsApiclient, let rhsConfig, let rhsHealthkitmanagerbuilder, let rhsCompletion)):
 				var results: [Matcher.ParameterComparisonResult] = []
 				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsApiclient, rhs: rhsApiclient, with: matcher), lhsApiclient, rhsApiclient, "apiClient"))
 				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsConfig, rhs: rhsConfig, with: matcher), lhsConfig, rhsConfig, "config"))
-				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsPersistor, rhs: rhsPersistor, with: matcher), lhsPersistor, rhsPersistor, "persistor"))
 				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsHealthkitmanagerbuilder, rhs: rhsHealthkitmanagerbuilder, with: matcher), lhsHealthkitmanagerbuilder, rhsHealthkitmanagerbuilder, "healthKitManagerBuilder"))
 				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsCompletion, rhs: rhsCompletion, with: matcher), lhsCompletion, rhsCompletion, "completion"))
 				return Matcher.ComparisonResult(results)
@@ -899,7 +898,7 @@ open class MountableActivitySourceHKMock: MountableActivitySourceHK, Mock {
         func intValue() -> Int {
             switch self {
             case let .m_requestAccess__config_configcompletion_completion(p0, p1): return p0.intValue + p1.intValue
-            case let .m_mount__apiClient_apiClientconfig_configpersistor_persistorhealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(p0, p1, p2, p3, p4): return p0.intValue + p1.intValue + p2.intValue + p3.intValue + p4.intValue
+            case let .m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(p0, p1, p2, p3): return p0.intValue + p1.intValue + p2.intValue + p3.intValue
             case let .m_unmount__completion_completion(p0): return p0.intValue
             case .p_tracker_get: return 0
             case .p_apiClient_get: return 0
@@ -908,7 +907,7 @@ open class MountableActivitySourceHKMock: MountableActivitySourceHK, Mock {
         func assertionName() -> String {
             switch self {
             case .m_requestAccess__config_configcompletion_completion: return ".requestAccess(config:completion:)"
-            case .m_mount__apiClient_apiClientconfig_configpersistor_persistorhealthKitManagerBuilder_healthKitManagerBuildercompletion_completion: return ".mount(apiClient:config:persistor:healthKitManagerBuilder:completion:)"
+            case .m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion: return ".mount(apiClient:config:healthKitManagerBuilder:completion:)"
             case .m_unmount__completion_completion: return ".unmount(completion:)"
             case .p_tracker_get: return "[get] .tracker"
             case .p_apiClient_get: return "[get] .apiClient"
@@ -937,7 +936,7 @@ open class MountableActivitySourceHKMock: MountableActivitySourceHK, Mock {
         fileprivate var method: MethodType
 
         public static func requestAccess(config: Parameter<ActivitySourceConfigBuilder>, completion: Parameter<(Result<Bool, Error>) -> Void>) -> Verify { return Verify(method: .m_requestAccess__config_configcompletion_completion(`config`, `completion`))}
-        public static func mount(apiClient: Parameter<ActivitySourcesApiClient>, config: Parameter<ActivitySourceConfigBuilder>, persistor: Parameter<Persistor>, healthKitManagerBuilder: Parameter<HealthKitManagerBuildering>, completion: Parameter<(Result<Bool, Error>) -> Void>) -> Verify { return Verify(method: .m_mount__apiClient_apiClientconfig_configpersistor_persistorhealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(`apiClient`, `config`, `persistor`, `healthKitManagerBuilder`, `completion`))}
+        public static func mount(apiClient: Parameter<ActivitySourcesApiClient>, config: Parameter<ActivitySourceConfigBuilder>, healthKitManagerBuilder: Parameter<HealthKitManagerBuildering>, completion: Parameter<(Result<Bool, Error>) -> Void>) -> Verify { return Verify(method: .m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(`apiClient`, `config`, `healthKitManagerBuilder`, `completion`))}
         public static func unmount(completion: Parameter<(Result<Bool, Error>) -> Void>) -> Verify { return Verify(method: .m_unmount__completion_completion(`completion`))}
         public static var tracker: Verify { return Verify(method: .p_tracker_get) }
         public static var apiClient: Verify { return Verify(method: .p_apiClient_get) }
@@ -950,8 +949,8 @@ open class MountableActivitySourceHKMock: MountableActivitySourceHK, Mock {
         public static func requestAccess(config: Parameter<ActivitySourceConfigBuilder>, completion: Parameter<(Result<Bool, Error>) -> Void>, perform: @escaping (ActivitySourceConfigBuilder, @escaping (Result<Bool, Error>) -> Void) -> Void) -> Perform {
             return Perform(method: .m_requestAccess__config_configcompletion_completion(`config`, `completion`), performs: perform)
         }
-        public static func mount(apiClient: Parameter<ActivitySourcesApiClient>, config: Parameter<ActivitySourceConfigBuilder>, persistor: Parameter<Persistor>, healthKitManagerBuilder: Parameter<HealthKitManagerBuildering>, completion: Parameter<(Result<Bool, Error>) -> Void>, perform: @escaping (ActivitySourcesApiClient, ActivitySourceConfigBuilder, Persistor, HealthKitManagerBuildering, @escaping (Result<Bool, Error>) -> Void) -> Void) -> Perform {
-            return Perform(method: .m_mount__apiClient_apiClientconfig_configpersistor_persistorhealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(`apiClient`, `config`, `persistor`, `healthKitManagerBuilder`, `completion`), performs: perform)
+        public static func mount(apiClient: Parameter<ActivitySourcesApiClient>, config: Parameter<ActivitySourceConfigBuilder>, healthKitManagerBuilder: Parameter<HealthKitManagerBuildering>, completion: Parameter<(Result<Bool, Error>) -> Void>, perform: @escaping (ActivitySourcesApiClient, ActivitySourceConfigBuilder, HealthKitManagerBuildering, @escaping (Result<Bool, Error>) -> Void) -> Void) -> Perform {
+            return Perform(method: .m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(`apiClient`, `config`, `healthKitManagerBuilder`, `completion`), performs: perform)
         }
         public static func unmount(completion: Parameter<(Result<Bool, Error>) -> Void>, perform: @escaping (@escaping (Result<Bool, Error>) -> Void) -> Void) -> Perform {
             return Perform(method: .m_unmount__completion_completion(`completion`), performs: perform)

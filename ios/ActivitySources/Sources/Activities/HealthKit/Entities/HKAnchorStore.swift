@@ -5,10 +5,11 @@ import HealthKit
 public struct HKAnchorStore {
 
     private var persistor: Persistor
-    private let lookupKey = "healthkit-anchor"
+    private let lookupKey: String
 
-    init(persistor: Persistor) {
+    init(userToken: String, persistor: Persistor) {
         self.persistor = persistor
+        self.lookupKey = "healthkit-anchor.\(userToken)"
     }
 
     var anchors: HKAnchorData? {

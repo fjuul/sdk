@@ -5,7 +5,7 @@ import FjuulCore
 protocol HealthKitManaging: AutoMockable {
     static var healthStore: HKHealthStore { get }
 
-    init(persistor: Persistor, config: ActivitySourceConfigBuilder, dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void))
+    init(anchorStore: HKAnchorStore, config: ActivitySourceConfigBuilder, dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void))
     static func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void)
     func mount(completion: @escaping (Result<Bool, Error>) -> Void)
     func disableAllBackgroundDelivery(completion: @escaping (Result<Bool, Error>) -> Void)
@@ -15,16 +15,14 @@ protocol HealthKitManaging: AutoMockable {
 class HealthKitManager: HealthKitManaging {
     static let healthStore: HKHealthStore = HKHealthStore()
 
-    private var persistor: Persistor
     private var anchorStore: HKAnchorStore
     private var dataHandler: ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)
     private let serialQueue = DispatchQueue(label: "com.fjuul.sdk.queues.backgroundDelivery", qos: .userInitiated)
     private let config: ActivitySourceConfigBuilder
 
-    required init(persistor: Persistor, config: ActivitySourceConfigBuilder, dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) {
+    required init(anchorStore: HKAnchorStore, config: ActivitySourceConfigBuilder, dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) {
         self.config = config
-        self.persistor = persistor
-        self.anchorStore = HKAnchorStore(persistor: persistor)
+        self.anchorStore = anchorStore
         self.dataHandler = dataHandler
     }
 

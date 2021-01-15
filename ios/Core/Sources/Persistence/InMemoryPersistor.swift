@@ -18,6 +18,9 @@ public class InMemoryPersistor: Persistor {
         return store[key] as? T
     }
     
+    /// Remove all stored files based on match key (usually userToken)
+    /// - Parameter matchKey: Match string
+    /// - Returns: Boolean
     public func clearPersistentStorage(matchKey: String) -> Bool {
         store.keys.forEach { key in
             if key.contains(".\(matchKey)") {

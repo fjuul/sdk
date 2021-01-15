@@ -105,7 +105,6 @@ final class ActivitySourceConnectionTests: XCTestCase {
 
         // When
         Perform(activitySourceHKMock, .unmount(completion: .any, perform: { (completion) in
-
             completion(.success(true))
         }))
         
@@ -127,7 +126,6 @@ final class ActivitySourceConnectionTests: XCTestCase {
 
         // When
         Perform(activitySourceHKMock, .unmount(completion: .any, perform: { (completion) in
-
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
         }))
         

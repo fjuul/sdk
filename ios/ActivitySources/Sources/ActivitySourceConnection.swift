@@ -25,7 +25,7 @@ public final class ActivitySourceConnection: TrackerConnectionable, Equatable {
 
     func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
         if let mountableSource = activitySource as? MountableActivitySource {
-            let healthKitManagerBuilder = HealthKitManagerBuilder(persistor: persistor, config: config)
+            let healthKitManagerBuilder = HealthKitManagerConfigurator(persistor: persistor, config: config)
 
             mountableSource.mount(apiClient: apiClient, config: config, persistor: persistor, healthKitManagerBuilder: healthKitManagerBuilder) { result in
                 completion(result)

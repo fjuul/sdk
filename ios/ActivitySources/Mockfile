@@ -10,7 +10,7 @@ unit.tests.mock:    # Name of your mock
   targets:          # Specify XCodeproj targets for your mock. Used for linting
     - FjuulActivitySourcesTests
   testable: ["FjuulActivitySources"]      # Specify  list of imported/@testable modules referenced in mock
-  import: ["FjuulActivitySources", "FjuulCore"]        # You can use 'swiftymocky autoimport' to update it automatically
+  import: ["FjuulActivitySources", "FjuulCore", "HealthKit"]        # You can use 'swiftymocky autoimport' to update it automatically
 args:
   git:
     - force_cast

@@ -15,15 +15,9 @@ public final class ActivitySourceHK: MountableActivitySourceHK {
     public var tracker = ActivitySourcesItem.healthkit
     public var persistor: Persistor?
 
-    private var healthKitManager: HealthKitManager?
+    private var healthKitManager: HealthKitManaging?
 
-    private init() {}
-
-    static func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void) {
-        HealthKitManager.requestAccess(config: config) { result in
-            completion(result)
-        }
-    }
+    init() {}
 
     func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void) {
         HealthKitManager.requestAccess(config: config) { result in

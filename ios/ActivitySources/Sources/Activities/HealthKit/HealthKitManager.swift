@@ -2,7 +2,17 @@ import Foundation
 import HealthKit
 import FjuulCore
 
-class HealthKitManager {
+protocol HealthKitManaging: AutoMockable {
+    static var healthStore: HKHealthStore { get }
+
+    init(persistor: Persistor, config: ActivitySourceConfigBuilder, dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void))
+    static func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void)
+    func mount(completion: @escaping (Result<Bool, Error>) -> Void)
+    func disableAllBackgroundDelivery(completion: @escaping (Result<Bool, Error>) -> Void)
+    func sync(completion: @escaping (Result<Bool, Error>) -> Void)
+}
+
+class HealthKitManager: HealthKitManaging {
     static let healthStore: HKHealthStore = HKHealthStore()
 
     private var persistor: Persistor
@@ -11,7 +21,7 @@ class HealthKitManager {
     private let serialQueue = DispatchQueue(label: "com.fjuul.sdk.queues.backgroundDelivery", qos: .userInitiated)
     private let config: ActivitySourceConfigBuilder
 
-    init(persistor: Persistor, config: ActivitySourceConfigBuilder, dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) {
+    required init(persistor: Persistor, config: ActivitySourceConfigBuilder, dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) {
         self.config = config
         self.persistor = persistor
         self.anchorStore = HKAnchorStore(persistor: persistor)

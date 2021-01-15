@@ -41,6 +41,7 @@ import org.robolectric.Shadows;
 import org.robolectric.android.util.concurrent.InlineExecutorService;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.shadows.ShadowPackageManager;
 
 import com.fjuul.sdk.activitysources.entities.internal.GoogleFitDataManager;
 import com.fjuul.sdk.activitysources.entities.internal.GoogleFitDataManagerBuilder;
@@ -68,13 +69,15 @@ import android.Manifest;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
+import androidx.test.core.content.pm.PackageInfoBuilder;
 
 @RunWith(Enclosed.class)
 public class GoogleFitActivitySourceTest {
     @RunWith(RobolectricTestRunner.class)
-    @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+    @Config(sdk = {Build.VERSION_CODES.P})
     public abstract static class GivenRobolectricContext {}
 
     static final String DUMMY_SERVER_CLIENT_ID = "google_server_client_id";
@@ -637,6 +640,12 @@ public class GoogleFitActivitySourceTest {
             @Before
             public void beforeTest() {
                 context = ApplicationProvider.getApplicationContext();
+                // Add ACTIVITY_RECOGNITION permission to the package info
+                final PackageInfo packageInfo =
+                    PackageInfoBuilder.newBuilder().setPackageName(context.getPackageName()).build();
+                packageInfo.requestedPermissions = new String[] {Manifest.permission.ACTIVITY_RECOGNITION};
+                final ShadowPackageManager shadowPackageManager = new ShadowPackageManager();
+                shadowPackageManager.installPackage(packageInfo);
                 mockedActivitySourcesService = mock(ActivitySourcesService.class);
                 mockedGfDataManagerBuilder = mock(GoogleFitDataManagerBuilder.class);
                 collectableFitnessMetrics = Stream.of(FitnessMetricsType.WORKOUTS).collect(Collectors.toSet());
@@ -912,6 +921,65 @@ public class GoogleFitActivitySourceTest {
                         .collect(Collectors.toList()),
                     result.getScopes());
                 assertTrue("should request the server auth code", result.isServerAuthCodeRequested());
+            }
+        }
+
+        public static class IsActivityRecognitionPermissionGrantedTest extends GivenRobolectricContext {
+            Context context;
+
+            @Before
+            public void beforeTest() {
+                context = ApplicationProvider.getApplicationContext();
+            }
+
+            @Test
+            public void isActivityRecognitionPermissionGranted_whenNoPermissionInManifest_returnsFalse() {
+                boolean result = GoogleFitActivitySource.isActivityRecognitionPermissionGranted(context);
+                assertFalse("should be false", result);
+            }
+
+            @Test
+            @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+            public void isActivityRecognitionPermissionGranted_whenPermissionPresentsInManifestForLollipop_returnsTrue() {
+                // Add ACTIVITY_RECOGNITION permission to the package info
+                final PackageInfo packageInfo =
+                    PackageInfoBuilder.newBuilder().setPackageName(context.getPackageName()).build();
+                packageInfo.requestedPermissions = new String[] {Manifest.permission.ACTIVITY_RECOGNITION};
+                final ShadowPackageManager shadowPackageManager = new ShadowPackageManager();
+                shadowPackageManager.installPackage(packageInfo);
+
+                boolean result = GoogleFitActivitySource.isActivityRecognitionPermissionGranted(context);
+                assertTrue("should be true", result);
+            }
+
+            @Test
+            @Config(sdk = Build.VERSION_CODES.P)
+            public void isActivityRecognitionPermissionGranted_whenPermissionOnlyPresentsInManifestForPie_returnsFalse() {
+                // Add ACTIVITY_RECOGNITION permission to the package info
+                final PackageInfo packageInfo =
+                    PackageInfoBuilder.newBuilder().setPackageName(context.getPackageName()).build();
+                packageInfo.requestedPermissions = new String[] {Manifest.permission.ACTIVITY_RECOGNITION};
+                final ShadowPackageManager shadowPackageManager = new ShadowPackageManager();
+                shadowPackageManager.installPackage(packageInfo);
+
+                boolean result = GoogleFitActivitySource.isActivityRecognitionPermissionGranted(context);
+                assertFalse("should be false", result);
+            }
+
+            @Test
+            @Config(sdk = Build.VERSION_CODES.P)
+            public void isActivityRecognitionPermissionGranted_whenPermissionPresentsInManifestAndGrantedInRuntimeForPie_returnsTrue() {
+                // Add ACTIVITY_RECOGNITION permission to the package info
+                final PackageInfo packageInfo =
+                    PackageInfoBuilder.newBuilder().setPackageName(context.getPackageName()).build();
+                packageInfo.requestedPermissions = new String[] {Manifest.permission.ACTIVITY_RECOGNITION};
+                final ShadowPackageManager shadowPackageManager = new ShadowPackageManager();
+                shadowPackageManager.installPackage(packageInfo);
+                ShadowApplication shadowApplication = Shadows.shadowOf((Application) context);
+                shadowApplication.grantPermissions(Manifest.permission.ACTIVITY_RECOGNITION);
+
+                boolean result = GoogleFitActivitySource.isActivityRecognitionPermissionGranted(context);
+                assertTrue("should be true", result);
             }
         }
     }

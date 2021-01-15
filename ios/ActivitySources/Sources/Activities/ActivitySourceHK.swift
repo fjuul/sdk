@@ -25,7 +25,7 @@ public final class ActivitySourceHK: MountableActivitySourceHK {
         }
     }
 
-    func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder, persistor: Persistor, healthKitManagerBuilder: HealthKitManagerBuilder, completion: @escaping (Result<Bool, Error>) -> Void) {
+    func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder, persistor: Persistor, healthKitManagerBuilder: HealthKitManagerBuildering, completion: @escaping (Result<Bool, Error>) -> Void) {
         self.apiClient = apiClient
         self.persistor = persistor
 

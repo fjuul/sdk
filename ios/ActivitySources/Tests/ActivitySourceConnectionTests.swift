@@ -76,7 +76,7 @@ final class ActivitySourceConnectionTests: XCTestCase {
         }
         wait(for: [promise], timeout: 5)
     }
-    
+
     func testMountFailure() {
         // Given
         let promise = expectation(description: "Failure mount")

@@ -16,7 +16,7 @@ extension ActivitySourceHK {
 final class ActivitySourceHKTests: XCTestCase {
     var sut: ActivitySourceHK!
     var activitySourcesApiClientMock: ActivitySourcesApiClientMock!
-    var healthKitManagerBuilderMock: HealthKitManagerBuilderMock!
+    var healthKitManagerBuilderMock: HealthKitManagerBuilderingMock!
     var healthKitManagingMock: HealthKitManagingMock!
     
     let config = ActivitySourceConfigBuilder { builder in
@@ -30,7 +30,7 @@ final class ActivitySourceHKTests: XCTestCase {
         sut = ActivitySourceHK.shared
         
         activitySourcesApiClientMock = ActivitySourcesApiClientMock()
-        healthKitManagerBuilderMock = HealthKitManagerBuilderMock()
+        healthKitManagerBuilderMock = HealthKitManagerBuilderingMock()
         healthKitManagingMock = HealthKitManagingMock()
     }
     

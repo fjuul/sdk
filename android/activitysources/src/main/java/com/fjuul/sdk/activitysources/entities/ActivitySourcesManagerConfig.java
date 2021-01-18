@@ -88,7 +88,10 @@ public class ActivitySourcesManagerConfig {
         /**
          * Enables background syncing of intraday data from Google Fit. The types of data to be collected will be
          * determined by the set of collectable fitness metrics. If intraday types are not included in the collectable
-         * fitness metrics, the background synchronization will be disabled.
+         * fitness metrics, the background synchronization will be disabled.<br>
+         * Note: SDK will schedule background syncs only if there is a current connection to Google Fit. In other words,
+         * this option expresses an intent to have the background synchronization when it's applicable but it doesn't
+         * mean a requirement of the connection to Google Fit.
          *
          * @return configured builder
          */
@@ -102,7 +105,10 @@ public class ActivitySourcesManagerConfig {
         /**
          * Enables background syncing of session data from Google Fit. Sessions with a shorter duration than the
          * specified one will be ignored in the background synchronization. If sessions are not included in the
-         * collectable fitness metrics, the background synchronization will be disabled.
+         * collectable fitness metrics, the background synchronization will be disabled.<br>
+         * Note: SDK will schedule background syncs only if there is a current connection to Google Fit. In other words,
+         * this option expresses an intent to have the background synchronization when it's applicable but it doesn't
+         * mean a requirement of the connection to Google Fit.
          *
          * @param minSessionDuration min duration for sessions to be synced
          * @return configured builder
@@ -116,7 +122,10 @@ public class ActivitySourcesManagerConfig {
         }
 
         /**
-         * Enables background synchronization of intraday and session data from Google Fit.
+         * Enables background synchronization of intraday and session data from Google Fit.<br>
+         * Note: SDK will schedule background syncs only if there is a current connection to Google Fit. In other words,
+         * this option expresses an intent to have the background synchronization when it's applicable but it doesn't
+         * mean a requirement of the connection to Google Fit.
          *
          * @see #enableGFIntradayBackgroundSync
          * @see #enableGFSessionsBackgroundSync

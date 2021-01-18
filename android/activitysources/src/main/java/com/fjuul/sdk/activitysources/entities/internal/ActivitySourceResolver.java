@@ -5,6 +5,7 @@ import com.fjuul.sdk.activitysources.entities.FitbitActivitySource;
 import com.fjuul.sdk.activitysources.entities.GarminActivitySource;
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
 import com.fjuul.sdk.activitysources.entities.PolarActivitySource;
+import com.fjuul.sdk.activitysources.entities.SuuntoActivitySource;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,6 +20,8 @@ public class ActivitySourceResolver {
                 return FitbitActivitySource.getInstance();
             case GARMIN:
                 return GarminActivitySource.getInstance();
+            case SUUNTO:
+                return SuuntoActivitySource.getInstance();
             case GOOGLE_FIT:
                 return GoogleFitActivitySource.getInstance();
             default:

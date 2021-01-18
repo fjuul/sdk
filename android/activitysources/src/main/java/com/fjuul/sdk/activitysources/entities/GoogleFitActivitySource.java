@@ -361,7 +361,7 @@ public class GoogleFitActivitySource extends ActivitySource {
      * @return boolean result of the check
      */
     public static boolean isActivityRecognitionPermissionGranted(@NonNull Context context) {
-        boolean activityRecognitionListedInManifest = false;
+        boolean activityRecognitionListedInManifest;
         try {
             final PackageManager packageManager = context.getPackageManager();
             final PackageInfo packageInfo =

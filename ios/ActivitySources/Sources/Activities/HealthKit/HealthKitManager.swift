@@ -232,7 +232,7 @@ class HealthKitManager: HealthKitManaging {
     private func intradatPredicates(batchDates: Set<Date>) -> NSCompoundPredicate {
         let datePredicates = NSCompoundPredicate(type: .or, subpredicates: self.statisticsCollectionsDatePredicates(batchDates: batchDates))
 
-        if self.config.healthKitConfig.syncUserEnteredData {
+        if !self.config.healthKitConfig.syncUserEnteredData {
             // Exclude manually added data
             let wasUserEnteredPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
 
@@ -243,10 +243,10 @@ class HealthKitManager: HealthKitManaging {
     }
 
     private func samplesPredicate() -> NSCompoundPredicate {
-        let fromDate = Calendar.current.date(byAdding: .hour, value: -2, to: Date())
+        let fromDate = Calendar.current.date(byAdding: .day, value: -30, to: Date())
         let startDatePredicate = HKQuery.predicateForSamples(withStart: fromDate, end: Date(), options: .strictStartDate)
 
-        if self.config.healthKitConfig.syncUserEnteredData {
+        if !self.config.healthKitConfig.syncUserEnteredData {
             let wasUserEnteredPredicate = NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
 
             return NSCompoundPredicate(andPredicateWithSubpredicates: [startDatePredicate, wasUserEnteredPredicate])
@@ -279,6 +279,7 @@ class HealthKitManager: HealthKitManaging {
     }
 
     private func getAnchorBySampleType(sampleType: HKObjectType) -> HKQueryAnchor {
+
         switch sampleType {
         case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned):
             return self.anchorStore.anchors?[.activeEnergyBurned] ?? HKQueryAnchor.init(fromValue: 0)

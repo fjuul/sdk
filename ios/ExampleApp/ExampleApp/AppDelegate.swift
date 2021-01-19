@@ -22,7 +22,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [
                                                                     .activeEnergyBurned, .heartRate,
                                                                     .distanceCycling, .distanceWalkingRunning,
-                                                                    .stepCount, .workoutType,])
+                                                                    .stepCount, .workoutType])
             }
 
             if let apiClient = ApiClientHolder.default.apiClient {

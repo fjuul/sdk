@@ -2,7 +2,7 @@ import Foundation
 
 public final class ActivitySourceConfigBuilder {
     public var healthKitConfig: ActivitySourceHKConfig = ActivitySourceHKConfig(
-        dataTypesToRead: [.activeEnergyBurned, .distanceCycling, .distanceWalkingRunning, .stepCount],
+        dataTypesToRead: [.activeEnergyBurned, .distanceCycling, .distanceWalkingRunning, .stepCount, .workoutType, .heartRate],
         syncUserEnteredData: true
     )
 

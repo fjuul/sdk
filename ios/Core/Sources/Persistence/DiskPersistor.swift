@@ -3,12 +3,29 @@ import Foundation
 public class DiskPersistor: Persistor {
     public init() {}
 
+    public static func remove(matchKey: String) -> Bool {
+        do {
+            let storeFolderURL = DiskPersistor.getStorageDirectory()
+            let fileURLs = try FileManager.default.contentsOfDirectory(at: storeFolderURL, includingPropertiesForKeys: nil)
+
+            try fileURLs.forEach { fileURL in
+                if fileURL.path.contains(".\(matchKey)") {
+                    try FileManager.default.removeItem(at: fileURL)
+                }
+            }
+
+            return true
+        } catch {
+            return false
+        }
+    }
+
     public func set<T: Encodable>(key: String, value: T?) {
         do {
             // The Application Support directory does not exist by default, thus we need to create it here explicitly.
             // This is a no-op if the directory already exists.
-            try FileManager.default.createDirectory(at: getStorageDirectory(), withIntermediateDirectories: true, attributes: nil)
-            let fullPath = getFullPathForKey(key)
+            try FileManager.default.createDirectory(at: DiskPersistor.getStorageDirectory(), withIntermediateDirectories: true, attributes: nil)
+            let fullPath = DiskPersistor.getFullPathForKey(key)
             guard let unwrapped = value else {
                 if FileManager.default.fileExists(atPath: fullPath.path) {
                     try FileManager.default.removeItem(atPath: fullPath.path)
@@ -27,7 +44,7 @@ public class DiskPersistor: Persistor {
 
     public func get<T: Decodable>(key: String) -> T? {
         do {
-            let path = getFullPathForKey(key)
+            let path = DiskPersistor.getFullPathForKey(key)
             if !(FileManager.default.fileExists(atPath: path.path)) {
                 return nil
             }
@@ -40,27 +57,23 @@ public class DiskPersistor: Persistor {
         }
     }
     
-    public func remove(matchKey: String) -> Bool {
-        do {
-            let storeFolder = getFullPathForKey("").path
-            let paths = try FileManager.default.contentsOfDirectory(atPath: storeFolder)
-            
-            let fileteredPaths = paths.filter { patn in patn.contains(".\(matchKey)") }
-            
-            try fileteredPaths.forEach { filePath in
-                try FileManager.default.removeItem(atPath: filePath)
-            }
-        } catch {}
+    public func remove(key: String) -> Bool {
+        let fileURL = DiskPersistor.getFullPathForKey(key)
         
-        return false
+        do {
+            try FileManager.default.removeItem(at: fileURL)
+            return true
+        } catch {
+            return false
+        }
     }
 
-    private func getStorageDirectory() -> URL {
+    private static func getStorageDirectory() -> URL {
         let paths = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
         return paths[0]
     }
 
-    private func getFullPathForKey(_ key: String) -> URL {
+    private static func getFullPathForKey(_ key: String) -> URL {
         getStorageDirectory().appendingPathComponent("com.fjuul.sdk.persistence.\(key)")
     }
 

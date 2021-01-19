@@ -1,6 +1,7 @@
 import Foundation
 import FjuulCore
 import FjuulUser
+import FjuulActivitySources
 
 class UserProfileObservable: ObservableObject {
 
@@ -88,6 +89,20 @@ class UserProfileObservable: ObservableObject {
             }
             completion(result)
         }
+    }
+    
+    func logout() -> Bool {
+        guard let result = ApiClientHolder.default.apiClient?.clearPersistentStorage(), result else { return false }
+
+        ActivitySourceManager.current?.unmout { result in
+            switch result {
+            case .success:
+                ApiClientHolder.default.apiClient = nil
+            case .failure(let err):
+                self.error = ErrorHolder(error: err)
+            }
+        }
+        return true
     }
 
 }

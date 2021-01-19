@@ -20,7 +20,6 @@ struct ModuleSelectionScreens: View {
             }
         }
         .navigationBarTitle("Modules", displayMode: .inline)
-
     }
 
 }

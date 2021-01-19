@@ -14,6 +14,10 @@ import HealthKit
 
 
 // MARK: - ActivitySourcesApiClient
+// swiftlint:disable line_length
+// swiftlint:disable file_length
+// swiftlint:disable function_body_length
+// swiftlint:disable force_cast
 
 open class ActivitySourcesApiClientMock: ActivitySourcesApiClient, Mock {
     public init(sequencing sequencingPolicy: SequencingPolicy = .lastWrittenResolvedFirst, stubbing stubbingPolicy: StubbingPolicy = .wrap, file: StaticString = #file, line: UInt = #line) {

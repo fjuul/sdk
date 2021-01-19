@@ -74,6 +74,13 @@ open class ApiClient {
     public var userToken: String {
         return credentials.token
     }
+    
+    /// Deletes the stored user file of the shared preferences created internally for persisting the state of Fjuul SDK.
+    /// Note that if you want to perform the logout, then you need also to disable all backgroundDelivery observers for ActivitySourceHK
+    /// - Returns: Bool which indicates the success of the operation
+    public func clearPersistentStorage() -> Bool {
+        return type(of: self.persistor).remove(matchKey: self.userToken)
+    }
 
 }
 
@@ -113,26 +120,26 @@ fileprivate extension ApiClient {
 
 final class AlamofireLogger: EventMonitor {
 
-//    func requestDidResume(_ request: Request) {
-//
-//        let allHeaders = request.request.flatMap { $0.allHTTPHeaderFields.map { $0.description } } ?? "None"
-//        let headers = """
-//        ⚡️⚡️⚡️⚡️ Request Started: \(request)
-//        ⚡️⚡️⚡️⚡️ Headers: \(allHeaders)
-//        """
-//        NSLog(headers)
-//
-//        let body = request.request.flatMap { $0.httpBody.map { String(decoding: $0, as: UTF8.self) } } ?? "None"
-//        let message = """
-//        ⚡️⚡️⚡️⚡️ Request Started: \(request)
-//        ⚡️⚡️⚡️⚡️ Body Data: \(body)
-//        """
-//        print(message)
-//    }
+    func requestDidResume(_ request: Request) {
 
-//    func request<Value>(_ request: DataRequest, didParseResponse response: AFDataResponse<Value>) {
-//
-//        NSLog("⚡️⚡️⚡️⚡️ Response Received: \(response.debugDescription)")
-//        NSLog("⚡️⚡️⚡️⚡️ Response All Headers: \(String(describing: response.response?.allHeaderFields))")
-//    }
+        let allHeaders = request.request.flatMap { $0.allHTTPHeaderFields.map { $0.description } } ?? "None"
+        let headers = """
+        ⚡️⚡️⚡️⚡️ Request Started: \(request)
+        ⚡️⚡️⚡️⚡️ Headers: \(allHeaders)
+        """
+        NSLog(headers)
+
+        let body = request.request.flatMap { $0.httpBody.map { String(decoding: $0, as: UTF8.self) } } ?? "None"
+        let message = """
+        ⚡️⚡️⚡️⚡️ Request Started: \(request)
+        ⚡️⚡️⚡️⚡️ Body Data: \(body)
+        """
+        print(message)
+    }
+
+    func request<Value>(_ request: DataRequest, didParseResponse response: AFDataResponse<Value>) {
+
+        NSLog("⚡️⚡️⚡️⚡️ Response Received: \(response.debugDescription)")
+        NSLog("⚡️⚡️⚡️⚡️ Response All Headers: \(String(describing: response.response?.allHeaderFields))")
+    }
 }

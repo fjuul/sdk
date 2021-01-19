@@ -103,6 +103,34 @@ final public class ActivitySourceManager {
             }
         }
     }
+    
+    public func unmout(completion: @escaping (Result<Bool, Error>) -> Void) {
+        let group = DispatchGroup()
+        var error: Error?
+
+        self.mountedActivitySourceConnections.forEach { activitySourceConnection in
+
+            group.enter()
+            activitySourceConnection.unmount { result in
+                switch result {
+                case .success: break
+                case .failure(let err):
+                    error = err
+                }
+
+                group.leave()
+            }
+        }
+
+        group.notify(queue: DispatchQueue.global()) {
+            if let err = error {
+                completion(.failure(err))
+            } else {
+                self.mountedActivitySourceConnections = []
+                completion(.success(true))
+            }
+        }
+    }
 
     private func refreshCurrentConnections(connections: [TrackerConnection]) {
         // Mount new trackers

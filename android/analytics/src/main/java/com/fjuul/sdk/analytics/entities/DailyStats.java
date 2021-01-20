@@ -10,8 +10,6 @@ public class DailyStats {
     int steps;
 
     @NonNull
-    ActivityMeasure lowest;
-    @NonNull
     ActivityMeasure low;
     @NonNull
     ActivityMeasure moderate;
@@ -36,11 +34,6 @@ public class DailyStats {
     @NonNull
     public int getSteps() {
         return steps;
-    }
-
-    @NonNull
-    public ActivityMeasure getLowest() {
-        return lowest;
     }
 
     @NonNull

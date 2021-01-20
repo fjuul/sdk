@@ -206,7 +206,7 @@ class HealthKitManager: HealthKitManaging {
         let predicate = self.samplesPredicate()
 
         WorkoutFetcher.fetch(anchor: anchor, predicate: predicate) { workouts, newAnchor in
-            let requestData = workouts.count > 0 ? HKRequestData(workouts: workouts) : nil
+            let requestData = workouts.count > 0 ? HKRequestData(workoutsData: workouts) : nil
             completion(requestData, newAnchor)
         }
     }

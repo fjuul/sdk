@@ -7,7 +7,7 @@ struct HKRequestData: Encodable {
     var stepsData: [BatchDataPoint]?
     var walkingData: [BatchDataPoint]?
     var hrData: [HrBatchDataPoint]?
-    var workouts: [WorkoutDataPoint]?
+    var workoutsData: [WorkoutDataPoint]?
 }
 
 extension HKRequestData {

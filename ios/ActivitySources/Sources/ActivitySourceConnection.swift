@@ -3,7 +3,7 @@ import FjuulCore
 
 /// A tracker connection bound with ActivitySource
 public final class ActivitySourceConnection: TrackerConnectionable, Equatable {
-    public static func ==(lhs: ActivitySourceConnection, rhs: ActivitySourceConnection) -> Bool {
+    public static func == (lhs: ActivitySourceConnection, rhs: ActivitySourceConnection) -> Bool {
         return lhs.id == rhs.id
     }
 

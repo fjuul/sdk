@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4C3D6A8D25BACB0000729276 /* FjuulApiBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3D6A8C25BACB0000729276 /* FjuulApiBuilder.swift */; };
 		4C7B5446250CE66E007C70C7 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C7B5445250CE66E007C70C7 /* HealthKit.framework */; };
 		B348CE8624D844D3001DCE14 /* FjuulActivitySources in Frameworks */ = {isa = PBXBuildFile; productRef = B348CE8524D844D3001DCE14 /* FjuulActivitySources */; };
 		B348CE8824D85551001DCE14 /* ActivitySourcesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B348CE8724D85551001DCE14 /* ActivitySourcesScreen.swift */; };
@@ -47,6 +48,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4C3D6A8C25BACB0000729276 /* FjuulApiBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FjuulApiBuilder.swift; sourceTree = "<group>"; };
 		4C7B5444250CE66E007C70C7 /* ExampleApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ExampleApp.entitlements; sourceTree = "<group>"; };
 		4C7B5445250CE66E007C70C7 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
 		B348CE8724D85551001DCE14 /* ActivitySourcesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivitySourcesScreen.swift; sourceTree = "<group>"; };
@@ -190,6 +192,7 @@
 				B3FBCDAF24B8AB3000184A88 /* ApiEnvironment.swift */,
 				B3FBCDBB24BCAFF300184A88 /* ErrorHolder.swift */,
 				B3FBCDB124B8AB6200184A88 /* UserDefaultsManager.swift */,
+				4C3D6A8C25BACB0000729276 /* FjuulApiBuilder.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -344,6 +347,7 @@
 				B3548D6724CF0F91002F26B9 /* OnboardingScreen.swift in Sources */,
 				B3FBCDB224B8AB6200184A88 /* UserDefaultsManager.swift in Sources */,
 				B3BB7F1323993EC800A7BEF2 /* SceneDelegate.swift in Sources */,
+				4C3D6A8D25BACB0000729276 /* FjuulApiBuilder.swift in Sources */,
 				B3FBCDB424B8AC7800184A88 /* ApiClientHolder.swift in Sources */,
 				B3FBCDBC24BCAFF300184A88 /* ErrorHolder.swift in Sources */,
 				B3548D6E24CF1FC4002F26B9 /* DailyStatsObservable.swift in Sources */,

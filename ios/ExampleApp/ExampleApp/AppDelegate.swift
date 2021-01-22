@@ -7,33 +7,17 @@ import Logging
 class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
-//        LoggingSystem.bootstrap { label in
-//            return StreamLogHandler.standardOutput(label: "Label from Example app")
-//        }
+        // Set default logger globally, any subsequent Logger instances created using the Logger(label:) initializer will
+        // default to the specified handler.
+        // Can be configured to choose any compatible logging backend implementation.
+        LoggingSystem.bootstrap { label in
+            return StreamLogHandler.standardOutput(label: "Fjuul SDK")
+        }
 
-        let environment = ApiEnvironment(rawValue: UserDefaults.standard.integer(forKey: "environment"))!
+        if let apiClient = FjuulApiBuilder.buildApiClient() {
+            ApiClientHolder.default.apiClient = apiClient
 
-        // TODO: Update code for initialize SDK client in example app
-        if UserDefaults.standard.string(forKey: "token") != nil {
-            ApiClientHolder.default.apiClient = ApiClient(
-                baseUrl: environment.baseUrl,
-                apiKey: UserDefaults.standard.string(forKey: "apiKey") ?? "",
-                credentials: UserCredentials(
-                    token: UserDefaults.standard.string(forKey: "token") ?? "",
-                    secret: UserDefaults.standard.string(forKey: "secret") ?? ""
-                )
-            )
-
-            let config = ActivitySourceConfigBuilder { builder in
-                builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [
-                                                                    .activeEnergyBurned, .heartRate,
-                                                                    .distanceCycling, .distanceWalkingRunning,
-                                                                    .stepCount, .workoutType,])
-            }
-
-            if let apiClient = ApiClientHolder.default.apiClient {
-                _ = ActivitySourceManager.initialize(apiClient: apiClient, config: config)
-            }
+            _ = FjuulApiBuilder.buildActivitySourceManager(apiClient: apiClient)
         }
 
         return true

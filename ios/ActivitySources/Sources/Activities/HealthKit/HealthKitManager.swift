@@ -8,7 +8,8 @@ private let logger = Logger(label: "FjuulSDK")
 protocol HealthKitManaging: AutoMockable {
     static var healthStore: HKHealthStore { get }
 
-    init(anchorStore: HKAnchorStore, config: ActivitySourceConfigBuilder, dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void))
+    init(anchorStore: HKAnchorStore, config: ActivitySourceConfigBuilder,
+         dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void))
     static func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void)
     func mount(completion: @escaping (Result<Bool, Error>) -> Void)
     func disableAllBackgroundDelivery(completion: @escaping (Result<Bool, Error>) -> Void)
@@ -23,7 +24,8 @@ class HealthKitManager: HealthKitManaging {
     private let serialQueue = DispatchQueue(label: "com.fjuul.sdk.queues.backgroundDelivery", qos: .userInitiated)
     private let config: ActivitySourceConfigBuilder
 
-    required init(anchorStore: HKAnchorStore, config: ActivitySourceConfigBuilder, dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) {
+    required init(anchorStore: HKAnchorStore, config: ActivitySourceConfigBuilder,
+                  dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) {
         self.config = config
         self.anchorStore = anchorStore
         self.dataHandler = dataHandler
@@ -144,7 +146,7 @@ class HealthKitManager: HealthKitManaging {
         let types = HealthKitManager.dataTypesToRead(config: self.config)
 
         for type in types {
-            guard let sampleType = type as? HKSampleType else { continue }
+            let sampleType = type as HKSampleType
 
             let query = HKObserverQuery(sampleType: sampleType, predicate: nil) { (_, completionHandler: @escaping HKObserverQueryCompletionHandler, error: Error?) in
 

@@ -42,23 +42,12 @@ struct OnboardingScreen: View {
             }
             Section {
                 Button("Continue") {
+                    // Configure ApiClient if not yet configured in the AppDelegate didFinishLaunchingWithOptions (require for setup backgroundDeliviry)
                     if ApiClientHolder.default.apiClient == nil {
-                        ApiClientHolder.default.apiClient = ApiClient(
-                            baseUrl: self.userDefaultsManager.environment.baseUrl,
-                            apiKey: self.userDefaultsManager.apiKey,
-                            credentials: UserCredentials(
-                                token: self.userDefaultsManager.token,
-                                secret: self.userDefaultsManager.secret
-                            )
-                        )
+                        if let apiClient = FjuulApiBuilder.buildApiClient() {
+                            ApiClientHolder.default.apiClient = apiClient
 
-                        let config = ActivitySourceConfigBuilder { builder in
-                            builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned,
-                                                                                               .distanceCycling, .distanceWalkingRunning, .stepCount, .workoutType,])
-                        }
-
-                        if let apiClient = ApiClientHolder.default.apiClient {
-                            ActivitySourceManager.initialize(apiClient: apiClient, config: config)
+                            _ = FjuulApiBuilder.buildActivitySourceManager(apiClient: apiClient)
                         }
                     }
                     self.viewRouter.presentedView = .moduleSelection

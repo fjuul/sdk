@@ -8,7 +8,8 @@ class WorkoutFetcher {
     static func fetch(anchor: HKQueryAnchor, predicate: NSCompoundPredicate, completion: @escaping (_ data: [WorkoutDataPoint], _ newAnchor: HKQueryAnchor?) -> Void) {
         let cycleDispatchGroup = DispatchGroup()
         var workouts: [WorkoutDataPoint] = []
-        let query = HKAnchoredObjectQuery(type: HKObjectType.workoutType(), predicate: predicate, anchor: anchor, limit: HKObjectQueryNoLimit) { (_, samples, _, newAnchor, error) in
+        let query = HKAnchoredObjectQuery(type: HKObjectType.workoutType(), predicate: predicate,
+                                          anchor: anchor, limit: HKObjectQueryNoLimit) { (_, samples, _, newAnchor, error) in
             if error != nil {
                 completion([], nil)
                 return

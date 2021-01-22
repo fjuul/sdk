@@ -24,7 +24,8 @@ public final class ActivitySourceHK: MountableActivitySourceHK {
         }
     }
 
-    func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder, healthKitManagerBuilder: HealthKitManagerBuildering, completion: @escaping (Result<Bool, Error>) -> Void) {
+    func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder,
+               healthKitManagerBuilder: HealthKitManagerBuildering, completion: @escaping (Result<Bool, Error>) -> Void) {
         self.apiClient = apiClient
 
         let healthKitManager = healthKitManagerBuilder.create(dataHandler: self.dataHandler)

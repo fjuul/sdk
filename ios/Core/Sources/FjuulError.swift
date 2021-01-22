@@ -32,15 +32,3 @@ public enum FjuulError: Error {
     case activitySourceFailure(reason: ActivitySourceDataManageFailure)
 
 }
-
-
-//extension FjuulError.ActivitySourceConnectionFailureReason {
-//  public var errorDescription: String? {
-//    switch self {
-//    case .generic:
-//        return "Error: The operation couldn’t be completed 2"
-//    case .sourceAlreadyConnected:
-//        return "Error: Source already connected"
-//    }
-//  }
-//}

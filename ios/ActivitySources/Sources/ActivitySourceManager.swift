@@ -77,7 +77,9 @@ final public class ActivitySourceManager {
                 activitySourceConnection.unmount { unmountResult in
                     switch unmountResult {
                     case .success:
-                        self.mountedActivitySourceConnections = self.mountedActivitySourceConnections.filter { connection in connection.tracker != activitySourceConnection.tracker }
+                        self.mountedActivitySourceConnections = self.mountedActivitySourceConnections.filter { connection in
+                            connection.tracker != activitySourceConnection.tracker
+                        }
                         completion(.success(true))
                     case .failure(let err):
                         completion(.failure(err))

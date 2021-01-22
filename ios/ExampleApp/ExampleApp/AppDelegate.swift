@@ -59,7 +59,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // here has no effect on the outcome of the connection, and there is no guarantee the user will return to the app
         // through the deeplink).
         let connectionStatus = ExternalAuthenticationFlowHandler.handle(url: url)
-        if let tracker = connectionStatus.tracker {
+        if connectionStatus.tracker != nil {
             return connectionStatus.success
         }
         return false

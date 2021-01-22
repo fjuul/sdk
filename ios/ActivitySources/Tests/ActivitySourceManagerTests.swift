@@ -26,7 +26,7 @@ final class ActivitySourceManagerTests: XCTestCase {
 
         let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
         apiClientMock = ActivitySourcesApiClientMock()
-        
+
         sut = ActivitySourceManager(userToken: client.userToken, persistor: persistor, apiClient: apiClientMock, config: config)
     }
 
@@ -69,12 +69,12 @@ final class ActivitySourceManagerTests: XCTestCase {
 
         let healthKitMock = MountableActivitySourceHKMock()
         Given(healthKitMock, .tracker(getter: ActivitySourcesItem.healthkit))
-        
+
         Perform(apiClientMock, .connect(activitySourceItem: .value(ActivitySourcesItem.healthkit), completion: .any, perform: { (item, completion) in
             let trackerConnection = TrackerConnection(id: "0ca60422-3626-4b50-aa70-43c91d8da731", tracker: "healthkit", createdAt: Date(), endedAt: nil)
             completion(.success(.connected(trackerConnection: trackerConnection)))
         }))
-        
+
         Perform(healthKitMock, .requestAccess(config: .any, completion: .any, perform: { (item, completion) in
            completion(.success(true))
         }))
@@ -127,16 +127,16 @@ final class ActivitySourceManagerTests: XCTestCase {
         }
         wait(for: [promise], timeout: 5)
     }
-    
+
     func testConnectWithServerError() {
         // Given
         let promise = expectation(description: "Handle server response with error")
-        
+
         Perform(apiClientMock, .connect(activitySourceItem: .value(ActivitySourcesItem.polar), completion: .any, perform: { (item, completion) in
 
             completion(.failure(FjuulError.activitySourceConnectionFailure(reason: .sourceAlreadyConnected)))
         }))
-        
+
         // When
         sut.connect(activitySource: ActivitySourcePolar.shared) { result in
             switch result {
@@ -153,11 +153,11 @@ final class ActivitySourceManagerTests: XCTestCase {
         }
         wait(for: [promise], timeout: 5)
     }
-    
+
     func testDisconnectActivitySource() {
         // Given
         let promise = expectation(description: "Success disconnect activity source")
-        
+
         let trackerConnection = TrackerConnection(id: "0ca60422", tracker: "polar", createdAt: Date(), endedAt: nil)
         let activitySourceConnection = ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourcePolar.shared)
 
@@ -165,7 +165,7 @@ final class ActivitySourceManagerTests: XCTestCase {
 
             completion(.success(()))
         }))
-        
+
         // When
         sut.disconnect(activitySourceConnection: activitySourceConnection) { result in
             switch result {
@@ -177,11 +177,11 @@ final class ActivitySourceManagerTests: XCTestCase {
         }
         wait(for: [promise], timeout: 5)
     }
-    
+
     func testDisconnectActivitySourceWithServerError() {
         // Given
         let promise = expectation(description: "Handle server failure on disconnect activity source")
-        
+
         let trackerConnection = TrackerConnection(id: "0ca60422", tracker: "polar", createdAt: Date(), endedAt: nil)
         let activitySourceConnection = ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourcePolar.shared)
 
@@ -189,7 +189,7 @@ final class ActivitySourceManagerTests: XCTestCase {
 
             completion(.failure(FjuulError.invalidConfig))
         }))
-        
+
         // When
         sut.disconnect(activitySourceConnection: activitySourceConnection) { result in
             switch result {
@@ -201,23 +201,23 @@ final class ActivitySourceManagerTests: XCTestCase {
         }
         wait(for: [promise], timeout: 5)
     }
-    
+
     func testGetCurrentConnections() {
         // Given
         let promise = expectation(description: "Success disconnect activity source")
-        
+
         let trackerConnection = TrackerConnection(id: "0ca60422", tracker: "polar", createdAt: Date(), endedAt: nil)
 
         Perform(apiClientMock, .getCurrentConnections(completion: .any, perform: { (completion) in
             completion(.success([trackerConnection]))
         }))
-        
+
         // When
-        sut.getCurrentConnections() { result in
+        sut.getCurrentConnections { result in
             switch result {
             case .success(let connections):
                 let expectedConnectionsList = [
-                    ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: trackerConnection)
+                    ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: trackerConnection),
                 ].compactMap { item in item }
 
                 XCTAssert(connections == expectedConnectionsList, "Incorrect connections")

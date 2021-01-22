@@ -1,7 +1,7 @@
 // Generated using Sourcery 1.0.0 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 
-
+// swiftlint:disable all
 
 // Generated with SwiftyMocky 4.0.1
 
@@ -14,10 +14,6 @@ import HealthKit
 
 
 // MARK: - ActivitySourcesApiClient
-// swiftlint:disable line_length
-// swiftlint:disable file_length
-// swiftlint:disable function_body_length
-// swiftlint:disable force_cast
 
 open class ActivitySourcesApiClientMock: ActivitySourcesApiClient, Mock {
     public init(sequencing sequencingPolicy: SequencingPolicy = .lastWrittenResolvedFirst, stubbing stubbingPolicy: StubbingPolicy = .wrap, file: StaticString = #file, line: UInt = #line) {
@@ -107,7 +103,7 @@ open class ActivitySourcesApiClientMock: ActivitySourcesApiClient, Mock {
 				var results: [Matcher.ParameterComparisonResult] = []
 				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsCompletion, rhs: rhsCompletion, with: matcher), lhsCompletion, rhsCompletion, "completion"))
 				return Matcher.ComparisonResult(results)
-            case (.p_apiClient_get,.p_apiClient_get): return Matcher.ComparisonResult.match
+            case (.p_apiClient_get, .p_apiClient_get): return Matcher.ComparisonResult.match
             default: return .none
             }
         }
@@ -279,10 +275,6 @@ open class HealthKitManagerBuilderingMock: HealthKitManagerBuildering, Mock {
         if scopes.contains(.perform) { methodPerformValues = [] }
     }
 
-
-
-
-
     public required init(apiClient: ActivitySourcesApiClient, persistor: Persistor, config: ActivitySourceConfigBuilder) { }
 
     open func create(dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) -> HealthKitManaging {
@@ -298,7 +290,6 @@ open class HealthKitManagerBuilderingMock: HealthKitManagerBuildering, Mock {
 		}
 		return __value
     }
-
 
     fileprivate enum MethodType {
         case m_create__dataHandler_dataHandler(Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void>)
@@ -533,15 +524,15 @@ open class HealthKitManagingMock: HealthKitManaging, Mock, StaticMock {
 				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsConfig, rhs: rhsConfig, with: matcher), lhsConfig, rhsConfig, "config"))
 				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsCompletion, rhs: rhsCompletion, with: matcher), lhsCompletion, rhsCompletion, "completion"))
 				return Matcher.ComparisonResult(results)
-            case (.p_healthStore_get,.p_healthStore_get): return Matcher.ComparisonResult.match
+            case (.p_healthStore_get, .p_healthStore_get): return Matcher.ComparisonResult.match
             default: return .none
             }
         }
 
         func intValue() -> Int {
             switch self {
-                case let .sm_requestAccess__config_configcompletion_completion(p0, p1): return p0.intValue + p1.intValue
-                case .p_healthStore_get: return 0
+            case let .sm_requestAccess__config_configcompletion_completion(p0, p1): return p0.intValue + p1.intValue
+            case .p_healthStore_get: return 0
             }
         }
         func assertionName() -> String {

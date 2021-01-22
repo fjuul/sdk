@@ -17,18 +17,18 @@ public class InMemoryPersistor: Persistor {
     public func get<T: Decodable>(key: String) -> T? {
         return store[key] as? T
     }
-    
+
     /// Remove all stored files based on match key (usually userToken)
     /// - Parameter matchKey: Match string
     /// - Returns: Boolean
     public func remove(key: String) -> Bool {
-        if let _ = store.removeValue(forKey: key) {
+        if store.removeValue(forKey: key) != nil {
             return true
         } else {
             return false
         }
     }
-    
+
     public static func remove(matchKey: String) -> Bool {
         return true
     }

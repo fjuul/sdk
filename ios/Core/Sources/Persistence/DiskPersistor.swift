@@ -59,10 +59,10 @@ public class DiskPersistor: Persistor {
             return nil
         }
     }
-    
+
     public func remove(key: String) -> Bool {
         let fileURL = DiskPersistor.getFullPathForKey(key)
-        
+
         do {
             try FileManager.default.removeItem(at: fileURL)
             return true

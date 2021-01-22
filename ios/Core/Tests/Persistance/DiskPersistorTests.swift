@@ -35,8 +35,6 @@ final class DiskPersistorTests: XCTestCase {
 
     override func tearDown() {
         super.tearDown()
- 
-//        let tearDownResult = sut.persistor.remove(matchKey: "fjuul.sdk.persistence")
     }
 
     func testClassFuncRemove() {
@@ -50,22 +48,22 @@ final class DiskPersistorTests: XCTestCase {
         let storeFolderURL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         do {
             let fileURLs = try FileManager.default.contentsOfDirectory(at: storeFolderURL, includingPropertiesForKeys: nil)
-            
+
             // Check that store files were created
             XCTAssert(fileURLs.contains { url in url.path.contains(userToken) })
             XCTAssert(fileURLs.contains { url in url.path.contains(anotherToken) })
         } catch {
             XCTFail("Error: on read files")
         }
-        
+
         // When
         let removeResult = DiskPersistor.remove(matchKey: anotherToken)
-        
+
         // Then
         XCTAssert(removeResult)
         do {
             let fileURLs = try FileManager.default.contentsOfDirectory(at: storeFolderURL, includingPropertiesForKeys: nil)
-            
+
             // Not removed store should exists
             XCTAssert(fileURLs.contains { url in url.path.contains(userToken) })
             // Сhecking that the desired store has been deleted
@@ -74,7 +72,7 @@ final class DiskPersistorTests: XCTestCase {
             XCTFail("Error: on read files")
         }
     }
-    
+
     func testSetAndGet() {
         // Given
         let storageFolderURL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -83,12 +81,12 @@ final class DiskPersistorTests: XCTestCase {
 
         // When
         sut.value = value
-        
+
         // Then
         XCTAssert(FileManager.default.fileExists(atPath: fileUrl.path))
         XCTAssertEqual(sut.value, value)
     }
-    
+
     func testRemove() {
         // Given
         let storageFolderURL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -96,12 +94,12 @@ final class DiskPersistorTests: XCTestCase {
         let value = "stored value"
 
         sut.value = value
-        
+
         XCTAssert(FileManager.default.fileExists(atPath: fileUrl.path))
-        
+
         // When
         let removeResult = sut.persistor.remove(key: sut.lookupKey)
-        
+
         // Then
         XCTAssert(removeResult)
         XCTAssertFalse(FileManager.default.fileExists(atPath: fileUrl.path))

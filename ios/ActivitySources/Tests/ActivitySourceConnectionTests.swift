@@ -98,7 +98,7 @@ final class ActivitySourceConnectionTests: XCTestCase {
         }
         wait(for: [promise], timeout: 5)
     }
-    
+
     func testUnmountSucces() {
         // Given
         let promise = expectation(description: "Success unmount")
@@ -107,8 +107,8 @@ final class ActivitySourceConnectionTests: XCTestCase {
         Perform(activitySourceHKMock, .unmount(completion: .any, perform: { (completion) in
             completion(.success(true))
         }))
-        
-        sut.unmount() { result in
+
+        sut.unmount { result in
             switch result {
             case .success(let success):
                 XCTAssert(success)
@@ -119,7 +119,7 @@ final class ActivitySourceConnectionTests: XCTestCase {
         }
         wait(for: [promise], timeout: 5)
     }
-    
+
     func testUnmountFailure() {
         // Given
         let promise = expectation(description: "Failure unmount")

@@ -56,9 +56,12 @@ class WorkoutFetcher {
         HealthKitManager.healthStore.execute(query)
     }
 
+    // swiftlint:disable cyclomatic_complexity
+    // swiftlint:disable function_body_length
     private static func assignWorkoutSmaples(item: HKWorkout, workout: WorkoutDataPoint, completion: @escaping (WorkoutDataPoint) -> Void) {
         var workout = workout
         let workoutDispatchGroup = DispatchGroup()
+
         if let distanceWalkingRunningType = HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning) {
             workoutDispatchGroup.enter()
             self.fetchWorkoutSamples(sampleType: distanceWalkingRunningType, workout: item) { result in
@@ -94,6 +97,20 @@ class WorkoutFetcher {
                 switch result {
                 case .success(let samples):
                     workout.activeEnergyBurned = self.convertWorkoutQuantitySamples(samples: samples, unit: .kilocalorie())
+                case .failure(let err):
+                    logger.error("WorkoutFetcher error: \(err)")
+                }
+
+                workoutDispatchGroup.leave()
+            }
+        }
+
+        if let distanceCyclingType = HKObjectType.quantityType(forIdentifier: .distanceCycling) {
+            workoutDispatchGroup.enter()
+            self.fetchWorkoutSamples(sampleType: distanceCyclingType, workout: item) { result in
+                switch result {
+                case .success(let samples):
+                    workout.cyclingDistances = self.convertWorkoutQuantitySamples(samples: samples, unit: .meter())
                 case .failure(let err):
                     logger.error("WorkoutFetcher error: \(err)")
                 }

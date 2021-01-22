@@ -6,9 +6,7 @@ struct ActivitySourcesScreen: View {
 
     var body: some View {
         Form {
-            // TODO the proper implementation for this would be to check for each source if it is included in
-            // currentConnections, as this could potentially be multiple at the same time in the future
-            Text("current source: \(activitySourceObserver.currentConnections.first?.tracker?.rawValue ?? "none")")
+            Text("current source: \(activitySourceObserver.currentConnectionsLabels())")
             Button(action: {
                 self.activitySourceObserver.connect(activitySource: ActivitySourceFitbit.shared)
             }) {

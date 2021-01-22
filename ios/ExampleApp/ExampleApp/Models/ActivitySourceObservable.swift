@@ -10,6 +10,16 @@ class ActivitySourceObservable: ObservableObject {
         self.getCurrentConnections()
     }
 
+    func currentConnectionsLabels() -> String {
+        let labels = self.currentConnections.compactMap { item in item.tracker?.rawValue }
+
+        if labels.count > 0 {
+            return labels.joined(separator: ", ")
+        }
+
+        return "none"
+    }
+
     func getCurrentConnections() {
         ActivitySourceManager.current?.getCurrentConnections { result in
             switch result {

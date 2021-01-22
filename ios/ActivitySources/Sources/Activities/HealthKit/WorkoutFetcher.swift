@@ -30,7 +30,7 @@ class WorkoutFetcher {
                     )
                 }
 
-                var workout = WorkoutDataPoint(
+                let workout = WorkoutDataPoint(
                     uuid: sampleItem.uuid.uuidString,
                     sourceBundleIdentifier: sampleItem.sourceRevision.source.bundleIdentifier,
                     startDate: sampleItem.startDate,
@@ -43,52 +43,8 @@ class WorkoutFetcher {
                     metadata: sampleItem.metadata?.compactMapValues { String(describing: $0 )}
                 )
 
-                let workoutDispatchGroup = DispatchGroup()
-                if let distanceWalkingRunningType = HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning) {
-                    workoutDispatchGroup.enter()
-                    self.fetchWorkoutSmaples(sampleType: distanceWalkingRunningType, workout: sampleItem) { result in
-                        switch result {
-                        case .success(let samples):
-                            workout.walkingRunningDistances = self.convertWorkoutQuantitySamples(samples: samples, unit: .meter())
-                        case .failure(let err):
-                            logger.error("WorkoutFetcher error: \(err)")
-                        }
-
-                        workoutDispatchGroup.leave()
-                    }
-                }
-
-                if let heartRateType = HKObjectType.quantityType(forIdentifier: .heartRate) {
-                    let hrUnit = HKUnit.count().unitDivided(by: HKUnit.minute())
-                    workoutDispatchGroup.enter()
-                    self.fetchWorkoutSmaples(sampleType: heartRateType, workout: sampleItem) { result in
-                        switch result {
-                        case .success(let samples):
-                            workout.heartRates = self.convertWorkoutQuantitySamples(samples: samples, unit: hrUnit)
-                        case .failure(let err):
-                            logger.error("WorkoutFetcher error: \(err)")
-                        }
-
-                        workoutDispatchGroup.leave()
-                    }
-                }
-
-                if let activeEnergyBurnedType = HKObjectType.quantityType(forIdentifier: .activeEnergyBurned) {
-                    workoutDispatchGroup.enter()
-                    self.fetchWorkoutSmaples(sampleType: activeEnergyBurnedType, workout: sampleItem) { result in
-                        switch result {
-                        case .success(let samples):
-                            workout.activeEnergyBurned = self.convertWorkoutQuantitySamples(samples: samples, unit: .kilocalorie())
-                        case .failure(let err):
-                            logger.error("WorkoutFetcher error: \(err)")
-                        }
-
-                        workoutDispatchGroup.leave()
-                    }
-                }
-
-                workoutDispatchGroup.notify(queue: .global(qos: .userInitiated)) {
-                    workouts.append(workout)
+                self.assignWorkoutSmaples(item: sampleItem, workout: workout) { workoutWithSamples in
+                    workouts.append(workoutWithSamples)
                     cycleDispatchGroup.leave()
                 }
             }
@@ -100,7 +56,58 @@ class WorkoutFetcher {
         HealthKitManager.healthStore.execute(query)
     }
 
-    private static func fetchWorkoutSmaples(sampleType: HKQuantityType, workout: HKWorkout, completion: @escaping (Result<[HKQuantitySample], Error>) -> Void) {
+    private static func assignWorkoutSmaples(item: HKWorkout, workout: WorkoutDataPoint, completion: @escaping (WorkoutDataPoint) -> Void) {
+        var workout = workout
+        let workoutDispatchGroup = DispatchGroup()
+        if let distanceWalkingRunningType = HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning) {
+            workoutDispatchGroup.enter()
+            self.fetchWorkoutSamples(sampleType: distanceWalkingRunningType, workout: item) { result in
+                switch result {
+                case .success(let samples):
+                    workout.walkingRunningDistances = self.convertWorkoutQuantitySamples(samples: samples, unit: .meter())
+                case .failure(let err):
+                    logger.error("WorkoutFetcher error: \(err)")
+                }
+
+                workoutDispatchGroup.leave()
+            }
+        }
+
+        if let heartRateType = HKObjectType.quantityType(forIdentifier: .heartRate) {
+            let hrUnit = HKUnit.count().unitDivided(by: HKUnit.minute())
+            workoutDispatchGroup.enter()
+            self.fetchWorkoutSamples(sampleType: heartRateType, workout: item) { result in
+                switch result {
+                case .success(let samples):
+                    workout.heartRates = self.convertWorkoutQuantitySamples(samples: samples, unit: hrUnit)
+                case .failure(let err):
+                    logger.error("WorkoutFetcher error: \(err)")
+                }
+
+                workoutDispatchGroup.leave()
+            }
+        }
+
+        if let activeEnergyBurnedType = HKObjectType.quantityType(forIdentifier: .activeEnergyBurned) {
+            workoutDispatchGroup.enter()
+            self.fetchWorkoutSamples(sampleType: activeEnergyBurnedType, workout: item) { result in
+                switch result {
+                case .success(let samples):
+                    workout.activeEnergyBurned = self.convertWorkoutQuantitySamples(samples: samples, unit: .kilocalorie())
+                case .failure(let err):
+                    logger.error("WorkoutFetcher error: \(err)")
+                }
+
+                workoutDispatchGroup.leave()
+            }
+        }
+
+        workoutDispatchGroup.notify(queue: .global(qos: .userInitiated)) {
+            completion(workout)
+        }
+    }
+
+    private static func fetchWorkoutSamples(sampleType: HKQuantityType, workout: HKWorkout, completion: @escaping (Result<[HKQuantitySample], Error>) -> Void) {
         let workoutPredicate = HKQuery.predicateForObjects(from: workout)
         let startDateSort = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
         let query = HKSampleQuery(sampleType: sampleType,

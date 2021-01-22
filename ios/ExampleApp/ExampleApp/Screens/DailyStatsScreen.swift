@@ -54,11 +54,6 @@ struct DailyStatsScreen: View {
                                     .frame(width: 30, height: 10, alignment: .leading)
                                 Text("activeKcal \(each.activeKcal, specifier: "%.1f")")
                             }
-                            HStack {
-                                Image(systemName: "tortoise")
-                                    .frame(width: 30, height: 10, alignment: .leading)
-                                Text("steps \(each.steps, specifier: "%.1f")")
-                            }
                         }.padding(.top, 5)
                     }
                 }

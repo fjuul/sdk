@@ -4,7 +4,6 @@ public struct DailyStats: Codable {
 
     public let date: Date
     public let activeKcal: Float
-    public let steps: UInt
 
     public let low: ActivityMeasure
     public let moderate: ActivityMeasure

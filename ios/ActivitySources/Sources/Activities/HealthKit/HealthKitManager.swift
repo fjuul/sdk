@@ -157,10 +157,10 @@ class HealthKitManager: HealthKitManaging {
                         self.dataHandler(data) { result in
                             switch result {
                             case .success:
-                                logger.info("Success hadled backgroundDelivery for \(sampleType)")
+                                logger.info("Success handled backgroundDelivery for \(sampleType)")
                                 self.saveAnchorBySampleType(newAnchor: newAnchor, sampleType: sampleType)
                             case .failure(let err):
-                                logger.error("Failure on hadled backgroundDelivery for \(sampleType) with error: \(err)")
+                                logger.error("Failure on handled backgroundDelivery for \(sampleType) with error: \(err)")
                             }
 
                             semaphore.signal()

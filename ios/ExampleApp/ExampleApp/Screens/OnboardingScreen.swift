@@ -54,7 +54,7 @@ struct OnboardingScreen: View {
 
                         let config = ActivitySourceConfigBuilder { builder in
                             builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned,
-                                                                                               .distanceCycling, .distanceWalkingRunning, .stepCount, .workoutType])
+                                                                                               .distanceCycling, .distanceWalkingRunning, .stepCount, .workoutType,])
                         }
 
                         if let apiClient = ApiClientHolder.default.apiClient {

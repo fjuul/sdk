@@ -16,34 +16,34 @@ final class ActivitySourceHKTests: XCTestCase {
     var activitySourcesApiClientMock: ActivitySourcesApiClientMock!
     var healthKitManagerBuilderMock: HealthKitManagerBuilderingMock!
     var healthKitManagingMock: HealthKitManagingMock!
-    
+
     let config = ActivitySourceConfigBuilder { builder in
         builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned, .workoutType, ])
     }
     let persistor = InMemoryPersistor()
-    
+
     override func setUp() {
         super.setUp()
-        
+
         sut = ActivitySourceHK.shared
-        
+
         activitySourcesApiClientMock = ActivitySourcesApiClientMock()
         healthKitManagerBuilderMock = HealthKitManagerBuilderingMock()
         healthKitManagingMock = HealthKitManagingMock()
     }
-    
+
     override func tearDown() {
         super.tearDown()
 
         ActivitySourceHK.shared.reset()
     }
-    
+
     func testInit() {
         //Then
         XCTAssertNil(sut.apiClient)
         XCTAssertEqual(sut.tracker, ActivitySourcesItem.healthkit)
     }
-    
+
     func testRequestAccess() {
         // Given
     }
@@ -70,7 +70,7 @@ final class ActivitySourceHKTests: XCTestCase {
         }
         wait(for: [promise], timeout: 5)
     }
-    
+
     func testFailureMount() {
         // Given
         let promise = expectation(description: "Failure mount")
@@ -92,17 +92,17 @@ final class ActivitySourceHKTests: XCTestCase {
         }
         wait(for: [promise], timeout: 5)
     }
-    
+
     func testSuccessUnmount() {
         // Given
         let promise = expectation(description: "Success unmount")
-        
+
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
 
         Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
         }))
-        
+
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
@@ -111,13 +111,13 @@ final class ActivitySourceHKTests: XCTestCase {
                 XCTAssert(true)
             }
         }
-        
+
         Perform(healthKitManagingMock, .disableAllBackgroundDelivery(completion: .any, perform: { (completion) in
             completion(.success(true))
         }))
-        
+
         //When
-        sut.unmount() { result in
+        sut.unmount { result in
             switch result {
             case .success(let success):
                 XCTAssert(success)
@@ -128,17 +128,17 @@ final class ActivitySourceHKTests: XCTestCase {
         }
         wait(for: [promise], timeout: 5)
     }
-    
+
     func testFailureUnmountWhenFaileDisableAllBackgroundDelivery() {
         // Given
         let promise = expectation(description: "Failure unmount")
-        
+
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
 
         Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
         }))
-        
+
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
@@ -147,13 +147,13 @@ final class ActivitySourceHKTests: XCTestCase {
                 XCTAssert(true)
             }
         }
-        
+
         Perform(healthKitManagingMock, .disableAllBackgroundDelivery(completion: .any, perform: { (completion) in
             completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
         }))
-        
+
         //When
-        sut.unmount() { result in
+        sut.unmount { result in
             switch result {
             case .success:
                 XCTFail("Error: should not unmount")
@@ -163,23 +163,23 @@ final class ActivitySourceHKTests: XCTestCase {
         }
         wait(for: [promise], timeout: 5)
     }
-    
+
     func testFailureUnmountWhenNotYetMounted() {
         // Given
         let promise = expectation(description: "Failure unmount")
-        
+
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
 
         Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
         }))
-        
+
         Perform(healthKitManagingMock, .disableAllBackgroundDelivery(completion: .any, perform: { (completion) in
             completion(.success(true))
         }))
-        
+
         //When
-        sut.unmount() { result in
+        sut.unmount { result in
             switch result {
             case .success:
                 XCTFail("Error: should not unmount")
@@ -189,17 +189,17 @@ final class ActivitySourceHKTests: XCTestCase {
         }
         wait(for: [promise], timeout: 5)
     }
-    
+
     func testSuccessSync() {
         // Given
         let promise = expectation(description: "Success sync")
-        
+
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
 
         Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
         }))
-        
+
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
@@ -208,13 +208,13 @@ final class ActivitySourceHKTests: XCTestCase {
                 XCTAssert(true)
             }
         }
-        
+
         Perform(healthKitManagingMock, .sync(completion: .any, perform: { (completion) in
             completion(.success(true))
         }))
-        
+
         //When
-        sut.sync() { result in
+        sut.sync { result in
             switch result {
             case .success(let success):
                 XCTAssert(success)
@@ -229,13 +229,13 @@ final class ActivitySourceHKTests: XCTestCase {
     func testFailureSync() {
         // Given
         let promise = expectation(description: "Failure sync")
-        
+
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
 
         Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
         }))
-        
+
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
@@ -244,13 +244,13 @@ final class ActivitySourceHKTests: XCTestCase {
                 XCTAssert(true)
             }
         }
-        
+
         Perform(healthKitManagingMock, .sync(completion: .any, perform: { (completion) in
             completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
         }))
 
         //When
-        sut.sync() { result in
+        sut.sync { result in
             switch result {
             case .success:
                 XCTFail("Error: should not successfully sync")

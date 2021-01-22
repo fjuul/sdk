@@ -14,14 +14,14 @@ final class ActivitySourceConnectionTests: XCTestCase {
     let config = ActivitySourceConfigBuilder { builder in
         builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned, .workoutType, ])
     }
-    
+
     let trackerConnection = TrackerConnection(id: "healthkit", tracker: "healthkit", createdAt: Date(), endedAt: nil)
-    
+
     override func setUp() {
         super.setUp()
 
         activitySourceHKMock = MountableActivitySourceHKMock()
- 
+
         Given(activitySourceHKMock, .tracker(getter: ActivitySourcesItem.healthkit))
 
         apiClientMock = ActivitySourcesApiClientMock()
@@ -31,12 +31,12 @@ final class ActivitySourceConnectionTests: XCTestCase {
         Matcher.default.register(ActivitySourceConfigBuilder.self) { (lhs, rhs) -> Bool in
             return lhs.healthKitConfig.dataTypesToRead == rhs.healthKitConfig.dataTypesToRead
         }
-        
-        Matcher.default.register(Persistor.self) { (lhs, rhs) -> Bool in
+
+        Matcher.default.register(Persistor.self) { (_, _) -> Bool in
             return true
         }
-        
-        Matcher.default.register(ActivitySourcesApiClient.self) { (lhs, rhs) -> Bool in
+
+        Matcher.default.register(ActivitySourcesApiClient.self) { (_, _) -> Bool in
             return true
         }
     }
@@ -44,7 +44,7 @@ final class ActivitySourceConnectionTests: XCTestCase {
     override func tearDown() {
         super.tearDown()
     }
-    
+
     func testInit() {
         //Then
         XCTAssertEqual(sut.id, trackerConnection.id)
@@ -53,7 +53,7 @@ final class ActivitySourceConnectionTests: XCTestCase {
         XCTAssertEqual(sut.endedAt, trackerConnection.endedAt)
         XCTAssertEqual(sut.activitySource.tracker, ActivitySourceHK.shared.tracker)
     }
-    
+
     func testMountSucces() {
         // Given
         let promise = expectation(description: "Success mount")
@@ -63,9 +63,9 @@ final class ActivitySourceConnectionTests: XCTestCase {
 
             completion(.success(true))
         }))
-        
+
         sut.mount(apiClient: apiClientMock, config: self.config, persistor: self.persistor) { result in
-            
+
             switch result {
             case .success(let success):
                 XCTAssert(success)
@@ -86,9 +86,9 @@ final class ActivitySourceConnectionTests: XCTestCase {
 
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
         }))
-        
+
         sut.mount(apiClient: apiClientMock, config: self.config, persistor: self.persistor) { result in
-            
+
             switch result {
             case .success:
                 XCTFail("Error: should not mount activitySource")
@@ -128,8 +128,8 @@ final class ActivitySourceConnectionTests: XCTestCase {
         Perform(activitySourceHKMock, .unmount(completion: .any, perform: { (completion) in
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
         }))
-        
-        sut.unmount() { result in
+
+        sut.unmount { result in
             switch result {
             case .success:
                 XCTFail("Error: should not unmount activitySource")

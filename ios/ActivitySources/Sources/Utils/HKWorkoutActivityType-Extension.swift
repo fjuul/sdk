@@ -64,7 +64,7 @@ extension HKWorkoutActivityType {
         case .waterSports:                  return "Water Sports"
         case .wrestling:                    return "Wrestling"
         case .yoga:                         return "Yoga"
-        
+
         // iOS 10
         case .barre:                        return "Barre"
         case .coreTraining:                 return "Core Training"
@@ -80,16 +80,16 @@ extension HKWorkoutActivityType {
         case .stepTraining:                 return "Step Training"
         case .wheelchairWalkPace:           return "Wheelchair Walk Pace"
         case .wheelchairRunPace:            return "Wheelchair Run Pace"
-        
+
         // iOS 11
         case .taiChi:                       return "Tai Chi"
         case .mixedCardio:                  return "Mixed Cardio"
         case .handCycling:                  return "Hand Cycling"
-        
+
         // iOS 13
         case .discSports:                   return "Disc Sports"
         case .fitnessGaming:                return "Fitness Gaming"
-        
+
         // Catch-all
         default:                            return "Other"
         }

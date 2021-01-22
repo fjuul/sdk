@@ -9,7 +9,7 @@ public protocol ActivitySource {
 /// The protocol for mountable activity sources. Currently only HealthKit with mount backgroudDelivery.
 protocol MountableActivitySource: ActivitySource {
     var apiClient: ActivitySourcesApiClient? { get }
-    
+
     /// Mount activity source. As example configure and setup HealthKit backgroud delivery.
     /// - Parameters:
     ///   - apiClient: ActivitySourcesApiClient

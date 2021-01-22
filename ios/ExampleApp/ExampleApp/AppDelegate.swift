@@ -28,7 +28,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [
                                                                     .activeEnergyBurned, .heartRate,
                                                                     .distanceCycling, .distanceWalkingRunning,
-                                                                    .stepCount, .workoutType])
+                                                                    .stepCount, .workoutType,])
             }
 
             if let apiClient = ApiClientHolder.default.apiClient {
@@ -53,7 +53,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // MARK: Tracker Connection Deeplink Handling
 
-    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
         // Note: handling this is entirely optional, as the connection is already successfully established at this point
         // (unless the user has cancelled the process and this indicates an unsuccessful connection - however this logic
         // here has no effect on the outcome of the connection, and there is no guarantee the user will return to the app

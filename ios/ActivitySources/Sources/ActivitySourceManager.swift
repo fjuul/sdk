@@ -40,7 +40,7 @@ final public class ActivitySourceManager {
             }
         }
     }
-    
+
     /// Connect new activitySource with request to back-end server.
     /// Don't forget call getCurrentConnections for update local state and mount new activitySource
     /// - Parameters:
@@ -65,7 +65,7 @@ final public class ActivitySourceManager {
             }
         }
     }
-    
+
     /// Disconnects the activity source connection and refreshes current connection list.
     /// - Parameters:
     ///   - activitySourceConnection: ActivitySourceConnection
@@ -90,7 +90,7 @@ final public class ActivitySourceManager {
             }
         }
     }
-    
+
     /// Returns a list of current connections of the user (from back-end) and mount new activitySource if they not exists in local state.
     /// Saves connections lists on local persisted store.
     /// - Parameter completion: completion with [ActivitySourceConnection] or Error
@@ -108,7 +108,7 @@ final public class ActivitySourceManager {
             }
         }
     }
-    
+
     public func unmout(completion: @escaping (Result<Bool, Error>) -> Void) {
         let group = DispatchGroup()
         var error: Error?

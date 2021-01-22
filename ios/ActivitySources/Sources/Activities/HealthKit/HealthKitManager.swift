@@ -268,7 +268,7 @@ class HealthKitManager: HealthKitManaging {
         let query = HKAnchoredObjectQuery(type: sampleType,
                                           predicate: self.samplesPredicate(),
                                           anchor: anchorDate,
-                                          limit: HKObjectQueryNoLimit) { (_, samples, _, newAnchor, error) in
+                                          limit: HKObjectQueryNoLimit) { (_, samples, _, newAnchor, _) in
             guard let samples = samples else {
                 completion(batchStartDates, newAnchor)
                 return

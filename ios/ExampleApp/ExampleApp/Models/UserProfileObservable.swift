@@ -90,7 +90,7 @@ class UserProfileObservable: ObservableObject {
             completion(result)
         }
     }
-    
+
     func logout() -> Bool {
         guard let result = ApiClientHolder.default.apiClient?.clearPersistentStorage(), result else { return false }
 

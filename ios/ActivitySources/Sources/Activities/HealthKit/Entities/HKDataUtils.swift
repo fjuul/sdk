@@ -19,15 +19,15 @@ public class HKDataUtils {
         let after = calendar.date(from: calendar.dateComponents([.year, .month, .day, .hour], from: nextHour!))!
         return calendar.date(byAdding: .second, value: -1, to: after)
     }
-    
+
     static func endOfDay(date: Date?) -> Date? {
         guard let date = date else { return nil }
-        
+
         let calendar = Calendar.current
-        
+
         var newDate = calendar.date(byAdding: .day, value: 1, to: date)!
         newDate = calendar.startOfDay(for: newDate)
-        
+
         return Calendar.current.date(byAdding: .second, value: -1, to: newDate)!
     }
 }

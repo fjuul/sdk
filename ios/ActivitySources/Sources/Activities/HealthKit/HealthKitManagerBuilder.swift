@@ -17,7 +17,7 @@ class HealthKitManagerBuilder: HealthKitManagerBuildering {
         self.config = config
         self.apiClient = apiClient
     }
-    
+
     func create(dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) -> HealthKitManaging {
         let anchorStore = HKAnchorStore(userToken: apiClient.apiClient.userToken, persistor: persistor)
 

@@ -1,10 +1,16 @@
 import UIKit
 import FjuulCore
 import FjuulActivitySources
+import Logging
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+
+//        LoggingSystem.bootstrap { label in
+//            return StreamLogHandler.standardOutput(label: "Label from Example app")
+//        }
+
         let environment = ApiEnvironment(rawValue: UserDefaults.standard.integer(forKey: "environment"))!
 
         // TODO: Update code for initialize SDK client in example app
@@ -54,7 +60,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // through the deeplink).
         let connectionStatus = ExternalAuthenticationFlowHandler.handle(url: url)
         if let tracker = connectionStatus.tracker {
-            print("returned from connecting to: \(tracker) with status: \(connectionStatus.success)")
             return connectionStatus.success
         }
         return false

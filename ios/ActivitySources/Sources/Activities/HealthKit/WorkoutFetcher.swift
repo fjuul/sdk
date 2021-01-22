@@ -1,5 +1,8 @@
 import Foundation
 import HealthKit
+import Logging
+
+private let logger = Logger(label: "FjuulSDK")
 
 class WorkoutFetcher {
     static func fetch(anchor: HKQueryAnchor, predicate: NSCompoundPredicate, completion: @escaping (_ data: [WorkoutDataPoint], _ newAnchor: HKQueryAnchor?) -> Void) {
@@ -47,8 +50,7 @@ class WorkoutFetcher {
                         case .success(let samples):
                             workout.walkingRunningDistances = self.convertWorkoutQuantitySamples(samples: samples, unit: .meter())
                         case .failure(let err):
-                            // TODO Add logging
-                            print("Error \(err)")
+                            logger.error("WorkoutFetcher error: \(err)")
                         }
 
                         workoutDispatchGroup.leave()
@@ -63,8 +65,7 @@ class WorkoutFetcher {
                         case .success(let samples):
                             workout.heartRates = self.convertWorkoutQuantitySamples(samples: samples, unit: hrUnit)
                         case .failure(let err):
-                            // TODO Add logging
-                            print("Error \(err)")
+                            logger.error("WorkoutFetcher error: \(err)")
                         }
 
                         workoutDispatchGroup.leave()
@@ -78,8 +79,7 @@ class WorkoutFetcher {
                         case .success(let samples):
                             workout.activeEnergyBurned = self.convertWorkoutQuantitySamples(samples: samples, unit: .kilocalorie())
                         case .failure(let err):
-                            // TODO Add logging
-                            print("Error \(err)")
+                            logger.error("WorkoutFetcher error: \(err)")
                         }
 
                         workoutDispatchGroup.leave()

@@ -1,6 +1,9 @@
 import Foundation
 import HealthKit
 import FjuulCore
+import Logging
+
+private let logger = Logger(label: "FjuulSDK")
 
 protocol HealthKitManaging: AutoMockable {
     static var healthStore: HKHealthStore { get }
@@ -115,7 +118,6 @@ class HealthKitManager: HealthKitManaging {
                 self.dataHandler(data) { result in
                     switch result {
                     case .success:
-                        print("SUCESS sync for \(sampleType), with newAnchor: \(String(describing: newAnchor))")
                         self.saveAnchorBySampleType(newAnchor: newAnchor, sampleType: sampleType)
                     case .failure(let err):
                         error = err
@@ -144,7 +146,7 @@ class HealthKitManager: HealthKitManaging {
         for type in types {
             guard let sampleType = type as? HKSampleType else { continue }
 
-            let query = HKObserverQuery(sampleType: sampleType, predicate: nil) { (query: HKObserverQuery, completionHandler: @escaping HKObserverQueryCompletionHandler, error: Error?) in
+            let query = HKObserverQuery(sampleType: sampleType, predicate: nil) { (_, completionHandler: @escaping HKObserverQueryCompletionHandler, error: Error?) in
 
                 // Semaphore need for wait async task and correct notice queue about finish async task
                 self.serialQueue.async {
@@ -153,11 +155,10 @@ class HealthKitManager: HealthKitManaging {
                         self.dataHandler(data) { result in
                             switch result {
                             case .success:
-                                print("SUCESS hadled backgroundDelivery for \(sampleType), with newAnchor: \(newAnchor)")
+                                logger.info("Success hadled backgroundDelivery for \(sampleType)")
                                 self.saveAnchorBySampleType(newAnchor: newAnchor, sampleType: sampleType)
                             case .failure(let err):
-                                // TODO: Add logging here
-                                print("HTTP error:", err)
+                                logger.error("Failure on hadled backgroundDelivery for \(sampleType) with error: \(err)")
                             }
 
                             semaphore.signal()
@@ -174,7 +175,11 @@ class HealthKitManager: HealthKitManaging {
 
             HealthKitManager.healthStore.execute(query)
             HealthKitManager.healthStore.enableBackgroundDelivery(for: type, frequency: .hourly) { (success: Bool, error: Error?) in
-              //TODO: Add logging here: print("enableBackgroundDeliveryForType handler called for \(type) - success: \(success), error: \(error)")
+                if success {
+                    logger.info("Register backgroundDelivery for type \(sampleType)")
+                } else {
+                    logger.error("Was not able register backgroundDelivery for type \(sampleType), with error \(String(describing: error))")
+                }
             }
         }
     }

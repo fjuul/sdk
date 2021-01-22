@@ -35,20 +35,18 @@ final class DiskPersistorTests: XCTestCase {
 
     override func tearDown() {
         super.tearDown()
-        
+ 
 //        let tearDownResult = sut.persistor.remove(matchKey: "fjuul.sdk.persistence")
-//
-//        print("tearDownResult: ", tearDownResult)
     }
-    
+
     func testClassFuncRemove() {
         // Given
         let anotherToken = "xxxxxxxxxxx"
         let anotherStore = TestStore(userToken: anotherToken, persistor: DiskPersistor())
-        
+
         sut.value = "test value 1"
         anotherStore.value = "test value 2"
-        
+
         let storeFolderURL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         do {
             let fileURLs = try FileManager.default.contentsOfDirectory(at: storeFolderURL, includingPropertiesForKeys: nil)

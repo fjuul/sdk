@@ -43,7 +43,6 @@ open class ApiClient {
     /// The API base URL this API client was initialized with.
     public let baseUrl: String
 
-    // TODO: Add docs
     public let persistor: Persistor
 
     let credentials: UserCredentials
@@ -74,7 +73,7 @@ open class ApiClient {
     public var userToken: String {
         return credentials.token
     }
-    
+
     /// Deletes the stored user file of the shared preferences created internally for persisting the state of Fjuul SDK.
     /// Note that if you want to perform the logout, then you need also to disable all backgroundDelivery observers for ActivitySourceHK
     /// - Returns: Bool which indicates the success of the operation

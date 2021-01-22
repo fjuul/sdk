@@ -61,8 +61,6 @@ public struct HKAnchorData: Codable, Equatable {
                 heartRateRaw = newValueRaw
             case .workout:
                 workoutRaw = newValueRaw
-            default:
-                print("Not found key for save data")
             }
         }
     }

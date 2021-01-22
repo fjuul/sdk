@@ -33,8 +33,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         let connectionStatus = ExternalAuthenticationFlowHandler.handle(url: url)
         if let tracker = connectionStatus.tracker {
-            print("returned from connecting to: \(tracker) with status: \(connectionStatus.success)")
-
             // Update activitySource list
             activitySourceObserver.getCurrentConnections()
         }

@@ -20,11 +20,15 @@ let package = Package(
         .package(url: "https://github.com/Alamofire/Alamofire.git", .upToNextMajor(from: "5.2.0")),
         .package(url: "https://github.com/AliSoftware/OHHTTPStubs.git", .upToNextMajor(from: "9.0.0")),
         .package(name: "swiftymocky", url: "https://github.com/MakeAWishFoundation/SwiftyMocky", from: "4.0.1"),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
     ],
     targets: [
         .target(
             name: "FjuulCore",
-            dependencies: ["Alamofire"],
+            dependencies: [
+                "Alamofire",
+                .product(name: "Logging", package: "swift-log")
+            ],
             path: "ios/Core/Sources"
         ),
         .testTarget(
@@ -34,7 +38,10 @@ let package = Package(
         ),
         .target(
             name: "FjuulActivitySources",
-            dependencies: ["FjuulCore"],
+            dependencies: [
+                "FjuulCore",
+                .product(name: "Logging", package: "swift-log")
+            ],
             path: "ios/ActivitySources/Sources"
         ),
         .testTarget(
@@ -48,7 +55,10 @@ let package = Package(
         ),
         .target(
             name: "FjuulAnalytics",
-            dependencies: ["FjuulCore"],
+            dependencies: [
+                "FjuulCore",
+                .product(name: "Logging", package: "swift-log")
+            ],
             path: "ios/Analytics/Sources"
         ),
         .testTarget(

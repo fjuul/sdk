@@ -1,5 +1,8 @@
 import Foundation
 import FjuulCore
+import Logging
+
+private let logger = Logger(label: "FjuulSDK")
 
 final public class ActivitySourceManager {
     static public var current: ActivitySourceManager?
@@ -10,7 +13,7 @@ final public class ActivitySourceManager {
 
     private var persistor: Persistor
     private var connectionsLocalStore: ActivitySourceStore
-    
+
     /// Initialize the singleton with the provided config.
     /// Should be Initialize once as soon as possible after up app, for setup backgroundDelivery for the HealthKit - as example in AppDelegate (didFinishLaunchingWithOptions)
     /// - Parameters:
@@ -33,7 +36,7 @@ final public class ActivitySourceManager {
 
         self.restoreState { _ in
             self.getCurrentConnections { _ in
-                print("Initial sync current connections")
+                logger.info("Initial sync current connections")
             }
         }
     }
@@ -154,7 +157,7 @@ final public class ActivitySourceManager {
                     case .success:
                         self.mountedActivitySourceConnections.append(activitySourceConnection)
                     case .failure(let err):
-                        print("Error on mountByConnections \(err)")
+                        logger.error("Error on mountByConnections \(err)")
                     }
                 }
             }
@@ -169,7 +172,7 @@ final public class ActivitySourceManager {
                     case .success:
                         self.mountedActivitySourceConnections.removeAll { value in value.id == activitySourceConnection.id }
                     case .failure(let err):
-                        print("Error \(err)")
+                        logger.error("Error on unmout \(err)")
                     }
                 }
             }
@@ -184,7 +187,7 @@ final public class ActivitySourceManager {
                     case .success:
                         self.mountedActivitySourceConnections.append(activitySourceConnection)
                     case .failure(let err):
-                        print("Error on restore connectionsLocalStore state \(err)")
+                        logger.error("Error on restore connectionsLocalStore state \(err)")
                     }
                 }
             }

@@ -10,8 +10,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Set default logger globally, any subsequent Logger instances created using the Logger(label:) initializer will
         // default to the specified handler.
         // Can be configured to choose any compatible logging backend implementation.
+        // https://github.com/apple/swift-log
         LoggingSystem.bootstrap { label in
-            return StreamLogHandler.standardOutput(label: "Fjuul SDK")
+            var logger = StreamLogHandler.standardOutput(label: "Fjuul SDK")
+
+            #if DEBUG
+                logger.logLevel = .info
+            #else
+                logger.logLevel = .error
+            #endif
+
+            return logger
         }
 
         if let apiClient = FjuulApiBuilder.buildApiClient() {

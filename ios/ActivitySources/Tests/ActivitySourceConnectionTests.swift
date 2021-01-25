@@ -29,7 +29,7 @@ final class ActivitySourceConnectionTests: XCTestCase {
         sut = ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: activitySourceHKMock)
 
         Matcher.default.register(ActivitySourceConfigBuilder.self) { (lhs, rhs) -> Bool in
-            return lhs.healthKitConfig.dataTypesToRead == rhs.healthKitConfig.dataTypesToRead
+            return lhs.healthKitConfig.typesToRead == rhs.healthKitConfig.typesToRead
         }
 
         Matcher.default.register(Persistor.self) { (_, _) -> Bool in

@@ -11,8 +11,12 @@ struct HKRequestData: Encodable {
 }
 
 extension HKRequestData {
-    static func build(sampleType: HKQuantityType, batches: [BatchDataPoint]) -> HKRequestData {
-        switch sampleType {
+    static func build(quantityType: HKQuantityType, batches: [BatchDataPoint]) -> HKRequestData? {
+        guard batches.count > 0 else {
+            return nil
+        }
+
+        switch quantityType {
         case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned):
            return HKRequestData(caloriesData: batches)
         case HKObjectType.quantityType(forIdentifier: .stepCount):
@@ -22,16 +26,20 @@ extension HKRequestData {
         case HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning):
             return HKRequestData(walkingData: batches)
         default:
-            return HKRequestData()
+            return nil
         }
     }
 
-    static func build(sampleType: HKQuantityType, batches: [HrBatchDataPoint]) -> HKRequestData {
-        switch sampleType {
+    static func build(quantityType: HKQuantityType, batches: [HrBatchDataPoint]) -> HKRequestData? {
+        guard batches.count > 0 else {
+            return nil
+        }
+
+        switch quantityType {
         case HKObjectType.quantityType(forIdentifier: .heartRate):
            return HKRequestData(hrData: batches)
         default:
-            return HKRequestData()
+            return nil
         }
     }
 }

@@ -9,11 +9,61 @@ class AggregatedDataFetcher {
         return interval
     }
 
-    static func fetchIntradayData(sampleType: HKQuantityType, predicate: NSCompoundPredicate, batchDates: Set<Date>, completion: @escaping ([BatchDataPoint]) -> Void) {
+    static func fetch(type: HKQuantityType, anchor: HKQueryAnchor,
+                      predictateBuilder: HealthKitQueryPredictateBuilder, completion: @escaping (HKRequestData?, HKQueryAnchor?) -> Void) {
+
+        let sampleType = type as HKSampleType
+
+        self.dirtyBatches(sampleType: sampleType, anchor: anchor, predicate: predictateBuilder.samplePredicate()) { batchDates, newAnchor in
+
+            let predicate = predictateBuilder.statisticsCollectionsPredicate(batchDates: batchDates)
+
+            if type == HKObjectType.quantityType(forIdentifier: .heartRate) {
+                self.fetchHrData(predicate: predicate, batchDates: batchDates) { results in
+
+                    let hkRequestData = HKRequestData.build(quantityType: type, batches: results)
+
+                    completion(hkRequestData, newAnchor)
+                }
+            } else {
+                self.fetchIntradayData(sampleType: type, predicate: predicate, batchDates: batchDates) { results in
+
+                    let hkRequestData = HKRequestData.build(quantityType: type, batches: results)
+
+                    completion(hkRequestData, newAnchor)
+                }
+            }
+        }
+    }
+
+    private static func dirtyBatches(sampleType: HKSampleType, anchor: HKQueryAnchor, predicate: NSCompoundPredicate, completion: @escaping (Set<Date>, HKQueryAnchor?) -> Void) {
+        var batchStartDates: Set<Date> = []
+
+        let query = HKAnchoredObjectQuery(type: sampleType,
+                                          predicate: predicate,
+                                          anchor: anchor,
+                                          limit: HKObjectQueryNoLimit) { (_, samples, _, newAnchor, _) in
+            guard let samples = samples else {
+                completion(batchStartDates, newAnchor)
+                return
+            }
+
+            for sampleItem in samples {
+                if let date = HKDataUtils.beginningOfHour(date: sampleItem.startDate) {
+                    batchStartDates.insert(date)
+                }
+            }
+
+            completion(batchStartDates, newAnchor)
+        }
+        HealthKitManager.healthStore.execute(query)
+    }
+
+    static private func fetchIntradayData(sampleType: HKQuantityType, predicate: NSCompoundPredicate, batchDates: Set<Date>, completion: @escaping ([BatchDataPoint]) -> Void) {
         let query = HKStatisticsCollectionQuery(quantityType: sampleType,
                                                 quantitySamplePredicate: predicate,
                                                 options: [.cumulativeSum, .separateBySource],
-                                                anchorDate: self.anchor(),
+                                                anchorDate: self.statisticsCollectionAnchor(),
                                                 intervalComponents: interval)
         // Set the results handler
         query.initialResultsHandler = { query, results, error in
@@ -55,11 +105,11 @@ class AggregatedDataFetcher {
         HealthKitManager.healthStore.execute(query)
     }
 
-    static func fetchHrData(predicate: NSCompoundPredicate, batchDates: Set<Date>, completion: @escaping ([HrBatchDataPoint]) -> Void) {
+    static private func fetchHrData(predicate: NSCompoundPredicate, batchDates: Set<Date>, completion: @escaping ([HrBatchDataPoint]) -> Void) {
         let query = HKStatisticsCollectionQuery(quantityType: HKObjectType.quantityType(forIdentifier: .heartRate)!,
                                                 quantitySamplePredicate: predicate,
                                                 options: [.discreteMax, .discreteMin, .discreteAverage, .separateBySource],
-                                                anchorDate: self.anchor(),
+                                                anchorDate: self.statisticsCollectionAnchor(),
                                                 intervalComponents: interval)
         // Set the results handler
         query.initialResultsHandler = { query, results, error in
@@ -109,7 +159,7 @@ class AggregatedDataFetcher {
 
     // With interval 1 min, it doesn’t matter what date will be set, just need starts from beginning of minute
     // Technically, the anchor sets the start time for a single time interval.
-    private static func anchor() -> Date {
+    private static func statisticsCollectionAnchor() -> Date {
         return Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: Date())!
     }
 

@@ -35,8 +35,6 @@ public struct HKAnchorData: Codable, Equatable {
                 valueRaw = heartRateRaw
             case .workout:
                 valueRaw = workoutRaw
-//            default:
-//                return nil
             }
 
             if let value = valueRaw {

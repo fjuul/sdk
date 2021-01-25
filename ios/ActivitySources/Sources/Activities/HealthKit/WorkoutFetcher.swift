@@ -5,18 +5,19 @@ import Logging
 private let logger = Logger(label: "FjuulSDK")
 
 class WorkoutFetcher {
-    static func fetch(anchor: HKQueryAnchor, predicate: NSCompoundPredicate, completion: @escaping (_ data: [WorkoutDataPoint], _ newAnchor: HKQueryAnchor?) -> Void) {
+    static func fetch(anchor: HKQueryAnchor,
+                      predictateBuilder: HealthKitQueryPredictateBuilder, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
         let cycleDispatchGroup = DispatchGroup()
         var workouts: [WorkoutDataPoint] = []
-        let query = HKAnchoredObjectQuery(type: HKObjectType.workoutType(), predicate: predicate,
+        let query = HKAnchoredObjectQuery(type: HKObjectType.workoutType(), predicate: predictateBuilder.samplePredicate(),
                                           anchor: anchor, limit: HKObjectQueryNoLimit) { (_, samples, _, newAnchor, error) in
             if error != nil {
-                completion([], nil)
+                completion(nil, nil)
                 return
             }
 
             guard let samples = samples as? [HKWorkout] else {
-                completion(workouts, nil)
+                completion(nil, nil)
                 return
             }
 
@@ -50,7 +51,8 @@ class WorkoutFetcher {
             }
 
             cycleDispatchGroup.notify(queue: .global(qos: .userInitiated)) {
-                completion(workouts, newAnchor)
+                let requestData = workouts.count > 0 ? HKRequestData(workoutsData: workouts) : nil
+                completion(requestData, newAnchor)
             }
         }
         HealthKitManager.healthStore.execute(query)

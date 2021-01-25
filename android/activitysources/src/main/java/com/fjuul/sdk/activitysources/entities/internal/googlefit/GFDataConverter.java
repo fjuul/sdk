@@ -1,15 +1,20 @@
 package com.fjuul.sdk.activitysources.entities.internal.googlefit;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.google.android.gms.fitness.data.Bucket;
 import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
+import com.google.android.gms.fitness.data.Device;
 import com.google.android.gms.fitness.data.Field;
 
+import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -117,12 +122,43 @@ public class GFDataConverter {
         return new GFSpeedDataPoint(metersPerSecond, start, dataSourceId);
     }
 
+    @SuppressLint("NewApi")
     @Nullable
     private static String tryToExtractDataSourceStreamId(@NonNull DataPoint point) {
-        final DataSource dataSource = point.getOriginalDataSource();
+        final DataSource dataSource = point.getDataSource();
         if (dataSource == null) {
             return null;
         }
-        return dataSource.getStreamIdentifier();
+        String type = "unknown";
+        switch (dataSource.getType()) {
+            case DataSource.TYPE_RAW:
+                type = "raw";
+                break;
+            case DataSource.TYPE_DERIVED:
+                type = "derived";
+                break;
+        }
+        final StringBuilder dataSourceIdentifierBuilder = new StringBuilder();
+        dataSourceIdentifierBuilder.append(type).append(":").append(dataSource.getDataType().getName());
+        final String packageName = dataSource.getAppPackageName();
+        if (!isNullOrEmptyString(packageName)) {
+            dataSourceIdentifierBuilder.append(":").append(packageName);
+        }
+        final Device sourceDevice = dataSource.getDevice();
+        if (sourceDevice != null) {
+            final String deviceInfo =
+                Stream.of(sourceDevice.getManufacturer(), sourceDevice.getModel(), sourceDevice.getUid())
+                    .filter(value -> !isNullOrEmptyString(value))
+                    .collect(Collectors.joining(":"));
+            if (!isNullOrEmptyString(deviceInfo)) {
+                dataSourceIdentifierBuilder.append(":").append(deviceInfo);
+            }
+        }
+        return dataSourceIdentifierBuilder.toString();
+    }
+
+    @SuppressLint("NewApi")
+    private static boolean isNullOrEmptyString(@Nullable String string) {
+        return Objects.isNull(string) || string.isEmpty();
     }
 }

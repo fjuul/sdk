@@ -892,9 +892,7 @@ public class GFClientWrapperTest {
             assertEquals("should collect power's start time as an instant measurement", sessionEnd, power.getStart());
             assertNull("should not collect power's end time", power.getEnd());
             assertEquals("should collect power's watts", 5f, power.getValue(), 0.00001);
-            assertEquals("should collect power's datasource",
-                "derived:com.google.power.sample",
-                power.getDataSource());
+            assertEquals("should collect power's datasource", "derived:com.google.power.sample", power.getDataSource());
 
             assertTrue("session bundle should have 1 activity segment",
                 sessionBundle.getActivitySegments().size() == 1);
@@ -1052,9 +1050,7 @@ public class GFClientWrapperTest {
             assertEquals("should collect power's start time as an instant measurement", sessionEnd, power.getStart());
             assertNull("should not collect power's end time", power.getEnd());
             assertEquals("should collect power's watts", 5f, power.getValue(), 0.00001);
-            assertEquals("should collect power's datasource",
-                "derived:com.google.power.sample",
-                power.getDataSource());
+            assertEquals("should collect power's datasource", "derived:com.google.power.sample", power.getDataSource());
 
             assertTrue("session bundle should have 1 activity segment",
                 sessionBundle.getActivitySegments().size() == 1);

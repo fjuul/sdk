@@ -126,7 +126,24 @@ public class GFDataConverter {
      * NOTE: we don't use provided {@code streamIdentifier} and {@code streamName} from DataSource API because in
      * practice the name of the stream (the last part of {@code streamIdentifier}) may vary which violates the
      * uniqueness of the common identifier for the same source of data. Own implementation is close to the original one
-     * except ignoring empty parts delimited by ":".
+     * except ignoring empty parts delimited by ":".<br>
+     * For example, original {@code streamIdentifier}s:
+     *
+     * <pre>
+     * derived:com.google.calories.expended:com.google.android.gms:overlay_explicit_input_local,
+     * raw:com.google.calories.expended:com.mc.miband1:Xiaomi:Mi Smart Band 4:51e74c1f:Notify for Mi Band - calories,
+     * raw:com.google.calories.expended:com.mc.miband1:Notify for Mi Band - workout calories,
+     * derived:com.google.calories.expended:com.google.android.gms:from_activities,
+     * derived:com.google.calories.expended:com.google.android.gms:from_activities_local
+     * </pre>
+     *
+     * will be transformed to:
+     *
+     * <pre>
+     * raw:com.google.calories.expended:com.mc.miband1:Xiaomi:Mi Smart Band 4:51e74c1f,
+     * raw:com.google.calories.expended:com.mc.miband1,
+     * derived:com.google.calories.expended:com.google.android.gms
+     * </pre>
      */
     @SuppressLint("NewApi")
     @Nullable

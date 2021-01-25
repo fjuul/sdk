@@ -70,7 +70,7 @@ public class AnalyticsServiceTest {
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK)
             .setHeader("Content-Type", "application/json")
             .setBody("{\n" + "" + "\"date\": \"2020-03-10\",\n" + "\"activeKcal\": 300.23,\n" + "\"bmr\": 502.10,\n"
-                + "\"steps\": 4621,\n" + "\"low\": { \"seconds\": 1800, \"metMinutes\": 20 },\n"
+                + "\"low\": { \"seconds\": 1800, \"metMinutes\": 20 },\n"
                 + "\"moderate\": { \"seconds\": 1200, \"metMinutes\": 10 },\n"
                 + "\"high\": { \"seconds\": 180, \"metMinutes\": 15 }\n" + "}");
         mockWebServer.enqueue(mockResponse);
@@ -83,7 +83,6 @@ public class AnalyticsServiceTest {
         assertEquals("2020-03-10", dailyStats.getDate());
         assertEquals(300.23, dailyStats.getActiveKcal(), 0.0001);
         assertEquals(502.10, dailyStats.getBmr(), 0.0001);
-        assertEquals(4621, dailyStats.getSteps());
         assertEquals(20, dailyStats.getLow().getMetMinutes(), 0.0001);
         assertEquals(1800, dailyStats.getLow().getSeconds(), 0.0001);
         assertEquals(10, dailyStats.getModerate().getMetMinutes(), 0.0001);
@@ -100,10 +99,10 @@ public class AnalyticsServiceTest {
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK)
             .setHeader("Content-Type", "application/json")
             .setBody("[ \n" + "{\n" + "\"date\": \"2020-03-10\",\n" + "\"activeKcal\": 300,\n" + "\"bmr\": 500,\n"
-                + "\"steps\": 4621,\n" + "\"low\": { \"seconds\": 1800, \"metMinutes\": 20 },\n"
+                + "\"low\": { \"seconds\": 1800, \"metMinutes\": 20 },\n"
                 + "\"moderate\": { \"seconds\": 1200, \"metMinutes\": 10 },\n"
                 + "\"high\": { \"seconds\": 180, \"metMinutes\": 15 }\n" + "}, \n" + "{\n"
-                + "\"date\": \"2020-03-11\",\n" + "\"activeKcal\": 321,\n" + "\"bmr\": 550.55,\n" + "\"steps\": 1845,\n"
+                + "\"date\": \"2020-03-11\",\n" + "\"activeKcal\": 321,\n" + "\"bmr\": 550.55,\n"
                 + "\"low\": { \"seconds\": 100, \"metMinutes\": 2.1 },\n"
                 + "\"moderate\": { \"seconds\": 120, \"metMinutes\": 2.3 },\n"
                 + "\"high\": { \"seconds\": 30, \"metMinutes\": 3.4 }\n" + " " + "} \n" + "]");
@@ -117,7 +116,6 @@ public class AnalyticsServiceTest {
         assertEquals("2020-03-10", firstDailyStats.getDate());
         assertEquals(300, firstDailyStats.getActiveKcal(), 0.0001);
         assertEquals(500, firstDailyStats.getBmr(), 0.0001);
-        assertEquals(4621, firstDailyStats.getSteps());
         assertEquals(20, firstDailyStats.getLow().getMetMinutes(), 0.0001);
         assertEquals(1800, firstDailyStats.getLow().getSeconds(), 0.0001);
         assertEquals(10, firstDailyStats.getModerate().getMetMinutes(), 0.0001);
@@ -129,7 +127,6 @@ public class AnalyticsServiceTest {
         assertEquals("2020-03-11", secondDailyStats.getDate());
         assertEquals(321, secondDailyStats.getActiveKcal(), 0.0001);
         assertEquals(550.55, secondDailyStats.getBmr(), 0.0001);
-        assertEquals(1845, secondDailyStats.getSteps());
         assertEquals(2.1, secondDailyStats.getLow().getMetMinutes(), 0.0001);
         assertEquals(100, secondDailyStats.getLow().getSeconds(), 0.0001);
         assertEquals(2.3, secondDailyStats.getModerate().getMetMinutes(), 0.0001);

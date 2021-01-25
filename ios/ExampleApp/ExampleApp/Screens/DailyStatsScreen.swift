@@ -54,6 +54,11 @@ struct DailyStatsScreen: View {
                                     .frame(width: 30, height: 10, alignment: .leading)
                                 Text("activeKcal \(each.activeKcal, specifier: "%.1f")")
                             }
+                            HStack {
+                                Image(systemName: "bolt.heart")
+                                    .frame(width: 30, height: 10, alignment: .leading)
+                                Text("bmr \(each.bmr, specifier: "%.1f")")
+                            }
                         }.padding(.top, 5)
                     }
                 }

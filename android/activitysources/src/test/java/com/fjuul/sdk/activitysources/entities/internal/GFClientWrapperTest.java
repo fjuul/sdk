@@ -139,7 +139,7 @@ public class GFClientWrapperTest {
             List<GFCalorieDataPoint> calories = result.getResult();
             GFCalorieDataPoint calorie = calories.get(0);
             assertEquals("should convert raw data point to calorie",
-                "derived:com.google.calories.expended:",
+                "derived:com.google.calories.expended",
                 calorie.getDataSource());
             assertEquals("should take the start of bucket as start time of the calorie",
                 bucketStart,
@@ -337,7 +337,7 @@ public class GFClientWrapperTest {
             List<GFStepsDataPoint> steps = result.getResult();
             GFStepsDataPoint stepsDataPoint = steps.get(0);
             assertEquals("should convert raw data point to steps",
-                "derived:com.google.step_count.delta:",
+                "derived:com.google.step_count.delta",
                 stepsDataPoint.getDataSource());
             assertEquals("should take the start of bucket as start time of the steps",
                 bucketStart,
@@ -521,7 +521,7 @@ public class GFClientWrapperTest {
             List<GFHRSummaryDataPoint> hrPoints = result.getResult();
             GFHRSummaryDataPoint hrSummary = hrPoints.get(0);
             assertEquals("should convert raw data point to hr summary",
-                "derived:com.google.heart_rate.summary:",
+                "derived:com.google.heart_rate.summary",
                 hrSummary.getDataSource());
             assertEquals("should take the start of bucket as start time of the data point",
                 bucketStart,
@@ -861,7 +861,7 @@ public class GFClientWrapperTest {
             assertEquals("should collect calorie's end time", sessionEnd, calorie.getEnd());
             assertEquals("should collect calorie's kcals", 13.2f, calorie.getValue(), 0.00001);
             assertEquals("should collect calorie's datasource",
-                "derived:com.google.calories.expended:",
+                "derived:com.google.calories.expended",
                 calorie.getDataSource());
 
             assertEquals("session bundle should have 1 steps", 1, sessionBundle.getSteps().size());
@@ -870,7 +870,7 @@ public class GFClientWrapperTest {
             assertEquals("should collect steps' end time", sessionEnd, steps.getEnd());
             assertEquals("should collect steps count", (Integer) 1250, steps.getValue());
             assertEquals("should collect steps' datasource",
-                "derived:com.google.step_count.delta:",
+                "derived:com.google.step_count.delta",
                 steps.getDataSource());
 
             assertTrue("session bundle should have 1 hr", sessionBundle.getHeartRate().size() == 1);
@@ -878,14 +878,14 @@ public class GFClientWrapperTest {
             assertEquals("should collect hr's start time as an instant measurement", sessionEnd, hr.getStart());
             assertNull("should not collect hr's end time", hr.getEnd());
             assertEquals("should collect hr's bpm", 77f, hr.getValue(), 0.00001);
-            assertEquals("should collect hr's datasource", "derived:com.google.heart_rate.bpm:", hr.getDataSource());
+            assertEquals("should collect hr's datasource", "derived:com.google.heart_rate.bpm", hr.getDataSource());
 
             assertTrue("session bundle should have 1 speed", sessionBundle.getSpeed().size() == 1);
             GFSpeedDataPoint speed = sessionBundle.getSpeed().get(0);
             assertEquals("should collect speed's start time as an instant measurement", sessionEnd, speed.getStart());
             assertNull("should not collect speed's end time", speed.getEnd());
             assertEquals("should collect speed's value", 0.87f, speed.getValue(), 0.00001);
-            assertEquals("should collect speed's datasource", "derived:com.google.speed:", speed.getDataSource());
+            assertEquals("should collect speed's datasource", "derived:com.google.speed", speed.getDataSource());
 
             assertTrue("session bundle should have 1 power sample", sessionBundle.getPower().size() == 1);
             GFPowerDataPoint power = sessionBundle.getPower().get(0);
@@ -893,7 +893,7 @@ public class GFClientWrapperTest {
             assertNull("should not collect power's end time", power.getEnd());
             assertEquals("should collect power's watts", 5f, power.getValue(), 0.00001);
             assertEquals("should collect power's datasource",
-                "derived:com.google.power.sample:",
+                "derived:com.google.power.sample",
                 power.getDataSource());
 
             assertTrue("session bundle should have 1 activity segment",
@@ -903,7 +903,7 @@ public class GFClientWrapperTest {
             assertEquals("should collect segment's end time", sessionEnd, activitySegment.getEnd());
             assertEquals("should collect segment's type", (Integer) 7, activitySegment.getValue());
             assertEquals("should collect segment's datasource",
-                "derived:com.google.activity.segment:",
+                "derived:com.google.activity.segment",
                 activitySegment.getDataSource());
 
             InOrder inOrder = inOrder(mockedSessionsClient);
@@ -1021,7 +1021,7 @@ public class GFClientWrapperTest {
             assertEquals("should collect calorie's end time", sessionEnd, calorie.getEnd());
             assertEquals("should collect calorie's kcals", 13.2f, calorie.getValue(), 0.00001);
             assertEquals("should collect calorie's datasource",
-                "derived:com.google.calories.expended:",
+                "derived:com.google.calories.expended",
                 calorie.getDataSource());
 
             assertTrue("session bundle should have 1 steps", sessionBundle.getSteps().size() == 1);
@@ -1030,7 +1030,7 @@ public class GFClientWrapperTest {
             assertEquals("should collect steps' end time", sessionEnd, steps.getEnd());
             assertEquals("should collect steps count", (Integer) 1250, steps.getValue());
             assertEquals("should collect steps' datasource",
-                "derived:com.google.step_count.delta:",
+                "derived:com.google.step_count.delta",
                 steps.getDataSource());
 
             assertTrue("session bundle should have 1 hr", sessionBundle.getHeartRate().size() == 1);
@@ -1038,14 +1038,14 @@ public class GFClientWrapperTest {
             assertEquals("should collect hr's start time as an instant measurement", sessionEnd, hr.getStart());
             assertNull("should not collect hr's end time", hr.getEnd());
             assertEquals("should collect hr's bpm", 77f, hr.getValue(), 0.00001);
-            assertEquals("should collect hr's datasource", "derived:com.google.heart_rate.bpm:", hr.getDataSource());
+            assertEquals("should collect hr's datasource", "derived:com.google.heart_rate.bpm", hr.getDataSource());
 
             assertTrue("session bundle should have 1 speed", sessionBundle.getSpeed().size() == 1);
             GFSpeedDataPoint speed = sessionBundle.getSpeed().get(0);
             assertEquals("should collect speed's start time as an instant measurement", sessionEnd, speed.getStart());
             assertNull("should not collect speed's end time", speed.getEnd());
             assertEquals("should collect speed's value", 0.87f, speed.getValue(), 0.00001);
-            assertEquals("should collect speed's datasource", "derived:com.google.speed:", speed.getDataSource());
+            assertEquals("should collect speed's datasource", "derived:com.google.speed", speed.getDataSource());
 
             assertTrue("session bundle should have 1 power sample", sessionBundle.getPower().size() == 1);
             GFPowerDataPoint power = sessionBundle.getPower().get(0);
@@ -1053,7 +1053,7 @@ public class GFClientWrapperTest {
             assertNull("should not collect power's end time", power.getEnd());
             assertEquals("should collect power's watts", 5f, power.getValue(), 0.00001);
             assertEquals("should collect power's datasource",
-                "derived:com.google.power.sample:",
+                "derived:com.google.power.sample",
                 power.getDataSource());
 
             assertTrue("session bundle should have 1 activity segment",
@@ -1063,7 +1063,7 @@ public class GFClientWrapperTest {
             assertEquals("should collect segment's end time", sessionEnd, activitySegment.getEnd());
             assertEquals("should collect segment's type", (Integer) 7, activitySegment.getValue());
             assertEquals("should collect segment's datasource",
-                "derived:com.google.activity.segment:",
+                "derived:com.google.activity.segment",
                 activitySegment.getDataSource());
 
             InOrder sessionClientInOrder = inOrder(mockedSessionsClient);

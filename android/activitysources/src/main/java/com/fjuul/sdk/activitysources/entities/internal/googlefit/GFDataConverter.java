@@ -122,6 +122,12 @@ public class GFDataConverter {
         return new GFSpeedDataPoint(metersPerSecond, start, dataSourceId);
     }
 
+    /**
+     * NOTE: we don't use provided {@code streamIdentifier} and {@code streamName} from DataSource API because in
+     * practice the name of the stream (the last part of {@code streamIdentifier}) may vary which violates the
+     * uniqueness of the common identifier for the same source of data. Own implementation is close to the original one
+     * except ignoring empty parts delimited by ":".
+     */
     @SuppressLint("NewApi")
     @Nullable
     private static String tryToExtractDataSourceIdentifier(@NonNull DataPoint point) {

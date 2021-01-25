@@ -125,7 +125,7 @@ public class GFDataConverter {
     @SuppressLint("NewApi")
     @Nullable
     private static String tryToExtractDataSourceStreamId(@NonNull DataPoint point) {
-        final DataSource dataSource = point.getDataSource();
+        final DataSource dataSource = point.getOriginalDataSource();
         if (dataSource == null) {
             return null;
         }

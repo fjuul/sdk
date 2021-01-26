@@ -2,7 +2,6 @@ package com.fjuul.sdk.activitysources.entities;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -345,13 +344,11 @@ public final class ActivitySourcesManager {
     private static List<ActivitySourceConnection> convertTrackerConnectionsToActivitySourcesConnections(
         @NonNull ActivitySourceResolver activitySourceResolver,
         @NonNull List<TrackerConnection> trackerConnections) {
-        Stream<ActivitySourceConnection> sourceConnectionsStream = trackerConnections.stream().map(connection -> {
-            ActivitySource activitySource = activitySourceResolver.getInstanceByTrackerValue(connection.getTracker());
-            if (activitySource == null) {
-                return null;
-            }
+        final Stream<ActivitySourceConnection> sourceConnectionsStream = trackerConnections.stream().map(connection -> {
+            final ActivitySource activitySource =
+                activitySourceResolver.getInstanceByTrackerValue(connection.getTracker());
             return new ActivitySourceConnection(connection, activitySource);
-        }).filter(Objects::nonNull);
+        });
         return sourceConnectionsStream.collect(Collectors.toList());
     }
 

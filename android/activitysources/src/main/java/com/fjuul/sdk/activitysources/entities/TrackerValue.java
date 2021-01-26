@@ -59,6 +59,7 @@ public class TrackerValue {
         return constants.stream().filter(t -> t.value.equals(value)).findFirst().orElse(null);
     }
 
+    @NonNull
     public static List<TrackerValue> values() {
         return Collections.unmodifiableList(constants);
     }

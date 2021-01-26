@@ -130,10 +130,10 @@ public class ApiClient {
     }
 
     public @NonNull OkHttpClient buildSigningClient(@NonNull ISigningService signingService) {
-        OkHttpClient client = createCommonClientBuilder()
-            .addInterceptor(getOrCreateSigningAuthInterceptor(signingService))
-            .authenticator(getOrCreateSigningAuthInterceptor(signingService))
-            .build();
+        OkHttpClient client =
+            createCommonClientBuilder().addInterceptor(getOrCreateSigningAuthInterceptor(signingService))
+                .authenticator(getOrCreateSigningAuthInterceptor(signingService))
+                .build();
         return client;
     }
 
@@ -148,9 +148,8 @@ public class ApiClient {
         if (userCredentials == null) {
             throw new IllegalStateException("The builder needed user credentials to build an authenticated client");
         }
-        OkHttpClient client = createCommonClientBuilder()
-            .addInterceptor(new BearerAuthInterceptor(userCredentials))
-            .build();
+        OkHttpClient client =
+            createCommonClientBuilder().addInterceptor(new BearerAuthInterceptor(userCredentials)).build();
         return client;
     }
 
@@ -168,8 +167,7 @@ public class ApiClient {
     }
 
     private OkHttpClient.Builder createCommonClientBuilder() {
-        return new OkHttpClient.Builder()
-            .addInterceptor(new SDKUserAgentInterceptor(BuildConfig.VERSION_NAME))
+        return new OkHttpClient.Builder().addInterceptor(new SDKUserAgentInterceptor(BuildConfig.VERSION_NAME))
             .addInterceptor(new ApiKeyAttachingInterceptor(apiKey));
     }
 }

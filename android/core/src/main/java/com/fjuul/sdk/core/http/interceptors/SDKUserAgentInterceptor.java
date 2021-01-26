@@ -1,12 +1,10 @@
 package com.fjuul.sdk.core.http.interceptors;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
-
 import java.io.IOException;
 import java.util.Locale;
 
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;

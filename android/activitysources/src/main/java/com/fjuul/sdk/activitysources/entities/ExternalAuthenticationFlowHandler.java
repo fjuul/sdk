@@ -43,7 +43,7 @@ public final class ExternalAuthenticationFlowHandler {
 
         /**
          * Returns a string representation of the external activity source being connected that can be matched with
-         * {@link ActivitySource.TrackerValue#getValue()}.
+         * {@link TrackerValue#getValue()}.
          *
          * @return external service
          */

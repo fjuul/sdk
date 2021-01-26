@@ -16,7 +16,7 @@ import static java.util.stream.Collectors.toList;
 
 /**
  * TrackerValue carries the raw string presentation of the tracker and contains predefined static constants for known
- * activity sources.
+ * activity sources in terms of the current SDK version and platform.
  */
 @SuppressLint("NewApi")
 public class TrackerValue {

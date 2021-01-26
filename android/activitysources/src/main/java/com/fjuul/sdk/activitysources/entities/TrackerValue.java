@@ -75,6 +75,11 @@ public class TrackerValue {
     }
 
     @Override
+    public String toString() {
+        return "TrackerValue{value='" + value + "\'}";
+    }
+
+    @Override
     public int hashCode() {
         return value.hashCode();
     }

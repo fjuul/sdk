@@ -10,7 +10,6 @@ import com.fjuul.sdk.activitysources.entities.TrackerValue;
 import com.fjuul.sdk.activitysources.entities.UnknownActivitySource;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 public class ActivitySourceResolver {
     @NonNull

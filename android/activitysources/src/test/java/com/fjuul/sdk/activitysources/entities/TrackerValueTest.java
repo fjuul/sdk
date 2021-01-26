@@ -1,6 +1,7 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import android.os.Build;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -8,8 +9,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.*;
+import android.os.Build;
 
 @RunWith(Enclosed.class)
 public class TrackerValueTest {
@@ -22,12 +22,12 @@ public class TrackerValueTest {
         public static class ValuesTests extends GivenRobolectricContext {
             @Test
             public void values_whenEverythingIsOK_returnsListOfSupportedTrackerValueByThisVersion() {
-                assertThat(TrackerValue.values(), containsInAnyOrder(
-                    TrackerValue.FITBIT,
-                    TrackerValue.POLAR,
-                    TrackerValue.GARMIN,
-                    TrackerValue.SUUNTO,
-                    TrackerValue.GOOGLE_FIT));
+                assertThat(TrackerValue.values(),
+                    containsInAnyOrder(TrackerValue.FITBIT,
+                        TrackerValue.POLAR,
+                        TrackerValue.GARMIN,
+                        TrackerValue.SUUNTO,
+                        TrackerValue.GOOGLE_FIT));
             }
         }
 

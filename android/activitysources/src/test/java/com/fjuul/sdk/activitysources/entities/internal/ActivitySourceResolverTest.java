@@ -19,7 +19,6 @@ import com.fjuul.sdk.activitysources.entities.GarminActivitySource;
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
 import com.fjuul.sdk.activitysources.entities.PolarActivitySource;
 import com.fjuul.sdk.activitysources.entities.SuuntoActivitySource;
-import com.fjuul.sdk.activitysources.entities.TrackerValue;
 import com.fjuul.sdk.activitysources.entities.UnknownActivitySource;
 
 import android.os.Build;

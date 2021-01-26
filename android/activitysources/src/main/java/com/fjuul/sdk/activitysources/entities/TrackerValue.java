@@ -1,9 +1,7 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
 
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -11,8 +9,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * TrackerValue carries the raw string presentation of the tracker and contains predefined static constants for known
@@ -33,7 +32,7 @@ public class TrackerValue {
             .filter(field -> Modifier.isStatic(field.getModifiers()) && field.getType().equals(TrackerValue.class))
             .map(field -> {
                 try {
-                    return (TrackerValue)field.get(null);
+                    return (TrackerValue) field.get(null);
                 } catch (IllegalAccessException e) {
                     return null;
                 }

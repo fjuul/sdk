@@ -41,6 +41,7 @@ public class ActivitySourceConnection extends TrackerConnection {
     /**
      * NOTE: Keep in mind that for the unsupported tracker connection by the SDK, the method returns an instance of
      * {@link UnknownActivitySource}.
+     *
      * @return instance of the ActivitySource
      */
     @NonNull

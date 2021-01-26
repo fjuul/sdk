@@ -48,8 +48,7 @@ public class UserServiceTest {
 
     @RunWith(RobolectricTestRunner.class)
     @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
-    public abstract static class GivenRobolectricContext {
-    }
+    public abstract static class GivenRobolectricContext {}
 
     public static class CreateUserTest extends GivenRobolectricContext {
         UserService userService;
@@ -128,9 +127,12 @@ public class UserServiceTest {
             ApiCallResult<UserCreationResult> result = userService.createUser(userBuilder).execute();
             RecordedRequest request = mockWebServer.takeRequest();
 
-            assertEquals("transforms user params to json", String.format(
-                "{\"birthDate\":\"1980-06-01\",\"gender\":\"female\",\"height\":180.0,\"locale\":\"%s\",\"timezone\":\"%s\",\"weight\":68.0}",
-                defaultLocale.getLanguage(), defaultTZ.getID()), request.getBody().readUtf8());
+            assertEquals("transforms user params to json",
+                String.format(
+                    "{\"birthDate\":\"1980-06-01\",\"gender\":\"female\",\"height\":180.0,\"locale\":\"%s\",\"timezone\":\"%s\",\"weight\":68.0}",
+                    defaultLocale.getLanguage(),
+                    defaultTZ.getID()),
+                request.getBody().readUtf8());
 
             assertFalse("success result", result.isError());
             assertEquals("should have user secret", "user_secret", result.getValue().getSecret());
@@ -207,7 +209,8 @@ public class UserServiceTest {
             } catch (Exception exc) {
                 assertThat(exc, instanceOf(IllegalStateException.class));
                 assertEquals("should have error message",
-                    "The builder needed user credentials to build a signing client", exc.getMessage());
+                    "The builder needed user credentials to build a signing client",
+                    exc.getMessage());
             }
         }
 
@@ -270,7 +273,8 @@ public class UserServiceTest {
             } catch (Exception exc) {
                 assertThat(exc, instanceOf(IllegalStateException.class));
                 assertEquals("should have error message",
-                    "The builder needed user credentials to build a signing client", exc.getMessage());
+                    "The builder needed user credentials to build a signing client",
+                    exc.getMessage());
             }
         }
 
@@ -291,7 +295,8 @@ public class UserServiceTest {
             ApiCallResult<UserProfile> result = userService.updateProfile(profileBuilder).execute();
 
             RecordedRequest request = mockWebServer.takeRequest();
-            assertEquals("transforms only given user params to json", "{\"height\":120.0}",
+            assertEquals("transforms only given user params to json",
+                "{\"height\":120.0}",
                 request.getBody().readUtf8());
 
             assertFalse("success result", result.isError());

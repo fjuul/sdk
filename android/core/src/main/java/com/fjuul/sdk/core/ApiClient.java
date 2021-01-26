@@ -1,5 +1,6 @@
 package com.fjuul.sdk.core;
 
+import com.fjuul.sdk.core.entities.IStorage;
 import com.fjuul.sdk.core.entities.Keystore;
 import com.fjuul.sdk.core.entities.PersistentStorage;
 import com.fjuul.sdk.core.entities.UserCredentials;
@@ -17,10 +18,8 @@ import okhttp3.OkHttpClient;
 
 /**
  * Main entry point to communicate with Fjuul API from a user identity.
- *
  * <p>
  * Use ApiClient.Builder to create instance of this class.
- *
  * <p>
  * NOTE: reuse the created instance as much as possible to share the same signing mechanism between services and prevent
  * refreshing collision.
@@ -28,27 +27,36 @@ import okhttp3.OkHttpClient;
  * @see ApiClient.Builder
  */
 public class ApiClient {
-    private String baseUrl;
-    private String apiKey;
-    private Keystore userKeystore;
-    private UserCredentials userCredentials;
-    private SigningAuthInterceptor signingAuthInterceptor;
+    private @NonNull String baseUrl;
+    private @NonNull String apiKey;
+    private @NonNull Context appContext;
+    private @NonNull IStorage storage;
+    private @NonNull Keystore userKeystore;
+    private @Nullable UserCredentials userCredentials;
+    private @Nullable SigningAuthInterceptor signingAuthInterceptor;
 
-    private ApiClient(String baseUrl, String apiKey, Keystore keychain, UserCredentials credentials) {
+    private ApiClient(String baseUrl,
+        String apiKey,
+        Context appContext,
+        IStorage storage,
+        Keystore userKeystore,
+        UserCredentials credentials) {
         this.baseUrl = baseUrl;
         this.apiKey = apiKey;
-        this.userKeystore = keychain;
+        this.appContext = appContext;
+        this.storage = storage;
+        this.userKeystore = userKeystore;
         this.userCredentials = credentials;
     }
 
     /**
-     * Besides constructor parameters, user credentials and singing keychain must be initialized through according
-     * setters.
+     * Besides constructor parameters, user credentials and others may be initialized through the appropriate setters.
      */
     public static class Builder {
-        private String baseUrl;
-        private String apiKey;
+        private @NonNull String baseUrl;
+        private @NonNull String apiKey;
         protected @NonNull Context appContext;
+        protected @Nullable IStorage storage;
         protected @Nullable Keystore keystore;
         protected @Nullable UserCredentials userCredentials;
 
@@ -58,7 +66,7 @@ public class ApiClient {
          */
         // TODO: add the overloaded constructor with an environment parameter
         public Builder(@NonNull Context appContext, @NonNull String baseUrl, @NonNull String apiKey) {
-            this.appContext = appContext;
+            this.appContext = appContext.getApplicationContext();
             this.baseUrl = baseUrl;
             this.apiKey = apiKey;
         }
@@ -74,15 +82,19 @@ public class ApiClient {
             return this;
         }
 
-        protected void setupDefaultKeystore() {
-            if (appContext != null && userCredentials != null) {
+        protected void setupDefaultStorage() {
+            if (appContext == null) {
+                throw new IllegalArgumentException("Application context must not be null");
+            }
+            storage = new PersistentStorage(appContext);
+            if (userCredentials != null) {
                 this.keystore = new Keystore(new PersistentStorage(appContext), userCredentials.getToken());
             }
         }
 
         public @NonNull ApiClient build() {
-            setupDefaultKeystore();
-            return new ApiClient(baseUrl, apiKey, keystore, userCredentials);
+            setupDefaultStorage();
+            return new ApiClient(baseUrl, apiKey, appContext, storage, keystore, userCredentials);
         }
     }
 
@@ -90,11 +102,30 @@ public class ApiClient {
         return baseUrl;
     }
 
+    public @NonNull String getApiKey() {
+        return apiKey;
+    }
+
     public @NonNull String getUserToken() {
         if (userCredentials == null) {
             throw new IllegalStateException("The builder needed user credentials");
         }
         return userCredentials.getToken();
+    }
+
+    public @NonNull String getUserSecret() {
+        if (userCredentials == null) {
+            throw new IllegalStateException("The builder needed user credentials");
+        }
+        return userCredentials.getSecret();
+    }
+
+    public @NonNull IStorage getStorage() {
+        return storage;
+    }
+
+    public @NonNull Context getAppContext() {
+        return appContext;
     }
 
     public @NonNull OkHttpClient buildSigningClient(@NonNull ISigningService signingService) {

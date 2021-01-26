@@ -116,7 +116,7 @@
         </LinearLayout>
 
         <include
-            android:id="@+id/section_text"
+            android:id="@+id/results_section_text"
             layout="@layout/section_list_item"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -131,7 +131,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/section_text" />
+            app:layout_constraintTop_toBottomOf="@id/results_section_text" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

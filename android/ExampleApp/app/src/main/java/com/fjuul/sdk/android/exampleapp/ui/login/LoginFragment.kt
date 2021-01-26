@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
 import com.fjuul.sdk.android.exampleapp.R
 import com.fjuul.sdk.android.exampleapp.data.AppStorage
 import com.fjuul.sdk.android.exampleapp.data.AuthorizedUserDataViewModel
@@ -23,6 +24,8 @@ import com.fjuul.sdk.android.exampleapp.data.SDKConfigViewModel
 import com.fjuul.sdk.android.exampleapp.data.SDKConfigViewModelFactory
 import com.fjuul.sdk.android.exampleapp.data.SdkEnvironment
 import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
+import com.fjuul.sdk.core.ApiClient
+import com.fjuul.sdk.core.entities.UserCredentials
 
 class LoginFragment : Fragment() {
     private val sdkConfigViewModel: SDKConfigViewModel by activityViewModels {
@@ -105,14 +108,15 @@ class LoginFragment : Fragment() {
 
             continueButton.setOnClickListener {
                 val (env, apiKey, token, secret) = sdkConfigViewModel.sdkUserConfigState().value!!
-                ApiClientHolder.setup(
-                    context = requireContext(),
-                    env = env!!,
-                    apiKey = apiKey!!,
-                    token = token!!,
-                    secret = secret!!
+                val apiClient = ApiClient.Builder(
+                    context,
+                    ApiClientHolder.getBaseUrlByEnv(env!!), apiKey!!
                 )
-                authorizedUserDataViewModel.fetchUserProfile(ApiClientHolder.sdkClient) { success, exception ->
+                    .setUserCredentials(UserCredentials(token!!, secret!!))
+                    .build()
+                authorizedUserDataViewModel.fetchUserProfile(apiClient) { success, exception ->
+                    ApiClientHolder.setup(apiClient)
+                    ActivitySourcesManager.initialize(apiClient)
                     if (success) {
                         val action = LoginFragmentDirections.actionLoginFragmentToModulesFragment()
                         findNavController().navigate(action)

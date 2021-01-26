@@ -43,8 +43,8 @@ class DailyStatsViewModel() : ViewModel() {
 }
 
 /**
- * ViewModel provider factory to instantiate OnboardingViewModel.
- * Required given OnboardingViewModel has a non-empty constructor
+ * ViewModel provider factory to instantiate DailyStatsViewModelFactory.
+ * Required given DailyStatsViewModelFactory has a non-empty constructor
  */
 class DailyStatsViewModelFactory : ViewModelProvider.Factory {
 

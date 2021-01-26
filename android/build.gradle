@@ -33,6 +33,7 @@ spotless {
         // optional: you can specify a specific version and/or config file
         eclipse('4.13.0').configFile('eclipse-java-google-style.xml')
         removeUnusedImports()
+        trimTrailingWhitespace()
         importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''	// A sequence of package names
     }
     groovyGradle {

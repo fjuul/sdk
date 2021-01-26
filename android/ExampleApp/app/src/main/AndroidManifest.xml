@@ -3,6 +3,7 @@
     package="com.fjuul.sdk.android.exampleapp">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
 
     <application
         android:name="androidx.multidex.MultiDexApplication"
@@ -12,13 +13,29 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <intent-filter>
+                <data android:scheme="fjuulsdk-exampleapp" />
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+            </intent-filter>
         </activity>
+        <!-- You must provide the valid web_client_id if you want to enable 'request_offline_access'  -->
+        <meta-data
+            android:name="com.fjuul.sdk.googlefit.server_client_id"
+            android:value="/PASTE_YOUR_CODE\" />
+        <meta-data
+            android:name="com.fjuul.sdk.googlefit.request_offline_access"
+            android:value="false" />
+
     </application>
 
 </manifest>

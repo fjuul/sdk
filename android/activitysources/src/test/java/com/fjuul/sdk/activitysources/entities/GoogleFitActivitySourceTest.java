@@ -407,7 +407,7 @@ public class GoogleFitActivitySourceTest {
                         final ApiCallCallback<ConnectionResult> callback =
                             invocation.getArgument(0, ApiCallCallback.class);
                         final TrackerConnection gfTrackerConnection = new TrackerConnection("gf_c_id",
-                            ActivitySource.TrackerValue.GOOGLE_FIT.getValue(),
+                            TrackerValue.GOOGLE_FIT.getValue(),
                             Date.from(Instant.parse("2020-09-10T10:05:00Z")),
                             null);
                         ConnectionResult connectedResult = new ConnectionResult.Connected(gfTrackerConnection);
@@ -467,7 +467,7 @@ public class GoogleFitActivitySourceTest {
                         final ApiCallCallback<ConnectionResult> callback =
                             invocation.getArgument(0, ApiCallCallback.class);
                         final TrackerConnection gfTrackerConnection = new TrackerConnection("gf_c_id",
-                            ActivitySource.TrackerValue.GOOGLE_FIT.getValue(),
+                            TrackerValue.GOOGLE_FIT.getValue(),
                             Date.from(Instant.parse("2020-09-10T10:05:00Z")),
                             null);
                         ConnectionResult connectedResult = new ConnectionResult.Connected(gfTrackerConnection);

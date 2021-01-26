@@ -13,12 +13,12 @@ import androidx.annotation.NonNull;
  * </pre>
  *
  * </li>
- * <li>compare a value of #getTracker with the desired enum value of ActivitySource.TrackerValue.
+ * <li>compare a value of {@link #getTracker} with the desired static constant of {@link TrackerValue}.
  *
  * <pre>
  * {@code
  * ActivitySourceConnection sourceConnection;
- * ActivitySource.TrackerValue.GOOGLE_FIT.getValue().equals(sourceConnection.getTracker())
+ * TrackerValue.GOOGLE_FIT.getValue().equals(sourceConnection.getTracker())
  * }
  * </pre>
  *
@@ -39,6 +39,9 @@ public class ActivitySourceConnection extends TrackerConnection {
     }
 
     /**
+     * NOTE: Keep in mind that for the unsupported tracker connection by the SDK, the method returns an instance of
+     * {@link UnknownActivitySource}.
+     *
      * @return instance of the ActivitySource
      */
     @NonNull

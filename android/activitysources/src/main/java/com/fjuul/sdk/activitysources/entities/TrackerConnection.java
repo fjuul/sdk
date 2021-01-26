@@ -43,7 +43,7 @@ public class TrackerConnection {
 
     /**
      * Returns the underlying string presentation of the connected activity source. This value can be matched with
-     * {@link ActivitySource.TrackerValue#getValue()}.
+     * static constants of {@link TrackerValue} by {@link TrackerValue#getValue()}.
      *
      * @return tracker value
      */

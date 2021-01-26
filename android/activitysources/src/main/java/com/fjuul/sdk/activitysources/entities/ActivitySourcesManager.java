@@ -368,7 +368,7 @@ public final class ActivitySourcesManager {
     private static boolean checkIfHasGoogleFitConnection(@Nullable List<TrackerConnection> trackerConnections) {
         return Optional.ofNullable(trackerConnections).flatMap(connections -> {
             return connections.stream()
-                .filter(c -> c.getTracker().equals(ActivitySource.TrackerValue.GOOGLE_FIT.getValue()))
+                .filter(c -> c.getTracker().equals(TrackerValue.GOOGLE_FIT.getValue()))
                 .findFirst();
         }).isPresent();
     }

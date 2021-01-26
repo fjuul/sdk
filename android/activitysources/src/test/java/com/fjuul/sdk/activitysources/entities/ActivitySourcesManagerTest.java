@@ -179,7 +179,7 @@ public class ActivitySourcesManagerTest {
             public void disconnect_whenGoogleFit_disconnectsAndRefreshesCurrentConnections() {
                 final GoogleFitActivitySource googleFit = mock(GoogleFitActivitySource.class);
                 final TrackerConnection gfTrackerConnection = new TrackerConnection("gf_c_id",
-                    ActivitySource.TrackerValue.GOOGLE_FIT.getValue(),
+                    TrackerValue.GOOGLE_FIT.getValue(),
                     Date.from(Instant.parse("2020-09-10T10:05:00Z")),
                     null);
                 final ActivitySourceConnection gfConnection =
@@ -241,7 +241,7 @@ public class ActivitySourcesManagerTest {
             public void disconnect_whenExternalActivitySource_disconnectsAndRefreshesCurrentConnections() {
                 final FitbitActivitySource fitbit = FitbitActivitySource.getInstance();
                 final TrackerConnection fitbitTrackerConnection = new TrackerConnection("fitbit_c_id",
-                    ActivitySource.TrackerValue.FITBIT.getValue(),
+                    TrackerValue.FITBIT.getValue(),
                     Date.from(Instant.parse("2020-09-10T10:05:00Z")),
                     null);
                 final ActivitySourceConnection fitbitConnection =
@@ -327,7 +327,7 @@ public class ActivitySourcesManagerTest {
             @Test
             public void getCurrent_withExistedTrackerConnections_returnsActivitySourceConnections() {
                 final TrackerConnection fitbitTrackerConnection = new TrackerConnection("fitbit_c_id",
-                    ActivitySource.TrackerValue.FITBIT.getValue(),
+                    TrackerValue.FITBIT.getValue(),
                     Date.from(Instant.parse("2020-09-10T10:05:00Z")),
                     null);
                 final List<TrackerConnection> trackerConnections =
@@ -377,7 +377,7 @@ public class ActivitySourcesManagerTest {
                     null);
 
                 final TrackerConnection gfTrackerConnection = new TrackerConnection("gf_c_id",
-                    ActivitySource.TrackerValue.GOOGLE_FIT.getValue(),
+                    TrackerValue.GOOGLE_FIT.getValue(),
                     Date.from(Instant.parse("2020-09-10T10:05:00Z")),
                     null);
 
@@ -426,7 +426,7 @@ public class ActivitySourcesManagerTest {
                     null);
 
                 final TrackerConnection polarTrackerConnection = new TrackerConnection("polar_c_id",
-                    ActivitySource.TrackerValue.POLAR.getValue(),
+                    TrackerValue.POLAR.getValue(),
                     Date.from(Instant.parse("2020-09-10T10:05:00Z")),
                     null);
 

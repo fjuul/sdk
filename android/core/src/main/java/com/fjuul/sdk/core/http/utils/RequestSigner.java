@@ -12,6 +12,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Locale;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -42,8 +43,8 @@ public class RequestSigner {
         Request.Builder signedRequestBuilder = request.newBuilder();
         String checkingRequestHeaders =
             this.isRequestWithDigestChecking(request) ? "(request-target) date digest" : "(request-target) date";
-        StringBuilder encodedRequestTargetBuilder =
-            new StringBuilder(String.format("%s %s", request.method().toLowerCase(), request.url().encodedPath()));
+        StringBuilder encodedRequestTargetBuilder = new StringBuilder(
+            String.format("%s %s", request.method().toLowerCase(Locale.ROOT), request.url().encodedPath()));
         String encodedQuery = request.url().encodedQuery();
         if (encodedQuery != null) {
             encodedRequestTargetBuilder.append("?").append(encodedQuery);
@@ -61,7 +62,6 @@ public class RequestSigner {
         OffsetDateTime offset = instant.atOffset(ZoneOffset.UTC);
         @SuppressLint({"NewApi", "LocalSuppress"})
         String formattedDate = offset.format(DateTimeFormatter.RFC_1123_DATE_TIME);
-        // TODO: assign date format to headers (check if retrofit do it by default) ?
         signedRequestBuilder.header("Date", formattedDate);
 
         String datePart = String.format("date: %s", formattedDate);
@@ -82,7 +82,9 @@ public class RequestSigner {
         String signingString = signingStringBuilder.toString();
         String signature = buildEncodedEncryptedSignature(signingString, key.getSecret());
         String signatureHeader = String.format("keyId=\"%s\",algorithm=\"hmac-sha256\",headers=\"%s\",signature=\"%s\"",
-            key.getId(), checkingRequestHeaders, signature);
+            key.getId(),
+            checkingRequestHeaders,
+            signature);
         signedRequestBuilder.header("Signature", signatureHeader);
         return signedRequestBuilder.build();
     }

@@ -75,7 +75,8 @@ public class KeystoreTest {
             Date expiresAt = calendar.getTime();
             SigningKey key = new SigningKey("key-id", "REAL_SECRET", expiresAt);
             keystore.setKey(key);
-            assertThat("saves signing key in the storage", storage.get("signing-key." + DUMMY_USER_TOKEN),
+            assertThat("saves signing key in the storage",
+                storage.get("signing-key." + DUMMY_USER_TOKEN),
                 not(isEmptyString()));
             SigningKey savedKey = keyJsonAdapter.fromJson(storage.get("signing-key." + DUMMY_USER_TOKEN));
             assertEquals(key.getId(), savedKey.getId());
@@ -133,7 +134,8 @@ public class KeystoreTest {
             keystore.setKey(key);
 
             assertThat("saves signing key in the shared prefs",
-                preferences.getString("signing-key." + DUMMY_USER_TOKEN, null), not(isEmptyString()));
+                preferences.getString("signing-key." + DUMMY_USER_TOKEN, null),
+                not(isEmptyString()));
             SigningKey savedKey = keyJsonAdapter.fromJson(storage.get("signing-key." + DUMMY_USER_TOKEN));
             assertEquals(key.getId(), savedKey.getId());
             assertEquals(key.getSecret(), savedKey.getSecret());

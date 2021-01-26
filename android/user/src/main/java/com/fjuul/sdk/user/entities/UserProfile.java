@@ -20,8 +20,12 @@ public class UserProfile {
     @NonNull
     private TimeZone timezone;
 
-    private UserProfile(@NonNull LocalDate birthDate, @NonNull Gender gender, float height, float weight,
-        @NonNull TimeZone timezone, @NonNull String locale) {
+    private UserProfile(@NonNull LocalDate birthDate,
+        @NonNull Gender gender,
+        float height,
+        float weight,
+        @NonNull TimeZone timezone,
+        @NonNull String locale) {
         this.token = token;
         this.birthDate = birthDate;
         this.gender = gender;

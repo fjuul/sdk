@@ -27,6 +27,12 @@
         <action
             android:id="@+id/action_modulesFragment_to_userProfileFragment"
             app:destination="@id/userProfileFragment" />
+        <action
+            android:id="@+id/action_modulesFragment_to_activitySourcesFragment"
+            app:destination="@id/activitySourcesFragment" />
+        <action
+            android:id="@+id/action_modulesFragment_to_GFSyncFragment"
+            app:destination="@id/GFSyncFragment" />
     </fragment>
     <fragment
         android:id="@+id/dailyStatsFragment"
@@ -50,4 +56,14 @@
             android:defaultValue="CREATE"
             app:argType="com.fjuul.sdk.android.exampleapp.ui.user_profile.UserProfileNavigationFlow" />
     </fragment>
+    <fragment
+        android:id="@+id/activitySourcesFragment"
+        android:name="com.fjuul.sdk.android.exampleapp.ui.activity_sources.ActivitySourcesFragment"
+        android:label="Activity Sources"
+        tools:layout="@layout/fragment_activity_sources" />
+    <fragment
+        android:id="@+id/GFSyncFragment"
+        android:name="com.fjuul.sdk.android.exampleapp.ui.gf_sync.GFSyncFragment"
+        android:label="Google Fit Sync"
+        tools:layout="@layout/gf_sync_fragment" />
 </navigation>

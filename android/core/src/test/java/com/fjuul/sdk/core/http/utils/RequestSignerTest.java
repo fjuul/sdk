@@ -28,8 +28,7 @@ public class RequestSignerTest {
 
     @RunWith(RobolectricTestRunner.class)
     @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
-    public abstract static class GivenRobolectricContext {
-    }
+    public abstract static class GivenRobolectricContext {}
 
     public static class RequestWithoutDigestTest extends GivenRobolectricContext {
         Clock fixedClock;
@@ -118,7 +117,8 @@ public class RequestSignerTest {
                 "keyId=\"signing-key-id-1234\",algorithm=\"hmac-sha256\",headers=\"(request-target) date digest\",signature=\"78ygswe54lAGd24/ksNjNXuZ9JNrMTI4E9TsqHaLjaU=\"",
                 signedRequest.header("Signature"));
             assertEquals("request has a date header", "Thu, 13 Feb 2020 15:56:23 GMT", signedRequest.header("Date"));
-            assertEquals("request has a digest header", "SHA-256=Q95/OQtk+2T6qHbUBZyTr/JITn+2qDMFeqAKJee0Uz0=",
+            assertEquals("request has a digest header",
+                "SHA-256=Q95/OQtk+2T6qHbUBZyTr/JITn+2qDMFeqAKJee0Uz0=",
                 signedRequest.header("Digest"));
         }
     }

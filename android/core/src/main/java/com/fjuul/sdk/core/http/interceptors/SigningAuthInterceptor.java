@@ -25,7 +25,8 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
     private ISigningService signingService;
     private final Pattern signatureHeaderKeyIdPattern = Pattern.compile("keyId=\"(.+?)\"");
 
-    public SigningAuthInterceptor(@NonNull Keystore keystore, @NonNull RequestSigner requestSigner,
+    public SigningAuthInterceptor(@NonNull Keystore keystore,
+        @NonNull RequestSigner requestSigner,
         @NonNull ISigningService signingService) {
         this.keystore = keystore;
         this.requestSigner = requestSigner;

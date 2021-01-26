@@ -9,8 +9,6 @@ public class DailyStats {
     float bmr;
 
     @NonNull
-    ActivityMeasure lowest;
-    @NonNull
     ActivityMeasure low;
     @NonNull
     ActivityMeasure moderate;
@@ -30,11 +28,6 @@ public class DailyStats {
     @NonNull
     public float getBmr() {
         return bmr;
-    }
-
-    @NonNull
-    public ActivityMeasure getLowest() {
-        return lowest;
     }
 
     @NonNull

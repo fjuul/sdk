@@ -18,8 +18,8 @@ import retrofit2.Response;
  * request and producing the api call result which is either the requested value of the specified type or error.
  */
 public class ApiCall<T> {
-    private Call<T> delegate;
-    private IApiResponseTransformer<T> responseTransformer;
+    private final Call<T> delegate;
+    private final IApiResponseTransformer<T> responseTransformer;
 
     /**
      * @param delegate instance of retrofit's call to be wrapped of.
@@ -30,8 +30,12 @@ public class ApiCall<T> {
         this.responseTransformer = responseTransformer;
     }
 
+
     /**
      * Synchronously send the request and return its result.
+     *
+     * @return api-call result
+     * @see #enqueue(ApiCallCallback)
      */
     public @NonNull ApiCallResult<T> execute() {
         try {
@@ -46,7 +50,10 @@ public class ApiCall<T> {
 
     /**
      * Asynchronously send the request and notify {@code callback} of its response or if an error occurred talking to
-     * the server, creating the request, or processing the response.
+     * the server, creating the request, or processing the response. <br>
+     * The callback will be executed in the main thread.
+     *
+     * @param callback callback for the api call result
      */
     public void enqueue(@NonNull ApiCallCallback<T> callback) {
         delegate.enqueue(new Callback<T>() {

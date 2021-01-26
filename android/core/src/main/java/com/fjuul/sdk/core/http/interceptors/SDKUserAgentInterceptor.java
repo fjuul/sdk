@@ -14,7 +14,7 @@ public class SDKUserAgentInterceptor implements Interceptor {
     private final String agent;
 
     public SDKUserAgentInterceptor(@NonNull String versionName) {
-        agent = String.format(Locale.ROOT, "Fjuul Android SDK %s", versionName);
+        agent = String.format(Locale.ROOT, "Fjuul-Android-SDK/%s", versionName);
     }
 
     @SuppressLint("UnknownNullness")

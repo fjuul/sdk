@@ -31,7 +31,7 @@ public class SDKUserAgentInterceptorTest {
         okHttpClient.newCall(originalRequest).execute();
         final RecordedRequest interceptedRequest = mockWebServer.takeRequest();
         assertEquals("interceptor should set user-agent",
-            "Fjuul Android SDK 1.0.5",
+            "Fjuul-Android-SDK/1.0.5",
             interceptedRequest.getHeader("User-Agent"));
         mockWebServer.shutdown();
     }

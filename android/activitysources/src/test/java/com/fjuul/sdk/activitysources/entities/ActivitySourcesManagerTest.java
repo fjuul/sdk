@@ -1,8 +1,10 @@
 package com.fjuul.sdk.activitysources.entities;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -330,8 +332,12 @@ public class ActivitySourcesManagerTest {
                     TrackerValue.FITBIT.getValue(),
                     Date.from(Instant.parse("2020-09-10T10:05:00Z")),
                     null);
+                final TrackerConnection healthkitTrackerConnection = new TrackerConnection("healthkit_c_id",
+                    "healthkit",
+                    Date.from(Instant.parse("2020-09-10T10:20:00Z")),
+                    null);
                 final List<TrackerConnection> trackerConnections =
-                    Stream.of(fitbitTrackerConnection).collect(Collectors.toList());
+                    Stream.of(fitbitTrackerConnection, healthkitTrackerConnection).collect(Collectors.toList());
                 subject = new ActivitySourcesManager(mockedConfig,
                     mockedBackgroundWorkManager,
                     mockedSourcesService,
@@ -339,14 +345,21 @@ public class ActivitySourcesManagerTest {
                     activitySourceResolver,
                     trackerConnections);
                 final List<ActivitySourceConnection> activitySourceConnections = subject.getCurrent();
-                assertEquals("should have 1 activity source connection", 1, activitySourceConnections.size());
-                ActivitySourceConnection fitbitActivitySourceConnection = activitySourceConnections.get(0);
-                assertEquals("activity source connection should have fitbit activity source",
+                assertEquals("should have 2 activity source connections", 2, activitySourceConnections.size());
+                final ActivitySourceConnection fitbitActivitySourceConnection = activitySourceConnections.get(0);
+                assertEquals("the first activity source connection should have fitbit activity source",
                     FitbitActivitySource.getInstance(),
                     fitbitActivitySourceConnection.getActivitySource());
-                assertEquals("activity source connection should have fitbit tracker",
+                assertEquals("the first activity source connection should have fitbit tracker",
                     fitbitTrackerConnection.getId(),
                     fitbitActivitySourceConnection.getId());
+                final ActivitySourceConnection healthkitActivitySourceConnection = activitySourceConnections.get(1);
+                assertThat("the second connection should have unknown activity source",
+                    healthkitActivitySourceConnection.getActivitySource(),
+                    instanceOf(UnknownActivitySource.class));
+                assertEquals("the second connection should be healthkit tracker",
+                    healthkitTrackerConnection.getId(),
+                    healthkitActivitySourceConnection.getId());
             }
         }
 

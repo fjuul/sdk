@@ -1,11 +1,11 @@
 package com.fjuul.sdk.user.exceptions;
 
-import androidx.annotation.NonNull;
+import java.util.List;
 
 import com.fjuul.sdk.core.exceptions.ApiExceptions;
 import com.fjuul.sdk.user.http.responses.ValidationError;
 
-import java.util.List;
+import androidx.annotation.NonNull;
 
 public final class UserApiExceptions {
     /**
@@ -21,6 +21,7 @@ public final class UserApiExceptions {
 
         /**
          * Returns a list of all validation errors for the submitted user profile data.
+         *
          * @return validation errors
          */
         @NonNull

@@ -1,14 +1,6 @@
 package com.fjuul.sdk.user.http;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
-
-import com.fjuul.sdk.core.http.utils.ApiCallResult;
-import com.fjuul.sdk.core.http.utils.DefaultApiResponseTransformer;
-import com.fjuul.sdk.user.http.responses.ValidationErrorJSONBodyResponse;
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
+import static com.fjuul.sdk.user.exceptions.UserApiExceptions.*;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -17,10 +9,16 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fjuul.sdk.core.http.utils.ApiCallResult;
+import com.fjuul.sdk.core.http.utils.DefaultApiResponseTransformer;
+import com.fjuul.sdk.user.http.responses.ValidationErrorJSONBodyResponse;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
 import okio.Buffer;
 import retrofit2.Response;
-
-import static com.fjuul.sdk.user.exceptions.UserApiExceptions.*;
 
 @SuppressLint("NewApi")
 public class UserApiResponseTransformer<T> extends DefaultApiResponseTransformer<T> {
@@ -46,7 +44,7 @@ public class UserApiResponseTransformer<T> extends DefaultApiResponseTransformer
                 // allow us to consume the stream of response body twice.
                 final Buffer copy = response.errorBody().source().getBuffer().clone();
                 validationErrorJsonBody = validationErrorJsonBodyAdapter.fromJson(copy);
-            } catch (IOException e) { }
+            } catch (IOException e) {}
             if (validationErrorJsonBody != null) {
                 return ApiCallResult.error(new ValidationErrorBadRequestException(validationErrorJsonBody.getMessage(),
                     validationErrorJsonBody.getErrors()));

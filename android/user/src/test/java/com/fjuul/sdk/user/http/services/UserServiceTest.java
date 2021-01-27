@@ -15,7 +15,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,13 +27,11 @@ import com.fjuul.sdk.core.entities.InMemoryStorage;
 import com.fjuul.sdk.core.entities.Keystore;
 import com.fjuul.sdk.core.entities.SigningKey;
 import com.fjuul.sdk.core.entities.UserCredentials;
-import com.fjuul.sdk.core.exceptions.ApiExceptions;
 import com.fjuul.sdk.core.fixtures.http.TestApiClient;
 import com.fjuul.sdk.core.http.utils.ApiCallResult;
 import com.fjuul.sdk.user.entities.Gender;
 import com.fjuul.sdk.user.entities.UserCreationResult;
 import com.fjuul.sdk.user.entities.UserProfile;
-import com.fjuul.sdk.user.exceptions.UserApiExceptions;
 import com.fjuul.sdk.user.exceptions.UserApiExceptions.ValidationErrorBadRequestException;
 import com.fjuul.sdk.user.http.responses.ValidationError;
 
@@ -207,14 +204,18 @@ public class UserServiceTest {
             Map<String, String> expectedWeightConstraints = new HashMap<>();
             expectedWeightConstraints.put("isPositive", "weight must be a positive number");
             expectedWeightConstraints.put("isNotEmpty", "weight should not be empty");
-            assertEquals("weight validation error should have constraints", expectedWeightConstraints, weightValidationError.getConstraints());
+            assertEquals("weight validation error should have constraints",
+                expectedWeightConstraints,
+                weightValidationError.getConstraints());
 
             ValidationError heightValidationError = exception.getErrors().get(1);
             assertEquals("height", heightValidationError.getProperty());
             assertEquals(0.0, heightValidationError.getValue());
             Map<String, String> expectedHeightConstraints = new HashMap<>();
             expectedHeightConstraints.put("isPositive", "height must be a positive number");
-            assertEquals("height validation error should have constraints", expectedHeightConstraints, heightValidationError.getConstraints());
+            assertEquals("height validation error should have constraints",
+                expectedHeightConstraints,
+                heightValidationError.getConstraints());
         }
     }
 
@@ -380,9 +381,7 @@ public class UserServiceTest {
             ApiCallResult<UserProfile> result = userService.updateProfile(profileBuilder).execute();
 
             RecordedRequest request = mockWebServer.takeRequest();
-            assertEquals("transforms only given user params to json",
-                "{\"height\":0.0}",
-                request.getBody().readUtf8());
+            assertEquals("transforms only given user params to json", "{\"height\":0.0}", request.getBody().readUtf8());
 
             assertTrue("unsuccessful result", result.isError());
             assertThat(result.getError(), instanceOf(ValidationErrorBadRequestException.class));
@@ -394,7 +393,9 @@ public class UserServiceTest {
             assertEquals(0.0, heightValidationError.getValue());
             Map<String, String> expectedHeightConstraints = new HashMap<>();
             expectedHeightConstraints.put("isPositive", "height must be a positive number");
-            assertEquals("height validation error should have constraints", expectedHeightConstraints, heightValidationError.getConstraints());
+            assertEquals("height validation error should have constraints",
+                expectedHeightConstraints,
+                heightValidationError.getConstraints());
         }
     }
 }

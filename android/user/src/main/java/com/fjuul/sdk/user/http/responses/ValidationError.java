@@ -1,8 +1,8 @@
 package com.fjuul.sdk.user.http.responses;
 
-import androidx.annotation.NonNull;
-
 import java.util.Map;
+
+import androidx.annotation.NonNull;
 
 public class ValidationError {
     private @NonNull String property;
@@ -11,6 +11,7 @@ public class ValidationError {
 
     /**
      * Returns the name of the property that failed validation.
+     *
      * @return property name
      */
     @NonNull
@@ -20,6 +21,7 @@ public class ValidationError {
 
     /**
      * Returns the value of the property that was validated
+     *
      * @return property value
      */
     @NonNull
@@ -29,6 +31,7 @@ public class ValidationError {
 
     /**
      * Returns a map whose key is the name of the violated constraint and value is a detailed message of this violation.
+     *
      * @return map of constraints for that property
      */
     @NonNull

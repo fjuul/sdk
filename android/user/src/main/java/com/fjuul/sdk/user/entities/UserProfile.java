@@ -102,14 +102,14 @@ public class UserProfile {
         }
 
         /**
-         * @param height required parameter for the user creation.
+         * @param height required parameter for the user creation. This must be a positive number.
          */
         public void setHeight(float height) {
             this.height = height;
         }
 
         /**
-         * @param weight required parameter for the user creation.
+         * @param weight required parameter for the user creation. This must be a positive number.
          */
         public void setWeight(float weight) {
             this.weight = weight;

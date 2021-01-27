@@ -1,9 +1,11 @@
 apply plugin: "maven-publish"
 
 afterEvaluate {
-    // do not attach R and BuildConfig to a publication
-    generateReleaseBuildConfig.enabled = false
-    generateDebugBuildConfig.enabled = false
+    // do not attach R and BuildConfig to a publication except 'core' module
+    if (project.name != "core") {
+        generateReleaseBuildConfig.enabled = false
+        generateDebugBuildConfig.enabled = false
+    }
     generateReleaseResValues.enabled = false
     generateDebugResValues.enabled = false
 

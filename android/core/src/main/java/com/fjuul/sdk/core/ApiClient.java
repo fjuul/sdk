@@ -6,6 +6,7 @@ import com.fjuul.sdk.core.entities.PersistentStorage;
 import com.fjuul.sdk.core.entities.UserCredentials;
 import com.fjuul.sdk.core.http.interceptors.ApiKeyAttachingInterceptor;
 import com.fjuul.sdk.core.http.interceptors.BearerAuthInterceptor;
+import com.fjuul.sdk.core.http.interceptors.SDKUserAgentInterceptor;
 import com.fjuul.sdk.core.http.interceptors.SigningAuthInterceptor;
 import com.fjuul.sdk.core.http.services.ISigningService;
 import com.fjuul.sdk.core.http.services.UserSigningService;
@@ -129,11 +130,10 @@ public class ApiClient {
     }
 
     public @NonNull OkHttpClient buildSigningClient(@NonNull ISigningService signingService) {
-        OkHttpClient client = new OkHttpClient().newBuilder()
-            .addInterceptor(new ApiKeyAttachingInterceptor(apiKey))
-            .addInterceptor(getOrCreateSigningAuthInterceptor(signingService))
-            .authenticator(getOrCreateSigningAuthInterceptor(signingService))
-            .build();
+        OkHttpClient client =
+            createCommonClientBuilder().addInterceptor(getOrCreateSigningAuthInterceptor(signingService))
+                .authenticator(getOrCreateSigningAuthInterceptor(signingService))
+                .build();
         return client;
     }
 
@@ -148,17 +148,13 @@ public class ApiClient {
         if (userCredentials == null) {
             throw new IllegalStateException("The builder needed user credentials to build an authenticated client");
         }
-        OkHttpClient client = new OkHttpClient().newBuilder()
-            .addInterceptor(new ApiKeyAttachingInterceptor(apiKey))
-            .addInterceptor(new BearerAuthInterceptor(userCredentials))
-            .build();
+        OkHttpClient client =
+            createCommonClientBuilder().addInterceptor(new BearerAuthInterceptor(userCredentials)).build();
         return client;
     }
 
     public @NonNull OkHttpClient buildClient() {
-        OkHttpClient client =
-            new OkHttpClient().newBuilder().addInterceptor(new ApiKeyAttachingInterceptor(apiKey)).build();
-        return client;
+        return createCommonClientBuilder().build();
     }
 
     // TODO: consider moving this code to the builder class (share the same instance of the interceptor/authenticator)
@@ -168,5 +164,10 @@ public class ApiClient {
             signingAuthInterceptor = new SigningAuthInterceptor(userKeystore, new RequestSigner(), signingService);
         }
         return signingAuthInterceptor;
+    }
+
+    private OkHttpClient.Builder createCommonClientBuilder() {
+        return new OkHttpClient.Builder().addInterceptor(new SDKUserAgentInterceptor(BuildConfig.VERSION_NAME))
+            .addInterceptor(new ApiKeyAttachingInterceptor(apiKey));
     }
 }

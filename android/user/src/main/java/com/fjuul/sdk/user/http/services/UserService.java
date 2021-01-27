@@ -76,7 +76,11 @@ public class UserService {
     }
 
     /**
-     * Builds the call to create a new user with the given profile params.
+     * Builds the call to create a new user with the given profile params.<br>
+     * Dedicated result errors:
+     * <ul>
+     * <li>{@link com.fjuul.sdk.user.exceptions.UserApiExceptions.ValidationErrorBadRequestException};</li>
+     * </ul>
      *
      * @param builder profile builder with all required params.
      * @return ApiCall for the user creation.
@@ -103,7 +107,11 @@ public class UserService {
     }
 
     /**
-     * Builds the call to update a user profile with the given params.
+     * Builds the call to update a user profile with the given params.<br>
+     * Dedicated result errors:
+     * <ul>
+     * <li>{@link com.fjuul.sdk.user.exceptions.UserApiExceptions.ValidationErrorBadRequestException};</li>
+     * </ul>
      *
      * @param builder profile builder with parameters. This method supports a partial update so it will be enough to
      *        assign only parameters those need to update.

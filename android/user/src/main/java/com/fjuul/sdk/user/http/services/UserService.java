@@ -10,6 +10,7 @@ import com.fjuul.sdk.core.http.utils.ApiCall;
 import com.fjuul.sdk.core.http.utils.ApiCallAdapterFactory;
 import com.fjuul.sdk.user.entities.UserCreationResult;
 import com.fjuul.sdk.user.entities.UserProfile;
+import com.fjuul.sdk.user.http.UserApiResponseTransformer;
 import com.fjuul.sdk.user.http.apis.UserApi;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
@@ -46,7 +47,7 @@ public class UserService {
             .build();
         Retrofit retrofit = new Retrofit.Builder().baseUrl(clientBuilder.getBaseUrl())
             .client(httpClient)
-            .addCallAdapterFactory(ApiCallAdapterFactory.create())
+            .addCallAdapterFactory(ApiCallAdapterFactory.create(new UserApiResponseTransformer()))
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build();
         return retrofit;

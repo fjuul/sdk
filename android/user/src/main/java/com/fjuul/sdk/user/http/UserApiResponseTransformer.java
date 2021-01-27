@@ -32,6 +32,7 @@ public class UserApiResponseTransformer<T> extends DefaultApiResponseTransformer
     }
 
     @Override
+    @NonNull
     public ApiCallResult transform(@NonNull Response response) {
         final String requestPath = response.raw().request().url().encodedPath();
         final String requestMethod = response.raw().request().method();

@@ -20,7 +20,8 @@ public class UserProfile {
     @NonNull
     private TimeZone timezone;
 
-    private UserProfile(@NonNull LocalDate birthDate,
+    private UserProfile(@NonNull String token,
+        @NonNull LocalDate birthDate,
         @NonNull Gender gender,
         float height,
         float weight,

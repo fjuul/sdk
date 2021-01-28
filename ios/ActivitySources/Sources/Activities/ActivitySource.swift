@@ -2,6 +2,7 @@ import Foundation
 import FjuulCore
 
 /// The protocol for all activity source classes.
+/// Like ActivitySourceHK, ActivitySourcePolar, etc.
 public protocol ActivitySource {
     var tracker: ActivitySourcesItem { get }
 }
@@ -13,13 +14,19 @@ protocol MountableActivitySource: ActivitySource {
     /// Mount activity source. As example configure and setup HealthKit backgroud delivery.
     /// - Parameters:
     ///   - apiClient: ActivitySourcesApiClient
-    ///   - config: ActivitySourceConfigBuilder for configure what kind of data types should process.
-    ///   - persistor: Persistor for save HealthKit anchors
-    ///   - completion: completion with status or error
+    ///   - config: ActivitySourceConfigBuilder for configuring what kind of data types should process.
+    ///   - healthKitManagerBuilder: Builder for healthKitManager
+    ///   - completion: completion with status or error. If an error occurred,
+    ///   this object contains information about the error (`FjuulError.activitySourceFailure.healthkitNotAvailableOnDevice`)
     func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder,
                healthKitManagerBuilder: HealthKitManagerBuildering, completion: @escaping (Result<Bool, Error>) -> Void)
 
     /// Unmount activity source. As example unmount HealthKit backgroud delivery
-    /// - Parameter completion with status or error:
+    /// - Parameter completion with status or error (`FjuulError.activitySourceFailure.activitySourceNotMounted`, )
+
+    /// Unmount activity source and disables all background deliveries of update notifications. As example unmount HealthKit backgroud delivery.
+    /// - Parameter:
+    ///   - completion: completion with status or error. If an error occurred,
+    ///   this object contains information about the error (`FjuulError.activitySourceFailure.healthkitNotAvailableOnDevice`)
     func unmount(completion: @escaping (Result<Bool, Error>) -> Void)
 }

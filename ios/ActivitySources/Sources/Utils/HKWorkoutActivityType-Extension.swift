@@ -1,11 +1,9 @@
 import Foundation
 import HealthKit
 
-// Inspired from https://github.com/georgegreenoflondon/HKWorkoutActivityType-Descriptions
+/// Simple mapping of available workout types to a human readable name before send on back-end
+/// Inspired from https://github.com/georgegreenoflondon/HKWorkoutActivityType-Descriptions
 extension HKWorkoutActivityType {
-    /*
-     Simple mapping of available workout types to a human readable name.
-     */
     var name: String {
         switch self {
         case .americanFootball:             return "American Football"

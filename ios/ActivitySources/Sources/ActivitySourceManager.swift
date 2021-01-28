@@ -2,9 +2,22 @@ import Foundation
 import FjuulCore
 import Logging
 
+// Logger with default label
 private let logger = Logger(label: "FjuulSDK")
 
+// FIXME: Add link on deep linking description
+/**
+ The ActivitySourcesManager encapsulates a connection to fitness trackers, access to current user's tracker connections.
+ This is a high-level entity and entry point of the ActivitySources module. The class is designed as the singleton, so you need first to initialize it
+ before getting the instance. For the proper initialization, you have to provide the configured API-client built with the user credentials.
+  
+ One of the main functions of this module is to connect to activity sources. There are local (i.e. HealthKit) and external trackers (i.e. Polar, Garmin, Fitbit, etc).
+ External trackers require user authentication in the web browser.
+ 
+ For handle authentication with external trackers, it require support deep linking in app.
+*/
 final public class ActivitySourceManager {
+    /// Return the previously initialized instance
     static public var current: ActivitySourceManager?
 
     var apiClient: ActivitySourcesApiClient
@@ -15,11 +28,12 @@ final public class ActivitySourceManager {
     private var connectionsLocalStore: ActivitySourceStore
 
     /// Initialize the singleton with the provided config.
-    /// Should be Initialize once as soon as possible after up app, for setup backgroundDelivery for the HealthKit - as example in AppDelegate (didFinishLaunchingWithOptions)
+    /// Should be Initialize once as soon as possible after up app, for setup backgroundDelivery for the HealthKit to fetch intraday data,
+    /// for example in AppDelegate (didFinishLaunchingWithOptions)
     /// - Parameters:
     ///   - apiClient: ApiClient
-    ///   - config: ActivitySourceConfigBuilder
-    /// - Returns: An instance of ActivitySourceManager
+    ///   - config: ActivitySourceConfigBuilder config with desire config for list of Data types for sync.
+    /// - Returns: instance of ActivitySourcesManager
     static public func initialize(apiClient: ApiClient, config: ActivitySourceConfigBuilder) -> ActivitySourceManager {
         let instance = ActivitySourceManager(userToken: apiClient.userToken, persistor: apiClient.persistor, apiClient: apiClient.activitySources, config: config)
 
@@ -28,6 +42,12 @@ final public class ActivitySourceManager {
         return instance
     }
 
+    /// Internal initializer
+    /// - Parameters:
+    ///   - userToken: User token
+    ///   - persistor: for persisted data like HealthKit anchors
+    ///   - apiClient: configured client of ActivitySourcesApiClient
+    ///   - config: Activity source config
     internal init(userToken: String, persistor: Persistor, apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder) {
         self.apiClient = apiClient
         self.persistor = persistor
@@ -35,17 +55,22 @@ final public class ActivitySourceManager {
         self.connectionsLocalStore = ActivitySourceStore(userToken: userToken, persistor: persistor)
 
         self.restoreState { _ in
-            self.getCurrentConnections { _ in
+            self.refreshCurrent { _ in
                 logger.info("Initial sync current connections")
             }
         }
     }
 
-    /// Connect new activitySource with request to back-end server.
-    /// Don't forget call getCurrentConnections for update local state and mount new activitySource
+    /// Connect specified ActivitySource.
+    /// After getting it in the callback, you need to do one of the following:
+    ///  1) If connects to the Healthkit tracker, iOS will show a modal prompting with list of required Healthkit data permissions.
+    ///  2) If connects to the any external trackers (Garmin, Polar, etc...), This will open the user's web browser on the page with authorization of the specified tracker.
+    ///    After the user successfully authenticates, the user will be redirected back to the app by the link
+    ///    matched with the scheme provided to you or coordinated with you by Fjuul.
+    /// After a user succeeds in the connection, please invoke refreshing current connections `ActivitySourcesManager#getCurrentConnections`
     /// - Parameters:
     ///   - activitySource: ActivitySource instance to connect (ActivitySourcePolar.shared, ActivitySourceHK.shared, etc...)
-    ///   - completion: completion with ConnectionResult or Error
+    ///   - completion: with ConnectionResult or Error
     public func connect(activitySource: ActivitySource, completion: @escaping (Result<ConnectionResult, Error>) -> Void) {
         if let activitySource = activitySource as? MountableActivitySourceHK {
             activitySource.requestAccess(config: config) { result in
@@ -67,9 +92,10 @@ final public class ActivitySourceManager {
     }
 
     /// Disconnects the activity source connection and refreshes current connection list.
+    /// In the case of ActivitySourceHK it will disable backgroundDelivery
     /// - Parameters:
-    ///   - activitySourceConnection: ActivitySourceConnection
-    ///   - completion: completion with status or error
+    ///   - activitySourceConnection: instance of ActivitySourceConnection
+    ///   - completion: with status or error
     public func disconnect(activitySourceConnection: ActivitySourceConnection, completion: @escaping (Result<Bool, Error>) -> Void) {
         apiClient.disconnect(activitySourceConnection: activitySourceConnection) { result in
             switch result {
@@ -91,10 +117,9 @@ final public class ActivitySourceManager {
         }
     }
 
-    /// Returns a list of current connections of the user (from back-end) and mount new activitySource if they not exists in local state.
-    /// Saves connections lists on local persisted store.
+    /// Returns a list of current connections of the user (from back-end) and mount/unmount activitySource if they do not exist in the local state.
     /// - Parameter completion: completion with [ActivitySourceConnection] or Error
-    public func getCurrentConnections(completion: @escaping (Result<[ActivitySourceConnection], Error>) -> Void) {
+    public func refreshCurrent(completion: @escaping (Result<[ActivitySourceConnection], Error>) -> Void) {
         apiClient.getCurrentConnections { result in
             switch result {
             case .success(let connections):
@@ -109,6 +134,9 @@ final public class ActivitySourceManager {
         }
     }
 
+    /// Unmount all ActivitySources. Useful for logout from app case. The trackers will not be disconnected,
+    /// but all locally mounted ActivitySources will be unmounted on the device. Currently only ActivitySourceHK is mountable
+    /// - Parameter completion: status or error
     public func unmout(completion: @escaping (Result<Bool, Error>) -> Void) {
         let group = DispatchGroup()
         var error: Error?
@@ -189,7 +217,7 @@ final public class ActivitySourceManager {
                     case .success:
                         self.mountedActivitySourceConnections.append(activitySourceConnection)
                     case .failure(let err):
-                        logger.error("Error on restore connectionsLocalStore state \(err)")
+                        logger.error("Error: on restore connectionsLocalStore state \(err)")
                     }
                 }
             }

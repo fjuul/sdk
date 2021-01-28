@@ -1,6 +1,7 @@
 import Foundation
 import HealthKit
 
+/// Class for build Healthkit query predicates base on ActivitySourceHKConfig and dirty batches.
 class HealthKitQueryPredictateBuilder {
     let healthKitConfig: ActivitySourceHKConfig
 
@@ -13,6 +14,7 @@ class HealthKitQueryPredictateBuilder {
     }
 
     func samplePredicate() -> NSCompoundPredicate {
+        // Default predicate for prevent sync more that 30 days back
         let fromDate = Calendar.current.date(byAdding: .day, value: -30, to: Date())
         let startDatePredicate = HKQuery.predicateForSamples(withStart: fromDate, end: Date(), options: .strictStartDate)
 
@@ -24,7 +26,10 @@ class HealthKitQueryPredictateBuilder {
 
         return NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
     }
-
+    
+    /// Build predicate for HKStatisticsCollectionQuery based on ActivitySourceHKConfig and dirty batches
+    /// - Parameter batchDates: list of dirty batches
+    /// - Returns: instance of NSCompoundPredicate
     func statisticsCollectionsPredicate(batchDates: Set<Date>) -> NSCompoundPredicate {
         let datePredicates = NSCompoundPredicate(type: .or, subpredicates: self.statisticsCollectionsDatePredicates(batchDates: batchDates))
 
@@ -39,7 +44,7 @@ class HealthKitQueryPredictateBuilder {
         var predicates: [NSPredicate] = []
 
         batchDates.forEach { (date) in
-            if let endDate = HKDataUtils.endOfHour(date: date) {
+            if let endDate = DateUtils.endOfHour(date: date) {
                 predicates.append(HKQuery.predicateForSamples(withStart: date, end: endDate, options: .strictStartDate))
             }
         }

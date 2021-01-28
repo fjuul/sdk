@@ -1,10 +1,12 @@
 import Foundation
 import HealthKit
 
+/// Data types that availbale configure for ActivitySourceHKConfig
 public enum HealthKitConfigType {
     case activeEnergyBurned, stepCount, distanceCycling, distanceWalkingRunning, heartRate, workoutType
 }
 
+/// Config for the HealthKit ActivitySource. SDK consumers can configure which data types SDK will collect.
 public struct ActivitySourceHKConfig {
     private let dataTypesToRead: [HealthKitConfigType]
     let syncUserEnteredData: Bool
@@ -16,8 +18,8 @@ public struct ActivitySourceHKConfig {
         self.syncUserEnteredData = syncUserEnteredData
     }
 
-    /// Types of data  Fjull SDK consumer wishes to read from HealthKit based on SDK config.
-    /// - returns: A set of HKObjectType that wishes by SDK consumer and available for device.
+    /// Types of HealthKit data that Fjull SDK consumer wishes to read from HealthKit based on SDK config.
+    /// - returns: A set of HKObjectType that wishes by SDK consumer and available for the device.
     var typesToRead: Set<HKSampleType> {
         var dataTypes: Set<HKSampleType> = []
 

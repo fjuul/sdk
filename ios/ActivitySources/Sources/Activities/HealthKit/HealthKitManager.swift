@@ -16,7 +16,10 @@ protocol HealthKitManaging: AutoMockable {
     func sync(completion: @escaping (Result<Bool, Error>) -> Void)
 }
 
+/// Manager for work with Healthkit permissions and data.
+/// Setups background delivery and fetch data from HK when new event triger sync.
 class HealthKitManager: HealthKitManaging {
+    /// Shared HKHealthStore
     static let healthStore: HKHealthStore = HKHealthStore()
 
     private var anchorStore: HKAnchorStore
@@ -31,7 +34,7 @@ class HealthKitManager: HealthKitManaging {
         self.dataHandler = dataHandler
     }
 
-    /// Requests access to all the data types the app wishes to read/write from HealthKit.
+    /// Requests access to all the data types the app wishes to read from HealthKit.
     static func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void) {
         guard HKHealthStore.isHealthDataAvailable() else {
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
@@ -49,6 +52,7 @@ class HealthKitManager: HealthKitManaging {
 
     /// On success observer queries are set up for background delivery.
     /// This is safe to call repeatedly and should be called at least once per launch.
+    /// - Parameter completion: status or error
     func mount(completion: @escaping (Result<Bool, Error>) -> Void) {
         guard HKHealthStore.isHealthDataAvailable() else {
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
@@ -65,7 +69,9 @@ class HealthKitManager: HealthKitManaging {
             }
         }
     }
-
+    
+    /// Disables all BackgroundDelivery observers
+    /// - Parameter completion: status or error
     func disableAllBackgroundDelivery(completion: @escaping (Result<Bool, Error>) -> Void) {
         HealthKitManager.healthStore.disableAllBackgroundDelivery { (success: Bool, error: Error?) in
             if let error = error {
@@ -76,7 +82,9 @@ class HealthKitManager: HealthKitManaging {
             completion(.success(success))
         }
     }
-
+    
+    /// Force start sync
+    /// - Parameter completion: status or error
     func sync(completion: @escaping (Result<Bool, Error>) -> Void) {
         let group = DispatchGroup()
         var error: Error?
@@ -107,7 +115,8 @@ class HealthKitManager: HealthKitManaging {
         }
     }
 
-    /// Sets up the observer queries for background health data delivery.
+    /// Sets up the observer queries for background health data delivery. Based on Healthkit config.
+    /// Observer callbacks handleds syncroniously via serial queue, for void issue with inconsisted saved anchors in persisted store.
     ///
     /// - parameter types: Set of `HKObjectType` to observe changes to.
     private func setUpBackgroundDeliveryForDataTypes() {
@@ -154,7 +163,8 @@ class HealthKitManager: HealthKitManaging {
 
     /// Initiates HK queries for new data based on the given type
     ///
-    /// - parameter type: `HKObjectType` which has new data avilable.
+    /// - parameter sampleType: `HKObjectType` which has new data avilable.
+    /// - parameter completion: HKRequestData? and the new anchore
     private func queryForUpdates(sampleType: HKSampleType, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
         switch sampleType {
         case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned),

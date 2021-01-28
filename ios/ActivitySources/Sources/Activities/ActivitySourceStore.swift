@@ -1,6 +1,8 @@
 import Foundation
 import FjuulCore
 
+/// Wraper for the local store with enabled activity sources.
+/// Persisted local store need for mount mountable ActivitySources on boot app in AppDelegate, see Example app.
 public class ActivitySourceStore {
     private let lookupKey: String
     private var persistor: Persistor

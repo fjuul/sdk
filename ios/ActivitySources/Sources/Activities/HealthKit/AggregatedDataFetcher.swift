@@ -49,7 +49,7 @@ class AggregatedDataFetcher {
             }
 
             for sampleItem in samples {
-                if let date = HKDataUtils.beginningOfHour(date: sampleItem.startDate) {
+                if let date = DateUtils.beginningOfHour(date: sampleItem.startDate) {
                     batchStartDates.insert(date)
                 }
             }

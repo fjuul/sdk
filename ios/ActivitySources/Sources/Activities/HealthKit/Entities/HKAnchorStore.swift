@@ -2,6 +2,7 @@ import Foundation
 import FjuulCore
 import HealthKit
 
+/// Persisted store for save Healthkit anchors
 struct HKAnchorStore {
 
     private var persistor: Persistor
@@ -25,6 +26,7 @@ struct HKAnchorStore {
         }
     }
 
+    /// Saves anchor in persisted store based on HKObjectType
     mutating func save(type: HKObjectType, newAnchor: HKQueryAnchor?) {
         switch type {
         case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned):
@@ -44,6 +46,7 @@ struct HKAnchorStore {
         }
     }
 
+    /// Fetch anchor from persisted store based on HKObjectType
     func get(type: HKObjectType) -> HKQueryAnchor {
         let defaultValue = HKQueryAnchor.init(fromValue: 0)
 

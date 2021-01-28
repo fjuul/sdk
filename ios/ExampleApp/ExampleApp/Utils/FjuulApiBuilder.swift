@@ -2,7 +2,7 @@ import Foundation
 import FjuulCore
 import FjuulActivitySources
 
-// Prepare API cleint and configure ActivitySourceManager
+/// Prepare API cleint and configure ActivitySourceManager
 class FjuulApiBuilder {
 
     static func buildApiClient() -> ApiClient? {
@@ -22,8 +22,8 @@ class FjuulApiBuilder {
         return nil
     }
 
-    static func buildActivitySourceManager(apiClient: ApiClient) -> ActivitySourceManager {
-        // SDK consumer can not provide healthKitConfig if it's not used in app
+    static func buildActivitySourceManager(apiClient: ApiClient) {
+        // SDK consumer can not provide healthKitConfig if it's not used in-app
         let config = ActivitySourceConfigBuilder { builder in
             builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [
                                                                 .activeEnergyBurned, .heartRate,
@@ -32,7 +32,7 @@ class FjuulApiBuilder {
             ])
         }
 
-        return ActivitySourceManager.initialize(apiClient: apiClient, config: config)
+        ActivitySourceManager.initialize(apiClient: apiClient, config: config)
     }
 
     private static func enoughApiClientParams() -> Bool {

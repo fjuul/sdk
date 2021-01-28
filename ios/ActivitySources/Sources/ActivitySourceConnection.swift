@@ -23,6 +23,13 @@ public final class ActivitySourceConnection: TrackerConnectionable, Equatable {
         self.activitySource = activitySource
     }
 
+    /// Mount locally ActivitySource if it is mountable (protocol: MountableActivitySource).
+    /// Currently on ActivitySourceHK is mountable, and call this function will setup backgroundDelivery.
+    /// - Parameters:
+    ///   - apiClient: instance of ActivitySourcesApiClient
+    ///   - config: instance of ActivitySourceConfigBuilder
+    ///   - persistor: instance of Persistor
+    ///   - completion: status or error
     func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
         if let mountableSource = activitySource as? MountableActivitySource {
             let healthKitManagerBuilder = HealthKitManagerBuilder(apiClient: apiClient, persistor: persistor, config: config)
@@ -35,6 +42,9 @@ public final class ActivitySourceConnection: TrackerConnectionable, Equatable {
         }
     }
 
+    /// Unmount locally ActivitySource if it is mountable (protocol: MountableActivitySource).
+    /// Currently on ActivitySourceHK is mountable, and call this function will disable backgroundDelivery.
+    /// - Parameter completion: status or error
     func unmount(completion: @escaping (Result<Bool, Error>) -> Void) {
         if let mountableSource = activitySource as? MountableActivitySource {
             mountableSource.unmount { result in
@@ -66,12 +76,3 @@ enum ActivitySourceConnectionFactory {
         }
     }
 }
-
-//
-//var start = new Date("2021-01-10 16:00:00 UTC")
-//var end = new Date("2021-01-10 16:59:59 UTC")
-//test.sort((a, b) => (new Date(a.createdAt)) - (new Date(b.createdAt))).filter((item) => {
-//    var date = new Date(item.entries[0].start)
-//    
-//    return date >= start && date <= end
-//})

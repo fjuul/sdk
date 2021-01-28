@@ -7,6 +7,7 @@ protocol MountableActivitySourceHK: MountableActivitySource {
     func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void)
 }
 
+/// The ActivitySource singleton class for the Healthkit tracker. This is an mountable activity source.
 public final class ActivitySourceHK: MountableActivitySourceHK {
     static public let shared = ActivitySourceHK()
 
@@ -18,35 +19,18 @@ public final class ActivitySourceHK: MountableActivitySourceHK {
 
     init() {}
 
+    /// Request show a modal prompting with list of required Healthkit data permissions based on provided ActivitySourceConfig.
+    /// - Parameters:
+    ///   - config: instance ActivitySourceConfig
+    ///   - completion: status or error
     func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void) {
         HealthKitManager.requestAccess(config: config) { result in
             completion(result)
         }
     }
 
-    func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder,
-               healthKitManagerBuilder: HealthKitManagerBuildering, completion: @escaping (Result<Bool, Error>) -> Void) {
-        self.apiClient = apiClient
-
-        let healthKitManager = healthKitManagerBuilder.create(dataHandler: self.dataHandler)
-        self.healthKitManager = healthKitManager
-
-        healthKitManager.mount { result in
-            completion(result)
-        }
-    }
-
-    func unmount(completion: @escaping (Result<Bool, Error>) -> Void) {
-        guard let healthKitManager = self.healthKitManager else {
-            completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
-            return
-        }
-
-        healthKitManager.disableAllBackgroundDelivery { result in
-            completion(result)
-        }
-    }
-
+    /// Force initiate sync data
+    /// - Parameter completion: status or error
     public func sync(completion: @escaping (Result<Bool, Error>) -> Void) {
         guard let healthKitManager = self.healthKitManager else {
             completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
@@ -58,9 +42,46 @@ public final class ActivitySourceHK: MountableActivitySourceHK {
         }
     }
 
+    /// Setup Healthkit backgroundDelivery for fetch disired data types based on ActivitySourceConfig
+    /// - Parameters:
+    ///   - apiClient: instance of ActivitySourcesApiClient
+    ///   - config: instance of ActivitySourceConfigBuilder
+    ///   - healthKitManagerBuilder: instance of HealthKitManagerBuildering
+    ///   - completion: status or error
+    internal func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder,
+                        healthKitManagerBuilder: HealthKitManagerBuildering,
+                        completion: @escaping (Result<Bool, Error>) -> Void) {
+
+        self.apiClient = apiClient
+
+        let healthKitManager = healthKitManagerBuilder.create(dataHandler: self.dataHandler)
+        self.healthKitManager = healthKitManager
+
+        healthKitManager.mount { result in
+            completion(result)
+        }
+    }
+
+    /// Disable Healthkit backgroundDelivery.
+    /// - Parameter completion: status or error
+    internal func unmount(completion: @escaping (Result<Bool, Error>) -> Void) {
+        guard let healthKitManager = self.healthKitManager else {
+            completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
+            return
+        }
+
+        healthKitManager.disableAllBackgroundDelivery { result in
+            completion(result)
+        }
+    }
+
+    /// Handler for new data from backgroundDelivery or manual sync
+    /// - Parameters:
+    ///   - requestData: instance of HKRequestData
+    ///   - completion: status or error
     private func dataHandler(_ requestData: HKRequestData?, completion: @escaping (Result<Bool, Error>) -> Void) {
         guard let requestData = requestData else {
-            completion(.success(true))
+            completion(.success(false))
             return
         }
 
@@ -69,6 +90,10 @@ public final class ActivitySourceHK: MountableActivitySourceHK {
         }
     }
 
+    /// Sends data to back-end
+    /// - Parameters:
+    ///   - data: instance of HKRequestData
+    ///   - completion: status or error
     private func sendBatch(data: HKRequestData, completion: @escaping (Result<Bool, Error>) -> Void) {
         guard let apiClient = self.apiClient else { return  completion(.failure(FjuulError.invalidConfig))}
 

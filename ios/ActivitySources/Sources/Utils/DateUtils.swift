@@ -1,12 +1,15 @@
 import Foundation
 
-public class HKDataUtils {
+/// Usefull functions to work with Date in Swift
+public class DateUtils {
     // Inspired from https://github.com/SwifterSwift/SwifterSwift/blob/master/Sources/SwifterSwift/Foundation/DateExtensions.swift
     static func beginningOfHour(date: Date?) -> Date? {
+        guard let date = date else { return nil }
+
         let calendar = Calendar.current
         let component: Set<Calendar.Component> = [.year, .month, .day, .hour]
 
-        return calendar.date(from: calendar.dateComponents(component, from: date!))
+        return calendar.date(from: calendar.dateComponents(component, from: date))
     }
 
     // Inspired from https://github.com/SwifterSwift/SwifterSwift/blob/master/Sources/SwifterSwift/Foundation/DateExtensions.swift
@@ -28,6 +31,6 @@ public class HKDataUtils {
         var newDate = calendar.date(byAdding: .day, value: 1, to: date)!
         newDate = calendar.startOfDay(for: newDate)
 
-        return Calendar.current.date(byAdding: .second, value: -1, to: newDate)!
+        return Calendar.current.date(byAdding: .second, value: -1, to: newDate)
     }
 }

@@ -21,7 +21,7 @@ class ActivitySourceObservable: ObservableObject {
     }
 
     func getCurrentConnections() {
-        ActivitySourceManager.current?.getCurrentConnections { result in
+        ActivitySourceManager.current?.refreshCurrent { result in
             switch result {
             case .success(let connections): self.currentConnections = connections
             case .failure(let err): self.error = ErrorHolder(error: err)

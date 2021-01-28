@@ -1,6 +1,7 @@
 import Foundation
 import HealthKit
 
+/// Data structure for aggregated values
 struct HKRequestData: Encodable {
     var caloriesData: [BatchDataPoint]?
     var cyclingData: [BatchDataPoint]?
@@ -11,6 +12,11 @@ struct HKRequestData: Encodable {
 }
 
 extension HKRequestData {
+    /// Builds HKRequestData from list of BatchDataPoint
+    /// - Parameters:
+    ///   - quantityType: Healthkit HKQuantityType
+    ///   - batches: collections of BatchDataPoint's
+    /// - Returns: instance of HKRequestData or nil
     static func build(quantityType: HKQuantityType, batches: [BatchDataPoint]) -> HKRequestData? {
         guard batches.count > 0 else {
             return nil
@@ -30,6 +36,11 @@ extension HKRequestData {
         }
     }
 
+    /// Builds HKRequestData from list of HrBatchDataPoint
+    /// - Parameters:
+    ///   - quantityType: Healthkit HKQuantityType
+    ///   - batches: collections of HrBatchDataPoint's
+    /// - Returns: instance of HKRequestData or nil
     static func build(quantityType: HKQuantityType, batches: [HrBatchDataPoint]) -> HKRequestData? {
         guard batches.count > 0 else {
             return nil

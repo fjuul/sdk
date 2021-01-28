@@ -10,6 +10,7 @@ enum HKAnchorKey {
     case workout
 }
 
+/// DataStructure for save and retrieve in persisted store HealthKit anchors
 public struct HKAnchorData: Codable, Equatable {
     private var activeEnergyBurnedRaw: Data?
     private var stepCountRaw: Data?

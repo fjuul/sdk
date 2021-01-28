@@ -30,14 +30,20 @@ about java 8 desugaring if you plan to support older api levels (Android Gradle 
 Fjuul Android SDK modules are published to the private repository at Github Packages registry with the url `https://maven.pkg.github.com/fjuul/sdk`. In order to access Fjuul SDK modules you need to:
 
 1. get the authentication token with 'read:packages' access to fjuul/sdk repository on Github;
-2. declare a maven repository in your `app/build.gradle` in the following way:
+2. declare a maven repository in your `build.gradle` in the following way:
 ```groovy
-maven {
-    name = 'GitHubPackages'
-    url = uri('https://maven.pkg.github.com/fjuul/sdk')
-    credentials {
-        username = 'GITHUB_ACTOR'
-        password = 'GITHUB_TOKEN'
+allprojects {
+    ...
+    repositories {
+        ...
+        maven {
+            name = 'GitHubPackages'
+            url = uri('https://maven.pkg.github.com/fjuul/sdk')
+            credentials {
+                username = 'GITHUB_ACTOR'
+                password = 'GITHUB_TOKEN'
+            }
+        }
     }
 }
 ```

@@ -8,7 +8,7 @@ public final class ActivitySourceConnection: TrackerConnectionable, Equatable {
     }
 
     public let id: String
-    public let tracker: ActivitySourcesItem?
+    public let tracker: TrackerValue
     public let createdAt: Date
     public let endedAt: Date?
 
@@ -16,7 +16,7 @@ public final class ActivitySourceConnection: TrackerConnectionable, Equatable {
 
     init(trackerConnection: TrackerConnection, activitySource: ActivitySource) {
         id = trackerConnection.id
-        tracker = ActivitySourcesItem(rawValue: trackerConnection.tracker)
+        tracker = TrackerValue(value: trackerConnection.tracker)
         createdAt = trackerConnection.createdAt
         endedAt = trackerConnection.endedAt
 
@@ -57,22 +57,21 @@ public final class ActivitySourceConnection: TrackerConnectionable, Equatable {
 }
 
 enum ActivitySourceConnectionFactory {
-    static func activitySourceConnection(trackerConnection: TrackerConnection) -> ActivitySourceConnection? {
-        guard let tracker = ActivitySourcesItem(rawValue: trackerConnection.tracker) else { return nil }
+    static func activitySourceConnection(trackerConnection: TrackerConnection) -> ActivitySourceConnection {
+        let trackerValue = TrackerValue.forValue(value: trackerConnection.tracker)
 
-        switch tracker {
-        case ActivitySourcesItem.healthkit:
+        if TrackerValue.HEALTHKIT == trackerValue {
             return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourceHK.shared)
-        case ActivitySourcesItem.polar:
+        } else if TrackerValue.POLAR == trackerValue {
             return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourcePolar.shared)
-        case ActivitySourcesItem.garmin:
+        } else if TrackerValue.GARMIN == trackerValue {
             return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourceGarmin.shared)
-        case ActivitySourcesItem.suunto:
+        } else if TrackerValue.SUUNTO == trackerValue {
             return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourceSuunto.shared)
-        case ActivitySourcesItem.fitbit:
+        } else if TrackerValue.FITBIT == trackerValue {
             return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourceFitbit.shared)
-        default:
-            return nil
+        } else {
+            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourceUnknown(tracker: trackerConnection.tracker))
         }
     }
 }

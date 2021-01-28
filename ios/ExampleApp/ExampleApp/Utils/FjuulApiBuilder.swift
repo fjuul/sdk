@@ -32,7 +32,7 @@ class FjuulApiBuilder {
             ])
         }
 
-        ActivitySourceManager.initialize(apiClient: apiClient, config: config)
+        _ = ActivitySourceManager.initialize(apiClient: apiClient, config: config)
     }
 
     private static func enoughApiClientParams() -> Bool {

@@ -12,7 +12,6 @@ public enum FjuulError: Error {
     }
 
     public enum ActivitySourceConnectionFailureReason {
-        // TODO actually introduce different failure cases for different failures
         case generic
         case sourceAlreadyConnected
     }

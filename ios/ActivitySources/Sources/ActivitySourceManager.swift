@@ -79,13 +79,13 @@ final public class ActivitySourceManager {
                     completion(.failure(err))
                     return
                 case .success:
-                    self.apiClient.connect(activitySourceItem: activitySource.tracker) { connectionResult in
+                    self.apiClient.connect(trackerValue: activitySource.trackerValue) { connectionResult in
                         completion(connectionResult)
                     }
                 }
             }
         } else {
-            apiClient.connect(activitySourceItem: activitySource.tracker) { connectionResult in
+            apiClient.connect(trackerValue: activitySource.trackerValue) { connectionResult in
                 completion(connectionResult)
             }
         }
@@ -177,18 +177,17 @@ final public class ActivitySourceManager {
 
     private func mountByConnections(connections: [TrackerConnection]) {
         connections.forEach { connection in
-            if self.mountedActivitySourceConnections.contains(where: { element in element.tracker?.rawValue == connection.tracker }) {
+            if self.mountedActivitySourceConnections.contains(where: { element in element.tracker.value == connection.tracker }) {
               return
             }
 
-            if let activitySourceConnection = ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: connection) {
-                activitySourceConnection.mount(apiClient: apiClient, config: config, persistor: persistor) { result in
-                    switch result {
-                    case .success:
-                        self.mountedActivitySourceConnections.append(activitySourceConnection)
-                    case .failure(let err):
-                        logger.error("Error on mountByConnections \(err)")
-                    }
+            let activitySourceConnection = ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: connection)
+            activitySourceConnection.mount(apiClient: apiClient, config: config, persistor: persistor) { result in
+                switch result {
+                case .success:
+                    self.mountedActivitySourceConnections.append(activitySourceConnection)
+                case .failure(let err):
+                    logger.error("Error on mountByConnections \(err)")
                 }
             }
         }
@@ -196,7 +195,7 @@ final public class ActivitySourceManager {
 
     private func unmountByConnections(connections: [TrackerConnection]) {
         self.mountedActivitySourceConnections.forEach { activitySourceConnection in
-            if !connections.contains(where: { element in element.tracker == activitySourceConnection.tracker?.rawValue }) {
+            if !connections.contains(where: { element in element.tracker == activitySourceConnection.tracker.value }) {
                 activitySourceConnection.unmount { result in
                     switch result {
                     case .success:
@@ -211,14 +210,13 @@ final public class ActivitySourceManager {
 
     private func restoreState(completion: (Result<Bool, Error>) -> Void) {
         connectionsLocalStore.connections?.forEach { connection in
-            if let activitySourceConnection = ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: connection) {
-                activitySourceConnection.mount(apiClient: apiClient, config: config, persistor: persistor) { result in
-                    switch result {
-                    case .success:
-                        self.mountedActivitySourceConnections.append(activitySourceConnection)
-                    case .failure(let err):
-                        logger.error("Error: on restore connectionsLocalStore state \(err)")
-                    }
+            let activitySourceConnection = ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: connection)
+            activitySourceConnection.mount(apiClient: apiClient, config: config, persistor: persistor) { result in
+                switch result {
+                case .success:
+                    self.mountedActivitySourceConnections.append(activitySourceConnection)
+                case .failure(let err):
+                    logger.error("Error: on restore connectionsLocalStore state \(err)")
                 }
             }
         }

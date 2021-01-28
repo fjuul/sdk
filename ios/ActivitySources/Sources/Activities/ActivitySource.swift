@@ -1,10 +1,9 @@
 import Foundation
-import FjuulCore
 
 /// The protocol for all activity source classes.
 /// Like ActivitySourceHK, ActivitySourcePolar, etc.
 public protocol ActivitySource {
-    var tracker: ActivitySourcesItem { get }
+    var trackerValue: TrackerValue { get }
 }
 
 /// The protocol for mountable activity sources. Currently only HealthKit with mount backgroudDelivery.

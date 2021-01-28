@@ -11,31 +11,31 @@ struct ActivitySourcesScreen: View {
                 self.activitySourceObserver.connect(activitySource: ActivitySourceFitbit.shared)
             }) {
                 Text("Connect Fitbit")
-            }.disabled(self.connected(tracker: .fitbit))
+            }.disabled(self.connected(trackerValue: TrackerValue.FITBIT))
 
             Button(action: {
                 self.activitySourceObserver.connect(activitySource: ActivitySourceGarmin.shared)
             }) {
                 Text("Connect Garmin")
-            }.disabled(self.connected(tracker: .garmin))
+            }.disabled(self.connected(trackerValue: TrackerValue.GARMIN))
 
             Button(action: {
                 self.activitySourceObserver.connect(activitySource: ActivitySourcePolar.shared)
             }) {
                 Text("Connect Polar")
-            }.disabled(self.connected(tracker: .polar))
+            }.disabled(self.connected(trackerValue: TrackerValue.POLAR))
 
             Button(action: {
                 self.activitySourceObserver.connect(activitySource: ActivitySourceSuunto.shared)
             }) {
                 Text("Connect Suunto")
-            }.disabled(self.connected(tracker: .suunto))
+            }.disabled(self.connected(trackerValue: TrackerValue.SUUNTO))
 
             Button(action: {
                 self.activitySourceObserver.connect(activitySource: ActivitySourceHK.shared)
             }) {
                 Text("Connect Healthkit")
-            }.disabled(self.connected(tracker: .healthkit))
+            }.disabled(self.connected(trackerValue: TrackerValue.HEALTHKIT))
         }
         .navigationBarTitle("Activity Sources", displayMode: .inline)
         .alert(item: $activitySourceObserver.error) { holder in
@@ -43,9 +43,9 @@ struct ActivitySourcesScreen: View {
         }
     }
 
-    private func connected(tracker: ActivitySourcesItem) -> Bool {
+    private func connected(trackerValue: TrackerValue) -> Bool {
         return self.activitySourceObserver.currentConnections.contains { activitySourceConnection in
-            return activitySourceConnection.tracker == tracker
+            return activitySourceConnection.tracker == trackerValue
         }
     }
 

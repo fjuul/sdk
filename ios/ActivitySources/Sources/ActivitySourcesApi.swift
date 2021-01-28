@@ -11,7 +11,7 @@ protocol AutoMockable { }
 protocol ActivitySourcesApiClient: AutoMockable {
     var apiClient: ApiClient { get }
 
-    func connect(activitySourceItem: ActivitySourcesItem, completion: @escaping (Result<ConnectionResult, Error>) -> Void)
+    func connect(trackerValue: TrackerValue, completion: @escaping (Result<ConnectionResult, Error>) -> Void)
     func disconnect(activitySourceConnection: ActivitySourceConnection, completion: @escaping (Result<Void, Error>) -> Void)
     func getCurrentConnections(completion: @escaping (Result<[TrackerConnection], Error>) -> Void)
 }
@@ -33,8 +33,8 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
         return URL(string: self.apiClient.baseUrl)?.appendingPathComponent("sdk/activity-sources/v1")
     }
 
-    func connect(activitySourceItem: ActivitySourcesItem, completion: @escaping (Result<ConnectionResult, Error>) -> Void) {
-        let path = "/\(apiClient.userToken)/connections/\(activitySourceItem.rawValue)"
+    func connect(trackerValue: TrackerValue, completion: @escaping (Result<ConnectionResult, Error>) -> Void) {
+        let path = "/\(apiClient.userToken)/connections/\(trackerValue.value)"
         guard let url = baseUrl?.appendingPathComponent(path) else {
             return completion(.failure(FjuulError.invalidConfig))
         }

@@ -13,7 +13,7 @@ public final class ActivitySourceHK: MountableActivitySourceHK {
 
     var apiClient: ActivitySourcesApiClient?
 
-    public var tracker = ActivitySourcesItem.healthkit
+    public var trackerValue = TrackerValue.HEALTHKIT
 
     private var healthKitManager: HealthKitManaging?
 

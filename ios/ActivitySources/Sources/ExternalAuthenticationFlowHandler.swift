@@ -2,7 +2,7 @@ import Foundation
 
 /// Status of external connection from the deeplink handler
 public struct ConnectionStatus {
-    public var tracker: ActivitySourcesItem?
+    public var tracker: TrackerValue?
     public var success: Bool
 }
 
@@ -37,8 +37,8 @@ final public class ExternalAuthenticationFlowHandler {
             return ConnectionStatus(success: false)
         }
 
-        let trackerValue = components.queryItems?.first(where: { $0.name == "service" })?.value ?? "unknown"
-        let tracker = ActivitySourcesItem(rawValue: trackerValue)
+        let trackerName = components.queryItems?.first(where: { $0.name == "service" })?.value ?? "unknown"
+        let tracker = TrackerValue(value: trackerName)
 
         let successValue = components.queryItems?.first(where: { $0.name == "success" })?.value ?? "false"
         let success = successValue == "true"

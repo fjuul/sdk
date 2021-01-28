@@ -69,7 +69,7 @@ class HealthKitManager: HealthKitManaging {
             }
         }
     }
-    
+
     /// Disables all BackgroundDelivery observers
     /// - Parameter completion: status or error
     func disableAllBackgroundDelivery(completion: @escaping (Result<Bool, Error>) -> Void) {
@@ -82,7 +82,7 @@ class HealthKitManager: HealthKitManaging {
             completion(.success(success))
         }
     }
-    
+
     /// Force start sync
     /// - Parameter completion: status or error
     func sync(completion: @escaping (Result<Bool, Error>) -> Void) {

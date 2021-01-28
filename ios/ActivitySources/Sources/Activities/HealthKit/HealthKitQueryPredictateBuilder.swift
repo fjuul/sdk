@@ -26,7 +26,7 @@ class HealthKitQueryPredictateBuilder {
 
         return NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
     }
-    
+
     /// Build predicate for HKStatisticsCollectionQuery based on ActivitySourceHKConfig and dirty batches
     /// - Parameter batchDates: list of dirty batches
     /// - Returns: instance of NSCompoundPredicate

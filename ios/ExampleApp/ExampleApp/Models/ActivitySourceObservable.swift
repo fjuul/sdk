@@ -11,7 +11,7 @@ class ActivitySourceObservable: ObservableObject {
     }
 
     func currentConnectionsLabels() -> String {
-        let labels = self.currentConnections.compactMap { item in item.tracker?.rawValue }
+        let labels = self.currentConnections.compactMap { item in item.tracker.value }
 
         if labels.count > 0 {
             return labels.joined(separator: ", ")

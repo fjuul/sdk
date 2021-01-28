@@ -83,7 +83,7 @@ public class KeystoreTest {
     }
 
     @RunWith(RobolectricTestRunner.class)
-    @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+    @Config(sdk = {Build.VERSION_CODES.P})
     public static class WithPersistentStorage {
         PersistentStorage storage;
         Keystore keystore;

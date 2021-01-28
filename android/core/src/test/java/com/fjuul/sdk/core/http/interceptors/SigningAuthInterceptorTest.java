@@ -41,7 +41,7 @@ import okhttp3.mockwebserver.RecordedRequest;
 import retrofit2.Response;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+@Config(sdk = {Build.VERSION_CODES.P})
 public class SigningAuthInterceptorTest {
     @Test
     public void intercept_EmptyKeystoreWithFailedIssueResult_returnIssueResponse() throws Exception {

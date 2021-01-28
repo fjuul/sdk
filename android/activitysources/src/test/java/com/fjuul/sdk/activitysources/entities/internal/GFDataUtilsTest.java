@@ -33,7 +33,7 @@ public class GFDataUtilsTest {
         "derived:com.google.calories.expended:com.google.android.gms:from_activities";
 
     @RunWith(RobolectricTestRunner.class)
-    @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+    @Config(sdk = {Build.VERSION_CODES.P})
     public abstract static class GivenRobolectricContext {}
 
     public static class GroupCaloriesIntoBatchesByDurationTest extends GivenRobolectricContext {

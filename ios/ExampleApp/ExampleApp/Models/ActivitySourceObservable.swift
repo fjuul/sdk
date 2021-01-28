@@ -3,8 +3,14 @@ import FjuulActivitySources
 import UIKit
 
 class ActivitySourceObservable: ObservableObject {
+    let AVAILABLE_ACTIVITY_SOURCES: [ActivitySource] = [
+        ActivitySourceHK.shared, ActivitySourceFitbit.shared, ActivitySourceGarmin.shared,
+        ActivitySourcePolar.shared, ActivitySourceSuunto.shared,
+    ]
+
     @Published var error: ErrorHolder?
     @Published var currentConnections: [ActivitySourceConnection] = []
+    @Published var notConnectedActivitySources: [ActivitySource] = []
 
     init() {
         self.getCurrentConnections()
@@ -23,7 +29,11 @@ class ActivitySourceObservable: ObservableObject {
     func getCurrentConnections() {
         ActivitySourceManager.current?.refreshCurrent { result in
             switch result {
-            case .success(let connections): self.currentConnections = connections
+            case .success(let connections):
+                self.currentConnections = connections
+                self.notConnectedActivitySources = self.AVAILABLE_ACTIVITY_SOURCES.filter { item in
+                    return !connections.contains { connection in connection.tracker == item.trackerValue }
+                }
             case .failure(let err): self.error = ErrorHolder(error: err)
             }
         }

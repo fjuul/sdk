@@ -6,7 +6,7 @@ public class TrackerValue: Equatable {
     public static let FITBIT = TrackerValue(value: "fitbit")
     public static let GARMIN = TrackerValue(value: "garmin")
     public static let GOOGLEFIT_BACKEND = TrackerValue(value: "googlefit_backend")
-    public static let POLAR = TrackerValue(value: "POLAR")
+    public static let POLAR = TrackerValue(value: "polar")
     public static let SUUNTO = TrackerValue(value: "suunto")
     public static let HEALTHKIT = TrackerValue(value: "healthkit")
 

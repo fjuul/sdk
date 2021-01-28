@@ -6,49 +6,28 @@ struct ActivitySourcesScreen: View {
 
     var body: some View {
         Form {
-            Text("current source: \(activitySourceObserver.currentConnectionsLabels())")
-            Button(action: {
-                self.activitySourceObserver.connect(activitySource: ActivitySourceFitbit.shared)
-            }) {
-                Text("Connect Fitbit")
-            }.disabled(self.connected(trackerValue: TrackerValue.FITBIT))
+            Text("Current sources: \(activitySourceObserver.currentConnectionsLabels())")
+            ForEach(self.activitySourceObserver.currentConnections, id: \.self.id) { activitySourceConnection in
+                Button(action: {
+                    self.activitySourceObserver.disconnect(activitySourceConnection: activitySourceConnection)
+                }) {
+                    Text("Disconnect \(activitySourceConnection.tracker.value)")
+                }
+            }
 
-            Button(action: {
-                self.activitySourceObserver.connect(activitySource: ActivitySourceGarmin.shared)
-            }) {
-                Text("Connect Garmin")
-            }.disabled(self.connected(trackerValue: TrackerValue.GARMIN))
-
-            Button(action: {
-                self.activitySourceObserver.connect(activitySource: ActivitySourcePolar.shared)
-            }) {
-                Text("Connect Polar")
-            }.disabled(self.connected(trackerValue: TrackerValue.POLAR))
-
-            Button(action: {
-                self.activitySourceObserver.connect(activitySource: ActivitySourceSuunto.shared)
-            }) {
-                Text("Connect Suunto")
-            }.disabled(self.connected(trackerValue: TrackerValue.SUUNTO))
-
-            Button(action: {
-                self.activitySourceObserver.connect(activitySource: ActivitySourceHK.shared)
-            }) {
-                Text("Connect Healthkit")
-            }.disabled(self.connected(trackerValue: TrackerValue.HEALTHKIT))
+            ForEach(self.activitySourceObserver.notConnectedActivitySources, id: \.self.trackerValue.value) { activitySource in
+                Button(action: {
+                    self.activitySourceObserver.connect(activitySource: activitySource)
+                }) {
+                    Text("Connect \(activitySource.trackerValue.value)")
+                }
+            }
         }
         .navigationBarTitle("Activity Sources", displayMode: .inline)
         .alert(item: $activitySourceObserver.error) { holder in
             Alert(title: Text(holder.error.localizedDescription))
         }
     }
-
-    private func connected(trackerValue: TrackerValue) -> Bool {
-        return self.activitySourceObserver.currentConnections.contains { activitySourceConnection in
-            return activitySourceConnection.tracker == trackerValue
-        }
-    }
-
 }
 
 struct ActivitySourcesScreen_Previews: PreviewProvider {

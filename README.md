@@ -42,6 +42,21 @@ maven {
 }
 ```
 
+### Installation
+In your `app/build.grade`:
+
+- **Analytics**:
+
+```implementation 'com.fjuul.sdk:analytics:+'```
+
+- **Activity Sources**:
+
+```com.fjuul.sdk:activitysources:+```
+
+- **User**:
+
+```com.fjuul.sdk:user:+```
+
 ### Getting started
 Please follow the [link](docs/android-examples.md) to see examples of working with the Fjuul Android SDK API.
 

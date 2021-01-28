@@ -39,7 +39,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 
 @RunWith(Enclosed.class)
-@Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+@Config(sdk = {Build.VERSION_CODES.P})
 public class UserServiceTest {
     static final String SECRET_KEY = "REAL_SECRET_KEY";
     static final String KEY_ID = "signing-key-id-1234";
@@ -47,7 +47,7 @@ public class UserServiceTest {
     static final String USER_SECRET = "USER_TOKEN";
 
     @RunWith(RobolectricTestRunner.class)
-    @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+    @Config(sdk = {Build.VERSION_CODES.P})
     public abstract static class GivenRobolectricContext {}
 
     public static class CreateUserTest extends GivenRobolectricContext {

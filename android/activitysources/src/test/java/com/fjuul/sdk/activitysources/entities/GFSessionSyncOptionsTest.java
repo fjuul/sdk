@@ -24,7 +24,7 @@ import android.os.Build;
 public class GFSessionSyncOptionsTest {
 
     @RunWith(RobolectricTestRunner.class)
-    @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+    @Config(sdk = {Build.VERSION_CODES.P})
     public abstract static class GivenRobolectricContext {}
 
     public static class BuilderTest extends GivenRobolectricContext {

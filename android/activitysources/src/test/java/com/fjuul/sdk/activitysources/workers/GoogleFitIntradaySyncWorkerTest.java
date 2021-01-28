@@ -54,7 +54,7 @@ import androidx.work.testing.TestWorkerBuilder;
 @RunWith(Enclosed.class)
 public class GoogleFitIntradaySyncWorkerTest {
     @RunWith(RobolectricTestRunner.class)
-    @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+    @Config(sdk = {Build.VERSION_CODES.P})
     public abstract static class GivenRobolectricContext {}
 
     public static class GetOrInitializeActivitySourcesManagerTests extends GivenRobolectricContext {

@@ -1,5 +1,48 @@
-# fjuul-sdk
+# Fjuul SDK
 
-## Android sdk
-The android implementation of the sdk uses java 8 features. Explore an official [guide](https://developer.android.com/studio/write/java8-support)
-about java 8 desugaring if you plan to support older api levels.
+The Fjuul SDK is a proprietary SDK whose main tasks:
+
+1. manage the state of the user's body parameters;
+2. collect daily activities and related user metrics;
+3. process and provide the aggregated results based on the received data from the user for a period of time;
+
+# Architecture design of the SDK
+
+The Fjuul SDK is presented as a set of modules, each of which is delimited by its own responsibilities. At the moment, they are as follows:
+
+- **Core** - the root module that configures the behavior of all the others as well shares the common things between them. You can use it to initialize the SDK with the API credentials and set the user on whose behalf it operates.
+- **User** - the module for working with users of the Fjuul SDK. For example, you can use it to create a user, get the latest state of the user profile, and update its properties.
+- **Activity Sources** - the module responsible for setting up activity sources for the user, as well as collecting activity data from local sources.
+- **Analytics** -  the module for accessing already aggregated statistics from the collected data sources.
+
+
+# Fjuul Android SDK
+
+Modules of Fjuul SDK for Android platform written on plain Java, so there should not be problems with integrating to your java project. Also, the project follows the [interoperability rules](https://developer.android.com/kotlin/interop#java_for_kotlin_consumption) for working with Kotlin lang (our ExampleApp which shows a usage of the SDK is written in Kotlin).
+
+### Restrictions
+- Fjuul SDK for Android runs on devices with Android 4.4 KitKat (API level 19) or above. So, the SDK requires `minSdkVersion` to be set to 19 or higher.
+- Fjuul SDK for Android uses Java 8+ API. Explore an official [guide](https://developer.android.com/studio/write/java8-support)
+about java 8 desugaring if you plan to support older api levels (Android Gradle Plugin 4.0+).
+- 'activitysources' module requires `google-play-services` on an Android device to work with the Google Fit API. This means the SDK wouldn't work on Huawei devices without Google services (or in similar cases).
+
+### Distibution
+Fjuul Android SDK modules are published to the private repository at Github Packages registry with the url `https://maven.pkg.github.com/fjuul/sdk`. In order to access Fjuul SDK modules you need to:
+
+1. get the authentication token with 'read:packages' access to fjuul/sdk repository on Github;
+2. declare a maven repository in your `app/build.gradle` in the following way:
+```groovy
+maven {
+    name = 'GitHubPackages'
+    url = uri('https://maven.pkg.github.com/fjuul/sdk')
+    credentials {
+        username = 'GITHUB_ACTOR'
+        password = 'GITHUB_TOKEN'
+    }
+}
+```
+
+### Getting started
+Please follow the [link](docs/android-examples.md) to see examples of working with the Fjuul Android SDK API.
+
+You can also refer to [ExampleApp](tree/master/android/ExampleApp/) which built for demonstration purposes.

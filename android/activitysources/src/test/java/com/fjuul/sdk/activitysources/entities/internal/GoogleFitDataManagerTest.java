@@ -73,7 +73,7 @@ public class GoogleFitDataManagerTest {
     }
 
     @RunWith(RobolectricTestRunner.class)
-    @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+    @Config(sdk = {Build.VERSION_CODES.P})
     public abstract static class GivenRobolectricContext {}
 
     public static class SyncIntradayMetricsTest extends GFClientWrapperTest.GivenRobolectricContext {

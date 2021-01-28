@@ -23,7 +23,7 @@ import android.os.Build;
 @RunWith(Enclosed.class)
 public class GFIntradaySyncOptionsTest {
     @RunWith(RobolectricTestRunner.class)
-    @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+    @Config(sdk = {Build.VERSION_CODES.P})
     public abstract static class GivenRobolectricContext {}
 
     public static class BuilderTest extends GivenRobolectricContext {

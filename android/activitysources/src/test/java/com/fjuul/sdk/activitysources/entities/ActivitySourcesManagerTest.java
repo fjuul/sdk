@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -43,13 +44,11 @@ import com.google.android.gms.tasks.Tasks;
 
 import android.content.Intent;
 import android.os.Build;
-import edu.emory.mathcs.backport.java.util.Arrays;
 
 @RunWith(Enclosed.class)
 public class ActivitySourcesManagerTest {
-
     @RunWith(RobolectricTestRunner.class)
-    @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+    @Config(sdk = {Build.VERSION_CODES.P})
     public abstract static class GivenRobolectricContext {}
 
     @RunWith(Enclosed.class)

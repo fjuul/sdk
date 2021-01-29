@@ -19,11 +19,10 @@ final class AnalyticsApiTests: XCTestCase {
     let singleDailyStatsResponse = """
         {
             \"date\":\"2020-06-10\",
-            \"lowest\":{\"seconds\":73920,\"metMinutes\":1402.79},
             \"low\":{\"seconds\":180,\"metMinutes\":8.24},
             \"moderate\":{\"seconds\":1260,\"metMinutes\":89.8},
             \"high\":{\"seconds\":540,\"metMinutes\":63.23},
-            \"totalKcal\":1755.64,\"activeKcal\":755.64,\"steps\":10000
+            \"bmr\":1755.64,\"activeKcal\":755.64,\"steps\":10000
         }
     """
 

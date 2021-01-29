@@ -88,11 +88,13 @@ fileprivate extension ApiClient {
     static func buildBearerAuthenticatedSession(apiKey: String, credentials: UserCredentials) -> Session {
         let apiKeyAdapter = ApiKeyAdapter(apiKey: apiKey)
         let bearerAuthAdapter = BearerAuthenticationAdapter(userCredentials: credentials)
+        let userAgentAdapter = UserAgentAdapter(sdkVersion: FjuulSDKVersion.version)
         let compositeInterceptor = Interceptor(
-            adapters: [apiKeyAdapter, bearerAuthAdapter],
+            adapters: [apiKeyAdapter, bearerAuthAdapter, userAgentAdapter],
             retriers: [],
             interceptors: []
         )
+
         let configuration = URLSessionConfiguration.af.default
         configuration.urlCache = nil
         return Session(configuration: configuration, interceptor: compositeInterceptor)
@@ -101,12 +103,13 @@ fileprivate extension ApiClient {
     static func buildSignedSession(apiKey: String, baseUrl: String, refreshSession: Session, credentialStore: HmacCredentialStore) -> Session {
 
         let apiKeyAdapter = ApiKeyAdapter(apiKey: apiKey)
+        let userAgentAdapter = UserAgentAdapter(sdkVersion: FjuulSDKVersion.version)
 
         let authenticator = HmacAuthenticatior(baseUrl: baseUrl, refreshSession: refreshSession, credentialStore: credentialStore)
         let authInterceptor = AuthenticationInterceptor(authenticator: authenticator, credential: credentialStore.signingKey)
 
         let compositeInterceptor = Interceptor(
-            adapters: [apiKeyAdapter],
+            adapters: [apiKeyAdapter, userAgentAdapter],
             retriers: [],
             interceptors: [authInterceptor]
         )

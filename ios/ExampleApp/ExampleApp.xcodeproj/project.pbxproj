@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		4C3D6A8D25BACB0000729276 /* FjuulApiBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3D6A8C25BACB0000729276 /* FjuulApiBuilder.swift */; };
 		4C7B5446250CE66E007C70C7 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C7B5445250CE66E007C70C7 /* HealthKit.framework */; };
-		4CFD812D25C2E4140084EE2F /* ConnectionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CFD812C25C2E4140084EE2F /* ConnectionButton.swift */; };
 		B348CE8624D844D3001DCE14 /* FjuulActivitySources in Frameworks */ = {isa = PBXBuildFile; productRef = B348CE8524D844D3001DCE14 /* FjuulActivitySources */; };
 		B348CE8824D85551001DCE14 /* ActivitySourcesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B348CE8724D85551001DCE14 /* ActivitySourcesScreen.swift */; };
 		B348CE8A24D85711001DCE14 /* ActivitySourceObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B348CE8924D85711001DCE14 /* ActivitySourceObservable.swift */; };
@@ -52,7 +51,6 @@
 		4C3D6A8C25BACB0000729276 /* FjuulApiBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FjuulApiBuilder.swift; sourceTree = "<group>"; };
 		4C7B5444250CE66E007C70C7 /* ExampleApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ExampleApp.entitlements; sourceTree = "<group>"; };
 		4C7B5445250CE66E007C70C7 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
-		4CFD812C25C2E4140084EE2F /* ConnectionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionButton.swift; sourceTree = "<group>"; };
 		B348CE8724D85551001DCE14 /* ActivitySourcesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivitySourcesScreen.swift; sourceTree = "<group>"; };
 		B348CE8924D85711001DCE14 /* ActivitySourceObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivitySourceObservable.swift; sourceTree = "<group>"; };
 		B3548D5E24CF0912002F26B9 /* UserProfileForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileForm.swift; sourceTree = "<group>"; };
@@ -111,7 +109,6 @@
 				B3FBCDB924B8D5A400184A88 /* LazyView.swift */,
 				B3FBCDB724B8BE2F00184A88 /* RootView.swift */,
 				B3548D5E24CF0912002F26B9 /* UserProfileForm.swift */,
-				4CFD812C25C2E4140084EE2F /* ConnectionButton.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -341,7 +338,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4CFD812D25C2E4140084EE2F /* ConnectionButton.swift in Sources */,
 				B3548D6924CF0FA8002F26B9 /* UserProfileScreen.swift in Sources */,
 				B3FBCDBA24B8D5A400184A88 /* LazyView.swift in Sources */,
 				B3BB7F1123993EC800A7BEF2 /* AppDelegate.swift in Sources */,

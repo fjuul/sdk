@@ -1,5 +1,6 @@
 package com.fjuul.sdk.analytics.http.services;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 import com.fjuul.sdk.analytics.entities.DailyStats;
@@ -42,24 +43,23 @@ public class AnalyticsService {
     /**
      * Builds the call to get the daily activity statistics for a given day.
      *
-     * @param date the day in format 'YYYY-MM-DD' to request daily stats for; this is the date in the users local
-     *        timezone.
+     * @param date the day to request daily stats for.
      * @return ApiCall for the user activity statistics for the given day.
      */
-    public @NonNull ApiCall<DailyStats> getDailyStats(@NonNull String date) {
-        return analyticsApiClient.getDailyStats(clientBuilder.getUserToken(), date);
+    public @NonNull ApiCall<DailyStats> getDailyStats(@NonNull LocalDate date) {
+        return analyticsApiClient.getDailyStats(clientBuilder.getUserToken(), date.toString());
     }
 
     /**
      * Builds the call to get the daily activity statistics for a given day interval.
      *
-     * @param startDate the start of the day interval in format 'YYYY-MM-DD' to request daily stats for (inclusive);
-     *        this is the date in the users local timezone.
-     * @param endDate the end of the day interval in format 'YYYY-MM-DD' to request daily stats for (inclusive); this is
-     *        the date in the users local timezone.
+     * @param startDate the start of the day interval to request daily stats for (inclusive); this is the date in the
+     *        users local timezone.
+     * @param endDate the end of the day interval to request daily stats for (inclusive); this is the date in the users
+     *        local timezone.
      * @return ApiCall for the user activity statistics for the given day interval.
      */
-    public @NonNull ApiCall<DailyStats[]> getDailyStats(@NonNull String startDate, @NonNull String endDate) {
-        return analyticsApiClient.getDailyStats(clientBuilder.getUserToken(), startDate, endDate);
+    public @NonNull ApiCall<DailyStats[]> getDailyStats(@NonNull LocalDate startDate, @NonNull LocalDate endDate) {
+        return analyticsApiClient.getDailyStats(clientBuilder.getUserToken(), startDate.toString(), endDate.toString());
     }
 }

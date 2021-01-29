@@ -109,7 +109,7 @@ public class ApiClient {
      * module. Otherwise, the file will be re-created again on the next background work.
      *
      * @param context application context
-     * @param userToken token of a user to delete
+     * @param userToken token of a user whose stored state must be cleared
      * @return boolean which indicates the success of the operation
      */
     public static boolean clearPersistentStorage(@NonNull Context context, @NonNull String userToken) {

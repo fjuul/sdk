@@ -1,7 +1,7 @@
 package com.fjuul.sdk.core.entities;
 
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.text.IsEmptyString.isEmptyString;
+import static org.hamcrest.text.IsEmptyString.isEmptyOrNullString;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
@@ -42,7 +42,7 @@ public class KeystoreTest {
         @Before
         public void beforeSetup() {
             storage = new InMemoryStorage();
-            keystore = new Keystore(storage, DUMMY_USER_TOKEN);
+            keystore = new Keystore(storage);
         }
 
         @Test
@@ -50,8 +50,7 @@ public class KeystoreTest {
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.MINUTE, -1);
             Date expiresAt = calendar.getTime();
-            storage.set("signing-key." + DUMMY_USER_TOKEN,
-                keyJsonAdapter.toJson(new SigningKey("key-id", "REAL_SECRET", expiresAt)));
+            storage.set("signing-key", keyJsonAdapter.toJson(new SigningKey("key-id", "REAL_SECRET", expiresAt)));
             assertFalse("returns empty optional", keystore.getValidKey().isPresent());
         }
 
@@ -61,7 +60,7 @@ public class KeystoreTest {
             calendar.add(Calendar.MINUTE, 1);
             Date expiresAt = calendar.getTime();
             SigningKey key = new SigningKey("key-id", "REAL_SECRET", expiresAt);
-            storage.set("signing-key." + DUMMY_USER_TOKEN, keyJsonAdapter.toJson(key));
+            storage.set("signing-key", keyJsonAdapter.toJson(key));
             Optional<SigningKey> result = keystore.getValidKey();
             assertTrue("returns non-empty optional", result.isPresent());
             assertEquals("returns stored key", key.getId(), result.get().getId());
@@ -75,10 +74,8 @@ public class KeystoreTest {
             Date expiresAt = calendar.getTime();
             SigningKey key = new SigningKey("key-id", "REAL_SECRET", expiresAt);
             keystore.setKey(key);
-            assertThat("saves signing key in the storage",
-                storage.get("signing-key." + DUMMY_USER_TOKEN),
-                not(isEmptyString()));
-            SigningKey savedKey = keyJsonAdapter.fromJson(storage.get("signing-key." + DUMMY_USER_TOKEN));
+            assertThat("saves signing key in the storage", storage.get("signing-key"), not(isEmptyOrNullString()));
+            SigningKey savedKey = keyJsonAdapter.fromJson(storage.get("signing-key"));
             assertEquals(key.getId(), savedKey.getId());
             assertEquals(key.getSecret(), savedKey.getSecret());
             assertEquals(0, key.getExpiresAt().compareTo(savedKey.getExpiresAt()));
@@ -95,9 +92,10 @@ public class KeystoreTest {
         @Before
         public void beforeSetup() {
             Context context = ApplicationProvider.getApplicationContext();
-            preferences = context.getSharedPreferences("com.fjuul.sdk.persistence", Context.MODE_PRIVATE);
-            storage = new PersistentStorage(context);
-            keystore = new Keystore(storage, DUMMY_USER_TOKEN);
+            preferences =
+                context.getSharedPreferences("com.fjuul.sdk.persistence." + DUMMY_USER_TOKEN, Context.MODE_PRIVATE);
+            storage = new PersistentStorage(context, DUMMY_USER_TOKEN);
+            keystore = new Keystore(storage);
         }
 
         @Test
@@ -118,7 +116,7 @@ public class KeystoreTest {
             calendar.add(Calendar.MINUTE, 1);
             Date expiresAt = calendar.getTime();
             SigningKey key = new SigningKey("key-id", "REAL_SECRET", expiresAt);
-            preferences.edit().putString("signing-key." + DUMMY_USER_TOKEN, keyJsonAdapter.toJson(key)).commit();
+            preferences.edit().putString("signing-key", keyJsonAdapter.toJson(key)).commit();
             Optional<SigningKey> result = keystore.getValidKey();
             assertTrue("returns non-empty optional", result.isPresent());
             assertEquals("returns stored key", key.getId(), result.get().getId());
@@ -134,9 +132,9 @@ public class KeystoreTest {
             keystore.setKey(key);
 
             assertThat("saves signing key in the shared prefs",
-                preferences.getString("signing-key." + DUMMY_USER_TOKEN, null),
-                not(isEmptyString()));
-            SigningKey savedKey = keyJsonAdapter.fromJson(storage.get("signing-key." + DUMMY_USER_TOKEN));
+                preferences.getString("signing-key", null),
+                not(isEmptyOrNullString()));
+            SigningKey savedKey = keyJsonAdapter.fromJson(storage.get("signing-key"));
             assertEquals(key.getId(), savedKey.getId());
             assertEquals(key.getSecret(), savedKey.getSecret());
             assertEquals(0, key.getExpiresAt().compareTo(savedKey.getExpiresAt()));

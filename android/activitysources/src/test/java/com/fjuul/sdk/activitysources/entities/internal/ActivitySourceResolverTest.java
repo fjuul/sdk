@@ -27,7 +27,7 @@ import android.os.Build;
 public class ActivitySourceResolverTest {
 
     @RunWith(RobolectricTestRunner.class)
-    @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+    @Config(sdk = {Build.VERSION_CODES.P})
     abstract static class GivenRobolectricContext {}
 
     public static class GetInstanceByTrackerValueTest extends GivenRobolectricContext {

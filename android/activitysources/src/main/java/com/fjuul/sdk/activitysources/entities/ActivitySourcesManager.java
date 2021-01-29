@@ -118,8 +118,7 @@ public final class ActivitySourcesManager {
     @SuppressLint("NewApi")
     public static synchronized void initialize(@NonNull ApiClient client,
         @NonNull ActivitySourcesManagerConfig config) {
-        final ActivitySourcesStateStore stateStore =
-            new ActivitySourcesStateStore(client.getStorage(), client.getUserToken());
+        final ActivitySourcesStateStore stateStore = new ActivitySourcesStateStore(client.getStorage());
         final List<TrackerConnection> storedConnections = stateStore.getConnections();
         final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
         final WorkManager workManager = WorkManager.getInstance(client.getAppContext());
@@ -270,6 +269,9 @@ public final class ActivitySourcesManager {
         final ActivitySource activitySource = sourceConnection.getActivitySource();
         if (activitySource instanceof GoogleFitActivitySource) {
             final Task<Void> disableGoogleFitTask = ((GoogleFitActivitySource) activitySource).disable();
+            // NOTE: callback of `addOnCompleteListener` will be executed on main thread since there is not provided
+            // executor for it.
+            // TODO: introduce own executor for ActivitySourcesManager to run all internal operations on it
             disableGoogleFitTask.addOnCompleteListener((task) -> {
                 if (task.isCanceled() || !task.isSuccessful()) {
                     callback.onResult(Result.error(task.getException()));

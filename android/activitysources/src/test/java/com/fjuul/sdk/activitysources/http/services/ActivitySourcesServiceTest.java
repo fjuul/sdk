@@ -40,7 +40,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 
 @RunWith(Enclosed.class)
-@Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+@Config(sdk = {Build.VERSION_CODES.P})
 public class ActivitySourcesServiceTest {
     static final String SECRET_KEY = "REAL_SECRET_KEY";
     static final String KEY_ID = "signing-key-id-1234";
@@ -48,7 +48,7 @@ public class ActivitySourcesServiceTest {
     static final String USER_SECRET = "USER_TOKEN";
 
     @RunWith(RobolectricTestRunner.class)
-    @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+    @Config(sdk = {Build.VERSION_CODES.P})
     public abstract static class GivenRobolectricContext {}
 
     public static class ConnectToTracker extends GivenRobolectricContext {
@@ -65,7 +65,7 @@ public class ActivitySourcesServiceTest {
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.HOUR, 2);
             validSigningKey = new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime());
-            testKeystore = new Keystore(new InMemoryStorage(), USER_TOKEN);
+            testKeystore = new Keystore(new InMemoryStorage());
             clientBuilder = new TestApiClient.Builder(mockWebServer);
         }
 
@@ -165,7 +165,7 @@ public class ActivitySourcesServiceTest {
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.HOUR, 2);
             validSigningKey = new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime());
-            testKeystore = new Keystore(new InMemoryStorage(), USER_TOKEN);
+            testKeystore = new Keystore(new InMemoryStorage());
             clientBuilder = new TestApiClient.Builder(mockWebServer);
         }
 
@@ -229,7 +229,7 @@ public class ActivitySourcesServiceTest {
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.HOUR, 2);
             validSigningKey = new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime());
-            testKeystore = new Keystore(new InMemoryStorage(), USER_TOKEN);
+            testKeystore = new Keystore(new InMemoryStorage());
             clientBuilder = new TestApiClient.Builder(mockWebServer);
         }
 

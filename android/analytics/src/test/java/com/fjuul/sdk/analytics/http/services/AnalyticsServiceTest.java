@@ -30,7 +30,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+@Config(sdk = {Build.VERSION_CODES.P})
 public class AnalyticsServiceTest {
     static final String SECRET_KEY = "REAL_SECRET_KEY";
     static final String KEY_ID = "signing-key-id-1234";
@@ -53,7 +53,7 @@ public class AnalyticsServiceTest {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.HOUR, 2);
         validSigningKey = new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime());
-        testKeystore = new Keystore(new InMemoryStorage(), USER_TOKEN);
+        testKeystore = new Keystore(new InMemoryStorage());
         userSigningService = new UserSigningService(clientBuilder.build());
     }
 

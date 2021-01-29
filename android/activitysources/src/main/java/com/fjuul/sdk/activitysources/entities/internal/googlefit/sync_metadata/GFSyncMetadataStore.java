@@ -28,7 +28,6 @@ import androidx.annotation.Nullable;
 
 public class GFSyncMetadataStore {
     private final IStorage storage;
-    private final String userToken;
     private final ThreadLocal<SimpleDateFormat> dateFormatter = new ThreadLocal<SimpleDateFormat>() {
         @Nullable
         @Override
@@ -55,14 +54,13 @@ public class GFSyncMetadataStore {
     private final Clock clock;
 
     @SuppressLint("NewApi")
-    public GFSyncMetadataStore(@NonNull IStorage storage, @NonNull String userToken) {
-        this(storage, userToken, Clock.systemUTC());
+    public GFSyncMetadataStore(@NonNull IStorage storage) {
+        this(storage, Clock.systemUTC());
     }
 
     @SuppressLint("NewApi")
-    public GFSyncMetadataStore(@NonNull IStorage storage, @NonNull String userToken, @NonNull Clock clock) {
+    public GFSyncMetadataStore(@NonNull IStorage storage, @NonNull Clock clock) {
         this.storage = storage;
-        this.userToken = userToken;
         this.clock = clock;
         Moshi moshi =
             new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).add(new LocalDateJsonAdapter()).build();
@@ -218,8 +216,7 @@ public class GFSyncMetadataStore {
         } else {
             throw new IllegalArgumentException("Invalid class to evaluate the metadata key");
         }
-        return String.format("gf-sync-metadata.%s.%s.%s-%s",
-            userToken,
+        return String.format("gf-sync-metadata.%s.%s-%s",
             entityKey,
             dateFormatter.get().format(startTime),
             dateFormatter.get().format(endTime));
@@ -230,12 +227,12 @@ public class GFSyncMetadataStore {
     }
 
     private String buildLookupKeyForSessionBundle(String sessionId) {
-        return String.format("gf-sync-metadata.%s.session.%s", userToken, sessionId);
+        return String.format("gf-sync-metadata.session.%s", sessionId);
     }
 
     private String buildLookupKeyForSessionBundleList(GFSessionBundle sessionBundle) {
         String monthDay = sessionListDateFormatter.get().format(sessionBundle.getTimeStart());
-        return String.format("gf-sync-metadata.%s.sessions.%s", userToken, monthDay);
+        return String.format("gf-sync-metadata.sessions.%s", monthDay);
     }
 
     private <T extends GFSyncEntityMetadata> JsonAdapter<T> getJSONAdapterFor(Class<T> tClass) {

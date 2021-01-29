@@ -1,5 +1,6 @@
 package com.fjuul.sdk.activitysources.entities;
 
+import static android.os.Looper.getMainLooper;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -12,8 +13,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.robolectric.Shadows.shadowOf;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -27,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 
 import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthenticationFlowRequired;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
@@ -43,13 +47,11 @@ import com.google.android.gms.tasks.Tasks;
 
 import android.content.Intent;
 import android.os.Build;
-import edu.emory.mathcs.backport.java.util.Arrays;
 
 @RunWith(Enclosed.class)
 public class ActivitySourcesManagerTest {
-
     @RunWith(RobolectricTestRunner.class)
-    @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+    @Config(sdk = {Build.VERSION_CODES.P})
     public abstract static class GivenRobolectricContext {}
 
     @RunWith(Enclosed.class)
@@ -178,6 +180,7 @@ public class ActivitySourcesManagerTest {
             }
 
             @Test
+            @LooperMode(LooperMode.Mode.PAUSED)
             public void disconnect_whenGoogleFit_disconnectsAndRefreshesCurrentConnections() {
                 final GoogleFitActivitySource googleFit = mock(GoogleFitActivitySource.class);
                 final TrackerConnection gfTrackerConnection = new TrackerConnection("gf_c_id",
@@ -215,6 +218,8 @@ public class ActivitySourcesManagerTest {
                 when(mockedSourcesService.getCurrentConnections()).thenReturn(mockedGetConnectionsApiCall);
 
                 subject.disconnect(gfConnection, mockedCallback);
+                // NOTE: execute all tasks posted to the main looper
+                shadowOf(getMainLooper()).idle();
 
                 // should revoke GoogleFit OAuth permissions
                 verify(googleFit).disable();

@@ -27,7 +27,7 @@ public class RequestSignerTest {
     static final String KEY_ID = "signing-key-id-1234";
 
     @RunWith(RobolectricTestRunner.class)
-    @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+    @Config(sdk = {Build.VERSION_CODES.P})
     public abstract static class GivenRobolectricContext {}
 
     public static class RequestWithoutDigestTest extends GivenRobolectricContext {

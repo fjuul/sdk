@@ -8,9 +8,12 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ListView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
 import com.fjuul.sdk.android.exampleapp.R
+import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
 import com.fjuul.sdk.android.exampleapp.ui.user_profile.UserProfileNavigationFlow
 
 // TODO: move these to own file
@@ -18,7 +21,8 @@ enum class ModuleItemName(val value: String) {
     PROFILE("Profile"),
     ACTIVITY_SOURCES("Activity Sources"),
     GF_SYNC("Google Fit synchronization"),
-    DAILY_STATS("Daily Stats")
+    DAILY_STATS("Daily Stats"),
+    LOGOUT("Logout")
 }
 sealed class ModulesListItem()
 data class ModuleItem(val name: ModuleItemName) : ModulesListItem()
@@ -49,7 +53,9 @@ class ModulesFragment : Fragment() {
             ModuleItem(ModuleItemName.ACTIVITY_SOURCES),
             ModuleItem(ModuleItemName.GF_SYNC),
             ModulesSection("Analytics"),
-            ModuleItem(ModuleItemName.DAILY_STATS)
+            ModuleItem(ModuleItemName.DAILY_STATS),
+            ModulesSection("Exit"),
+            ModuleItem(ModuleItemName.LOGOUT)
         )
         val adapter = ModulesListAdapter(requireContext(), listItems)
         modulesListView.adapter = adapter
@@ -72,6 +78,24 @@ class ModulesFragment : Fragment() {
                     ModuleItemName.GF_SYNC -> {
                         val action = ModulesFragmentDirections.actionModulesFragmentToGFSyncFragment()
                         findNavController().navigate(action)
+                    }
+                    ModuleItemName.LOGOUT -> {
+                        AlertDialog.Builder(requireContext())
+                            .setTitle("Are you sure?")
+                            .setNegativeButton("No") { dialog, _ ->
+                                dialog.dismiss()
+                            }.setPositiveButton("Logout") { dialog, _ ->
+                                val removed = ApiClientHolder.sdkClient.clearPersistentStorage()
+                                if (!removed) {
+                                    AlertDialog.Builder(requireContext())
+                                        .setTitle("Can't remove the persistent storage")
+                                        .show()
+                                    return@setPositiveButton
+                                }
+                                ActivitySourcesManager.disableBackgroundGFSyncWorkers(requireContext())
+                                dialog.dismiss()
+                                findNavController().popBackStack()
+                            }.show()
                     }
                 }
             }

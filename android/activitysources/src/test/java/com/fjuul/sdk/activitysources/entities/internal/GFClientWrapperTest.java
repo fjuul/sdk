@@ -82,7 +82,7 @@ public class GFClientWrapperTest {
     }
 
     @RunWith(RobolectricTestRunner.class)
-    @Config(manifest = Config.NONE, sdk = {Build.VERSION_CODES.P})
+    @Config(sdk = {Build.VERSION_CODES.P})
     public abstract static class GivenRobolectricContext {}
 
     public static boolean isXMinutesBucketRequest(DataReadRequest request, int minutes) {

@@ -16,9 +16,9 @@ public class Keystore {
     String lookupKey;
     JsonAdapter<SigningKey> keyJsonAdapter;
 
-    public Keystore(@NonNull IStorage storage, @NonNull String userToken) {
+    public Keystore(@NonNull IStorage storage) {
         this.storage = storage;
-        this.lookupKey = String.format("signing-key.%s", userToken);
+        this.lookupKey = "signing-key";
         keyJsonAdapter = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter())
             .build()
             .adapter(SigningKey.class)

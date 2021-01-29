@@ -191,7 +191,7 @@ public class UserServiceTest {
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.HOUR, 2);
             validSigningKey = new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime());
-            testKeystore = new Keystore(new InMemoryStorage(), USER_TOKEN);
+            testKeystore = new Keystore(new InMemoryStorage());
             clientBuilder = new TestApiClient.Builder(mockWebServer);
         }
 
@@ -253,7 +253,7 @@ public class UserServiceTest {
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.HOUR, 2);
             validSigningKey = new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime());
-            testKeystore = new Keystore(new InMemoryStorage(), USER_TOKEN);
+            testKeystore = new Keystore(new InMemoryStorage());
             clientBuilder = new TestApiClient.Builder(mockWebServer);
         }
 

@@ -21,7 +21,7 @@ class DailyStatsViewModel() : ViewModel() {
     val endDate: LiveData<LocalDate> = _endDate
 
     fun requestData() {
-        analyticsService.getDailyStats(_startDate.value.toString(), _endDate.value.toString())
+        analyticsService.getDailyStats(_startDate.value!!, _endDate.value!!)
             .enqueue { _, result ->
                 if (result.isError) {
                     _data.postValue(arrayOf())

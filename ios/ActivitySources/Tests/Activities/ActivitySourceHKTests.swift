@@ -41,7 +41,7 @@ final class ActivitySourceHKTests: XCTestCase {
     func testInit() {
         //Then
         XCTAssertNil(sut.apiClient)
-        XCTAssertEqual(sut.tracker, ActivitySourcesItem.healthkit)
+        XCTAssertEqual(sut.trackerValue, TrackerValue.HEALTHKIT)
     }
 
     func testRequestAccess() {

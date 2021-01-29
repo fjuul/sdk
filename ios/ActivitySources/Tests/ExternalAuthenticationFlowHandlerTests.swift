@@ -19,7 +19,7 @@ final class ExternalAuthenticationFlowHandlerTests: XCTestCase {
         let connectionStatus = ExternalAuthenticationFlowHandler.handle(url: url!)
 
         XCTAssert(connectionStatus.success, "Wrong connection status")
-        XCTAssertEqual(connectionStatus.tracker, ActivitySourcesItem.polar)
+        XCTAssertEqual(connectionStatus.tracker, TrackerValue.POLAR)
     }
 
     func testHandleValidUrlWithSuccessFail() {
@@ -28,7 +28,7 @@ final class ExternalAuthenticationFlowHandlerTests: XCTestCase {
         let connectionStatus = ExternalAuthenticationFlowHandler.handle(url: url!)
 
         XCTAssert(!connectionStatus.success, "Wrong connection status")
-        XCTAssertEqual(connectionStatus.tracker, ActivitySourcesItem.polar)
+        XCTAssertEqual(connectionStatus.tracker, TrackerValue.POLAR)
     }
 
     func testHandleInValidUrl() {
@@ -37,6 +37,6 @@ final class ExternalAuthenticationFlowHandlerTests: XCTestCase {
         let connectionStatus = ExternalAuthenticationFlowHandler.handle(url: url!)
 
         XCTAssert(!connectionStatus.success, "Wrong connection status")
-        XCTAssertNil(connectionStatus.tracker, "Wrong tracker")
+        XCTAssertEqual(connectionStatus.tracker, TrackerValue(value: "unknown"))
     }
 }

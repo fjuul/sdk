@@ -59,7 +59,7 @@ final class ActivitySourceManagerTests: XCTestCase {
         XCTAssertNotNil(sut.apiClient, "Api client should not be empty")
         XCTAssert(!sut.mountedActivitySourceConnections.isEmpty, "Should mount ActivitySourceConnections stored in local store")
         XCTAssert(sut.mountedActivitySourceConnections.count == trackerConnections.count, "Incorrect mounted ActivitySourceConnections")
-        XCTAssert(sut.mountedActivitySourceConnections.contains { element in element.tracker == .polar }, "Incorrect mounted ActivitySourceConnections")
+        XCTAssert(sut.mountedActivitySourceConnections.contains { element in element.tracker == TrackerValue.POLAR }, "Incorrect mounted ActivitySourceConnections")
         XCTAssertNotNil(sut.config, "Config should not be empty")
     }
 
@@ -68,9 +68,9 @@ final class ActivitySourceManagerTests: XCTestCase {
         let promise = expectation(description: "Success connect HealthKit activity source")
 
         let healthKitMock = MountableActivitySourceHKMock()
-        Given(healthKitMock, .tracker(getter: ActivitySourcesItem.healthkit))
+        Given(healthKitMock, .trackerValue(getter: TrackerValue.HEALTHKIT))
 
-        Perform(apiClientMock, .connect(activitySourceItem: .value(ActivitySourcesItem.healthkit), completion: .any, perform: { (item, completion) in
+        Perform(apiClientMock, .connect(trackerValue: .value(TrackerValue.HEALTHKIT), completion: .any, perform: { (item, completion) in
             let trackerConnection = TrackerConnection(id: "0ca60422-3626-4b50-aa70-43c91d8da731", tracker: "healthkit", createdAt: Date(), endedAt: nil)
             completion(.success(.connected(trackerConnection: trackerConnection)))
         }))
@@ -86,7 +86,7 @@ final class ActivitySourceManagerTests: XCTestCase {
                 switch connectionResult {
                 case .connected(let trackerConnection):
                     XCTAssertEqual(trackerConnection.id, "0ca60422-3626-4b50-aa70-43c91d8da731")
-                    XCTAssertEqual(trackerConnection.tracker, ActivitySourcesItem.healthkit.rawValue)
+                    XCTAssertEqual(trackerConnection.tracker, TrackerValue.HEALTHKIT.value)
                     XCTAssertEqual(trackerConnection.endedAt, nil)
 
                     promise.fulfill()
@@ -105,7 +105,7 @@ final class ActivitySourceManagerTests: XCTestCase {
         let promise = expectation(description: "Success get external authentication URL")
 
         let polarAuthUrl = "https://flow.polar.com/oauth2/authorization?response_type=code&client_id=71fyfQ"
-        Perform(apiClientMock, .connect(activitySourceItem: .value(ActivitySourcesItem.polar), completion: .any, perform: { (item, completion) in
+        Perform(apiClientMock, .connect(trackerValue: .value(TrackerValue.POLAR), completion: .any, perform: { (item, completion) in
 
             completion(.success(.externalAuthenticationFlowRequired(authenticationUrl: polarAuthUrl)))
         }))
@@ -132,8 +132,7 @@ final class ActivitySourceManagerTests: XCTestCase {
         // Given
         let promise = expectation(description: "Handle server response with error")
 
-        Perform(apiClientMock, .connect(activitySourceItem: .value(ActivitySourcesItem.polar), completion: .any, perform: { (item, completion) in
-
+        Perform(apiClientMock, .connect(trackerValue: .value(TrackerValue.POLAR), completion: .any, perform: { (item, completion) in
             completion(.failure(FjuulError.activitySourceConnectionFailure(reason: .sourceAlreadyConnected)))
         }))
 
@@ -202,7 +201,7 @@ final class ActivitySourceManagerTests: XCTestCase {
         wait(for: [promise], timeout: 5)
     }
 
-    func testGetCurrentConnections() {
+    func testRefreshCurrent() {
         // Given
         let promise = expectation(description: "Success disconnect activity source")
 
@@ -213,7 +212,7 @@ final class ActivitySourceManagerTests: XCTestCase {
         }))
 
         // When
-        sut.getCurrentConnections { result in
+        sut.refreshCurrent { result in
             switch result {
             case .success(let connections):
                 let expectedConnectionsList = [

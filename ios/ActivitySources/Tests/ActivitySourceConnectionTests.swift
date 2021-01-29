@@ -22,7 +22,7 @@ final class ActivitySourceConnectionTests: XCTestCase {
 
         activitySourceHKMock = MountableActivitySourceHKMock()
 
-        Given(activitySourceHKMock, .tracker(getter: ActivitySourcesItem.healthkit))
+        Given(activitySourceHKMock, .trackerValue(getter: TrackerValue.HEALTHKIT))
 
         apiClientMock = ActivitySourcesApiClientMock()
 
@@ -48,10 +48,10 @@ final class ActivitySourceConnectionTests: XCTestCase {
     func testInit() {
         //Then
         XCTAssertEqual(sut.id, trackerConnection.id)
-        XCTAssertEqual(sut.tracker, ActivitySourcesItem(rawValue: trackerConnection.tracker))
+        XCTAssertEqual(sut.tracker, TrackerValue(value: trackerConnection.tracker))
         XCTAssertEqual(sut.createdAt, trackerConnection.createdAt)
         XCTAssertEqual(sut.endedAt, trackerConnection.endedAt)
-        XCTAssertEqual(sut.activitySource.tracker, ActivitySourceHK.shared.tracker)
+        XCTAssertEqual(sut.activitySource.trackerValue, ActivitySourceHK.shared.trackerValue)
     }
 
     func testMountSucces() {

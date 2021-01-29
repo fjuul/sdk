@@ -87,9 +87,9 @@ public class ApiClient {
             if (appContext == null) {
                 throw new IllegalArgumentException("Application context must not be null");
             }
-            storage = new PersistentStorage(appContext);
             if (userCredentials != null) {
-                this.keystore = new Keystore(new PersistentStorage(appContext), userCredentials.getToken());
+                this.storage = new PersistentStorage(appContext, userCredentials.getToken());
+                this.keystore = new Keystore(storage);
             }
         }
 
@@ -97,6 +97,23 @@ public class ApiClient {
             setupDefaultStorage();
             return new ApiClient(baseUrl, apiKey, appContext, storage, keystore, userCredentials);
         }
+    }
+
+    /**
+     * Deletes the stored user file of the shared preferences created internally for persisting the state of Fjuul SDK.
+     * <br>
+     * Ideally, you should not use this method until you actually decide to clear all user data, as the repeated storage
+     * clearance will lead to data being unnecessarily uploaded/downloaded multiple times.<br>
+     * Keep in mind that if you want to fully reset SDK to the default state (like it was not touched at all), then you
+     * need also to disable all background works in {@code ActivitySourcesManager} in the {@code activitysources}
+     * module. Otherwise, the file will be re-created again on the next background work.
+     *
+     * @param context application context
+     * @param userToken token of a user whose stored state must be cleared
+     * @return boolean which indicates the success of the operation
+     */
+    public static boolean clearPersistentStorage(@NonNull Context context, @NonNull String userToken) {
+        return new PersistentStorage(context, userToken).remove();
     }
 
     public @NonNull String getBaseUrl() {
@@ -119,6 +136,22 @@ public class ApiClient {
             throw new IllegalStateException("The builder needed user credentials");
         }
         return userCredentials.getSecret();
+    }
+
+    /**
+     * Deletes the stored user file of the shared preferences created internally for persisting the state of Fjuul SDK.
+     * <br>
+     * Ideally, you should not use this method until you actually decide to clear all user data, as the repeated storage
+     * clearance will lead to data being unnecessarily uploaded/downloaded multiple times.<br>
+     * Keep in mind that if you want to fully reset SDK to the default state (like it was not touched at all), then you
+     * need also to disable all background works in {@code ActivitySourcesManager} in the {@code activitysources}
+     * module. Otherwise, the file will be re-created again on the next background work.
+     *
+     * @throws IllegalStateException when no user credentials
+     * @return boolean which indicates the success of the operation
+     */
+    public boolean clearPersistentStorage() {
+        return clearPersistentStorage(appContext, getUserToken());
     }
 
     public @NonNull IStorage getStorage() {

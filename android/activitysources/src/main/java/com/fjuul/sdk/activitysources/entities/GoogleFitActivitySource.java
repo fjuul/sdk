@@ -92,8 +92,7 @@ public class GoogleFitActivitySource extends ActivitySource {
         }
         final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
         final GFDataUtils gfUtils = new GFDataUtils();
-        final GFSyncMetadataStore syncMetadataStore =
-            new GFSyncMetadataStore(client.getStorage(), client.getUserToken());
+        final GFSyncMetadataStore syncMetadataStore = new GFSyncMetadataStore(client.getStorage());
         final GoogleFitDataManagerBuilder gfDataManagerBuilder =
             new GoogleFitDataManagerBuilder(context, gfUtils, syncMetadataStore, sourcesService);
         instance = new GoogleFitActivitySource(requestOfflineAccess,

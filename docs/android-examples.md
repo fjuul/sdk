@@ -1,7 +1,7 @@
 # Android Examples
 
 ## Getting started with initialization
-In order to use Fjuul SDK API you need to initialize ApiClient from **Core** module:
+In order to use Fjuul SDK API you need to initialize `ApiClient` from **Core** module:
 
 ``` kotlin
 import com.fjuul.sdk.core.ApiClient
@@ -31,7 +31,7 @@ For simplicity, the examples often use synchronous query execution.
 `UserService` - the main class for working with users.
 
 ### Create a user
-With basic ApiClient initialization, you can create a user: 
+With basic `ApiClient` initialization, you can create a user: 
 ```kotlin
 import com.fjuul.sdk.core.ApiClient
 
@@ -54,7 +54,7 @@ val userProfile = userCreationResult.user
 val userSecret = userCreationResult.secret
 ```
 The result of the creation is an instance of `UserCreationResult` class which is a composition of the user profile and secret of the user. You should save the token and secret of the user.  
-As mentioned earlier, to perform user-authorized actions, you must provide the user credentials to the ApiClient.Builder. The user credentials is a pair of token and secret:
+As mentioned earlier, to perform user-authorized actions, you must provide the user credentials to the `ApiClient.Builder`. The user credentials is a pair of token and secret:
 ```kotlin
 // reinitialize Fjuul api-client with user credentials for signing all user authorized HTTP requests
 val signedClient = ApiClient.Builder(appContext,
@@ -109,7 +109,7 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
 ```
 
 ### Collect Google Fit data
-Find out if the user has a current connection to GoogleFit:
+Find out if the user has a current connection to Google Fit:
 ```kotlin
 val sourcesManager = ActivitySourcesManager.getInstance()
 val gfConnectionSource = sourcesManager.current?.find { connection -> connection.activitySource is GoogleFitActivitySource }

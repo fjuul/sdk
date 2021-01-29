@@ -66,4 +66,4 @@ In your `app/build.grade`:
 ### Getting started
 Please follow the [link](docs/android-examples.md) to see examples of working with the Fjuul Android SDK API.
 
-You can also refer to [ExampleApp](tree/master/android/ExampleApp/) which built for demonstration purposes.
+You can also refer to [ExampleApp](android/ExampleApp) which built for demonstration purposes.

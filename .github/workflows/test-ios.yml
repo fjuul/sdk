@@ -14,41 +14,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    # - run: swift test
     - name: lint
       run: |
         (cd ios; swiftlint)
-    - name: xcode test FjuulCore
+    - name: xcode test Fjuul SDK-Package
       run: |
         set -o pipefail && xcodebuild \
-          -workspace ios/SDK.xcworkspace \
-          -scheme FjuulCore \
+          -scheme "Fjuul SDK-Package" \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=13.6' \
-          test | xcpretty
-    - name: xcode test FjuulCore
-      run: |
-        set -o pipefail && xcodebuild \
-          -workspace ios/SDK.xcworkspace \
-          -scheme FjuulCore \
-          -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=13.6' \
-          test | xcpretty
-    - name: xcode test FjuulAnalytics
-      run: |
-        set -o pipefail && xcodebuild \
-          -workspace ios/SDK.xcworkspace \
-          -scheme FjuulAnalytics \
-          -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=13.6' \
-          test | xcpretty
-    - name: xcode test FjuulUser
-      run: |
-        set -o pipefail && xcodebuild \
-          -workspace ios/SDK.xcworkspace \
-          -scheme FjuulUser \
-          -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=13.6' \
+          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=14.3' \
           test | xcpretty
     - name: xcode test ExampleApp
       run: |
@@ -56,5 +30,5 @@ jobs:
           -workspace ios/SDK.xcworkspace \
           -scheme ExampleApp \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=13.6' \
+          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=14.3' \
           test | xcpretty

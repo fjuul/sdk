@@ -1,9 +1,11 @@
 package com.fjuul.sdk.analytics.http.services;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.time.LocalDate;
 import java.util.Calendar;
 
 import org.hamcrest.core.IsInstanceOf;
@@ -28,6 +30,7 @@ import com.fjuul.sdk.core.http.utils.ApiCallResult;
 import android.os.Build;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = {Build.VERSION_CODES.P})
@@ -63,7 +66,7 @@ public class AnalyticsServiceTest {
     }
 
     @Test
-    public void getDailyStatsTest() throws IOException {
+    public void getDailyStatsTest() throws InterruptedException {
         testKeystore.setKey(validSigningKey);
         clientBuilder.setKeystore(testKeystore);
         analyticsService = new AnalyticsService(clientBuilder.build());
@@ -75,7 +78,11 @@ public class AnalyticsServiceTest {
                 + "\"high\": { \"seconds\": 180, \"metMinutes\": 15 }\n" + "}");
         mockWebServer.enqueue(mockResponse);
 
-        ApiCallResult<DailyStats> result = analyticsService.getDailyStats("2020-03-10").execute();
+        ApiCallResult<DailyStats> result = analyticsService.getDailyStats(LocalDate.parse("2020-03-10")).execute();
+        RecordedRequest request = mockWebServer.takeRequest();
+        assertThat("should transform local date to string",
+            request.getPath(),
+            containsString("daily-stats/USER_TOKEN/2020-03-10"));
 
         assertFalse("success result", result.isError());
         DailyStats dailyStats = result.getValue();
@@ -92,7 +99,7 @@ public class AnalyticsServiceTest {
     }
 
     @Test
-    public void getDailyStatsRangeTest() throws IOException {
+    public void getDailyStatsRangeTest() throws InterruptedException {
         testKeystore.setKey(validSigningKey);
         clientBuilder.setKeystore(testKeystore);
         analyticsService = new AnalyticsService(clientBuilder.build());
@@ -108,7 +115,13 @@ public class AnalyticsServiceTest {
                 + "\"high\": { \"seconds\": 30, \"metMinutes\": 3.4 }\n" + " " + "} \n" + "]");
         mockWebServer.enqueue(mockResponse);
 
-        ApiCallResult<DailyStats[]> result = analyticsService.getDailyStats("2020-03-10", "2020-03-10").execute();
+        ApiCallResult<DailyStats[]> result =
+            analyticsService.getDailyStats(LocalDate.parse("2020-03-10"), LocalDate.parse("2020-03-11")).execute();
+
+        RecordedRequest request = mockWebServer.takeRequest();
+        assertThat("should transform local date to string",
+            request.getPath(),
+            containsString("daily-stats/USER_TOKEN?from=2020-03-10&to=2020-03-11"));
 
         assertFalse("success result", result.isError());
         DailyStats[] dailyStatsRange = result.getValue();
@@ -145,7 +158,7 @@ public class AnalyticsServiceTest {
             .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
         mockWebServer.enqueue(mockResponse);
 
-        ApiCallResult<DailyStats> result = analyticsService.getDailyStats("2020-03-10").execute();
+        ApiCallResult<DailyStats> result = analyticsService.getDailyStats(LocalDate.parse("2020-03-10")).execute();
 
         assertTrue("error result", result.isError());
         Exception exception = result.getError();
@@ -166,7 +179,7 @@ public class AnalyticsServiceTest {
             .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
         mockWebServer.enqueue(mockResponse);
 
-        ApiCallResult<DailyStats> result = analyticsService.getDailyStats("2020-03-10").execute();
+        ApiCallResult<DailyStats> result = analyticsService.getDailyStats(LocalDate.parse("2020-03-10")).execute();
 
         assertTrue("error result", result.isError());
         Exception exception = result.getError();
@@ -186,7 +199,7 @@ public class AnalyticsServiceTest {
             .setBody("{\n" + "    \"message\": \"Unauthorized request\"" + "}");
         mockWebServer.enqueue(mockResponse);
 
-        ApiCallResult<DailyStats> result = analyticsService.getDailyStats("2020-03-10").execute();
+        ApiCallResult<DailyStats> result = analyticsService.getDailyStats(LocalDate.parse("2020-03-10")).execute();
 
         assertTrue("error result", result.isError());
         Exception exception = result.getError();
@@ -208,7 +221,7 @@ public class AnalyticsServiceTest {
             .setBody("{\n" + "    \"message\": \"Unauthorized: clock skew of 301s was greater than 300s\"" + "}");
         mockWebServer.enqueue(mockResponse);
 
-        ApiCallResult<DailyStats> result = analyticsService.getDailyStats("2020-03-10").execute();
+        ApiCallResult<DailyStats> result = analyticsService.getDailyStats(LocalDate.parse("2020-03-10")).execute();
 
         assertTrue("error result", result.isError());
         Exception exception = result.getError();

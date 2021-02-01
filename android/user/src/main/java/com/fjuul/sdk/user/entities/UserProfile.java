@@ -20,7 +20,8 @@ public class UserProfile {
     @NonNull
     private TimeZone timezone;
 
-    private UserProfile(@NonNull LocalDate birthDate,
+    private UserProfile(@NonNull String token,
+        @NonNull LocalDate birthDate,
         @NonNull Gender gender,
         float height,
         float weight,
@@ -101,14 +102,14 @@ public class UserProfile {
         }
 
         /**
-         * @param height required parameter for the user creation.
+         * @param height measured in cm; required parameter for the user creation. This must be a positive number.
          */
         public void setHeight(float height) {
             this.height = height;
         }
 
         /**
-         * @param weight required parameter for the user creation.
+         * @param weight measured in kg; required parameter for the user creation. This must be a positive number.
          */
         public void setWeight(float weight) {
             this.weight = weight;

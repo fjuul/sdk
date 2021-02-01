@@ -72,7 +72,19 @@ import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
 ...
 ActivitySourcesManager.initialize(signedClient)
 ```
-The call above initializes `ActivitySourcesManager` with the default config.  Consider using the overloading for this method that receives the config as a parameter, if you need to adjust the behavior.
+The call above initializes `ActivitySourcesManager` with the default config.  
+Consider using the overloaded method that receives the config as a parameter, if you need to adjust the behavior:
+```kotlin
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig
+...
+val config = ActivitySourcesManagerConfig.Builder()
+    .setCollectableFitnessMetrics(setOf(FitnessMetricsType.INTRADAY_STEPS, FitnessMetricsType.INTRADAY_CALORIES))
+    .enableGFBackgroundSync(Duration.ofMinutes(3))
+    .build()
+ActivitySourcesManager.initialize(signedClient, config)
+```
+`setCollectableFitnessMetrics` implies what permissions will be requested to local activity sources during the connection (e.g. Google Fit) and what kind of data will be collected in the background mode for current connections to local activity sources.
 
 To retrieve an instance of `ActivitySourcesManager`:
 ```kotlin
@@ -144,6 +156,29 @@ gfActivitySource.syncSessions(syncOptions) { result ->
         // handle error
     }
 ```
+
+### Collect Google Fit data in the background
+The SDK has the ability to sync Google Fit data in the background when all conditions are met:
+
+1. the corresponding options must be enabled in the `ActivitySourcesManagerConfig` configuration (they are enabled in the default configuration):
+```kotlin
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig
+
+val config = ActivitySourcesManagerConfig.Builder()
+    .setCollectableFitnessMetrics(setOf(FitnessMetricsType.INTRADAY_STEPS, FitnessMetricsType.INTRADAY_CALORIES))
+    .enableGFIntradayBackgroundSync()
+    .enableGFSessionsBackgroundSync(Duration.ofMinutes(3))
+    .build()
+// or the same:
+//  val config = ActivitySourcesManagerConfig.Builder()
+//    .setCollectableFitnessMetrics(setOf(FitnessMetricsType.INTRADAY_STEPS, FitnessMetricsType.INTRADAY_CALORIES))
+//    .enableGFBackgroundSync(Duration.ofMinutes(3))
+//    .build()
+ActivitySourcesManager.initialize(client, config)
+```
+2. the user must have a current connection to Google Fit;
+3. Android OS or its vendor modifications allow your application to run in the background and do not restrict its execution. You can refer to [dontkillmyapp.com](https://dontkillmyapp.com/)  for getting more details.
 
 ## Analytics module
 ### Getting DailyStats

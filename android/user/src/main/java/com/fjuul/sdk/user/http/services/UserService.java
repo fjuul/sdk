@@ -10,6 +10,7 @@ import com.fjuul.sdk.core.http.utils.ApiCall;
 import com.fjuul.sdk.core.http.utils.ApiCallAdapterFactory;
 import com.fjuul.sdk.user.entities.UserCreationResult;
 import com.fjuul.sdk.user.entities.UserProfile;
+import com.fjuul.sdk.user.http.UserApiResponseTransformer;
 import com.fjuul.sdk.user.http.apis.UserApi;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
@@ -46,7 +47,7 @@ public class UserService {
             .build();
         Retrofit retrofit = new Retrofit.Builder().baseUrl(clientBuilder.getBaseUrl())
             .client(httpClient)
-            .addCallAdapterFactory(ApiCallAdapterFactory.create())
+            .addCallAdapterFactory(ApiCallAdapterFactory.create(new UserApiResponseTransformer()))
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build();
         return retrofit;
@@ -75,7 +76,11 @@ public class UserService {
     }
 
     /**
-     * Builds the call to create a new user with the given profile params.
+     * Builds the call to create a new user with the given profile params.<br>
+     * Dedicated result errors:
+     * <ul>
+     * <li>{@link com.fjuul.sdk.user.exceptions.UserApiExceptions.ValidationErrorBadRequestException};</li>
+     * </ul>
      *
      * @param builder profile builder with all required params.
      * @return ApiCall for the user creation.
@@ -102,7 +107,11 @@ public class UserService {
     }
 
     /**
-     * Builds the call to update a user profile with the given params.
+     * Builds the call to update a user profile with the given params.<br>
+     * Dedicated result errors:
+     * <ul>
+     * <li>{@link com.fjuul.sdk.user.exceptions.UserApiExceptions.ValidationErrorBadRequestException};</li>
+     * </ul>
      *
      * @param builder profile builder with parameters. This method supports a partial update so it will be enough to
      *        assign only parameters those need to update.

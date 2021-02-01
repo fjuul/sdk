@@ -26,8 +26,10 @@ import com.fjuul.sdk.android.exampleapp.data.UserFormViewModel
 import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
 import com.fjuul.sdk.android.exampleapp.ui.login.afterTextChanged
 import com.fjuul.sdk.core.entities.UserCredentials
+import com.fjuul.sdk.core.exceptions.ApiExceptions
 import com.fjuul.sdk.user.entities.Gender
 import com.fjuul.sdk.user.entities.UserProfile
+import com.fjuul.sdk.user.exceptions.UserApiExceptions.ValidationErrorBadRequestException
 import com.google.android.material.textfield.TextInputLayout
 import java.time.LocalDate
 
@@ -147,8 +149,7 @@ class UserProfileFragment : Fragment() {
                     val (token, env) = sdkConfigViewModel.sdkConfig().value!!
                     model.createUser(requireContext(), token!!, env!!).enqueue { _, result ->
                         if (result.isError) {
-                            AlertDialog.Builder(requireContext()).setMessage(result.error?.message)
-                                .show()
+                            buildAlertFromApiException(result.error!!).show()
                             return@enqueue
                         }
                         val creationResult = result.value!!
@@ -164,8 +165,7 @@ class UserProfileFragment : Fragment() {
                 try {
                     model.updateUser(ApiClientHolder.sdkClient).enqueue { call, result ->
                         if (result.isError) {
-                            AlertDialog.Builder(requireContext()).setMessage(result.error?.message)
-                                .show()
+                            buildAlertFromApiException(result.error!!).show()
                             return@enqueue
                         }
                         val profile = result.value!!
@@ -200,6 +200,21 @@ class UserProfileFragment : Fragment() {
         weightInput.setText(profile.weight.toString(), TextView.BufferType.NORMAL)
         timezoneTextField.editText?.setText(profile.timezone.id, TextView.BufferType.NORMAL)
         localeTextField.editText?.setText(profile.locale, TextView.BufferType.NORMAL)
+    }
+
+    private fun buildAlertFromApiException(exception: ApiExceptions.CommonException): AlertDialog.Builder {
+        val alertTitle = exception.message
+        var alertMessage: String? = null
+        if (exception is ValidationErrorBadRequestException) {
+            alertMessage = exception.errors.joinToString("\n") {
+                return@joinToString "${it.property}: ${it.constraints}"
+            }
+        }
+        val alert = AlertDialog.Builder(requireContext()).setTitle(alertTitle)
+        if (alertMessage != null) {
+            alert.setMessage(alertMessage)
+        }
+        return alert
     }
 }
 

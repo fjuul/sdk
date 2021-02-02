@@ -4,7 +4,13 @@ import Logging
 
 private let logger = Logger(label: "FjuulSDK")
 
+/// Fetch workouts and related samples from HK
 class WorkoutFetcher {
+    /// Fetch new HK workouts
+    /// - Parameters:
+    ///   - anchor: healthkit anchor
+    ///   - predictateBuilder: instance of predictateBuilder
+    ///   - completion: HKRequestData with workouts data
     static func fetch(anchor: HKQueryAnchor,
                       predictateBuilder: HealthKitQueryPredictateBuilder, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
         let cycleDispatchGroup = DispatchGroup()
@@ -60,6 +66,11 @@ class WorkoutFetcher {
 
     // swiftlint:disable cyclomatic_complexity
     // swiftlint:disable function_body_length
+    /// Assign related samples to the workout
+    /// - Parameters:
+    ///   - item: instance of HKWorkout
+    ///   - workout: instance of WorkoutDataPoint
+    ///   - completion: WorkoutDataPoint with assigned samples
     private static func assignWorkoutSmaples(item: HKWorkout, workout: WorkoutDataPoint, completion: @escaping (WorkoutDataPoint) -> Void) {
         var workout = workout
         let workoutDispatchGroup = DispatchGroup()

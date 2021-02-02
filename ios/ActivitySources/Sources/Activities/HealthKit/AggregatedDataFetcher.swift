@@ -1,6 +1,7 @@
 import Foundation
 import HealthKit
 
+/// Fetch aggregated intraday data from HK
 class AggregatedDataFetcher {
     static var interval: DateComponents {
         var interval = DateComponents()
@@ -9,6 +10,12 @@ class AggregatedDataFetcher {
         return interval
     }
 
+    /// Fetch HKRequestData from HK by QuantityType
+    /// - Parameters:
+    ///   - type: healthkit QuantityType
+    ///   - anchor: healthkit anchor
+    ///   - predictateBuilder: instance of predictateBuilder
+    ///   - completion: HKRequestData and new healthkit anchor
     static func fetch(type: HKQuantityType, anchor: HKQueryAnchor,
                       predictateBuilder: HealthKitQueryPredictateBuilder, completion: @escaping (HKRequestData?, HKQueryAnchor?) -> Void) {
 
@@ -36,6 +43,12 @@ class AggregatedDataFetcher {
         }
     }
 
+    /// Detect dirty batches by make query to the HKAnchoredObjectQuery and fetch Date from the new entries in HK
+    /// - Parameters:
+    ///   - sampleType: HK sample type
+    ///   - anchor: instance of HK anchor
+    ///   - predicate: base predicate based on SDK config
+    ///   - completion: Set of dirtyBacthes startDates and new HK anchor
     private static func dirtyBatches(sampleType: HKSampleType, anchor: HKQueryAnchor, predicate: NSCompoundPredicate, completion: @escaping (Set<Date>, HKQueryAnchor?) -> Void) {
         var batchStartDates: Set<Date> = []
 
@@ -49,7 +62,7 @@ class AggregatedDataFetcher {
             }
 
             for sampleItem in samples {
-                if let date = DateUtils.beginningOfHour(date: sampleItem.startDate) {
+                DateUtils.dirtyHours(startDate: sampleItem.startDate, endDate: sampleItem.endDate).forEach { date in
                     batchStartDates.insert(date)
                 }
             }
@@ -163,6 +176,9 @@ class AggregatedDataFetcher {
         return Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: Date())!
     }
 
+    /// Get healthkit QuantityType value unit
+    /// - Parameter sampleType: healthkit quantityType
+    /// - Returns: HKUnit
     private static func unit(sampleType: HKQuantityType) -> HKUnit {
         switch sampleType {
         case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned):
@@ -175,6 +191,9 @@ class AggregatedDataFetcher {
         }
     }
 
+    /// Group HKStatistics by hour (Batch)
+    /// - Parameter data: array of HKStatistics
+    /// - Returns: dictionary grouped HKStatistics by hour
     static private func groupByHour(data: [HKStatistics]) -> [Date: [HKStatistics]] {
         let initial: [Date: [HKStatistics]] = [:]
 

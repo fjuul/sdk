@@ -47,6 +47,7 @@ final class ActivitySourceManagerTests: XCTestCase {
 
         let trackerConnections = [
             TrackerConnection(id: "polar", tracker: "polar", createdAt: Date(), endedAt: nil),
+            TrackerConnection(id: "unknow", tracker: "unknow", createdAt: Date(), endedAt: nil),
         ]
 
         let connectionsLocalStore = ActivitySourceStore(userToken: client.userToken, persistor: persistor)
@@ -56,11 +57,17 @@ final class ActivitySourceManagerTests: XCTestCase {
         let sut = ActivitySourceManager(userToken: client.userToken, persistor: persistor, apiClient: apiClientMock, config: config)
 
         // Then
-        XCTAssertNotNil(sut.apiClient, "Api client should not be empty")
+        XCTAssertNotNil(sut.apiClient)
+        XCTAssertNotNil(sut.config)
         XCTAssert(!sut.mountedActivitySourceConnections.isEmpty, "Should mount ActivitySourceConnections stored in local store")
-        XCTAssert(sut.mountedActivitySourceConnections.count == trackerConnections.count, "Incorrect mounted ActivitySourceConnections")
-        XCTAssert(sut.mountedActivitySourceConnections.contains { element in element.tracker == TrackerValue.POLAR }, "Incorrect mounted ActivitySourceConnections")
-        XCTAssertNotNil(sut.config, "Config should not be empty")
+        XCTAssert(sut.mountedActivitySourceConnections.count == trackerConnections.count)
+        XCTAssert(sut.mountedActivitySourceConnections.first?.tracker == TrackerValue.POLAR)
+        XCTAssert(sut.mountedActivitySourceConnections.last?.tracker == TrackerValue(value: "unknow"))
+
+        let isInstanceOfActivitySourceUnknown = sut.mountedActivitySourceConnections.last?.activitySource is ActivitySourceUnknown
+        if !isInstanceOfActivitySourceUnknown {
+            XCTFail("Unknow tracker should be instance of ActivitySourceUnknown")
+        }
     }
 
     func testConnectHealthKitActivitySource() {

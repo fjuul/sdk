@@ -121,7 +121,7 @@ fileprivate extension ApiClient {
 }
 
 final class AlamofireLogger: EventMonitor {
-
+//
 //    func requestDidResume(_ request: Request) {
 //
 //        let allHeaders = request.request.flatMap { $0.allHTTPHeaderFields.map { $0.description } } ?? "None"

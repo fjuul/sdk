@@ -33,4 +33,39 @@ public class DateUtils {
 
         return Calendar.current.date(byAdding: .second, value: -1, to: newDate)
     }
+
+    /// Prepare Set with hours starts from beginning of hour
+    /// - Parameters:
+    ///   - startDate: start Date
+    ///   - endDate: end Date
+    /// - Returns: Set of dates
+    static func dirtyHours(startDate: Date, endDate: Date) -> Set<Date> {
+        let calendar = Calendar.current
+        var currentDate = startDate
+        var dates = [currentDate]
+        var batchStartDates: Set<Date> = []
+
+        while currentDate < endDate {
+            // iterate by 1 hour
+            if let newDate = calendar.date(byAdding: .hour, value: 1, to: currentDate) {
+                currentDate = newDate
+
+                if newDate < endDate {
+                    dates.append(currentDate)
+                }
+            } else {
+                break
+            }
+        }
+        dates.append(endDate)
+
+        // Coverts dates to Set with date starts from beginning of hour
+        dates.forEach { batchDate in
+            if let date = DateUtils.beginningOfHour(date: batchDate) {
+                batchStartDates.insert(date)
+            }
+        }
+
+        return batchStartDates
+    }
 }

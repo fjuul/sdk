@@ -28,7 +28,7 @@ class FjuulApiBuilder {
             builder.healthKitConfig = HealthKitActivitySourceConfig(dataTypesToRead: [
                                                                 .activeEnergyBurned, .heartRate,
                                                                 .distanceCycling, .distanceWalkingRunning,
-                                                                .stepCount, .workoutType,
+                                                                .stepCount, .workout,
             ])
         }
 

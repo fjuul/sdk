@@ -61,7 +61,7 @@ enum ActivitySourceConnectionFactory {
         let trackerValue = TrackerValue.forValue(value: trackerConnection.tracker)
 
         if TrackerValue.HEALTHKIT == trackerValue {
-            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: HealthkitActivitySource.shared)
+            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: HealthKitActivitySource.shared)
         } else if TrackerValue.POLAR == trackerValue {
             return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: PolarActivitySource.shared)
         } else if TrackerValue.GARMIN == trackerValue {

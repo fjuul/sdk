@@ -131,7 +131,7 @@ final class ActivitySourcesApiTests: XCTestCase {
         let e = expectation(description: "Request on disconnect tracker")
 
         let trackerConnection = TrackerConnection(id: "0ca60422-3626-4b50-aa70-43c91d8da731", tracker: "healthkit", createdAt: Date(), endedAt: nil)
-        let activitySourceConnection = ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: HealthkitActivitySource.shared)
+        let activitySourceConnection = ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: HealthKitActivitySource.shared)
 
         stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(sut.userToken)/connections/\(activitySourceConnection.id)")) { request in
             XCTAssertEqual(request.httpMethod, "DELETE")

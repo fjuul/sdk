@@ -4,7 +4,7 @@ import UIKit
 
 class ActivitySourceObservable: ObservableObject {
     let availableActivitySources: [ActivitySource] = [
-        HealthkitActivitySource.shared, FitbitActivitySource.shared, GarminActivitySource.shared,
+        HealthKitActivitySource.shared, FitbitActivitySource.shared, GarminActivitySource.shared,
         PolarActivitySource.shared, SuuntoActivitySource.shared,
     ]
 

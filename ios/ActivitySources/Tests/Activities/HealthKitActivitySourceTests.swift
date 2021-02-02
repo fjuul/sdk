@@ -5,14 +5,14 @@ import SwiftyMocky
 
 @testable import FjuulActivitySources
 
-extension HealthkitActivitySource {
+extension HealthKitActivitySource {
     func reset() {
         self.apiClient = nil
     }
 }
 
 final class ActivitySourceHKTests: XCTestCase {
-    var sut: HealthkitActivitySource!
+    var sut: HealthKitActivitySource!
     var activitySourcesApiClientMock: ActivitySourcesApiClientMock!
     var healthKitManagerBuilderMock: HealthKitManagerBuildingMock!
     var healthKitManagingMock: HealthKitManagingMock!
@@ -25,7 +25,7 @@ final class ActivitySourceHKTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
-        sut = HealthkitActivitySource.shared
+        sut = HealthKitActivitySource.shared
 
         activitySourcesApiClientMock = ActivitySourcesApiClientMock()
         healthKitManagerBuilderMock = HealthKitManagerBuildingMock()
@@ -35,7 +35,7 @@ final class ActivitySourceHKTests: XCTestCase {
     override func tearDown() {
         super.tearDown()
 
-        HealthkitActivitySource.shared.reset()
+        HealthKitActivitySource.shared.reset()
     }
 
     func testInit() {

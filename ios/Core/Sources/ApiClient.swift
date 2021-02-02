@@ -75,7 +75,7 @@ open class ApiClient {
     }
 
     /// Deletes the stored user file of the shared preferences created internally for persisting the state of Fjuul SDK.
-    /// Note that if you want to perform the logout, then you need also to disable all backgroundDelivery observers for ActivitySourceHK
+    /// Note that if you want to perform the logout, then you need also to disable all backgroundDelivery observers for HealthKitActivitySource
     /// - Returns: Bool which indicates the success of the operation
     public func clearPersistentStorage() -> Bool {
         return type(of: self.persistor).remove(matchKey: self.userToken)

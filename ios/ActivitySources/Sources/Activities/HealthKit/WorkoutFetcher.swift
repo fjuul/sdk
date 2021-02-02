@@ -50,7 +50,7 @@ class WorkoutFetcher {
                     metadata: sampleItem.metadata?.compactMapValues { String(describing: $0 )}
                 )
 
-                self.assignWorkoutSmaples(item: sampleItem, workout: workout) { workoutWithSamples in
+                self.assignWorkoutSamples(item: sampleItem, workout: workout) { workoutWithSamples in
                     workouts.append(workoutWithSamples)
                     cycleDispatchGroup.leave()
                 }
@@ -71,7 +71,7 @@ class WorkoutFetcher {
     ///   - item: instance of HKWorkout
     ///   - workout: instance of WorkoutDataPoint
     ///   - completion: WorkoutDataPoint with assigned samples
-    private static func assignWorkoutSmaples(item: HKWorkout, workout: WorkoutDataPoint, completion: @escaping (WorkoutDataPoint) -> Void) {
+    private static func assignWorkoutSamples(item: HKWorkout, workout: WorkoutDataPoint, completion: @escaping (WorkoutDataPoint) -> Void) {
         var workout = workout
         let workoutDispatchGroup = DispatchGroup()
 

@@ -24,7 +24,7 @@ public final class ActivitySourceConnection: TrackerConnectionable, Equatable {
     }
 
     /// Mount locally ActivitySource if it is mountable (protocol: MountableActivitySource).
-    /// Currently on ActivitySourceHK is mountable, and call this function will setup backgroundDelivery.
+    /// Currently on HealthKitActivitySource is mountable, and call this function will setup backgroundDelivery.
     /// - Parameters:
     ///   - apiClient: instance of ActivitySourcesApiClient
     ///   - config: instance of ActivitySourceConfigBuilder
@@ -43,7 +43,7 @@ public final class ActivitySourceConnection: TrackerConnectionable, Equatable {
     }
 
     /// Unmount locally ActivitySource if it is mountable (protocol: MountableActivitySource).
-    /// Currently on ActivitySourceHK is mountable, and call this function will disable backgroundDelivery.
+    /// Currently on HealthKitActivitySource is mountable, and call this function will disable backgroundDelivery.
     /// - Parameter completion: status or error
     func unmount(completion: @escaping (Result<Bool, Error>) -> Void) {
         if let mountableSource = activitySource as? MountableActivitySource {

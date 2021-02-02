@@ -1,7 +1,7 @@
 import Foundation
 
 /// The protocol for all activity source classes.
-/// Like ActivitySourceHK, ActivitySourcePolar, etc.
+/// Like HealthKitActivitySource, ActivitySourcePolar, etc.
 public protocol ActivitySource {
     var trackerValue: TrackerValue { get }
 }

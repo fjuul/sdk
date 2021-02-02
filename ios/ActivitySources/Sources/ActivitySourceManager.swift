@@ -69,7 +69,7 @@ final public class ActivitySourceManager {
     ///    matched with the scheme provided to you or coordinated with you by Fjuul.
     /// After a user succeeds in the connection, please invoke refreshing current connections `ActivitySourcesManager#getCurrentConnections`
     /// - Parameters:
-    ///   - activitySource: ActivitySource instance to connect (ActivitySourcePolar.shared, ActivitySourceHK.shared, etc...)
+    ///   - activitySource: ActivitySource instance to connect (ActivitySourcePolar.shared, HealthKitActivitySource.shared, etc...)
     ///   - completion: with ConnectionResult or Error
     public func connect(activitySource: ActivitySource, completion: @escaping (Result<ConnectionResult, Error>) -> Void) {
         if let activitySource = activitySource as? MountableActivitySourceHK {
@@ -92,7 +92,7 @@ final public class ActivitySourceManager {
     }
 
     /// Disconnects the activity source connection and refreshes current connection list.
-    /// In the case of ActivitySourceHK it will disable backgroundDelivery
+    /// In the case of HealthKitActivitySource it will disable backgroundDelivery
     /// - Parameters:
     ///   - activitySourceConnection: instance of ActivitySourceConnection
     ///   - completion: with status or error
@@ -135,7 +135,7 @@ final public class ActivitySourceManager {
     }
 
     /// Unmount all ActivitySources. Useful for logout from app case. The trackers will not be disconnected,
-    /// but all locally mounted ActivitySources will be unmounted on the device. Currently only ActivitySourceHK is mountable
+    /// but all locally mounted ActivitySources will be unmounted on the device. Currently only HealthKitActivitySource is mountable
     /// - Parameter completion: status or error
     public func unmout(completion: @escaping (Result<Bool, Error>) -> Void) {
         let group = DispatchGroup()

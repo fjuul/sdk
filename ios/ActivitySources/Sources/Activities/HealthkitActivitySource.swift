@@ -46,10 +46,10 @@ public final class HealthkitActivitySource: MountableActivitySourceHK {
     /// - Parameters:
     ///   - apiClient: instance of ActivitySourcesApiClient
     ///   - config: instance of ActivitySourceConfigBuilder
-    ///   - healthKitManagerBuilder: instance of HealthKitManagerBuildering
+    ///   - healthKitManagerBuilder: instance of HealthKitManagerBuilding
     ///   - completion: status or error
     internal func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder,
-                        healthKitManagerBuilder: HealthKitManagerBuildering,
+                        healthKitManagerBuilder: HealthKitManagerBuilding,
                         completion: @escaping (Result<Bool, Error>) -> Void) {
 
         self.apiClient = apiClient

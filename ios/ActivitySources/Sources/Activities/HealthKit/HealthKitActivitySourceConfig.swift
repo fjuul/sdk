@@ -1,17 +1,17 @@
 import Foundation
 import HealthKit
 
-/// Data types that availbale configure for ActivitySourceHKConfig
+/// Data types that availbale configure for HealthKitActivitySourceConfig
 public enum HealthKitConfigType {
-    case activeEnergyBurned, stepCount, distanceCycling, distanceWalkingRunning, heartRate, workoutType
+    case activeEnergyBurned, stepCount, distanceCycling, distanceWalkingRunning, heartRate, workout
 }
 
 /// Config for the HealthKit ActivitySource. SDK consumers can configure which data types SDK will collect.
-public struct ActivitySourceHKConfig {
+public struct HealthKitActivitySourceConfig {
     private let dataTypesToRead: [HealthKitConfigType]
     let syncUserEnteredData: Bool
 
-    public init(dataTypesToRead: [HealthKitConfigType] = [.activeEnergyBurned, .stepCount, .distanceCycling, .distanceWalkingRunning, .heartRate, .workoutType],
+    public init(dataTypesToRead: [HealthKitConfigType] = [.activeEnergyBurned, .stepCount, .distanceCycling, .distanceWalkingRunning, .heartRate, .workout],
                 syncUserEnteredData: Bool = true) {
 
         self.dataTypesToRead = dataTypesToRead
@@ -43,7 +43,7 @@ public struct ActivitySourceHKConfig {
             dataTypes.insert(heartRate)
         }
 
-        if dataTypesToRead.contains(.workoutType) {
+        if dataTypesToRead.contains(.workout) {
             dataTypes.insert(HKObjectType.workoutType())
         }
 

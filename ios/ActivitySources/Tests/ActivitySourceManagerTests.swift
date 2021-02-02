@@ -17,8 +17,8 @@ final class ActivitySourceManagerTests: XCTestCase {
     let persistor = InMemoryPersistor()
 
     let config = ActivitySourceConfigBuilder { builder in
-        builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned, .distanceCycling,
-            .distanceWalkingRunning, .stepCount, .workoutType, ])
+        builder.healthKitConfig = HealthKitActivitySourceConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned, .distanceCycling,
+            .distanceWalkingRunning, .stepCount, .workout, ])
     }
 
     override func setUp() {

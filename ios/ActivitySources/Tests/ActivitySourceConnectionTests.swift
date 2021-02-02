@@ -12,7 +12,7 @@ final class ActivitySourceConnectionTests: XCTestCase {
 
     let persistor = InMemoryPersistor()
     let config = ActivitySourceConfigBuilder { builder in
-        builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned, .workoutType, ])
+        builder.healthKitConfig = HealthKitActivitySourceConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned, .workout, ])
     }
 
     let trackerConnection = TrackerConnection(id: "healthkit", tracker: "healthkit", createdAt: Date(), endedAt: nil)

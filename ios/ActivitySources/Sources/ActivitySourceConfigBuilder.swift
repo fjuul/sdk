@@ -5,7 +5,7 @@ import Foundation
 
  ~~~
  let config = ActivitySourceConfigBuilder { builder in
-     builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [
+     builder.healthKitConfig = HealthKitActivitySourceConfig(dataTypesToRead: [
                                                          .activeEnergyBurned,
                                                          .stepCount, .workoutType,
      ])
@@ -13,8 +13,8 @@ import Foundation
  ~~~
 */
 public final class ActivitySourceConfigBuilder {
-    public var healthKitConfig: ActivitySourceHKConfig = ActivitySourceHKConfig(
-        dataTypesToRead: [.activeEnergyBurned, .distanceCycling, .distanceWalkingRunning, .stepCount, .workoutType, .heartRate],
+    public var healthKitConfig: HealthKitActivitySourceConfig = HealthKitActivitySourceConfig(
+        dataTypesToRead: [.activeEnergyBurned, .distanceCycling, .distanceWalkingRunning, .stepCount, .workout, .heartRate],
         syncUserEnteredData: true
     )
 

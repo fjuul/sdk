@@ -1,15 +1,15 @@
 import Foundation
 import HealthKit
 
-/// Class for build Healthkit query predicates base on ActivitySourceHKConfig and dirty batches.
+/// Class for build Healthkit query predicates base on HealthKitActivitySourceConfig and dirty batches.
 class HealthKitQueryPredictateBuilder {
-    let healthKitConfig: ActivitySourceHKConfig
+    let healthKitConfig: HealthKitActivitySourceConfig
 
     var wasUserEnteredPredicate: NSPredicate {
         NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
     }
 
-    init(healthKitConfig: ActivitySourceHKConfig) {
+    init(healthKitConfig: HealthKitActivitySourceConfig) {
         self.healthKitConfig = healthKitConfig
     }
 
@@ -27,7 +27,7 @@ class HealthKitQueryPredictateBuilder {
         return NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
     }
 
-    /// Build predicate for HKStatisticsCollectionQuery based on ActivitySourceHKConfig and dirty batches
+    /// Build predicate for HKStatisticsCollectionQuery based on HealthKitActivitySourceConfig and dirty batches
     /// - Parameter batchDates: list of dirty batches
     /// - Returns: instance of NSCompoundPredicate
     func statisticsCollectionsPredicate(batchDates: Set<Date>) -> NSCompoundPredicate {

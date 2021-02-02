@@ -18,7 +18,7 @@ final class ActivitySourceHKTests: XCTestCase {
     var healthKitManagingMock: HealthKitManagingMock!
 
     let config = ActivitySourceConfigBuilder { builder in
-        builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned, .workoutType, ])
+        builder.healthKitConfig = HealthKitActivitySourceConfig(dataTypesToRead: [.heartRate, .activeEnergyBurned, .workout, ])
     }
     let persistor = InMemoryPersistor()
 

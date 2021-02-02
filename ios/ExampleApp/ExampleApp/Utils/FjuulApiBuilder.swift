@@ -25,7 +25,7 @@ class FjuulApiBuilder {
     static func buildActivitySourceManager(apiClient: ApiClient) {
         // SDK consumer can not provide healthKitConfig if it's not used in-app
         let config = ActivitySourceConfigBuilder { builder in
-            builder.healthKitConfig = ActivitySourceHKConfig(dataTypesToRead: [
+            builder.healthKitConfig = HealthKitActivitySourceConfig(dataTypesToRead: [
                                                                 .activeEnergyBurned, .heartRate,
                                                                 .distanceCycling, .distanceWalkingRunning,
                                                                 .stepCount, .workoutType,

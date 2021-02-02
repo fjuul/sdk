@@ -3,12 +3,12 @@ import FjuulCore
 import Alamofire
 
 //sourcery: AutoMockable
-protocol MountableActivitySourceHK: MountableActivitySource {
+protocol MountableHealthKitActivitySource: MountableActivitySource {
     func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void)
 }
 
 /// The ActivitySource singleton class for the Healthkit tracker. This is an mountable activity source.
-public final class HealthKitActivitySource: MountableActivitySourceHK {
+public final class HealthKitActivitySource: MountableHealthKitActivitySource {
     static public let shared = HealthKitActivitySource()
 
     var apiClient: ActivitySourcesApiClient?

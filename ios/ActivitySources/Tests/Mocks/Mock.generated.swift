@@ -791,9 +791,9 @@ open class HealthKitManagingMock: HealthKitManaging, Mock, StaticMock {
     }
 }
 
-// MARK: - MountableActivitySourceHK
+// MARK: - MountableHealthKitActivitySource
 
-open class MountableActivitySourceHKMock: MountableActivitySourceHK, Mock {
+open class MountableHealthKitActivitySourceMock: MountableHealthKitActivitySource, Mock {
     public init(sequencing sequencingPolicy: SequencingPolicy = .lastWrittenResolvedFirst, stubbing stubbingPolicy: StubbingPolicy = .wrap, file: StaticString = #file, line: UInt = #line) {
         SwiftyMockyTestObserver.setup()
         self.sequencingPolicy = sequencingPolicy
@@ -830,12 +830,12 @@ open class MountableActivitySourceHKMock: MountableActivitySourceHK, Mock {
     }
 
     public var trackerValue: TrackerValue {
-		get {	invocations.append(.p_trackerValue_get); return __p_trackerValue ?? givenGetterValue(.p_trackerValue_get, "MountableActivitySourceHKMock - stub value for trackerValue was not defined") }
+		get {	invocations.append(.p_trackerValue_get); return __p_trackerValue ?? givenGetterValue(.p_trackerValue_get, "MountableHealthKitActivitySourceMock - stub value for trackerValue was not defined") }
 	}
 	private var __p_trackerValue: (TrackerValue)?
 
     public var apiClient: ActivitySourcesApiClient? {
-		get {	invocations.append(.p_apiClient_get); return __p_apiClient ?? optionalGivenGetterValue(.p_apiClient_get, "MountableActivitySourceHKMock - stub value for apiClient was not defined") }
+		get {	invocations.append(.p_apiClient_get); return __p_apiClient ?? optionalGivenGetterValue(.p_apiClient_get, "MountableHealthKitActivitySourceMock - stub value for apiClient was not defined") }
 	}
 	private var __p_apiClient: (ActivitySourcesApiClient)?
 

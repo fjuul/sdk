@@ -9,7 +9,7 @@ public class TrackerValue: Equatable {
     public static let SUUNTO = TrackerValue(value: "suunto")
     public static let HEALTHKIT = TrackerValue(value: "healthkit")
 
-    static var constants = [ FITBIT, GARMIN, GOOGLEFIT_BACKEND, POLAR, SUUNTO, HEALTHKIT ]
+    static var constants = [ FITBIT, GARMIN, POLAR, SUUNTO, HEALTHKIT ]
 
     public static func == (lhs: TrackerValue, rhs: TrackerValue) -> Bool {
         return lhs.value == rhs.value

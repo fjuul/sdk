@@ -74,7 +74,7 @@ final class ActivitySourceManagerTests: XCTestCase {
         // Given
         let promise = expectation(description: "Success connect HealthKit activity source")
 
-        let healthKitMock = MountableActivitySourceHKMock()
+        let healthKitMock = MountableHealthKitActivitySourceMock()
         Given(healthKitMock, .trackerValue(getter: TrackerValue.HEALTHKIT))
 
         Perform(apiClientMock, .connect(trackerValue: .value(TrackerValue.HEALTHKIT), completion: .any, perform: { (item, completion) in

@@ -72,7 +72,7 @@ final public class ActivitySourceManager {
     ///   - activitySource: ActivitySource instance to connect (ActivitySourcePolar.shared, HealthKitActivitySource.shared, etc...)
     ///   - completion: with ConnectionResult or Error
     public func connect(activitySource: ActivitySource, completion: @escaping (Result<ConnectionResult, Error>) -> Void) {
-        if let activitySource = activitySource as? MountableActivitySourceHK {
+        if let activitySource = activitySource as? MountableHealthKitActivitySource {
             activitySource.requestAccess(config: config) { result in
                 switch result {
                 case .failure(let err):

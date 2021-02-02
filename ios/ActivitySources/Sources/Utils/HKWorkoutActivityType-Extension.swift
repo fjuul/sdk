@@ -87,7 +87,7 @@ extension HKWorkoutActivityType {
         // iOS 13
         case .discSports:                   return "Disc Sports"
         case .fitnessGaming:                return "Fitness Gaming"
-            
+
         // iOS 14
         case .cardioDance:                  return "Cardio Dance"
         case .socialDance:                  return "Social Dance"

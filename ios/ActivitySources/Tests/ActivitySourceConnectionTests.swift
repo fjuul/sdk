@@ -8,7 +8,7 @@ import SwiftyMocky
 final class ActivitySourceConnectionTests: XCTestCase {
     var sut: ActivitySourceConnection!
     var apiClientMock: ActivitySourcesApiClientMock!
-    var activitySourceHKMock: MountableActivitySourceHKMock!
+    var activitySourceHKMock: MountableHealthKitActivitySourceMock!
 
     let persistor = InMemoryPersistor()
     let config = ActivitySourceConfigBuilder { builder in
@@ -20,7 +20,7 @@ final class ActivitySourceConnectionTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
-        activitySourceHKMock = MountableActivitySourceHKMock()
+        activitySourceHKMock = MountableHealthKitActivitySourceMock()
 
         Given(activitySourceHKMock, .trackerValue(getter: TrackerValue.HEALTHKIT))
 

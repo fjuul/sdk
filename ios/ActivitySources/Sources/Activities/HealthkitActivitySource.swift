@@ -8,8 +8,8 @@ protocol MountableActivitySourceHK: MountableActivitySource {
 }
 
 /// The ActivitySource singleton class for the Healthkit tracker. This is an mountable activity source.
-public final class ActivitySourceHK: MountableActivitySourceHK {
-    static public let shared = ActivitySourceHK()
+public final class HealthkitActivitySource: MountableActivitySourceHK {
+    static public let shared = HealthkitActivitySource()
 
     var apiClient: ActivitySourcesApiClient?
 

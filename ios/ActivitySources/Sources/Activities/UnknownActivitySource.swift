@@ -1,7 +1,7 @@
 import Foundation
 
 /// The ActivitySource class for the Unknown tracker.
-public final class ActivitySourceUnknown: ActivitySource {
+public final class UnknownActivitySource: ActivitySource {
     public var trackerValue: TrackerValue
 
     init(tracker: String) {

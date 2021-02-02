@@ -64,7 +64,7 @@ final class ActivitySourceManagerTests: XCTestCase {
         XCTAssert(sut.mountedActivitySourceConnections.first?.tracker == TrackerValue.POLAR)
         XCTAssert(sut.mountedActivitySourceConnections.last?.tracker == TrackerValue(value: "unknow"))
 
-        let isInstanceOfActivitySourceUnknown = sut.mountedActivitySourceConnections.last?.activitySource is ActivitySourceUnknown
+        let isInstanceOfActivitySourceUnknown = sut.mountedActivitySourceConnections.last?.activitySource is UnknownActivitySource
         if !isInstanceOfActivitySourceUnknown {
             XCTFail("Unknow tracker should be instance of ActivitySourceUnknown")
         }
@@ -118,7 +118,7 @@ final class ActivitySourceManagerTests: XCTestCase {
         }))
 
         // When
-        sut.connect(activitySource: ActivitySourcePolar.shared) { result in
+        sut.connect(activitySource: PolarActivitySource.shared) { result in
             switch result {
             case .success(let connectionResult):
                 switch connectionResult {
@@ -144,7 +144,7 @@ final class ActivitySourceManagerTests: XCTestCase {
         }))
 
         // When
-        sut.connect(activitySource: ActivitySourcePolar.shared) { result in
+        sut.connect(activitySource: PolarActivitySource.shared) { result in
             switch result {
             case .success(let connectionResult):
                 switch connectionResult {
@@ -165,7 +165,7 @@ final class ActivitySourceManagerTests: XCTestCase {
         let promise = expectation(description: "Success disconnect activity source")
 
         let trackerConnection = TrackerConnection(id: "0ca60422", tracker: "polar", createdAt: Date(), endedAt: nil)
-        let activitySourceConnection = ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourcePolar.shared)
+        let activitySourceConnection = ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: PolarActivitySource.shared)
 
         Perform(apiClientMock, .disconnect(activitySourceConnection: .value(activitySourceConnection), completion: .any, perform: { (item, completion) in
 
@@ -189,7 +189,7 @@ final class ActivitySourceManagerTests: XCTestCase {
         let promise = expectation(description: "Handle server failure on disconnect activity source")
 
         let trackerConnection = TrackerConnection(id: "0ca60422", tracker: "polar", createdAt: Date(), endedAt: nil)
-        let activitySourceConnection = ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourcePolar.shared)
+        let activitySourceConnection = ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: PolarActivitySource.shared)
 
         Perform(apiClientMock, .disconnect(activitySourceConnection: .value(activitySourceConnection), completion: .any, perform: { (item, completion) in
 

@@ -61,17 +61,17 @@ enum ActivitySourceConnectionFactory {
         let trackerValue = TrackerValue.forValue(value: trackerConnection.tracker)
 
         if TrackerValue.HEALTHKIT == trackerValue {
-            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourceHK.shared)
+            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: HealthkitActivitySource.shared)
         } else if TrackerValue.POLAR == trackerValue {
-            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourcePolar.shared)
+            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: PolarActivitySource.shared)
         } else if TrackerValue.GARMIN == trackerValue {
-            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourceGarmin.shared)
+            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: GarminActivitySource.shared)
         } else if TrackerValue.SUUNTO == trackerValue {
-            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourceSuunto.shared)
+            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: SuuntoActivitySource.shared)
         } else if TrackerValue.FITBIT == trackerValue {
-            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourceFitbit.shared)
+            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: FitbitActivitySource.shared)
         } else {
-            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: ActivitySourceUnknown(tracker: trackerConnection.tracker))
+            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: UnknownActivitySource(tracker: trackerConnection.tracker))
         }
     }
 }

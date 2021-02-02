@@ -51,7 +51,7 @@ final class ActivitySourceConnectionTests: XCTestCase {
         XCTAssertEqual(sut.tracker, TrackerValue(value: trackerConnection.tracker))
         XCTAssertEqual(sut.createdAt, trackerConnection.createdAt)
         XCTAssertEqual(sut.endedAt, trackerConnection.endedAt)
-        XCTAssertEqual(sut.activitySource.trackerValue, ActivitySourceHK.shared.trackerValue)
+        XCTAssertEqual(sut.activitySource.trackerValue, HealthkitActivitySource.shared.trackerValue)
     }
 
     func testMountSucces() {

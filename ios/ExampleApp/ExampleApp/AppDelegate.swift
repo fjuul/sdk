@@ -43,18 +43,4 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // after application:didFinishLaunchingWithOptions. Use this method to release any resources that
         // were specific to the discarded scenes, as they will not return.
     }
-
-    // MARK: Tracker Connection Deeplink Handling
-
-    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
-        // Note: handling this is entirely optional, as the connection is already successfully established at this point
-        // (unless the user has cancelled the process and this indicates an unsuccessful connection - however this logic
-        // here has no effect on the outcome of the connection, and there is no guarantee the user will return to the app
-        // through the deeplink).
-        let connectionStatus = ExternalAuthenticationFlowHandler.handle(url: url)
-        if connectionStatus.tracker != nil {
-            return connectionStatus.success
-        }
-        return false
-    }
 }

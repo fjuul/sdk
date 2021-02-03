@@ -3,6 +3,8 @@ import FjuulCore
 import FjuulActivitySources
 
 /// Prepare API cleint and configure ActivitySourceManager
+/// Should be Initialize once as soon as possible after up app or after create a user, for setup backgroundDelivery for the HealthKit to fetch intraday data,
+/// for example in AppDelegate (didFinishLaunchingWithOptions)
 class FjuulApiBuilder {
 
     static func buildApiClient() -> ApiClient? {
@@ -33,7 +35,6 @@ class FjuulApiBuilder {
         }
 
         apiClient.initActivitySourcesManager(config: config)
-//        _ = ActivitySourceManager.initialize(apiClient: apiClient, config: config)
     }
 
     private static func enoughApiClientParams() -> Bool {

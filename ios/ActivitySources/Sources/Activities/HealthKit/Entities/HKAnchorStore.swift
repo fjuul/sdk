@@ -27,7 +27,7 @@ struct HKAnchorStore {
     }
 
     /// Saves anchor in persisted store based on HKObjectType
-    mutating func save(type: HKObjectType, newAnchor: HKQueryAnchor?) {
+    mutating func save(type: HKObjectType, newAnchor: HKQueryAnchor?) throws {
         switch type {
         case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned):
             anchors?[.activeEnergyBurned] = newAnchor
@@ -42,12 +42,12 @@ struct HKAnchorStore {
         case HKObjectType.workoutType():
             anchors?[.workout] = newAnchor
         default:
-            return
+            throw FjuulError.activitySourceFailure(reason: .wrongHealthKitObjectType)
         }
     }
 
     /// Fetch anchor from persisted store based on HKObjectType
-    func get(type: HKObjectType) -> HKQueryAnchor {
+    func get(type: HKObjectType) throws -> HKQueryAnchor {
         let defaultValue = HKQueryAnchor.init(fromValue: 0)
 
         switch type {
@@ -64,7 +64,7 @@ struct HKAnchorStore {
         case HKObjectType.workoutType():
             return anchors?[.workout] ?? defaultValue
         default:
-            return defaultValue
+            throw FjuulError.activitySourceFailure(reason: .wrongHealthKitObjectType)
         }
     }
 }

@@ -96,7 +96,11 @@ class HealthKitManager: HealthKitManaging {
                 self.dataHandler(data) { result in
                     switch result {
                     case .success:
-                        self.anchorStore.save(type: sampleType, newAnchor: newAnchor)
+                        do {
+                            try self.anchorStore.save(type: sampleType, newAnchor: newAnchor)
+                        } catch {
+                            logger.error("Unexpected error: \(error).")
+                        }
                     case .failure(let err):
                         error = err
                     }
@@ -132,8 +136,12 @@ class HealthKitManager: HealthKitManaging {
                         self.dataHandler(data) { result in
                             switch result {
                             case .success:
-                                self.anchorStore.save(type: sampleType, newAnchor: newAnchor)
-                                logger.info("Success handled backgroundDelivery for \(sampleType)")
+                                do {
+                                    defer { logger.info("Success handled backgroundDelivery for \(sampleType)") }
+                                    try self.anchorStore.save(type: sampleType, newAnchor: newAnchor)
+                                } catch {
+                                    logger.error("Unexpected error: \(error).")
+                                }
                             case .failure(let err):
                                 logger.error("Failure on handled backgroundDelivery for \(sampleType) with error: \(err)")
                             }
@@ -185,7 +193,11 @@ class HealthKitManager: HealthKitManaging {
     }
 
     private func fetchWorkoutsUpdates(completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
-        let anchor = self.anchorStore.get(type: HKObjectType.workoutType())
+        guard let anchor = try? self.anchorStore.get(type: HKObjectType.workoutType()) else {
+            completion(nil, nil)
+            return
+        }
+        
         let predicatBuilder = HealthKitQueryPredictateBuilder(healthKitConfig: self.config.healthKitConfig)
 
         WorkoutFetcher.fetch(anchor: anchor, predictateBuilder: predicatBuilder) { requestData, newAnchor in
@@ -195,8 +207,11 @@ class HealthKitManager: HealthKitManaging {
     }
 
     private func fetchIntradayUpdates(sampleType: HKQuantityType, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
+        guard let anchor = try? self.anchorStore.get(type: sampleType) else {
+            completion(nil, nil)
+            return
+        }
 
-        let anchor = self.anchorStore.get(type: sampleType)
         let predicatBuilder = HealthKitQueryPredictateBuilder(healthKitConfig: self.config.healthKitConfig)
 
         AggregatedDataFetcher.fetch(type: sampleType, anchor: anchor, predictateBuilder: predicatBuilder) { hkRequestData, newAnchor in

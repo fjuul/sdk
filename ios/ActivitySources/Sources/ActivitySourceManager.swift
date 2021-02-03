@@ -1,9 +1,5 @@
 import Foundation
 import FjuulCore
-import Logging
-
-// Logger with default label
-private let logger = Logger(label: "FjuulSDK")
 
 // FIXME: Add link on deep linking description
 /**
@@ -38,7 +34,7 @@ final public class ActivitySourceManager {
 
         self.restoreState { _ in
             self.refreshCurrent { _ in
-                logger.info("Initial sync current connections")
+                DataLogger.shared.info("Initial sync current connections")
             }
         }
     }
@@ -169,7 +165,7 @@ final public class ActivitySourceManager {
                 case .success:
                     self.mountedActivitySourceConnections.append(activitySourceConnection)
                 case .failure(let err):
-                    logger.error("Error on mountByConnections \(err)")
+                    DataLogger.shared.error("Error on mountByConnections \(err)")
                 }
             }
         }
@@ -183,7 +179,7 @@ final public class ActivitySourceManager {
                     case .success:
                         self.mountedActivitySourceConnections.removeAll { value in value.id == activitySourceConnection.id }
                     case .failure(let err):
-                        logger.error("Error on unmout \(err)")
+                        DataLogger.shared.error("Error on unmout \(err)")
                     }
                 }
             }
@@ -198,7 +194,7 @@ final public class ActivitySourceManager {
                 case .success:
                     self.mountedActivitySourceConnections.append(activitySourceConnection)
                 case .failure(let err):
-                    logger.error("Error: on restore connectionsLocalStore state \(err)")
+                    DataLogger.shared.error("Error: on restore connectionsLocalStore state \(err)")
                 }
             }
         }

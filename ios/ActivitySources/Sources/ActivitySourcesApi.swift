@@ -103,7 +103,7 @@ public extension ApiClient {
             objc_setAssociatedObject(self, &AssociatedObjectHandle, newValue, .OBJC_ASSOCIATION_RETAIN)
         }
     }
-    
+
     /// Initialize the initActivitySourcesManager with the provided config.
     /// Should be Initialize once as soon as possible after up app, for setup backgroundDelivery for the HealthKit to fetch intraday data,
     /// for example in AppDelegate (didFinishLaunchingWithOptions)

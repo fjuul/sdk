@@ -1,8 +1,5 @@
 import Foundation
 import HealthKit
-import Logging
-
-private let logger = Logger(label: "FjuulSDK")
 
 /// Fetch workouts and related samples from HK
 class WorkoutFetcher {
@@ -82,7 +79,7 @@ class WorkoutFetcher {
                 case .success(let samples):
                     workout.walkingRunningDistances = self.convertWorkoutQuantitySamples(samples: samples, unit: .meter())
                 case .failure(let err):
-                    logger.error("WorkoutFetcher error: \(err)")
+                    DataLogger.shared.error("WorkoutFetcher error: \(err)")
                 }
 
                 workoutDispatchGroup.leave()
@@ -97,7 +94,7 @@ class WorkoutFetcher {
                 case .success(let samples):
                     workout.heartRates = self.convertWorkoutQuantitySamples(samples: samples, unit: hrUnit)
                 case .failure(let err):
-                    logger.error("WorkoutFetcher error: \(err)")
+                    DataLogger.shared.error("WorkoutFetcher error: \(err)")
                 }
 
                 workoutDispatchGroup.leave()
@@ -111,7 +108,7 @@ class WorkoutFetcher {
                 case .success(let samples):
                     workout.activeEnergyBurned = self.convertWorkoutQuantitySamples(samples: samples, unit: .kilocalorie())
                 case .failure(let err):
-                    logger.error("WorkoutFetcher error: \(err)")
+                    DataLogger.shared.error("WorkoutFetcher error: \(err)")
                 }
 
                 workoutDispatchGroup.leave()
@@ -125,7 +122,7 @@ class WorkoutFetcher {
                 case .success(let samples):
                     workout.cyclingDistances = self.convertWorkoutQuantitySamples(samples: samples, unit: .meter())
                 case .failure(let err):
-                    logger.error("WorkoutFetcher error: \(err)")
+                    DataLogger.shared.error("WorkoutFetcher error: \(err)")
                 }
 
                 workoutDispatchGroup.leave()

@@ -32,7 +32,7 @@ final class ActivitySourcesApiTests: XCTestCase {
         }
 
         apiClient = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: InMemoryPersistor())
-        
+
         sut = ActivitySourcesApi(apiClient: apiClient)
     }
 
@@ -200,7 +200,7 @@ final class ActivitySourcesApiTests: XCTestCase {
         }
         // Check that it's nil before initialize
         XCTAssertNil(apiClient.activitySourcesManager)
-        
+
         // When
         apiClient.initActivitySourcesManager(config: config)
 

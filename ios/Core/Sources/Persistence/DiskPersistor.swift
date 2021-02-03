@@ -1,7 +1,4 @@
 import Foundation
-import Logging
-
-private let logger = Logger(label: "FjuulSDK")
 
 public class DiskPersistor: Persistor {
     public init() {}
@@ -41,7 +38,7 @@ public class DiskPersistor: Persistor {
             archiver.finishEncoding()
             try mutableData.write(to: fullPath, options: .atomic)
         } catch {
-            logger.error("Error while reading persisted object: \(error)")
+            DataLogger.shared.error("Error while reading persisted object: \(error)")
         }
     }
 
@@ -55,7 +52,7 @@ public class DiskPersistor: Persistor {
             let unarchiver = NSKeyedUnarchiver(forReadingWith: data)
             return try unarchiver.decodeTopLevelDecodable(T.self, forKey: NSKeyedArchiveRootObjectKey)
         } catch {
-            logger.error("Error while reading persisted object: \(error)")
+            DataLogger.shared.error("Error while reading persisted object: \(error)")
             return nil
         }
     }

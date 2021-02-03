@@ -12,7 +12,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Can be configured to choose any compatible logging backend implementation.
         // https://github.com/apple/swift-log
         LoggingSystem.bootstrap { label in
-            var logger = StreamLogHandler.standardOutput(label: "Fjuul SDK")
+            var logger = StreamLogHandler.standardOutput(label: label)
 
             #if DEBUG
                 logger.logLevel = .info

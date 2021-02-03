@@ -1,9 +1,6 @@
 import Foundation
 import HealthKit
 import FjuulCore
-import Logging
-
-private let logger = Logger(label: "FjuulSDK")
 
 protocol HealthKitManaging: AutoMockable {
     static var healthStore: HKHealthStore { get }
@@ -99,7 +96,7 @@ class HealthKitManager: HealthKitManaging {
                         do {
                             try self.anchorStore.save(type: sampleType, newAnchor: newAnchor)
                         } catch {
-                            logger.error("Unexpected error: \(error).")
+                            DataLogger.shared.error("Unexpected error: \(error).")
                         }
                     case .failure(let err):
                         error = err
@@ -137,13 +134,13 @@ class HealthKitManager: HealthKitManaging {
                             switch result {
                             case .success:
                                 do {
-                                    defer { logger.info("Success handled backgroundDelivery for \(sampleType)") }
+                                    defer { DataLogger.shared.info("Success handled backgroundDelivery for \(sampleType)") }
                                     try self.anchorStore.save(type: sampleType, newAnchor: newAnchor)
                                 } catch {
-                                    logger.error("Unexpected error: \(error).")
+                                    DataLogger.shared.error("Unexpected error: \(error).")
                                 }
                             case .failure(let err):
-                                logger.error("Failure on handled backgroundDelivery for \(sampleType) with error: \(err)")
+                                DataLogger.shared.error("Failure on handled backgroundDelivery for \(sampleType) with error: \(err)")
                             }
 
                             semaphore.signal()
@@ -161,9 +158,9 @@ class HealthKitManager: HealthKitManaging {
             HealthKitManager.healthStore.execute(query)
             HealthKitManager.healthStore.enableBackgroundDelivery(for: type, frequency: .hourly) { (success: Bool, error: Error?) in
                 if success {
-                    logger.info("Register backgroundDelivery for type \(sampleType)")
+                    DataLogger.shared.info("Register backgroundDelivery for type \(sampleType)")
                 } else {
-                    logger.error("Was not able register backgroundDelivery for type \(sampleType), with error \(String(describing: error))")
+                    DataLogger.shared.error("Was not able register backgroundDelivery for type \(sampleType), with error \(String(describing: error))")
                 }
             }
         }

@@ -93,6 +93,9 @@ import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
 val sourcesManager = ActivitySourcesManager.getInstance()
 ```
 
+### Preface to Google Fit
+Before working with the Google Fit activity source, you need to make the initial setup in the console of your project on Google Cloud Platform. Please follow the official [guide](https://developers.google.com/fit/android/get-api-key) for getting an OAuth 2.0 client ID with the enabled Fitness API.
+
 ### Connect to Google Fit
 Request permissions:
 ```kotlin

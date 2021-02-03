@@ -3,6 +3,8 @@ name: Test iOS
 on:
   pull_request:
     paths:
+      - Package.swift
+      - Package.resolved
       - ios/**
       - .github/workflows/**
 

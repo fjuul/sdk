@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "Fjuul",
+    name: "Fjuul SDK",
     platforms: [
         // required to run tests depending on Alamofire
         .macOS(.v10_12),

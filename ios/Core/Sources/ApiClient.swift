@@ -2,7 +2,7 @@ import Foundation
 import Alamofire
 
 /// The `ApiClient` is the central unified entrypoint for all of the functionality provided by the Fjuul SDK.
-open class ApiClient {
+public class ApiClient {
 
     /// Creates an unauthenticated request and attaches the provided API key.
     /// This is a helper method currently only required for user creation.

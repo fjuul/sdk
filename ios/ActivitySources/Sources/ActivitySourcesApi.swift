@@ -88,33 +88,19 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
     }
 }
 
-private struct AssociatedObjectHandle {
-    static var activitySources: UInt8 = 0
-    static var activitySourcesManager: UInt8 = 0
-}
+private struct AssociatedObjectHandle: UInt8 = 0
 
 public extension ApiClient {
-
-    var activitySources: ActivitySourcesApi {
-        if let activitySourcesApi = objc_getAssociatedObject(self, &AssociatedObjectHandle.activitySources) as? ActivitySourcesApi {
-            return activitySourcesApi
-        } else {
-            let activitySourcesApi = ActivitySourcesApi(apiClient: self)
-            objc_setAssociatedObject(self, &AssociatedObjectHandle.activitySources, activitySourcesApi, .OBJC_ASSOCIATION_RETAIN)
-            return activitySourcesApi
-        }
-    }
-
     var activitySourcesManager: ActivitySourceManager? {
         get {
-            if let manager = objc_getAssociatedObject(self, &AssociatedObjectHandle.activitySourcesManager) as? ActivitySourceManager {
+            if let manager = objc_getAssociatedObject(self, &AssociatedObjectHandle) as? ActivitySourceManager {
                 return manager
             } else {
                 return nil
             }
         }
         set {
-            objc_setAssociatedObject(self, &AssociatedObjectHandle.activitySourcesManager, newValue, .OBJC_ASSOCIATION_RETAIN)
+            objc_setAssociatedObject(self, &AssociatedObjectHandle, newValue, .OBJC_ASSOCIATION_RETAIN)
         }
     }
     
@@ -126,7 +112,7 @@ public extension ApiClient {
         self.activitySourcesManager = ActivitySourceManager(
             userToken: self.userToken,
             persistor: self.persistor,
-            apiClient: activitySources,
+            apiClient: ActivitySourcesApi(apiClient: self),
             config: config
         )
     }

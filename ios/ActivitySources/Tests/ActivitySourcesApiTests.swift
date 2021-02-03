@@ -7,7 +7,8 @@ import FjuulCore
 @testable import FjuulActivitySources
 
 final class ActivitySourcesApiTests: XCTestCase {
-    var sut: ApiClient!
+    var sut: ActivitySourcesApi!
+    var apiClient: ApiClient!
 
     let signingKeyResponse = """
         {
@@ -30,7 +31,9 @@ final class ActivitySourcesApiTests: XCTestCase {
             return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
         }
 
-        sut = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: InMemoryPersistor())
+        apiClient = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: InMemoryPersistor())
+        
+        sut = ActivitySourcesApi(apiClient: apiClient)
     }
 
     override func tearDown() {
@@ -42,7 +45,7 @@ final class ActivitySourcesApiTests: XCTestCase {
     func testConnectHealthKitTracker() {
         let e = expectation(description: "Request on connect HealthKit activity source")
 
-        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(sut.userToken)/connections/\(TrackerValue.HEALTHKIT.value)")) { request in
+        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/connections/\(TrackerValue.HEALTHKIT.value)")) { request in
             XCTAssertEqual(request.httpMethod, "POST")
             let json = """
                 {
@@ -53,7 +56,7 @@ final class ActivitySourcesApiTests: XCTestCase {
             return HTTPStubsResponse(data: stubData!, statusCode: 201, headers: nil)
         }
 
-        sut.activitySources.connect(trackerValue: TrackerValue.HEALTHKIT) { result in
+        sut.connect(trackerValue: TrackerValue.HEALTHKIT) { result in
             switch result {
             case .success(let connectionResult):
                 switch connectionResult {
@@ -74,7 +77,7 @@ final class ActivitySourcesApiTests: XCTestCase {
     func testConnectExternalTracker() {
         let e = expectation(description: "Request on connect external tracker")
 
-        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(sut.userToken)/connections/\(TrackerValue.POLAR.value)")) { request in
+        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/connections/\(TrackerValue.POLAR.value)")) { request in
             XCTAssertEqual(request.httpMethod, "POST")
             let json = """
                 {
@@ -85,7 +88,7 @@ final class ActivitySourcesApiTests: XCTestCase {
             return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
         }
 
-        sut.activitySources.connect(trackerValue: TrackerValue.POLAR) { result in
+        sut.connect(trackerValue: TrackerValue.POLAR) { result in
             switch result {
             case .success(let connectionResult):
                 switch connectionResult {
@@ -104,13 +107,13 @@ final class ActivitySourcesApiTests: XCTestCase {
     func testConnectWithAlreadyConnectedTracker() {
         let e = expectation(description: "Request on connect external tracker")
 
-        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(sut.userToken)/connections/\(TrackerValue.POLAR.value)")) { request in
+        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/connections/\(TrackerValue.POLAR.value)")) { request in
             XCTAssertEqual(request.httpMethod, "POST")
             let stubData = "".data(using: String.Encoding.utf8)
             return HTTPStubsResponse(data: stubData!, statusCode: 409, headers: nil)
         }
 
-        sut.activitySources.connect(trackerValue: TrackerValue.POLAR) { result in
+        sut.connect(trackerValue: TrackerValue.POLAR) { result in
             switch result {
             case .success(let connectionResult):
                 switch connectionResult {
@@ -133,13 +136,13 @@ final class ActivitySourcesApiTests: XCTestCase {
         let trackerConnection = TrackerConnection(id: "0ca60422-3626-4b50-aa70-43c91d8da731", tracker: "healthkit", createdAt: Date(), endedAt: nil)
         let activitySourceConnection = ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: HealthKitActivitySource.shared)
 
-        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(sut.userToken)/connections/\(activitySourceConnection.id)")) { request in
+        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/connections/\(activitySourceConnection.id)")) { request in
             XCTAssertEqual(request.httpMethod, "DELETE")
             let stubData = "".data(using: String.Encoding.utf8)
             return HTTPStubsResponse(data: stubData!, statusCode: 204, headers: nil)
         }
 
-        sut.activitySources.disconnect(activitySourceConnection: activitySourceConnection) { result in
+        sut.disconnect(activitySourceConnection: activitySourceConnection) { result in
             switch result {
             case .success:
                 e.fulfill()
@@ -157,7 +160,7 @@ final class ActivitySourcesApiTests: XCTestCase {
         let hkTracker = TrackerConnection(id: "0ca60422-3626-4b50-aa70-43c91d8da731", tracker: "healthkit", createdAt: Date(), endedAt: nil)
         let polarTracker = TrackerConnection(id: "43c91d8da731-3626-4b50-aa70-0ca60422", tracker: "polar", createdAt: Date(), endedAt: nil)
 
-        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(sut.userToken)/connections")) { request in
+        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/connections")) { request in
             XCTAssertEqual(request.httpMethod, "GET")
             let json = """
                 [
@@ -173,7 +176,7 @@ final class ActivitySourcesApiTests: XCTestCase {
             return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
         }
 
-        sut.activitySources.getCurrentConnections { result in
+        sut.getCurrentConnections { result in
             switch result {
             case .success(let connections):
                 XCTAssertEqual(connections.first!.id, hkTracker.id)
@@ -189,19 +192,19 @@ final class ActivitySourcesApiTests: XCTestCase {
         }
         waitForExpectations(timeout: 5.0, handler: nil)
     }
-    
+
     func testInitActivitySourcesManager() {
         // Given
         let config = ActivitySourceConfigBuilder { builder in
             builder.healthKitConfig = HealthKitActivitySourceConfig(dataTypesToRead: [.stepCount, .workout, ])
         }
         // Check that it's nil before initialize
-        XCTAssertNil(sut.activitySourcesManager)
+        XCTAssertNil(apiClient.activitySourcesManager)
         
         // When
-        sut.initActivitySourcesManager(config: config)
+        apiClient.initActivitySourcesManager(config: config)
 
         //Then
-        XCTAssertNotNil(sut.activitySourcesManager)
+        XCTAssertNotNil(apiClient.activitySourcesManager)
     }
 }

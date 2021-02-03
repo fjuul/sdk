@@ -18,7 +18,7 @@ protocol MountableActivitySource: ActivitySource {
     ///   - completion: completion with status or error. If an error occurred,
     ///   this object contains information about the error (`FjuulError.activitySourceFailure.healthkitNotAvailableOnDevice`)
     func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder,
-               healthKitManagerBuilder: HealthKitManagerBuilding, completion: @escaping (Result<Bool, Error>) -> Void)
+               healthKitManagerBuilder: HealthKitManagerBuilding, completion: @escaping (Result<Void, Error>) -> Void)
 
     /// Unmount activity source. As example unmount HealthKit backgroud delivery
     /// - Parameter completion with status or error (`FjuulError.activitySourceFailure.activitySourceNotMounted`, )
@@ -27,5 +27,5 @@ protocol MountableActivitySource: ActivitySource {
     /// - Parameter:
     ///   - completion: completion with status or error. If an error occurred,
     ///   this object contains information about the error (`FjuulError.activitySourceFailure.healthkitNotAvailableOnDevice`)
-    func unmount(completion: @escaping (Result<Bool, Error>) -> Void)
+    func unmount(completion: @escaping (Result<Void, Error>) -> Void)
 }

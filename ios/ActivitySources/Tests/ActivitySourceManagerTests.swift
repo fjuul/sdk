@@ -83,7 +83,7 @@ final class ActivitySourceManagerTests: XCTestCase {
         }))
 
         Perform(healthKitMock, .requestAccess(config: .any, completion: .any, perform: { (item, completion) in
-           completion(.success(true))
+           completion(.success(()))
         }))
 
         // When

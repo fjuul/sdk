@@ -30,7 +30,7 @@ public final class ActivitySourceConnection: TrackerConnectionable, Equatable {
     ///   - config: instance of ActivitySourceConfigBuilder
     ///   - persistor: instance of Persistor
     ///   - completion: status or error
-    func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder, persistor: Persistor, completion: @escaping (Result<Bool, Error>) -> Void) {
+    func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder, persistor: Persistor, completion: @escaping (Result<Void, Error>) -> Void) {
         if let mountableSource = activitySource as? MountableActivitySource {
             let healthKitManagerBuilder = HealthKitManagerBuilder(apiClient: apiClient, persistor: persistor, config: config)
 
@@ -38,20 +38,20 @@ public final class ActivitySourceConnection: TrackerConnectionable, Equatable {
                 completion(result)
             }
         } else {
-            completion(.success(true))
+            completion(.success(()))
         }
     }
 
     /// Unmount locally ActivitySource if it is mountable (protocol: MountableActivitySource).
     /// Currently on HealthKitActivitySource is mountable, and call this function will disable backgroundDelivery.
     /// - Parameter completion: status or error
-    func unmount(completion: @escaping (Result<Bool, Error>) -> Void) {
+    func unmount(completion: @escaping (Result<Void, Error>) -> Void) {
         if let mountableSource = activitySource as? MountableActivitySource {
             mountableSource.unmount { result in
                 completion(result)
             }
         } else {
-            completion(.success(true))
+            completion(.success(()))
         }
     }
 }

@@ -74,7 +74,7 @@ final public class ActivitySourceManager {
     /// - Parameters:
     ///   - activitySourceConnection: instance of ActivitySourceConnection
     ///   - completion: with status or error
-    public func disconnect(activitySourceConnection: ActivitySourceConnection, completion: @escaping (Result<Bool, Error>) -> Void) {
+    public func disconnect(activitySourceConnection: ActivitySourceConnection, completion: @escaping (Result<Void, Error>) -> Void) {
         apiClient.disconnect(activitySourceConnection: activitySourceConnection) { result in
             switch result {
             case .success:
@@ -84,7 +84,7 @@ final public class ActivitySourceManager {
                         self.mountedActivitySourceConnections = self.mountedActivitySourceConnections.filter { connection in
                             connection.tracker != activitySourceConnection.tracker
                         }
-                        completion(.success(true))
+                        completion(.success(()))
                     case .failure(let err):
                         completion(.failure(err))
                     }
@@ -115,7 +115,7 @@ final public class ActivitySourceManager {
     /// Unmount all ActivitySources. Useful for logout from app case. The trackers will not be disconnected,
     /// but all locally mounted ActivitySources will be unmounted on the device. Currently only HealthKitActivitySource is mountable
     /// - Parameter completion: status or error
-    public func unmout(completion: @escaping (Result<Bool, Error>) -> Void) {
+    public func unmout(completion: @escaping (Result<Void, Error>) -> Void) {
         let group = DispatchGroup()
         var error: Error?
 
@@ -138,7 +138,7 @@ final public class ActivitySourceManager {
                 completion(.failure(err))
             } else {
                 self.mountedActivitySourceConnections = []
-                completion(.success(true))
+                completion(.success(()))
             }
         }
     }
@@ -186,7 +186,7 @@ final public class ActivitySourceManager {
         }
     }
 
-    private func restoreState(completion: (Result<Bool, Error>) -> Void) {
+    private func restoreState(completion: (Result<Void, Error>) -> Void) {
         connectionsLocalStore.connections?.forEach { connection in
             let activitySourceConnection = ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: connection)
             activitySourceConnection.mount(apiClient: apiClient, config: config, persistor: persistor) { result in
@@ -199,6 +199,6 @@ final public class ActivitySourceManager {
             }
         }
 
-        completion(.success(true))
+        completion(.success(()))
     }
 }

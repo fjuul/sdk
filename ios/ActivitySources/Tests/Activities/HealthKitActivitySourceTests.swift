@@ -55,14 +55,13 @@ final class ActivitySourceHKTests: XCTestCase {
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
 
         Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
-            completion(.success(true))
+            completion(.success(()))
         }))
 
         //When
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
-            case .success(let success):
-                XCTAssert(success)
+            case .success:
                 promise.fulfill()
             case .failure(let err):
                 XCTFail("Error: \(err.localizedDescription)")
@@ -113,14 +112,13 @@ final class ActivitySourceHKTests: XCTestCase {
         }
 
         Perform(healthKitManagingMock, .disableAllBackgroundDelivery(completion: .any, perform: { (completion) in
-            completion(.success(true))
+            completion(.success(()))
         }))
 
         //When
         sut.unmount { result in
             switch result {
-            case .success(let success):
-                XCTAssert(success)
+            case .success:
                 promise.fulfill()
             case .failure:
                 XCTFail("Error: should not fails")
@@ -175,7 +173,7 @@ final class ActivitySourceHKTests: XCTestCase {
         }))
 
         Perform(healthKitManagingMock, .disableAllBackgroundDelivery(completion: .any, perform: { (completion) in
-            completion(.success(true))
+            completion(.success(()))
         }))
 
         //When
@@ -210,14 +208,13 @@ final class ActivitySourceHKTests: XCTestCase {
         }
 
         Perform(healthKitManagingMock, .sync(completion: .any, perform: { (completion) in
-            completion(.success(true))
+            completion(.success(()))
         }))
 
         //When
         sut.sync { result in
             switch result {
-            case .success(let success):
-                XCTAssert(success)
+            case .success:
                 promise.fulfill()
             case .failure:
                 XCTFail("Error: should not fails")

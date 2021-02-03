@@ -62,14 +62,13 @@ final class ActivitySourceConnectionTests: XCTestCase {
         Perform(activitySourceHKMock, .mount(apiClient: .value(apiClientMock),
                                              config: .value(self.config), healthKitManagerBuilder: .any, completion: .any, perform: { (_, _, _, completion) in
 
-            completion(.success(true))
+            completion(.success(()))
         }))
 
         sut.mount(apiClient: apiClientMock, config: self.config, persistor: self.persistor) { result in
 
             switch result {
-            case .success(let success):
-                XCTAssert(success)
+            case .success:
                 promise.fulfill()
             case .failure(let err):
                 XCTFail("Error: \(err.localizedDescription)")
@@ -107,13 +106,12 @@ final class ActivitySourceConnectionTests: XCTestCase {
 
         // When
         Perform(activitySourceHKMock, .unmount(completion: .any, perform: { (completion) in
-            completion(.success(true))
+            completion(.success(()))
         }))
 
         sut.unmount { result in
             switch result {
-            case .success(let success):
-                XCTAssert(success)
+            case .success:
                 promise.fulfill()
             case .failure(let err):
                 XCTFail("Error: \(err.localizedDescription)")

@@ -20,6 +20,8 @@ public enum FjuulError: Error {
         case healthkitNotAvailableOnDevice
         case activitySourceNotMounted
         case wrongHealthKitObjectType
+        case healthkitAuthorization
+        case backgroundDeliveryNotDisabled
     }
 
     case invalidConfig

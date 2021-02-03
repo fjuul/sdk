@@ -281,23 +281,23 @@ open class HealthKitManagerBuildingMock: HealthKitManagerBuilding, Mock {
 
     public required init(apiClient: ActivitySourcesApiClient, persistor: Persistor, config: ActivitySourceConfigBuilder) { }
 
-    open func create(dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) -> HealthKitManaging {
-        addInvocation(.m_create__dataHandler_dataHandler(Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void>.value(`dataHandler`)))
-		let perform = methodPerformValue(.m_create__dataHandler_dataHandler(Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void>.value(`dataHandler`))) as? (@escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) -> Void
+    open func create(dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void)) -> HealthKitManaging {
+        addInvocation(.m_create__dataHandler_dataHandler(Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void>.value(`dataHandler`)))
+		let perform = methodPerformValue(.m_create__dataHandler_dataHandler(Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void>.value(`dataHandler`))) as? (@escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void)) -> Void
 		perform?(`dataHandler`)
 		var __value: HealthKitManaging
 		do {
-		    __value = try methodReturnValue(.m_create__dataHandler_dataHandler(Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void>.value(`dataHandler`))).casted()
+		    __value = try methodReturnValue(.m_create__dataHandler_dataHandler(Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void>.value(`dataHandler`))).casted()
 		} catch {
-			onFatalFailure("Stub return value not specified for create(dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)). Use given")
-			Failure("Stub return value not specified for create(dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)). Use given")
+			onFatalFailure("Stub return value not specified for create(dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void)). Use given")
+			Failure("Stub return value not specified for create(dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void)). Use given")
 		}
 		return __value
     }
 
 
     fileprivate enum MethodType {
-        case m_create__dataHandler_dataHandler(Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void>)
+        case m_create__dataHandler_dataHandler(Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void>)
 
         static func compareParameters(lhs: MethodType, rhs: MethodType, matcher: Matcher) -> Matcher.ComparisonResult {
             switch (lhs, rhs) {
@@ -329,10 +329,10 @@ open class HealthKitManagerBuildingMock: HealthKitManagerBuilding, Mock {
         }
 
 
-        public static func create(dataHandler: Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void>, willReturn: HealthKitManaging...) -> MethodStub {
+        public static func create(dataHandler: Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void>, willReturn: HealthKitManaging...) -> MethodStub {
             return Given(method: .m_create__dataHandler_dataHandler(`dataHandler`), products: willReturn.map({ StubProduct.return($0 as Any) }))
         }
-        public static func create(dataHandler: Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void>, willProduce: (Stubber<HealthKitManaging>) -> Void) -> MethodStub {
+        public static func create(dataHandler: Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void>, willProduce: (Stubber<HealthKitManaging>) -> Void) -> MethodStub {
             let willReturn: [HealthKitManaging] = []
 			let given: Given = { return Given(method: .m_create__dataHandler_dataHandler(`dataHandler`), products: willReturn.map({ StubProduct.return($0 as Any) })) }()
 			let stubber = given.stub(for: (HealthKitManaging).self)
@@ -344,14 +344,14 @@ open class HealthKitManagerBuildingMock: HealthKitManagerBuilding, Mock {
     public struct Verify {
         fileprivate var method: MethodType
 
-        public static func create(dataHandler: Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void>) -> Verify { return Verify(method: .m_create__dataHandler_dataHandler(`dataHandler`))}
+        public static func create(dataHandler: Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void>) -> Verify { return Verify(method: .m_create__dataHandler_dataHandler(`dataHandler`))}
     }
 
     public struct Perform {
         fileprivate var method: MethodType
         var performs: Any
 
-        public static func create(dataHandler: Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void>, perform: @escaping (@escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) -> Void) -> Perform {
+        public static func create(dataHandler: Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void>, perform: @escaping (@escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void)) -> Void) -> Perform {
             return Perform(method: .m_create__dataHandler_dataHandler(`dataHandler`), performs: perform)
         }
     }
@@ -492,34 +492,34 @@ open class HealthKitManagingMock: HealthKitManaging, Mock, StaticMock {
 
 
 
-    public static func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void) {
-        addInvocation(.sm_requestAccess__config_configcompletion_completion(Parameter<ActivitySourceConfigBuilder>.value(`config`), Parameter<(Result<Bool, Error>) -> Void>.value(`completion`)))
-		let perform = methodPerformValue(.sm_requestAccess__config_configcompletion_completion(Parameter<ActivitySourceConfigBuilder>.value(`config`), Parameter<(Result<Bool, Error>) -> Void>.value(`completion`))) as? (ActivitySourceConfigBuilder, @escaping (Result<Bool, Error>) -> Void) -> Void
+    public static func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Void, Error>) -> Void) {
+        addInvocation(.sm_requestAccess__config_configcompletion_completion(Parameter<ActivitySourceConfigBuilder>.value(`config`), Parameter<(Result<Void, Error>) -> Void>.value(`completion`)))
+		let perform = methodPerformValue(.sm_requestAccess__config_configcompletion_completion(Parameter<ActivitySourceConfigBuilder>.value(`config`), Parameter<(Result<Void, Error>) -> Void>.value(`completion`))) as? (ActivitySourceConfigBuilder, @escaping (Result<Void, Error>) -> Void) -> Void
 		perform?(`config`, `completion`)
     }
 
-    public required init(anchorStore: HKAnchorStore, config: ActivitySourceConfigBuilder,         dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) { }
+    public required init(anchorStore: HKAnchorStore, config: ActivitySourceConfigBuilder,         dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void)) { }
 
-    open func mount(completion: @escaping (Result<Bool, Error>) -> Void) {
-        addInvocation(.m_mount__completion_completion(Parameter<(Result<Bool, Error>) -> Void>.value(`completion`)))
-		let perform = methodPerformValue(.m_mount__completion_completion(Parameter<(Result<Bool, Error>) -> Void>.value(`completion`))) as? (@escaping (Result<Bool, Error>) -> Void) -> Void
+    open func mount(completion: @escaping (Result<Void, Error>) -> Void) {
+        addInvocation(.m_mount__completion_completion(Parameter<(Result<Void, Error>) -> Void>.value(`completion`)))
+		let perform = methodPerformValue(.m_mount__completion_completion(Parameter<(Result<Void, Error>) -> Void>.value(`completion`))) as? (@escaping (Result<Void, Error>) -> Void) -> Void
 		perform?(`completion`)
     }
 
-    open func disableAllBackgroundDelivery(completion: @escaping (Result<Bool, Error>) -> Void) {
-        addInvocation(.m_disableAllBackgroundDelivery__completion_completion(Parameter<(Result<Bool, Error>) -> Void>.value(`completion`)))
-		let perform = methodPerformValue(.m_disableAllBackgroundDelivery__completion_completion(Parameter<(Result<Bool, Error>) -> Void>.value(`completion`))) as? (@escaping (Result<Bool, Error>) -> Void) -> Void
+    open func disableAllBackgroundDelivery(completion: @escaping (Result<Void, Error>) -> Void) {
+        addInvocation(.m_disableAllBackgroundDelivery__completion_completion(Parameter<(Result<Void, Error>) -> Void>.value(`completion`)))
+		let perform = methodPerformValue(.m_disableAllBackgroundDelivery__completion_completion(Parameter<(Result<Void, Error>) -> Void>.value(`completion`))) as? (@escaping (Result<Void, Error>) -> Void) -> Void
 		perform?(`completion`)
     }
 
-    open func sync(completion: @escaping (Result<Bool, Error>) -> Void) {
-        addInvocation(.m_sync__completion_completion(Parameter<(Result<Bool, Error>) -> Void>.value(`completion`)))
-		let perform = methodPerformValue(.m_sync__completion_completion(Parameter<(Result<Bool, Error>) -> Void>.value(`completion`))) as? (@escaping (Result<Bool, Error>) -> Void) -> Void
+    open func sync(completion: @escaping (Result<Void, Error>) -> Void) {
+        addInvocation(.m_sync__completion_completion(Parameter<(Result<Void, Error>) -> Void>.value(`completion`)))
+		let perform = methodPerformValue(.m_sync__completion_completion(Parameter<(Result<Void, Error>) -> Void>.value(`completion`))) as? (@escaping (Result<Void, Error>) -> Void) -> Void
 		perform?(`completion`)
     }
 
     fileprivate enum StaticMethodType {
-        case sm_requestAccess__config_configcompletion_completion(Parameter<ActivitySourceConfigBuilder>, Parameter<(Result<Bool, Error>) -> Void>)
+        case sm_requestAccess__config_configcompletion_completion(Parameter<ActivitySourceConfigBuilder>, Parameter<(Result<Void, Error>) -> Void>)
         case p_healthStore_get
 
         static func compareParameters(lhs: StaticMethodType, rhs: StaticMethodType, matcher: Matcher) -> Matcher.ComparisonResult {
@@ -566,7 +566,7 @@ open class HealthKitManagingMock: HealthKitManaging, Mock, StaticMock {
     public struct StaticVerify {
         fileprivate var method: StaticMethodType
 
-        public static func requestAccess(config: Parameter<ActivitySourceConfigBuilder>, completion: Parameter<(Result<Bool, Error>) -> Void>) -> StaticVerify { return StaticVerify(method: .sm_requestAccess__config_configcompletion_completion(`config`, `completion`))}
+        public static func requestAccess(config: Parameter<ActivitySourceConfigBuilder>, completion: Parameter<(Result<Void, Error>) -> Void>) -> StaticVerify { return StaticVerify(method: .sm_requestAccess__config_configcompletion_completion(`config`, `completion`))}
         public static var healthStore: StaticVerify { return StaticVerify(method: .p_healthStore_get) }
     }
 
@@ -574,16 +574,16 @@ open class HealthKitManagingMock: HealthKitManaging, Mock, StaticMock {
         fileprivate var method: StaticMethodType
         var performs: Any
 
-        public static func requestAccess(config: Parameter<ActivitySourceConfigBuilder>, completion: Parameter<(Result<Bool, Error>) -> Void>, perform: @escaping (ActivitySourceConfigBuilder, @escaping (Result<Bool, Error>) -> Void) -> Void) -> StaticPerform {
+        public static func requestAccess(config: Parameter<ActivitySourceConfigBuilder>, completion: Parameter<(Result<Void, Error>) -> Void>, perform: @escaping (ActivitySourceConfigBuilder, @escaping (Result<Void, Error>) -> Void) -> Void) -> StaticPerform {
             return StaticPerform(method: .sm_requestAccess__config_configcompletion_completion(`config`, `completion`), performs: perform)
         }
     }
 
     
     fileprivate enum MethodType {
-        case m_mount__completion_completion(Parameter<(Result<Bool, Error>) -> Void>)
-        case m_disableAllBackgroundDelivery__completion_completion(Parameter<(Result<Bool, Error>) -> Void>)
-        case m_sync__completion_completion(Parameter<(Result<Bool, Error>) -> Void>)
+        case m_mount__completion_completion(Parameter<(Result<Void, Error>) -> Void>)
+        case m_disableAllBackgroundDelivery__completion_completion(Parameter<(Result<Void, Error>) -> Void>)
+        case m_sync__completion_completion(Parameter<(Result<Void, Error>) -> Void>)
 
         static func compareParameters(lhs: MethodType, rhs: MethodType, matcher: Matcher) -> Matcher.ComparisonResult {
             switch (lhs, rhs) {
@@ -635,22 +635,22 @@ open class HealthKitManagingMock: HealthKitManaging, Mock, StaticMock {
     public struct Verify {
         fileprivate var method: MethodType
 
-        public static func mount(completion: Parameter<(Result<Bool, Error>) -> Void>) -> Verify { return Verify(method: .m_mount__completion_completion(`completion`))}
-        public static func disableAllBackgroundDelivery(completion: Parameter<(Result<Bool, Error>) -> Void>) -> Verify { return Verify(method: .m_disableAllBackgroundDelivery__completion_completion(`completion`))}
-        public static func sync(completion: Parameter<(Result<Bool, Error>) -> Void>) -> Verify { return Verify(method: .m_sync__completion_completion(`completion`))}
+        public static func mount(completion: Parameter<(Result<Void, Error>) -> Void>) -> Verify { return Verify(method: .m_mount__completion_completion(`completion`))}
+        public static func disableAllBackgroundDelivery(completion: Parameter<(Result<Void, Error>) -> Void>) -> Verify { return Verify(method: .m_disableAllBackgroundDelivery__completion_completion(`completion`))}
+        public static func sync(completion: Parameter<(Result<Void, Error>) -> Void>) -> Verify { return Verify(method: .m_sync__completion_completion(`completion`))}
     }
 
     public struct Perform {
         fileprivate var method: MethodType
         var performs: Any
 
-        public static func mount(completion: Parameter<(Result<Bool, Error>) -> Void>, perform: @escaping (@escaping (Result<Bool, Error>) -> Void) -> Void) -> Perform {
+        public static func mount(completion: Parameter<(Result<Void, Error>) -> Void>, perform: @escaping (@escaping (Result<Void, Error>) -> Void) -> Void) -> Perform {
             return Perform(method: .m_mount__completion_completion(`completion`), performs: perform)
         }
-        public static func disableAllBackgroundDelivery(completion: Parameter<(Result<Bool, Error>) -> Void>, perform: @escaping (@escaping (Result<Bool, Error>) -> Void) -> Void) -> Perform {
+        public static func disableAllBackgroundDelivery(completion: Parameter<(Result<Void, Error>) -> Void>, perform: @escaping (@escaping (Result<Void, Error>) -> Void) -> Void) -> Perform {
             return Perform(method: .m_disableAllBackgroundDelivery__completion_completion(`completion`), performs: perform)
         }
-        public static func sync(completion: Parameter<(Result<Bool, Error>) -> Void>, perform: @escaping (@escaping (Result<Bool, Error>) -> Void) -> Void) -> Perform {
+        public static func sync(completion: Parameter<(Result<Void, Error>) -> Void>, perform: @escaping (@escaping (Result<Void, Error>) -> Void) -> Void) -> Perform {
             return Perform(method: .m_sync__completion_completion(`completion`), performs: perform)
         }
     }
@@ -843,29 +843,29 @@ open class MountableHealthKitActivitySourceMock: MountableHealthKitActivitySourc
 
 
 
-    open func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void) {
-        addInvocation(.m_requestAccess__config_configcompletion_completion(Parameter<ActivitySourceConfigBuilder>.value(`config`), Parameter<(Result<Bool, Error>) -> Void>.value(`completion`)))
-		let perform = methodPerformValue(.m_requestAccess__config_configcompletion_completion(Parameter<ActivitySourceConfigBuilder>.value(`config`), Parameter<(Result<Bool, Error>) -> Void>.value(`completion`))) as? (ActivitySourceConfigBuilder, @escaping (Result<Bool, Error>) -> Void) -> Void
+    open func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Void, Error>) -> Void) {
+        addInvocation(.m_requestAccess__config_configcompletion_completion(Parameter<ActivitySourceConfigBuilder>.value(`config`), Parameter<(Result<Void, Error>) -> Void>.value(`completion`)))
+		let perform = methodPerformValue(.m_requestAccess__config_configcompletion_completion(Parameter<ActivitySourceConfigBuilder>.value(`config`), Parameter<(Result<Void, Error>) -> Void>.value(`completion`))) as? (ActivitySourceConfigBuilder, @escaping (Result<Void, Error>) -> Void) -> Void
 		perform?(`config`, `completion`)
     }
 
-    open func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder,               healthKitManagerBuilder: HealthKitManagerBuilding, completion: @escaping (Result<Bool, Error>) -> Void) {
-        addInvocation(.m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(Parameter<ActivitySourcesApiClient>.value(`apiClient`), Parameter<ActivitySourceConfigBuilder>.value(`config`), Parameter<HealthKitManagerBuilding>.value(`healthKitManagerBuilder`), Parameter<(Result<Bool, Error>) -> Void>.value(`completion`)))
-		let perform = methodPerformValue(.m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(Parameter<ActivitySourcesApiClient>.value(`apiClient`), Parameter<ActivitySourceConfigBuilder>.value(`config`), Parameter<HealthKitManagerBuilding>.value(`healthKitManagerBuilder`), Parameter<(Result<Bool, Error>) -> Void>.value(`completion`))) as? (ActivitySourcesApiClient, ActivitySourceConfigBuilder, HealthKitManagerBuilding, @escaping (Result<Bool, Error>) -> Void) -> Void
+    open func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder,               healthKitManagerBuilder: HealthKitManagerBuilding, completion: @escaping (Result<Void, Error>) -> Void) {
+        addInvocation(.m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(Parameter<ActivitySourcesApiClient>.value(`apiClient`), Parameter<ActivitySourceConfigBuilder>.value(`config`), Parameter<HealthKitManagerBuilding>.value(`healthKitManagerBuilder`), Parameter<(Result<Void, Error>) -> Void>.value(`completion`)))
+		let perform = methodPerformValue(.m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(Parameter<ActivitySourcesApiClient>.value(`apiClient`), Parameter<ActivitySourceConfigBuilder>.value(`config`), Parameter<HealthKitManagerBuilding>.value(`healthKitManagerBuilder`), Parameter<(Result<Void, Error>) -> Void>.value(`completion`))) as? (ActivitySourcesApiClient, ActivitySourceConfigBuilder, HealthKitManagerBuilding, @escaping (Result<Void, Error>) -> Void) -> Void
 		perform?(`apiClient`, `config`, `healthKitManagerBuilder`, `completion`)
     }
 
-    open func unmount(completion: @escaping (Result<Bool, Error>) -> Void) {
-        addInvocation(.m_unmount__completion_completion(Parameter<(Result<Bool, Error>) -> Void>.value(`completion`)))
-		let perform = methodPerformValue(.m_unmount__completion_completion(Parameter<(Result<Bool, Error>) -> Void>.value(`completion`))) as? (@escaping (Result<Bool, Error>) -> Void) -> Void
+    open func unmount(completion: @escaping (Result<Void, Error>) -> Void) {
+        addInvocation(.m_unmount__completion_completion(Parameter<(Result<Void, Error>) -> Void>.value(`completion`)))
+		let perform = methodPerformValue(.m_unmount__completion_completion(Parameter<(Result<Void, Error>) -> Void>.value(`completion`))) as? (@escaping (Result<Void, Error>) -> Void) -> Void
 		perform?(`completion`)
     }
 
 
     fileprivate enum MethodType {
-        case m_requestAccess__config_configcompletion_completion(Parameter<ActivitySourceConfigBuilder>, Parameter<(Result<Bool, Error>) -> Void>)
-        case m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(Parameter<ActivitySourcesApiClient>, Parameter<ActivitySourceConfigBuilder>, Parameter<HealthKitManagerBuilding>, Parameter<(Result<Bool, Error>) -> Void>)
-        case m_unmount__completion_completion(Parameter<(Result<Bool, Error>) -> Void>)
+        case m_requestAccess__config_configcompletion_completion(Parameter<ActivitySourceConfigBuilder>, Parameter<(Result<Void, Error>) -> Void>)
+        case m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(Parameter<ActivitySourcesApiClient>, Parameter<ActivitySourceConfigBuilder>, Parameter<HealthKitManagerBuilding>, Parameter<(Result<Void, Error>) -> Void>)
+        case m_unmount__completion_completion(Parameter<(Result<Void, Error>) -> Void>)
         case p_trackerValue_get
         case p_apiClient_get
 
@@ -935,9 +935,9 @@ open class MountableHealthKitActivitySourceMock: MountableHealthKitActivitySourc
     public struct Verify {
         fileprivate var method: MethodType
 
-        public static func requestAccess(config: Parameter<ActivitySourceConfigBuilder>, completion: Parameter<(Result<Bool, Error>) -> Void>) -> Verify { return Verify(method: .m_requestAccess__config_configcompletion_completion(`config`, `completion`))}
-        public static func mount(apiClient: Parameter<ActivitySourcesApiClient>, config: Parameter<ActivitySourceConfigBuilder>, healthKitManagerBuilder: Parameter<HealthKitManagerBuilding>, completion: Parameter<(Result<Bool, Error>) -> Void>) -> Verify { return Verify(method: .m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(`apiClient`, `config`, `healthKitManagerBuilder`, `completion`))}
-        public static func unmount(completion: Parameter<(Result<Bool, Error>) -> Void>) -> Verify { return Verify(method: .m_unmount__completion_completion(`completion`))}
+        public static func requestAccess(config: Parameter<ActivitySourceConfigBuilder>, completion: Parameter<(Result<Void, Error>) -> Void>) -> Verify { return Verify(method: .m_requestAccess__config_configcompletion_completion(`config`, `completion`))}
+        public static func mount(apiClient: Parameter<ActivitySourcesApiClient>, config: Parameter<ActivitySourceConfigBuilder>, healthKitManagerBuilder: Parameter<HealthKitManagerBuilding>, completion: Parameter<(Result<Void, Error>) -> Void>) -> Verify { return Verify(method: .m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(`apiClient`, `config`, `healthKitManagerBuilder`, `completion`))}
+        public static func unmount(completion: Parameter<(Result<Void, Error>) -> Void>) -> Verify { return Verify(method: .m_unmount__completion_completion(`completion`))}
         public static var trackerValue: Verify { return Verify(method: .p_trackerValue_get) }
         public static var apiClient: Verify { return Verify(method: .p_apiClient_get) }
     }
@@ -946,13 +946,13 @@ open class MountableHealthKitActivitySourceMock: MountableHealthKitActivitySourc
         fileprivate var method: MethodType
         var performs: Any
 
-        public static func requestAccess(config: Parameter<ActivitySourceConfigBuilder>, completion: Parameter<(Result<Bool, Error>) -> Void>, perform: @escaping (ActivitySourceConfigBuilder, @escaping (Result<Bool, Error>) -> Void) -> Void) -> Perform {
+        public static func requestAccess(config: Parameter<ActivitySourceConfigBuilder>, completion: Parameter<(Result<Void, Error>) -> Void>, perform: @escaping (ActivitySourceConfigBuilder, @escaping (Result<Void, Error>) -> Void) -> Void) -> Perform {
             return Perform(method: .m_requestAccess__config_configcompletion_completion(`config`, `completion`), performs: perform)
         }
-        public static func mount(apiClient: Parameter<ActivitySourcesApiClient>, config: Parameter<ActivitySourceConfigBuilder>, healthKitManagerBuilder: Parameter<HealthKitManagerBuilding>, completion: Parameter<(Result<Bool, Error>) -> Void>, perform: @escaping (ActivitySourcesApiClient, ActivitySourceConfigBuilder, HealthKitManagerBuilding, @escaping (Result<Bool, Error>) -> Void) -> Void) -> Perform {
+        public static func mount(apiClient: Parameter<ActivitySourcesApiClient>, config: Parameter<ActivitySourceConfigBuilder>, healthKitManagerBuilder: Parameter<HealthKitManagerBuilding>, completion: Parameter<(Result<Void, Error>) -> Void>, perform: @escaping (ActivitySourcesApiClient, ActivitySourceConfigBuilder, HealthKitManagerBuilding, @escaping (Result<Void, Error>) -> Void) -> Void) -> Perform {
             return Perform(method: .m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(`apiClient`, `config`, `healthKitManagerBuilder`, `completion`), performs: perform)
         }
-        public static func unmount(completion: Parameter<(Result<Bool, Error>) -> Void>, perform: @escaping (@escaping (Result<Bool, Error>) -> Void) -> Void) -> Perform {
+        public static func unmount(completion: Parameter<(Result<Void, Error>) -> Void>, perform: @escaping (@escaping (Result<Void, Error>) -> Void) -> Void) -> Perform {
             return Perform(method: .m_unmount__completion_completion(`completion`), performs: perform)
         }
     }

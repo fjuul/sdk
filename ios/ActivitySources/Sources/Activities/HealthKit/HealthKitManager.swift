@@ -6,11 +6,11 @@ protocol HealthKitManaging: AutoMockable {
     static var healthStore: HKHealthStore { get }
 
     init(anchorStore: HKAnchorStore, config: ActivitySourceConfigBuilder,
-         dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void))
-    static func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void)
-    func mount(completion: @escaping (Result<Bool, Error>) -> Void)
-    func disableAllBackgroundDelivery(completion: @escaping (Result<Bool, Error>) -> Void)
-    func sync(completion: @escaping (Result<Bool, Error>) -> Void)
+         dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void))
+    static func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Void, Error>) -> Void)
+    func mount(completion: @escaping (Result<Void, Error>) -> Void)
+    func disableAllBackgroundDelivery(completion: @escaping (Result<Void, Error>) -> Void)
+    func sync(completion: @escaping (Result<Void, Error>) -> Void)
 }
 
 /// Manager for work with Healthkit permissions and data.
@@ -20,19 +20,19 @@ class HealthKitManager: HealthKitManaging {
     static let healthStore: HKHealthStore = HKHealthStore()
 
     private var anchorStore: HKAnchorStore
-    private var dataHandler: ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)
+    private var dataHandler: ((_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void)
     private let serialQueue = DispatchQueue(label: "com.fjuul.sdk.queues.backgroundDelivery", qos: .userInitiated)
     private let config: ActivitySourceConfigBuilder
 
     required init(anchorStore: HKAnchorStore, config: ActivitySourceConfigBuilder,
-                  dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Bool, Error>) -> Void) -> Void)) {
+                  dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void)) {
         self.config = config
         self.anchorStore = anchorStore
         self.dataHandler = dataHandler
     }
 
     /// Requests access to all the data types the app wishes to read from HealthKit.
-    static func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void) {
+    static func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Void, Error>) -> Void) {
         guard HKHealthStore.isHealthDataAvailable() else {
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
             return
@@ -41,8 +41,10 @@ class HealthKitManager: HealthKitManaging {
         HealthKitManager.healthStore.requestAuthorization(toShare: nil, read: config.healthKitConfig.typesToRead) { (success: Bool, error: Error?) in
             if let err = error {
                 completion(.failure(err))
+            } else if !success {
+                completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitAuthorization)))
             } else {
-                completion(.success(success))
+                completion(.success(()))
             }
         }
     }
@@ -50,7 +52,7 @@ class HealthKitManager: HealthKitManaging {
     /// On success observer queries are set up for background delivery.
     /// This is safe to call repeatedly and should be called at least once per launch.
     /// - Parameter completion: status or error
-    func mount(completion: @escaping (Result<Bool, Error>) -> Void) {
+    func mount(completion: @escaping (Result<Void, Error>) -> Void) {
         guard HKHealthStore.isHealthDataAvailable() else {
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
             return
@@ -60,7 +62,7 @@ class HealthKitManager: HealthKitManaging {
             switch result {
             case .success:
                 self.setUpBackgroundDeliveryForDataTypes()
-                completion(.success(true))
+                completion(.success(()))
             case .failure(let err):
                 completion(.failure(err))
             }
@@ -69,20 +71,21 @@ class HealthKitManager: HealthKitManaging {
 
     /// Disables all BackgroundDelivery observers
     /// - Parameter completion: status or error
-    func disableAllBackgroundDelivery(completion: @escaping (Result<Bool, Error>) -> Void) {
+    func disableAllBackgroundDelivery(completion: @escaping (Result<Void, Error>) -> Void) {
         HealthKitManager.healthStore.disableAllBackgroundDelivery { (success: Bool, error: Error?) in
             if let error = error {
                 completion(.failure(error))
-                return
+            } else if !success {
+                completion(.failure(FjuulError.activitySourceFailure(reason: .backgroundDeliveryNotDisabled)))
+            } else {
+                completion(.success(()))
             }
-
-            completion(.success(success))
         }
     }
 
     /// Force start sync
     /// - Parameter completion: status or error
-    func sync(completion: @escaping (Result<Bool, Error>) -> Void) {
+    func sync(completion: @escaping (Result<Void, Error>) -> Void) {
         let group = DispatchGroup()
         var error: Error?
 
@@ -111,7 +114,7 @@ class HealthKitManager: HealthKitManaging {
             if let err = error {
                 completion(.failure(err))
             } else {
-                completion(.success(true))
+                completion(.success(()))
             }
         }
     }

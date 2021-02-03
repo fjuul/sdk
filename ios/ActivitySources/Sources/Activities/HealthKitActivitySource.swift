@@ -4,7 +4,7 @@ import Alamofire
 
 //sourcery: AutoMockable
 protocol MountableHealthKitActivitySource: MountableActivitySource {
-    func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void)
+    func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Void, Error>) -> Void)
 }
 
 /// The ActivitySource singleton class for the Healthkit tracker. This is an mountable activity source.
@@ -23,7 +23,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
     /// - Parameters:
     ///   - config: instance ActivitySourceConfig
     ///   - completion: status or error
-    func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Bool, Error>) -> Void) {
+    func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Void, Error>) -> Void) {
         HealthKitManager.requestAccess(config: config) { result in
             completion(result)
         }
@@ -31,7 +31,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
 
     /// Force initiate sync data
     /// - Parameter completion: status or error
-    public func sync(completion: @escaping (Result<Bool, Error>) -> Void) {
+    public func sync(completion: @escaping (Result<Void, Error>) -> Void) {
         guard let healthKitManager = self.healthKitManager else {
             completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
             return
@@ -50,7 +50,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
     ///   - completion: status or error
     internal func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder,
                         healthKitManagerBuilder: HealthKitManagerBuilding,
-                        completion: @escaping (Result<Bool, Error>) -> Void) {
+                        completion: @escaping (Result<Void, Error>) -> Void) {
 
         self.apiClient = apiClient
 
@@ -64,7 +64,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
 
     /// Disable Healthkit backgroundDelivery.
     /// - Parameter completion: status or error
-    internal func unmount(completion: @escaping (Result<Bool, Error>) -> Void) {
+    internal func unmount(completion: @escaping (Result<Void, Error>) -> Void) {
         guard let healthKitManager = self.healthKitManager else {
             completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
             return
@@ -79,9 +79,9 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
     /// - Parameters:
     ///   - requestData: instance of HKRequestData
     ///   - completion: status or error
-    private func dataHandler(_ requestData: HKRequestData?, completion: @escaping (Result<Bool, Error>) -> Void) {
+    private func dataHandler(_ requestData: HKRequestData?, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let requestData = requestData else {
-            completion(.success(false))
+            completion(.success(()))
             return
         }
 
@@ -94,7 +94,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
     /// - Parameters:
     ///   - data: instance of HKRequestData
     ///   - completion: status or error
-    private func sendBatch(data: HKRequestData, completion: @escaping (Result<Bool, Error>) -> Void) {
+    private func sendBatch(data: HKRequestData, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let apiClient = self.apiClient else { return  completion(.failure(FjuulError.invalidConfig))}
 
         let url = "\(apiClient.apiClient.baseUrl)/sdk/activity-sources/v1/\(apiClient.apiClient.userToken)/healthkit"
@@ -106,7 +106,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
         apiClient.apiClient.signedSession.request(url, method: .post, parameters: data, encoder: parameterEncoder).response { response in
             switch response.result {
             case .success:
-                return completion(.success(true))
+                return completion(.success(()))
             case .failure(let err):
                 return completion(.failure(err))
             }

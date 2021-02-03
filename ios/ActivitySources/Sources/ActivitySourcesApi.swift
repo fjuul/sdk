@@ -88,18 +88,47 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
     }
 }
 
-private var AssociatedObjectHandle: UInt8 = 0
+private struct AssociatedObjectHandle {
+    static var activitySources: UInt8 = 0
+    static var activitySourcesManager: UInt8 = 0
+}
 
 public extension ApiClient {
 
     var activitySources: ActivitySourcesApi {
-        if let activitySourcesApi = objc_getAssociatedObject(self, &AssociatedObjectHandle) as? ActivitySourcesApi {
+        if let activitySourcesApi = objc_getAssociatedObject(self, &AssociatedObjectHandle.activitySources) as? ActivitySourcesApi {
             return activitySourcesApi
         } else {
             let activitySourcesApi = ActivitySourcesApi(apiClient: self)
-            objc_setAssociatedObject(self, &AssociatedObjectHandle, activitySourcesApi, .OBJC_ASSOCIATION_RETAIN)
+            objc_setAssociatedObject(self, &AssociatedObjectHandle.activitySources, activitySourcesApi, .OBJC_ASSOCIATION_RETAIN)
             return activitySourcesApi
         }
+    }
+
+    var activitySourcesManager: ActivitySourceManager? {
+        get {
+            if let manager = objc_getAssociatedObject(self, &AssociatedObjectHandle.activitySourcesManager) as? ActivitySourceManager {
+                return manager
+            } else {
+                return nil
+            }
+        }
+        set {
+            objc_setAssociatedObject(self, &AssociatedObjectHandle.activitySourcesManager, newValue, .OBJC_ASSOCIATION_RETAIN)
+        }
+    }
+    
+    /// Initialize the initActivitySourcesManager with the provided config.
+    /// Should be Initialize once as soon as possible after up app, for setup backgroundDelivery for the HealthKit to fetch intraday data,
+    /// for example in AppDelegate (didFinishLaunchingWithOptions)
+    /// - Parameter config: ActivitySourceConfigBuilder config with desire config for list of Data types for sync.
+    func initActivitySourcesManager(config: ActivitySourceConfigBuilder) {
+        self.activitySourcesManager = ActivitySourceManager(
+            userToken: self.userToken,
+            persistor: self.persistor,
+            apiClient: activitySources,
+            config: config
+        )
     }
 
 }

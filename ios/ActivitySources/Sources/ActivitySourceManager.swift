@@ -17,30 +17,12 @@ private let logger = Logger(label: "FjuulSDK")
  For handle authentication with external trackers, it require support deep linking in app.
 */
 final public class ActivitySourceManager {
-    /// Return the previously initialized instance
-    static public var current: ActivitySourceManager?
-
     var apiClient: ActivitySourcesApiClient
     var mountedActivitySourceConnections: [ActivitySourceConnection] = []
     var config: ActivitySourceConfigBuilder
 
     private var persistor: Persistor
     private var connectionsLocalStore: ActivitySourceStore
-
-    /// Initialize the singleton with the provided config.
-    /// Should be Initialize once as soon as possible after up app, for setup backgroundDelivery for the HealthKit to fetch intraday data,
-    /// for example in AppDelegate (didFinishLaunchingWithOptions)
-    /// - Parameters:
-    ///   - apiClient: ApiClient
-    ///   - config: ActivitySourceConfigBuilder config with desire config for list of Data types for sync.
-    /// - Returns: instance of ActivitySourcesManager
-    static public func initialize(apiClient: ApiClient, config: ActivitySourceConfigBuilder) -> ActivitySourceManager {
-        let instance = ActivitySourceManager(userToken: apiClient.userToken, persistor: apiClient.persistor, apiClient: apiClient.activitySources, config: config)
-
-        ActivitySourceManager.current = instance
-
-        return instance
-    }
 
     /// Internal initializer
     /// - Parameters:

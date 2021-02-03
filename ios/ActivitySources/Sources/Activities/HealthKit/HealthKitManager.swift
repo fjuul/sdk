@@ -197,7 +197,7 @@ class HealthKitManager: HealthKitManaging {
             completion(nil, nil)
             return
         }
-        
+
         let predicatBuilder = HealthKitQueryPredictateBuilder(healthKitConfig: self.config.healthKitConfig)
 
         WorkoutFetcher.fetch(anchor: anchor, predictateBuilder: predicatBuilder) { requestData, newAnchor in

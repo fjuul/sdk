@@ -189,4 +189,19 @@ final class ActivitySourcesApiTests: XCTestCase {
         }
         waitForExpectations(timeout: 5.0, handler: nil)
     }
+    
+    func testInitActivitySourcesManager() {
+        // Given
+        let config = ActivitySourceConfigBuilder { builder in
+            builder.healthKitConfig = HealthKitActivitySourceConfig(dataTypesToRead: [.stepCount, .workout, ])
+        }
+        // Check that it's nil before initialize
+        XCTAssertNil(sut.activitySourcesManager)
+        
+        // When
+        sut.initActivitySourcesManager(config: config)
+
+        //Then
+        XCTAssertNotNil(sut.activitySourcesManager)
+    }
 }

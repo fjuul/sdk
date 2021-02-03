@@ -94,7 +94,7 @@ class UserProfileObservable: ObservableObject {
     func logout() -> Bool {
         guard let result = ApiClientHolder.default.apiClient?.clearPersistentStorage(), result else { return false }
 
-        ActivitySourceManager.current?.unmout { result in
+        ApiClientHolder.default.apiClient?.activitySourcesManager?.unmout { result in
             switch result {
             case .success:
                 ApiClientHolder.default.apiClient = nil

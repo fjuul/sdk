@@ -27,7 +27,7 @@ class ActivitySourceObservable: ObservableObject {
     }
 
     func getCurrentConnections() {
-        ActivitySourceManager.current?.refreshCurrent { result in
+        ApiClientHolder.default.apiClient?.activitySourcesManager?.refreshCurrent { result in
             switch result {
             case .success(let connections):
                 self.currentConnections = connections
@@ -40,7 +40,7 @@ class ActivitySourceObservable: ObservableObject {
     }
 
     func connect(activitySource: ActivitySource) {
-        ActivitySourceManager.current?.connect(activitySource: activitySource) { result in
+        ApiClientHolder.default.apiClient?.activitySourcesManager?.connect(activitySource: activitySource) { result in
             switch result {
             case .success(let connectionResult):
                 switch connectionResult {
@@ -55,7 +55,7 @@ class ActivitySourceObservable: ObservableObject {
     }
 
     func disconnect(activitySourceConnection: ActivitySourceConnection) {
-        ActivitySourceManager.current?.disconnect(activitySourceConnection: activitySourceConnection) { result in
+        ApiClientHolder.default.apiClient?.activitySourcesManager?.disconnect(activitySourceConnection: activitySourceConnection) { result in
             switch result {
             case .success: self.getCurrentConnections()
             case .failure(let err): self.error = ErrorHolder(error: err)

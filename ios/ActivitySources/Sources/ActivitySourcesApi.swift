@@ -88,7 +88,7 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
     }
 }
 
-private struct AssociatedObjectHandle: UInt8 = 0
+private var AssociatedObjectHandle: UInt8 = 0
 
 public extension ApiClient {
     var activitySourcesManager: ActivitySourceManager? {

@@ -15,17 +15,17 @@ protocol MountableActivitySource: ActivitySource {
     ///   - apiClient: ActivitySourcesApiClient
     ///   - config: ActivitySourceConfigBuilder for configuring what kind of data types should process.
     ///   - healthKitManagerBuilder: Builder for healthKitManager
-    ///   - completion: completion with status or error. If an error occurred,
+    ///   - completion: completion with void or error. If an error occurred,
     ///   this object contains information about the error (`FjuulError.activitySourceFailure.healthkitNotAvailableOnDevice`)
     func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder,
                healthKitManagerBuilder: HealthKitManagerBuilding, completion: @escaping (Result<Void, Error>) -> Void)
 
     /// Unmount activity source. As example unmount HealthKit backgroud delivery
-    /// - Parameter completion with status or error (`FjuulError.activitySourceFailure.activitySourceNotMounted`, )
+    /// - Parameter completion with void or error (`FjuulError.activitySourceFailure.activitySourceNotMounted`, )
 
     /// Unmount activity source and disables all background deliveries of update notifications. As example unmount HealthKit backgroud delivery.
     /// - Parameter:
-    ///   - completion: completion with status or error. If an error occurred,
+    ///   - completion: completion with void or error. If an error occurred,
     ///   this object contains information about the error (`FjuulError.activitySourceFailure.healthkitNotAvailableOnDevice`)
     func unmount(completion: @escaping (Result<Void, Error>) -> Void)
 }

@@ -51,7 +51,7 @@ class HealthKitManager: HealthKitManaging {
 
     /// On success observer queries are set up for background delivery.
     /// This is safe to call repeatedly and should be called at least once per launch.
-    /// - Parameter completion: status or error
+    /// - Parameter completion: void or error
     func mount(completion: @escaping (Result<Void, Error>) -> Void) {
         guard HKHealthStore.isHealthDataAvailable() else {
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
@@ -70,7 +70,7 @@ class HealthKitManager: HealthKitManaging {
     }
 
     /// Disables all BackgroundDelivery observers
-    /// - Parameter completion: status or error
+    /// - Parameter completion: void or error
     func disableAllBackgroundDelivery(completion: @escaping (Result<Void, Error>) -> Void) {
         HealthKitManager.healthStore.disableAllBackgroundDelivery { (success: Bool, error: Error?) in
             if let error = error {
@@ -84,7 +84,7 @@ class HealthKitManager: HealthKitManaging {
     }
 
     /// Force start sync
-    /// - Parameter completion: status or error
+    /// - Parameter completion: void or error
     func sync(completion: @escaping (Result<Void, Error>) -> Void) {
         let group = DispatchGroup()
         var error: Error?

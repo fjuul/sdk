@@ -73,7 +73,7 @@ final public class ActivitySourceManager {
     /// In the case of HealthKitActivitySource it will disable backgroundDelivery
     /// - Parameters:
     ///   - activitySourceConnection: instance of ActivitySourceConnection
-    ///   - completion: with status or error
+    ///   - completion: with void or error
     public func disconnect(activitySourceConnection: ActivitySourceConnection, completion: @escaping (Result<Void, Error>) -> Void) {
         apiClient.disconnect(activitySourceConnection: activitySourceConnection) { result in
             switch result {
@@ -114,7 +114,7 @@ final public class ActivitySourceManager {
 
     /// Unmount all ActivitySources. Useful for logout from app case. The trackers will not be disconnected,
     /// but all locally mounted ActivitySources will be unmounted on the device. Currently only HealthKitActivitySource is mountable
-    /// - Parameter completion: status or error
+    /// - Parameter completion: void or error
     public func unmout(completion: @escaping (Result<Void, Error>) -> Void) {
         let group = DispatchGroup()
         var error: Error?

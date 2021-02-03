@@ -22,7 +22,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
     /// Request show a modal prompting with list of required Healthkit data permissions based on provided ActivitySourceConfig.
     /// - Parameters:
     ///   - config: instance ActivitySourceConfig
-    ///   - completion: status or error
+    ///   - completion: void or error
     func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Void, Error>) -> Void) {
         HealthKitManager.requestAccess(config: config) { result in
             completion(result)
@@ -30,7 +30,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
     }
 
     /// Force initiate sync data
-    /// - Parameter completion: status or error
+    /// - Parameter completion: void or error
     public func sync(completion: @escaping (Result<Void, Error>) -> Void) {
         guard let healthKitManager = self.healthKitManager else {
             completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
@@ -47,7 +47,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
     ///   - apiClient: instance of ActivitySourcesApiClient
     ///   - config: instance of ActivitySourceConfigBuilder
     ///   - healthKitManagerBuilder: instance of HealthKitManagerBuilding
-    ///   - completion: status or error
+    ///   - completion: void or error
     internal func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder,
                         healthKitManagerBuilder: HealthKitManagerBuilding,
                         completion: @escaping (Result<Void, Error>) -> Void) {
@@ -63,7 +63,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
     }
 
     /// Disable Healthkit backgroundDelivery.
-    /// - Parameter completion: status or error
+    /// - Parameter completion: void or error
     internal func unmount(completion: @escaping (Result<Void, Error>) -> Void) {
         guard let healthKitManager = self.healthKitManager else {
             completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
@@ -78,7 +78,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
     /// Handler for new data from backgroundDelivery or manual sync
     /// - Parameters:
     ///   - requestData: instance of HKRequestData
-    ///   - completion: status or error
+    ///   - completion: void or error
     private func dataHandler(_ requestData: HKRequestData?, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let requestData = requestData else {
             completion(.success(()))
@@ -93,7 +93,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
     /// Sends data to back-end
     /// - Parameters:
     ///   - data: instance of HKRequestData
-    ///   - completion: status or error
+    ///   - completion: void or error
     private func sendBatch(data: HKRequestData, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let apiClient = self.apiClient else { return  completion(.failure(FjuulError.invalidConfig))}
 

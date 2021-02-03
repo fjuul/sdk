@@ -21,7 +21,7 @@ The Fjuul SDK is presented as a set of modules, each of which is delimited by it
 Modules of Fjuul SDK for Android platform written on plain Java, so there should not be problems with integrating to your java project. Also, the project follows the [interoperability rules](https://developer.android.com/kotlin/interop#java_for_kotlin_consumption) for working with Kotlin lang (our ExampleApp which shows a usage of the SDK is written in Kotlin).
 
 ### Restrictions
-- Fjuul SDK for Android runs on devices with Android 4.4 KitKat (API level 19) or above. So, the SDK requires `minSdkVersion` to be set to 19 or higher.
+- Fjuul SDK for Android runs on devices with Android 5.0 Lollipop (API level 21) or above. So, the SDK requires `minSdkVersion` to be set to 21 or higher.
 - Fjuul SDK for Android uses Java 8+ API. Explore an official [guide](https://developer.android.com/studio/write/java8-support)
 about java 8 desugaring if you plan to support older api levels (Android Gradle Plugin 4.0+).
 - 'activitysources' module requires `google-play-services` on an Android device to work with the Google Fit API. This means that devices without the support of Google Play services (for example, phones manufactured by Huawei) wouldn't be able to connect to Google Fit.

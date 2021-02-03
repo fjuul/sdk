@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId "com.fjuul.sdk.android.exampleapp"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"

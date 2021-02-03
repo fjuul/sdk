@@ -10,7 +10,9 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.time.LocalDate;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 
 import org.junit.After;
@@ -25,12 +27,13 @@ import com.fjuul.sdk.core.entities.InMemoryStorage;
 import com.fjuul.sdk.core.entities.Keystore;
 import com.fjuul.sdk.core.entities.SigningKey;
 import com.fjuul.sdk.core.entities.UserCredentials;
-import com.fjuul.sdk.core.exceptions.ApiExceptions;
 import com.fjuul.sdk.core.fixtures.http.TestApiClient;
 import com.fjuul.sdk.core.http.utils.ApiCallResult;
 import com.fjuul.sdk.user.entities.Gender;
 import com.fjuul.sdk.user.entities.UserCreationResult;
 import com.fjuul.sdk.user.entities.UserProfile;
+import com.fjuul.sdk.user.exceptions.UserApiExceptions.ValidationErrorBadRequestException;
+import com.fjuul.sdk.user.http.responses.ValidationError;
 
 import android.os.Build;
 import androidx.core.os.LocaleListCompat;
@@ -149,16 +152,36 @@ public class UserServiceTest {
         @Test
         public void createUser_InvalidParams_RespondWithException() throws IOException, InterruptedException {
             userService = new UserService(clientBuilder.build());
+            String jsonBody = String.join(System.getProperty("line.separator"),
+                "{",
+                "  \"message\": \"Bad Request: Validation error\",",
+                "  \"errors\": [",
+                "    {",
+                "      \"value\": 0,",
+                "      \"property\": \"weight\",",
+                "      \"children\": [],",
+                "      \"constraints\": {",
+                "        \"isPositive\": \"weight must be a positive number\",",
+                "        \"isNotEmpty\": \"weight should not be empty\"",
+                "      }",
+                "    },",
+                "    {",
+                "      \"value\": 0,",
+                "      \"property\": \"height\",",
+                "      \"children\": [],",
+                "      \"constraints\": {",
+                "        \"isPositive\": \"height must be a positive number\"",
+                "      }",
+                "    }",
+                "  ]",
+                "}");
             MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_BAD_REQUEST)
                 .setHeader("Content-Type", "application/json")
-                .setBody("{\n" + "  \"message\":\"Bad Request: Validation error\",\n" + "  \"errors\":[\n" + "    {\n"
-                    + "      \"property\":\"weight\",\n" + "      \"children\":[\n" + "\n" + "      ],\n"
-                    + "      \"constraints\":{\n" + "        \"isNotEmpty\":\"weight should not be empty\"\n"
-                    + "      }\n" + "    }\n" + "  ]\n" + "}");
+                .setBody(jsonBody);
             mockWebServer.enqueue(mockResponse);
 
             UserProfile.PartialBuilder userBuilder = new UserProfile.PartialBuilder();
-            userBuilder.setHeight(180);
+            userBuilder.setHeight(0);
             userBuilder.setGender(Gender.female);
             userBuilder.setBirthDate(LocalDate.of(1980, 06, 01));
             userBuilder.setTimezone(TimeZone.getTimeZone("Europe/Helsinki"));
@@ -167,13 +190,32 @@ public class UserServiceTest {
             RecordedRequest request = mockWebServer.takeRequest();
 
             assertEquals("transforms user params to json",
-                "{\"birthDate\":\"1980-06-01\",\"gender\":\"female\",\"height\":180.0,\"locale\":\"fi\",\"timezone\":\"Europe/Helsinki\"}",
+                "{\"birthDate\":\"1980-06-01\",\"gender\":\"female\",\"height\":0.0,\"locale\":\"fi\",\"timezone\":\"Europe/Helsinki\"}",
                 request.getBody().readUtf8());
 
             assertTrue("unsuccessful result", result.isError());
-            ApiExceptions.CommonException exception = result.getError();
-            assertThat(exception, instanceOf(ApiExceptions.BadRequestException.class));
+            assertThat(result.getError(), instanceOf(ValidationErrorBadRequestException.class));
+            ValidationErrorBadRequestException exception = (ValidationErrorBadRequestException) result.getError();
             assertEquals("should have error message", "Bad Request: Validation error", exception.getMessage());
+            assertFalse("should have validation errors", exception.getErrors().isEmpty());
+            ValidationError weightValidationError = exception.getErrors().get(0);
+            assertEquals("weight", weightValidationError.getProperty());
+            assertEquals(0.0, weightValidationError.getValue());
+            Map<String, String> expectedWeightConstraints = new HashMap<>();
+            expectedWeightConstraints.put("isPositive", "weight must be a positive number");
+            expectedWeightConstraints.put("isNotEmpty", "weight should not be empty");
+            assertEquals("weight validation error should have constraints",
+                expectedWeightConstraints,
+                weightValidationError.getConstraints());
+
+            ValidationError heightValidationError = exception.getErrors().get(1);
+            assertEquals("height", heightValidationError.getProperty());
+            assertEquals(0.0, heightValidationError.getValue());
+            Map<String, String> expectedHeightConstraints = new HashMap<>();
+            expectedHeightConstraints.put("isPositive", "height must be a positive number");
+            assertEquals("height validation error should have constraints",
+                expectedHeightConstraints,
+                heightValidationError.getConstraints());
         }
     }
 
@@ -308,6 +350,52 @@ public class UserServiceTest {
             assertEquals(LocalDate.of(1980, 12, 31), profile.getBirthDate());
             assertEquals(TimeZone.getTimeZone("Europe/Moscow"), profile.getTimezone());
             assertEquals("en", profile.getLocale());
+        }
+
+        @Test
+        public void updateProfile_InvalidUserParams_RespondsWithException() throws InterruptedException {
+            clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
+            testKeystore.setKey(validSigningKey);
+            clientBuilder.setKeystore(testKeystore);
+            userService = new UserService(clientBuilder.build());
+            String jsonBody = String.join(System.getProperty("line.separator"),
+                "{",
+                "  \"message\": \"Bad Request: Validation error\",",
+                "  \"errors\": [",
+                "    {",
+                "      \"value\": 0,",
+                "      \"property\": \"height\",",
+                "      \"children\": [],",
+                "      \"constraints\": {",
+                "        \"isPositive\": \"height must be a positive number\"",
+                "      }",
+                "    }",
+                "  ]",
+                "}");
+            MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_BAD_REQUEST)
+                .setHeader("Content-Type", "application/json")
+                .setBody(jsonBody);
+            mockWebServer.enqueue(mockResponse);
+            UserProfile.PartialBuilder profileBuilder = new UserProfile.PartialBuilder();
+            profileBuilder.setHeight(0);
+            ApiCallResult<UserProfile> result = userService.updateProfile(profileBuilder).execute();
+
+            RecordedRequest request = mockWebServer.takeRequest();
+            assertEquals("transforms only given user params to json", "{\"height\":0.0}", request.getBody().readUtf8());
+
+            assertTrue("unsuccessful result", result.isError());
+            assertThat(result.getError(), instanceOf(ValidationErrorBadRequestException.class));
+            ValidationErrorBadRequestException exception = (ValidationErrorBadRequestException) result.getError();
+            assertEquals("should have error message", "Bad Request: Validation error", exception.getMessage());
+            assertFalse("should have validation errors", exception.getErrors().isEmpty());
+            ValidationError heightValidationError = exception.getErrors().get(0);
+            assertEquals("height", heightValidationError.getProperty());
+            assertEquals(0.0, heightValidationError.getValue());
+            Map<String, String> expectedHeightConstraints = new HashMap<>();
+            expectedHeightConstraints.put("isPositive", "height must be a positive number");
+            assertEquals("height validation error should have constraints",
+                expectedHeightConstraints,
+                heightValidationError.getConstraints());
         }
     }
 }

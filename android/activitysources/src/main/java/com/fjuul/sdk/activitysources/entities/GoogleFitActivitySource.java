@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 import com.fjuul.sdk.activitysources.entities.internal.GFDataUtils;
 import com.fjuul.sdk.activitysources.entities.internal.GoogleFitDataManager;
-import com.fjuul.sdk.activitysources.entities.internal.GoogleFitDataManagerBuilder;
+import com.fjuul.sdk.activitysources.entities.internal.GFDataManagerBuilder;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata.GFSyncMetadataStore;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.ActivityRecognitionPermissionNotGrantedException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
@@ -70,7 +70,8 @@ public class GoogleFitActivitySource extends ActivitySource {
     private final @NonNull Set<FitnessMetricsType> collectableFitnessMetrics;
     private final @NonNull ActivitySourcesService sourcesService;
     private final @NonNull Context context;
-    private final @NonNull GoogleFitDataManagerBuilder gfDataManagerBuilder;
+    private final @NonNull
+    GFDataManagerBuilder gfDataManagerBuilder;
     private final @NonNull ExecutorService localSequentialBackgroundExecutor;
 
     static synchronized void initialize(@NonNull ApiClient client,
@@ -93,8 +94,8 @@ public class GoogleFitActivitySource extends ActivitySource {
         final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
         final GFDataUtils gfUtils = new GFDataUtils();
         final GFSyncMetadataStore syncMetadataStore = new GFSyncMetadataStore(client.getStorage());
-        final GoogleFitDataManagerBuilder gfDataManagerBuilder =
-            new GoogleFitDataManagerBuilder(context, gfUtils, syncMetadataStore, sourcesService);
+        final GFDataManagerBuilder gfDataManagerBuilder =
+            new GFDataManagerBuilder(context, gfUtils, syncMetadataStore, sourcesService);
         instance = new GoogleFitActivitySource(requestOfflineAccess,
             serverClientId,
             sourcesManagerConfig.getCollectableFitnessMetrics(),
@@ -125,7 +126,7 @@ public class GoogleFitActivitySource extends ActivitySource {
         @NonNull Set<FitnessMetricsType> collectableFitnessMetrics,
         @NonNull ActivitySourcesService sourcesService,
         @NonNull Context context,
-        @NonNull GoogleFitDataManagerBuilder gfDataManagerBuilder,
+        @NonNull GFDataManagerBuilder gfDataManagerBuilder,
         @NonNull ExecutorService localSequentialBackgroundExecutor) {
         this.requestOfflineAccess = requestOfflineAccess;
         this.serverClientId = serverClientId;

@@ -10,7 +10,7 @@ import com.google.android.gms.fitness.SessionsClient;
 import android.content.Context;
 import androidx.annotation.NonNull;
 
-public class GoogleFitDataManagerBuilder {
+public class GFDataManagerBuilder {
     @NonNull
     private final Context context;
     @NonNull
@@ -20,10 +20,10 @@ public class GoogleFitDataManagerBuilder {
     @NonNull
     private final ActivitySourcesService sourcesService;
 
-    public GoogleFitDataManagerBuilder(@NonNull Context context,
-        @NonNull GFDataUtils gfDataUtils,
-        @NonNull GFSyncMetadataStore syncMetadataStore,
-        @NonNull ActivitySourcesService sourcesService) {
+    public GFDataManagerBuilder(@NonNull Context context,
+                                @NonNull GFDataUtils gfDataUtils,
+                                @NonNull GFSyncMetadataStore syncMetadataStore,
+                                @NonNull ActivitySourcesService sourcesService) {
         this.context = context;
         this.gfDataUtils = gfDataUtils;
         this.syncMetadataStore = syncMetadataStore;

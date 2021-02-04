@@ -44,7 +44,7 @@ import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowPackageManager;
 
 import com.fjuul.sdk.activitysources.entities.internal.GoogleFitDataManager;
-import com.fjuul.sdk.activitysources.entities.internal.GoogleFitDataManagerBuilder;
+import com.fjuul.sdk.activitysources.entities.internal.GFDataManagerBuilder;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.ActivityRecognitionPermissionNotGrantedException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.FitnessPermissionsNotGrantedException;
@@ -95,7 +95,7 @@ public class GoogleFitActivitySourceTest {
             ActivitySourcesService mockedActivitySourcesService;
             Set<FitnessMetricsType> collectableFitnessMetrics;
             Context context;
-            GoogleFitDataManagerBuilder mockedGfDataManagerBuilder;
+            GFDataManagerBuilder mockedGfDataManagerBuilder;
 
             @Before
             public void beforeTest() {
@@ -107,7 +107,7 @@ public class GoogleFitActivitySourceTest {
                             FitnessMetricsType.WORKOUTS)
                         .collect(Collectors.toSet());
                 mockedActivitySourcesService = mock(ActivitySourcesService.class);
-                mockedGfDataManagerBuilder = mock(GoogleFitDataManagerBuilder.class);
+                mockedGfDataManagerBuilder = mock(GFDataManagerBuilder.class);
             }
 
             @Test
@@ -238,7 +238,7 @@ public class GoogleFitActivitySourceTest {
             GoogleFitActivitySource subject;
             ActivitySourcesService mockedActivitySourcesService;
             Context context;
-            GoogleFitDataManagerBuilder mockedGfDataManagerBuilder;
+            GFDataManagerBuilder mockedGfDataManagerBuilder;
             Set<FitnessMetricsType> collectableFitnessMetrics;
 
             @Before
@@ -251,7 +251,7 @@ public class GoogleFitActivitySourceTest {
                             FitnessMetricsType.WORKOUTS)
                         .collect(Collectors.toSet());
                 mockedActivitySourcesService = mock(ActivitySourcesService.class);
-                mockedGfDataManagerBuilder = mock(GoogleFitDataManagerBuilder.class);
+                mockedGfDataManagerBuilder = mock(GFDataManagerBuilder.class);
             }
 
             @Test
@@ -494,7 +494,7 @@ public class GoogleFitActivitySourceTest {
         public static class SyncIntradayMetricsTests extends GivenRobolectricContext {
             GoogleFitActivitySource subject;
             ActivitySourcesService mockedActivitySourcesService;
-            GoogleFitDataManagerBuilder mockedGfDataManagerBuilder;
+            GFDataManagerBuilder mockedGfDataManagerBuilder;
             Context context;
             Set<FitnessMetricsType> collectableFitnessMetrics;
             Clock fixedTestClock = Clock.fixed(Instant.parse("2020-10-05T15:03:01.000Z"), ZoneId.of("UTC"));
@@ -503,7 +503,7 @@ public class GoogleFitActivitySourceTest {
             public void beforeTest() {
                 context = ApplicationProvider.getApplicationContext();
                 mockedActivitySourcesService = mock(ActivitySourcesService.class);
-                mockedGfDataManagerBuilder = mock(GoogleFitDataManagerBuilder.class);
+                mockedGfDataManagerBuilder = mock(GFDataManagerBuilder.class);
                 collectableFitnessMetrics = Stream.of(FitnessMetricsType.INTRADAY_CALORIES).collect(Collectors.toSet());
             }
 
@@ -632,7 +632,7 @@ public class GoogleFitActivitySourceTest {
         public static class SyncSessionsTests extends GivenRobolectricContext {
             GoogleFitActivitySource subject;
             ActivitySourcesService mockedActivitySourcesService;
-            GoogleFitDataManagerBuilder mockedGfDataManagerBuilder;
+            GFDataManagerBuilder mockedGfDataManagerBuilder;
             Context context;
             Set<FitnessMetricsType> collectableFitnessMetrics;
             Clock fixedTestClock = Clock.fixed(Instant.parse("2020-10-05T15:03:01.000Z"), ZoneId.of("UTC"));
@@ -647,7 +647,7 @@ public class GoogleFitActivitySourceTest {
                 final ShadowPackageManager shadowPackageManager = new ShadowPackageManager();
                 shadowPackageManager.installPackage(packageInfo);
                 mockedActivitySourcesService = mock(ActivitySourcesService.class);
-                mockedGfDataManagerBuilder = mock(GoogleFitDataManagerBuilder.class);
+                mockedGfDataManagerBuilder = mock(GFDataManagerBuilder.class);
                 collectableFitnessMetrics = Stream.of(FitnessMetricsType.WORKOUTS).collect(Collectors.toSet());
             }
 

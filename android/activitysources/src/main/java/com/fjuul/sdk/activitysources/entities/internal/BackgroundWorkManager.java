@@ -23,7 +23,7 @@ public class BackgroundWorkManager {
 
     @SuppressLint("NewApi")
     public void configureBackgroundGFSyncWorks() {
-        switch (config.getGfIntradayBackgroundSyncMode()) {
+        switch (config.getGoogleFitIntradayBackgroundSyncMode()) {
             case DISABLED: {
                 gfSyncWorkManager.cancelIntradaySyncWork();
                 break;
@@ -41,14 +41,14 @@ public class BackgroundWorkManager {
                 break;
             }
         }
-        switch (config.getGfSessionsBackgroundSyncMode()) {
+        switch (config.getGoogleFitSessionsBackgroundSyncMode()) {
             case DISABLED: {
                 gfSyncWorkManager.cancelSessionsSyncWork();
                 break;
             }
             case ENABLED: {
                 if (config.getCollectableFitnessMetrics().contains(FitnessMetricsType.WORKOUTS)) {
-                    gfSyncWorkManager.scheduleSessionsSyncWork(config.getGfSessionsBackgroundSyncMinSessionDuration());
+                    gfSyncWorkManager.scheduleSessionsSyncWork(config.getGoogleFitSessionsBackgroundSyncMinSessionDuration());
                 } else {
                     gfSyncWorkManager.cancelSessionsSyncWork();
                 }

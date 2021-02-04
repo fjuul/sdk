@@ -105,11 +105,11 @@ public class GFIntradaySyncWorkerTest {
                     apiClient.getBaseUrl());
                 final ActivitySourcesManagerConfig config = configCaptor.getValue();
                 assertEquals("config should have the untouched background mode",
-                    ActivitySourcesManagerConfig.GFBackgroundSyncMode.UNTOUCHED,
-                    config.getGfIntradayBackgroundSyncMode());
+                    ActivitySourcesManagerConfig.GoogleFitBackgroundSyncMode.UNTOUCHED,
+                    config.getGoogleFitIntradayBackgroundSyncMode());
                 assertEquals("config should have the untouched background mode",
-                    ActivitySourcesManagerConfig.GFBackgroundSyncMode.UNTOUCHED,
-                    config.getGfSessionsBackgroundSyncMode());
+                    ActivitySourcesManagerConfig.GoogleFitBackgroundSyncMode.UNTOUCHED,
+                    config.getGoogleFitSessionsBackgroundSyncMode());
                 assertEquals("config should have the empty set of collectable fitness metrics",
                     Collections.emptySet(),
                     config.getCollectableFitnessMetrics());

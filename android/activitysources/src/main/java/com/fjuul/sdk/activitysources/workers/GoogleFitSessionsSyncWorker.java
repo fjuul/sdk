@@ -6,7 +6,7 @@ import java.util.concurrent.ExecutionException;
 
 import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
-import com.fjuul.sdk.activitysources.entities.GFSessionSyncOptions;
+import com.fjuul.sdk.activitysources.entities.GoogleFitSessionSyncOptions;
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
@@ -36,7 +36,7 @@ public class GoogleFitSessionsSyncWorker extends GoogleFitSyncWorker {
         }
         final GoogleFitActivitySource gfSource = ((GoogleFitActivitySource) gfConnection.getActivitySource());
         final TaskCompletionSource<Void> taskCompletionSource = new TaskCompletionSource<>();
-        final GFSessionSyncOptions syncOptions = buildSessionSyncOptions();
+        final GoogleFitSessionSyncOptions syncOptions = buildSessionSyncOptions();
         gfSource.syncSessions(syncOptions, (result -> {
             if (result.isError() && result.getError() instanceof Exception) {
                 taskCompletionSource.trySetException((Exception) result.getError());
@@ -55,8 +55,8 @@ public class GoogleFitSessionsSyncWorker extends GoogleFitSyncWorker {
     }
 
     @SuppressLint("NewApi")
-    private GFSessionSyncOptions buildSessionSyncOptions() {
-        return new GFSessionSyncOptions.Builder().setDateRange(LocalDate.now().minusDays(2), LocalDate.now())
+    private GoogleFitSessionSyncOptions buildSessionSyncOptions() {
+        return new GoogleFitSessionSyncOptions.Builder().setDateRange(LocalDate.now().minusDays(2), LocalDate.now())
             .setMinimumSessionDuration(Duration.parse(getInputData().getString(KEY_MIN_SESSION_DURATION_ARG)))
             .build();
     }

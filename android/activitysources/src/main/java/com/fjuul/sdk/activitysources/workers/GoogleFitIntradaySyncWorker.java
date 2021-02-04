@@ -6,7 +6,7 @@ import java.util.concurrent.ExecutionException;
 import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
-import com.fjuul.sdk.activitysources.entities.GFIntradaySyncOptions;
+import com.fjuul.sdk.activitysources.entities.GoogleFitIntradaySyncOptions;
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
@@ -36,7 +36,7 @@ public class GoogleFitIntradaySyncWorker extends GoogleFitSyncWorker {
         }
         final GoogleFitActivitySource gfSource = ((GoogleFitActivitySource) gfConnection.getActivitySource());
         final TaskCompletionSource<Void> taskCompletionSource = new TaskCompletionSource<>();
-        final GFIntradaySyncOptions syncOptions = buildIntradaySyncOptions();
+        final GoogleFitIntradaySyncOptions syncOptions = buildIntradaySyncOptions();
         gfSource.syncIntradayMetrics(syncOptions, (result -> {
             if (result.isError() && result.getError() instanceof Exception) {
                 taskCompletionSource.trySetException((Exception) result.getError());
@@ -55,9 +55,9 @@ public class GoogleFitIntradaySyncWorker extends GoogleFitSyncWorker {
     }
 
     @SuppressLint("NewApi")
-    private GFIntradaySyncOptions buildIntradaySyncOptions() {
+    private GoogleFitIntradaySyncOptions buildIntradaySyncOptions() {
         final String[] rawIntradayMetrics = getInputData().getStringArray(KEY_INTRADAY_METRICS_ARG);
-        final GFIntradaySyncOptions.Builder syncOptionsBuilder = new GFIntradaySyncOptions.Builder();
+        final GoogleFitIntradaySyncOptions.Builder syncOptionsBuilder = new GoogleFitIntradaySyncOptions.Builder();
         for (final String rawIntradayMetric : rawIntradayMetrics) {
             try {
                 final FitnessMetricsType metric = FitnessMetricsType.valueOf(rawIntradayMetric);

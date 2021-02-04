@@ -70,8 +70,7 @@ public class GoogleFitActivitySource extends ActivitySource {
     private final @NonNull Set<FitnessMetricsType> collectableFitnessMetrics;
     private final @NonNull ActivitySourcesService sourcesService;
     private final @NonNull Context context;
-    private final @NonNull
-    GFDataManagerBuilder gfDataManagerBuilder;
+    private final @NonNull GFDataManagerBuilder gfDataManagerBuilder;
     private final @NonNull ExecutorService localSequentialBackgroundExecutor;
 
     static synchronized void initialize(@NonNull ApiClient client,
@@ -278,7 +277,7 @@ public class GoogleFitActivitySource extends ActivitySource {
      * @param callback callback for the result
      */
     @SuppressLint("NewApi")
-    public void syncIntradayMetrics(@NonNull final GFIntradaySyncOptions options,
+    public void syncIntradayMetrics(@NonNull final GoogleFitIntradaySyncOptions options,
         @Nullable final Callback<Void> callback) {
         final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         if (!areFitnessPermissionsGranted(account, options.getMetrics())) {
@@ -308,7 +307,7 @@ public class GoogleFitActivitySource extends ActivitySource {
      * @param options session sync options
      * @param callback callback for the result
      */
-    public void syncSessions(@NonNull final GFSessionSyncOptions options, @Nullable final Callback<Void> callback) {
+    public void syncSessions(@NonNull final GoogleFitSessionSyncOptions options, @Nullable final Callback<Void> callback) {
         final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         if (!areFitnessPermissionsGranted(account,
             Stream.of(FitnessMetricsType.WORKOUTS).collect(Collectors.toSet()))) {

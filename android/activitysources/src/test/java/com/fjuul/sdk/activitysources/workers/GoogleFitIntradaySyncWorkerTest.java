@@ -38,7 +38,7 @@ import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig;
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
-import com.fjuul.sdk.activitysources.entities.GFIntradaySyncOptions;
+import com.fjuul.sdk.activitysources.entities.GoogleFitIntradaySyncOptions;
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.core.ApiClient;
@@ -185,10 +185,10 @@ public class GoogleFitIntradaySyncWorkerTest {
             verify(mockedSourcesManager).getCurrent();
             // no more interactions with the sources manager
             verifyNoMoreInteractions(mockedSourcesManager);
-            final ArgumentCaptor<GFIntradaySyncOptions> syncOptionsCaptor =
-                ArgumentCaptor.forClass(GFIntradaySyncOptions.class);
+            final ArgumentCaptor<GoogleFitIntradaySyncOptions> syncOptionsCaptor =
+                ArgumentCaptor.forClass(GoogleFitIntradaySyncOptions.class);
             verify(mockedGoogleFit).syncIntradayMetrics(syncOptionsCaptor.capture(), any());
-            final GFIntradaySyncOptions syncOptions = syncOptionsCaptor.getValue();
+            final GoogleFitIntradaySyncOptions syncOptions = syncOptionsCaptor.getValue();
             assertEquals("sync options should have the right start time",
                 LocalDate.now().minusDays(2),
                 syncOptions.getStartDate());
@@ -230,10 +230,10 @@ public class GoogleFitIntradaySyncWorkerTest {
             verify(mockedSourcesManager).getCurrent();
             // no more interactions with the sources manager
             verifyNoMoreInteractions(mockedSourcesManager);
-            final ArgumentCaptor<GFIntradaySyncOptions> syncOptionsCaptor =
-                ArgumentCaptor.forClass(GFIntradaySyncOptions.class);
+            final ArgumentCaptor<GoogleFitIntradaySyncOptions> syncOptionsCaptor =
+                ArgumentCaptor.forClass(GoogleFitIntradaySyncOptions.class);
             verify(mockedGoogleFit).syncIntradayMetrics(syncOptionsCaptor.capture(), any());
-            final GFIntradaySyncOptions syncOptions = syncOptionsCaptor.getValue();
+            final GoogleFitIntradaySyncOptions syncOptions = syncOptionsCaptor.getValue();
             assertEquals("sync options should have the right start time",
                 LocalDate.now().minusDays(2),
                 syncOptions.getStartDate());

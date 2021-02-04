@@ -13,13 +13,13 @@ import androidx.annotation.VisibleForTesting;
  * A class that encapsulates parameters for syncing sessions of Google Fit. In order to build the instance of this
  * class, use {@link Builder}.
  */
-public final class GFSessionSyncOptions extends GFSyncOptions {
+public final class GoogleFitSessionSyncOptions extends GoogleFitSyncOptions {
     @NonNull
     private final Duration minimumSessionDuration;
 
-    private GFSessionSyncOptions(@NonNull LocalDate startDate,
-        @NonNull LocalDate endDate,
-        @NonNull Duration minimumSessionDuration) {
+    private GoogleFitSessionSyncOptions(@NonNull LocalDate startDate,
+                                        @NonNull LocalDate endDate,
+                                        @NonNull Duration minimumSessionDuration) {
         super(startDate, endDate);
         this.minimumSessionDuration = minimumSessionDuration;
     }
@@ -30,7 +30,7 @@ public final class GFSessionSyncOptions extends GFSyncOptions {
     }
 
     /**
-     * Builder of {@link GFSessionSyncOptions}. The start date, the end date, and the minimum session duration must be
+     * Builder of {@link GoogleFitSessionSyncOptions}. The start date, the end date, and the minimum session duration must be
      * specified during the building.
      */
     public static class Builder {
@@ -101,17 +101,17 @@ public final class GFSessionSyncOptions extends GFSyncOptions {
 
         @SuppressLint("NewApi")
         @NonNull
-        public GFSessionSyncOptions build() {
+        public GoogleFitSessionSyncOptions build() {
             if (startDate == null || endDate == null || minimumSessionDuration == null) {
                 throw new IllegalStateException("Date range and minimum session duration must be specified");
             }
-            return new GFSessionSyncOptions(startDate, endDate, minimumSessionDuration);
+            return new GoogleFitSessionSyncOptions(startDate, endDate, minimumSessionDuration);
         }
 
         @SuppressLint("NewApi")
         @NonNull
         public static LocalDate getMaxAllowedPastDate() {
-            return GFSyncOptions.getMaxAllowedPastDate(Clock.systemDefaultZone());
+            return GoogleFitSyncOptions.getMaxAllowedPastDate(Clock.systemDefaultZone());
         }
     }
 }

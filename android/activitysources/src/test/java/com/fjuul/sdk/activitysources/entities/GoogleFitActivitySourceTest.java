@@ -524,7 +524,7 @@ public class GoogleFitActivitySourceTest {
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
 
-                    final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder(fixedTestClock)
+                    final GoogleFitIntradaySyncOptions options = new GoogleFitIntradaySyncOptions.Builder(fixedTestClock)
                         .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
                         .include(FitnessMetricsType.INTRADAY_CALORIES)
                         .build();
@@ -561,7 +561,7 @@ public class GoogleFitActivitySourceTest {
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
 
-                    final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder(fixedTestClock)
+                    final GoogleFitIntradaySyncOptions options = new GoogleFitIntradaySyncOptions.Builder(fixedTestClock)
                         .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
                         .include(FitnessMetricsType.INTRADAY_CALORIES)
                         .build();
@@ -607,7 +607,7 @@ public class GoogleFitActivitySourceTest {
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
 
-                    final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder(fixedTestClock)
+                    final GoogleFitIntradaySyncOptions options = new GoogleFitIntradaySyncOptions.Builder(fixedTestClock)
                         .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
                         .include(FitnessMetricsType.INTRADAY_CALORIES)
                         .build();
@@ -668,7 +668,7 @@ public class GoogleFitActivitySourceTest {
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
 
-                    final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder(fixedTestClock)
+                    final GoogleFitSessionSyncOptions options = new GoogleFitSessionSyncOptions.Builder(fixedTestClock)
                         .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
                         .setMinimumSessionDuration(Duration.ofMinutes(3))
                         .build();
@@ -707,7 +707,7 @@ public class GoogleFitActivitySourceTest {
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
 
-                    final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder(fixedTestClock)
+                    final GoogleFitSessionSyncOptions options = new GoogleFitSessionSyncOptions.Builder(fixedTestClock)
                         .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
                         .setMinimumSessionDuration(Duration.ofMinutes(3))
                         .build();
@@ -754,7 +754,7 @@ public class GoogleFitActivitySourceTest {
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
 
-                    final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder(fixedTestClock)
+                    final GoogleFitSessionSyncOptions options = new GoogleFitSessionSyncOptions.Builder(fixedTestClock)
                         .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
                         .setMinimumSessionDuration(Duration.ofMinutes(3))
                         .build();
@@ -805,7 +805,7 @@ public class GoogleFitActivitySourceTest {
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
 
-                    final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder(fixedTestClock)
+                    final GoogleFitSessionSyncOptions options = new GoogleFitSessionSyncOptions.Builder(fixedTestClock)
                         .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
                         .setMinimumSessionDuration(Duration.ofMinutes(3))
                         .build();

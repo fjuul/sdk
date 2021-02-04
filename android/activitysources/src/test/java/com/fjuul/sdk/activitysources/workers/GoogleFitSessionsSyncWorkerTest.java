@@ -36,7 +36,7 @@ import org.robolectric.annotation.Config;
 import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig;
-import com.fjuul.sdk.activitysources.entities.GFSessionSyncOptions;
+import com.fjuul.sdk.activitysources.entities.GoogleFitSessionSyncOptions;
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions;
 import com.fjuul.sdk.core.ApiClient;
@@ -183,10 +183,10 @@ public class GoogleFitSessionsSyncWorkerTest {
             verify(mockedSourcesManager).getCurrent();
             // no more interactions with the sources manager
             verifyNoMoreInteractions(mockedSourcesManager);
-            final ArgumentCaptor<GFSessionSyncOptions> syncOptionsCaptor =
-                ArgumentCaptor.forClass(GFSessionSyncOptions.class);
+            final ArgumentCaptor<GoogleFitSessionSyncOptions> syncOptionsCaptor =
+                ArgumentCaptor.forClass(GoogleFitSessionSyncOptions.class);
             verify(mockedGoogleFit).syncSessions(syncOptionsCaptor.capture(), any());
-            final GFSessionSyncOptions syncOptions = syncOptionsCaptor.getValue();
+            final GoogleFitSessionSyncOptions syncOptions = syncOptionsCaptor.getValue();
             assertEquals("sync options should have the right start time",
                 LocalDate.now().minusDays(2),
                 syncOptions.getStartDate());
@@ -223,10 +223,10 @@ public class GoogleFitSessionsSyncWorkerTest {
             verify(mockedSourcesManager).getCurrent();
             // no more interactions with the sources manager
             verifyNoMoreInteractions(mockedSourcesManager);
-            final ArgumentCaptor<GFSessionSyncOptions> syncOptionsCaptor =
-                ArgumentCaptor.forClass(GFSessionSyncOptions.class);
+            final ArgumentCaptor<GoogleFitSessionSyncOptions> syncOptionsCaptor =
+                ArgumentCaptor.forClass(GoogleFitSessionSyncOptions.class);
             verify(mockedGoogleFit).syncSessions(syncOptionsCaptor.capture(), any());
-            final GFSessionSyncOptions syncOptions = syncOptionsCaptor.getValue();
+            final GoogleFitSessionSyncOptions syncOptions = syncOptionsCaptor.getValue();
             assertEquals("sync options should have the right start time",
                 LocalDate.now().minusDays(2),
                 syncOptions.getStartDate());

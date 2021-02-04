@@ -1,6 +1,8 @@
 import Foundation
 
 public class DiskPersistor: Persistor {
+    static internal let PERSISTANCE_PREFIX = "com.fjuul.sdk.persistence"
+
     public init() {}
 
     public static func remove(matchKey: String) -> Bool {
@@ -9,7 +11,7 @@ public class DiskPersistor: Persistor {
             let fileURLs = try FileManager.default.contentsOfDirectory(at: storeFolderURL, includingPropertiesForKeys: nil)
 
             try fileURLs.forEach { fileURL in
-                if fileURL.path.contains(".\(matchKey)") {
+                if fileURL.path.range(of: "(\(DiskPersistor.PERSISTANCE_PREFIX)).+(\(matchKey))", options: .regularExpression) != nil {
                     try FileManager.default.removeItem(at: fileURL)
                 }
             }
@@ -26,6 +28,7 @@ public class DiskPersistor: Persistor {
             // This is a no-op if the directory already exists.
             try FileManager.default.createDirectory(at: DiskPersistor.getStorageDirectory(), withIntermediateDirectories: true, attributes: nil)
             let fullPath = DiskPersistor.getFullPathForKey(key)
+
             guard let unwrapped = value else {
                 if FileManager.default.fileExists(atPath: fullPath.path) {
                     try FileManager.default.removeItem(atPath: fullPath.path)
@@ -74,7 +77,7 @@ public class DiskPersistor: Persistor {
     }
 
     private static func getFullPathForKey(_ key: String) -> URL {
-        getStorageDirectory().appendingPathComponent("com.fjuul.sdk.persistence.\(key)")
+        getStorageDirectory().appendingPathComponent("\(DiskPersistor.PERSISTANCE_PREFIX).\(key)")
     }
 
 }

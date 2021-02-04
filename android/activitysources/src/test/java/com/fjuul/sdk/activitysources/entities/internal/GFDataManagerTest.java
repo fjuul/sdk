@@ -64,7 +64,7 @@ import com.google.android.gms.tasks.Tasks;
 import android.os.Build;
 
 @RunWith(Enclosed.class)
-public class GoogleFitDataManagerTest {
+public class GFDataManagerTest {
     public static final ExecutorService testExecutor = Executors.newSingleThreadExecutor();
 
     @AfterClass
@@ -82,7 +82,7 @@ public class GoogleFitDataManagerTest {
         final ZoneId testZoneId = testTimeZone.toZoneId();
         final Clock fixedClock = Clock.fixed(Instant.parse(currentInstant), testZoneId);
 
-        GoogleFitDataManager subject;
+        GFDataManager subject;
         GFClientWrapper mockedGFClientWrapper;
         GFDataUtils gfDataUtilsSpy;
         GFSyncMetadataStore mockedGFSyncMetadataStore;
@@ -95,7 +95,7 @@ public class GoogleFitDataManagerTest {
             mockedActivitySourcesService = mock(ActivitySourcesService.class);
             GFDataUtils gfDataUtils = new GFDataUtils(testZoneId, fixedClock);
             gfDataUtilsSpy = spy(gfDataUtils);
-            subject = new GoogleFitDataManager(mockedGFClientWrapper,
+            subject = new GFDataManager(mockedGFClientWrapper,
                 gfDataUtilsSpy,
                 mockedGFSyncMetadataStore,
                 mockedActivitySourcesService);
@@ -518,7 +518,7 @@ public class GoogleFitDataManagerTest {
         final ZoneId testZoneId = testTimeZone.toZoneId();
         final Clock fixedClock = Clock.fixed(Instant.parse(currentInstant), testZoneId);
 
-        GoogleFitDataManager subject;
+        GFDataManager subject;
         GFClientWrapper mockedGFClientWrapper;
         GFDataUtils gfDataUtilsSpy;
         GFSyncMetadataStore mockedGFSyncMetadataStore;
@@ -531,7 +531,7 @@ public class GoogleFitDataManagerTest {
             mockedActivitySourcesService = mock(ActivitySourcesService.class);
             GFDataUtils gfDataUtils = new GFDataUtils(testZoneId, fixedClock);
             gfDataUtilsSpy = spy(gfDataUtils);
-            subject = new GoogleFitDataManager(mockedGFClientWrapper,
+            subject = new GFDataManager(mockedGFClientWrapper,
                 gfDataUtilsSpy,
                 mockedGFSyncMetadataStore,
                 mockedActivitySourcesService);

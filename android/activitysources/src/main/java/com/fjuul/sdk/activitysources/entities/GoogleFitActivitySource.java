@@ -14,8 +14,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fjuul.sdk.activitysources.entities.internal.GFDataManager;
 import com.fjuul.sdk.activitysources.entities.internal.GFDataUtils;
-import com.fjuul.sdk.activitysources.entities.internal.GoogleFitDataManager;
 import com.fjuul.sdk.activitysources.entities.internal.GFDataManagerBuilder;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata.GFSyncMetadataStore;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.ActivityRecognitionPermissionNotGrantedException;
@@ -288,8 +288,8 @@ public class GoogleFitActivitySource extends ActivitySource {
             }
             return;
         }
-        final GoogleFitDataManager googleFitDataManager = gfDataManagerBuilder.build(account);
-        performTaskAlongWithCallback(() -> googleFitDataManager.syncIntradayMetrics(options), callback);
+        final GFDataManager GFDataManager = gfDataManagerBuilder.build(account);
+        performTaskAlongWithCallback(() -> GFDataManager.syncIntradayMetrics(options), callback);
     }
 
     /**
@@ -326,8 +326,8 @@ public class GoogleFitActivitySource extends ActivitySource {
             }
             return;
         }
-        final GoogleFitDataManager googleFitDataManager = gfDataManagerBuilder.build(account);
-        performTaskAlongWithCallback(() -> googleFitDataManager.syncSessions(options), callback);
+        final GFDataManager GFDataManager = gfDataManagerBuilder.build(account);
+        performTaskAlongWithCallback(() -> GFDataManager.syncSessions(options), callback);
     }
 
     /**

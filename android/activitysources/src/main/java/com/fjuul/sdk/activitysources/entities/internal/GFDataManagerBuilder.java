@@ -31,10 +31,10 @@ public class GFDataManagerBuilder {
     }
 
     @NonNull
-    public GoogleFitDataManager build(@NonNull GoogleSignInAccount account) {
+    public GFDataManager build(@NonNull GoogleSignInAccount account) {
         final HistoryClient historyClient = Fitness.getHistoryClient(context, account);
         final SessionsClient sessionsClient = Fitness.getSessionsClient(context, account);
         final GFClientWrapper clientWrapper = new GFClientWrapper(historyClient, sessionsClient, gfDataUtils);
-        return new GoogleFitDataManager(clientWrapper, gfDataUtils, syncMetadataStore, sourcesService);
+        return new GFDataManager(clientWrapper, gfDataUtils, syncMetadataStore, sourcesService);
     }
 }

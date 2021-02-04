@@ -38,8 +38,8 @@ import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 
-public class GoogleFitDataManager {
-    private static final String TAG = "GoogleFitDataManager";
+public class GFDataManager {
+    private static final String TAG = "GFDataManager";
 
     private static final ExecutorService localBackgroundExecutor = Executors.newCachedThreadPool();
 
@@ -48,10 +48,10 @@ public class GoogleFitDataManager {
     final private @NonNull GFSyncMetadataStore gfSyncMetadataStore;
     final private @NonNull ActivitySourcesService activitySourcesService;
 
-    GoogleFitDataManager(@NonNull GFClientWrapper client,
-        @NonNull GFDataUtils gfUtils,
-        @NonNull GFSyncMetadataStore gfSyncMetadataStore,
-        @NonNull ActivitySourcesService activitySourcesService) {
+    GFDataManager(@NonNull GFClientWrapper client,
+                  @NonNull GFDataUtils gfUtils,
+                  @NonNull GFSyncMetadataStore gfSyncMetadataStore,
+                  @NonNull ActivitySourcesService activitySourcesService) {
         this.client = client;
         this.gfUtils = gfUtils;
         this.gfSyncMetadataStore = gfSyncMetadataStore;

@@ -26,7 +26,7 @@ class AggregatedDataFetcher {
             if type == HKObjectType.quantityType(forIdentifier: .heartRate) {
                 self.fetchHrData(predicate: predicate, batchDates: batchDates) { results in
 
-                    let hkRequestData = HKRequestData.build(quantityType: type, batches: results)
+                    let hkRequestData = HKRequestData.build(batches: results)
 
                     completion(hkRequestData, newAnchor)
                 }

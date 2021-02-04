@@ -50,7 +50,7 @@ final class ActivitySourceManagerTests: XCTestCase {
             TrackerConnection(id: "unknow", tracker: "unknow", createdAt: Date(), endedAt: nil),
         ]
 
-        let connectionsLocalStore = ActivitySourceStore(userToken: client.userToken, persistor: persistor)
+        let connectionsLocalStore = ActivitySourcesStateStore(userToken: client.userToken, persistor: persistor)
         connectionsLocalStore.connections = trackerConnections
 
         // When

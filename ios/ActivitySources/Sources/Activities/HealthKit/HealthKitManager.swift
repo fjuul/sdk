@@ -206,6 +206,7 @@ class HealthKitManager: HealthKitManaging {
 
     private func fetchIntradayUpdates(sampleType: HKQuantityType, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
         guard let anchor = try? self.anchorStore.get(type: sampleType) else {
+            DataLogger.shared.error("Unexpected error on get HKAnchor for the type: \(sampleType).")
             completion(nil, nil)
             return
         }

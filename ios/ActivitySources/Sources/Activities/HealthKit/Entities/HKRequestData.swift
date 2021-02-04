@@ -38,19 +38,13 @@ extension HKRequestData {
 
     /// Builds HKRequestData from list of HrBatchDataPoint
     /// - Parameters:
-    ///   - quantityType: Healthkit HKQuantityType
     ///   - batches: collections of HrBatchDataPoint's
     /// - Returns: instance of HKRequestData or nil
-    static func build(quantityType: HKQuantityType, batches: [HrBatchDataPoint]) -> HKRequestData? {
+    static func build(batches: [HrBatchDataPoint]) -> HKRequestData? {
         guard batches.count > 0 else {
             return nil
         }
 
-        switch quantityType {
-        case HKObjectType.quantityType(forIdentifier: .heartRate):
-           return HKRequestData(hrData: batches)
-        default:
-            return nil
-        }
+        return HKRequestData(hrData: batches)
     }
 }

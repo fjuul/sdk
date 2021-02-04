@@ -18,7 +18,7 @@ final public class ActivitySourceManager {
     var config: ActivitySourceConfigBuilder
 
     private var persistor: Persistor
-    private var connectionsLocalStore: ActivitySourceStore
+    private var connectionsLocalStore: ActivitySourcesStateStore
 
     /// Internal initializer
     /// - Parameters:
@@ -30,7 +30,7 @@ final public class ActivitySourceManager {
         self.apiClient = apiClient
         self.persistor = persistor
         self.config = config
-        self.connectionsLocalStore = ActivitySourceStore(userToken: userToken, persistor: persistor)
+        self.connectionsLocalStore = ActivitySourcesStateStore(userToken: userToken, persistor: persistor)
 
         self.restoreState { _ in
             self.refreshCurrent { _ in

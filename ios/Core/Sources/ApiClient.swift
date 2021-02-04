@@ -76,9 +76,11 @@ public class ApiClient {
 
     /**
      Deletes the stored user file of the shared preferences created internally for persisting the state of Fjuul SDK.
-     Ideally, you should not use this method until you actually decide to clear all user data, as the repeated storage clearance will lead to data being unnecessarily uploaded/downloaded multiple times.
+     Ideally, you should not use this method until you actually decide to clear all user data, as the repeated storage clearance will lead to data being unnecessarily
+     uploaded/downloaded multiple times.
     
-     Keep in mind that if you want to fully reset SDK to the default state, then you need also to disable all backgroundDelivery observers for HealthKitActivitySource by call ActivitySourcesManager.unmout.
+     Keep in mind that if you want to fully reset SDK to the default state, then you need also to disable all backgroundDelivery observers for
+     HealthKitActivitySource by call ActivitySourcesManager.unmout.
      
      ~~~
      apiClient.clearPersistentStorage()

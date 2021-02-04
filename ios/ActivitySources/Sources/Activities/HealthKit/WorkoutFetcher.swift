@@ -6,13 +6,13 @@ class WorkoutFetcher {
     /// Fetch new HK workouts
     /// - Parameters:
     ///   - anchor: healthkit anchor
-    ///   - predictateBuilder: instance of predictateBuilder
+    ///   - predicateBuilder: instance of predicateBuilder
     ///   - completion: HKRequestData with workouts data
     static func fetch(anchor: HKQueryAnchor,
-                      predictateBuilder: HealthKitQueryPredictateBuilder, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
+                      predicateBuilder: HealthKitQueryPredicateBuilder, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
         let cycleDispatchGroup = DispatchGroup()
         var workouts: [WorkoutDataPoint] = []
-        let query = HKAnchoredObjectQuery(type: HKObjectType.workoutType(), predicate: predictateBuilder.samplePredicate(),
+        let query = HKAnchoredObjectQuery(type: HKObjectType.workoutType(), predicate: predicateBuilder.samplePredicate(),
                                           anchor: anchor, limit: HKObjectQueryNoLimit) { (_, samples, _, newAnchor, error) in
             if error != nil {
                 completion(nil, nil)

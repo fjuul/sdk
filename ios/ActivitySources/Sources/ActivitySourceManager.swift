@@ -47,7 +47,7 @@ final public class ActivitySourceManager {
     ///    matched with the scheme provided to you or coordinated with you by Fjuul.
     /// After a user succeeds in the connection, please invoke refreshing current connections `ActivitySourcesManager#getCurrentConnections`
     /// - Parameters:
-    ///   - activitySource: ActivitySource instance to connect (ActivitySourcePolar.shared, HealthKitActivitySource.shared, etc...)
+    ///   - activitySource: ActivitySource instance to connect (PolarActivitySource.shared, HealthKitActivitySource.shared, etc...)
     ///   - completion: with ConnectionResult or Error
     public func connect(activitySource: ActivitySource, completion: @escaping (Result<ConnectionResult, Error>) -> Void) {
         if let activitySource = activitySource as? MountableHealthKitActivitySource {

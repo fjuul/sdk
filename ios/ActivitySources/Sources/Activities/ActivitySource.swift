@@ -1,7 +1,7 @@
 import Foundation
 
 /// The protocol for all activity source classes.
-/// Like HealthKitActivitySource, ActivitySourcePolar, etc.
+/// Like HealthKitActivitySource, PolarActivitySource, etc.
 public protocol ActivitySource {
     var trackerValue: TrackerValue { get }
 }
@@ -20,12 +20,9 @@ protocol MountableActivitySource: ActivitySource {
     func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder,
                healthKitManagerBuilder: HealthKitManagerBuilding, completion: @escaping (Result<Void, Error>) -> Void)
 
-    /// Unmount activity source. As example unmount HealthKit backgroud delivery
-    /// - Parameter completion with void or error (`FjuulError.activitySourceFailure.activitySourceNotMounted`, )
-
     /// Unmount activity source and disables all background deliveries of update notifications. As example unmount HealthKit backgroud delivery.
     /// - Parameter:
     ///   - completion: completion with void or error. If an error occurred,
-    ///   this object contains information about the error (`FjuulError.activitySourceFailure.healthkitNotAvailableOnDevice`)
+    ///   this object contains information about the error (`FjuulError.activitySourceFailure.healthkitNotAvailableOnDevice`, `FjuulError.activitySourceFailure.activitySourceNotMounted`)
     func unmount(completion: @escaping (Result<Void, Error>) -> Void)
 }

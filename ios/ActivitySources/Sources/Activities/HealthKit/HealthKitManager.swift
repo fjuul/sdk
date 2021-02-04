@@ -121,8 +121,6 @@ class HealthKitManager: HealthKitManaging {
 
     /// Sets up the observer queries for background health data delivery. Based on Healthkit config.
     /// Observer callbacks handleds syncroniously via serial queue, for void issue with inconsisted saved anchors in persisted store.
-    ///
-    /// - parameter types: Set of `HKObjectType` to observe changes to.
     private func setUpBackgroundDeliveryForDataTypes() {
         for type in self.config.healthKitConfig.typesToRead {
             let sampleType = type as HKSampleType
@@ -198,9 +196,9 @@ class HealthKitManager: HealthKitManaging {
             return
         }
 
-        let predicatBuilder = HealthKitQueryPredictateBuilder(healthKitConfig: self.config.healthKitConfig)
+        let predicatBuilder = HealthKitQueryPredicateBuilder(healthKitConfig: self.config.healthKitConfig)
 
-        WorkoutFetcher.fetch(anchor: anchor, predictateBuilder: predicatBuilder) { requestData, newAnchor in
+        WorkoutFetcher.fetch(anchor: anchor, predicateBuilder: predicatBuilder) { requestData, newAnchor in
 
             completion(requestData, newAnchor)
         }
@@ -212,9 +210,9 @@ class HealthKitManager: HealthKitManaging {
             return
         }
 
-        let predicatBuilder = HealthKitQueryPredictateBuilder(healthKitConfig: self.config.healthKitConfig)
+        let predicatBuilder = HealthKitQueryPredicateBuilder(healthKitConfig: self.config.healthKitConfig)
 
-        AggregatedDataFetcher.fetch(type: sampleType, anchor: anchor, predictateBuilder: predicatBuilder) { hkRequestData, newAnchor in
+        AggregatedDataFetcher.fetch(type: sampleType, anchor: anchor, predicateBuilder: predicatBuilder) { hkRequestData, newAnchor in
 
             completion(hkRequestData, newAnchor)
         }

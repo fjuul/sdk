@@ -2,7 +2,7 @@ import Foundation
 import HealthKit
 
 /// Class for build Healthkit query predicates base on HealthKitActivitySourceConfig and dirty batches.
-class HealthKitQueryPredictateBuilder {
+class HealthKitQueryPredicateBuilder {
     let healthKitConfig: HealthKitActivitySourceConfig
 
     var wasUserEnteredPredicate: NSPredicate {

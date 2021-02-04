@@ -14,16 +14,14 @@ class AggregatedDataFetcher {
     /// - Parameters:
     ///   - type: healthkit QuantityType
     ///   - anchor: healthkit anchor
-    ///   - predictateBuilder: instance of predictateBuilder
+    ///   - predicateBuilder: instance of predicateBuilder
     ///   - completion: HKRequestData and new healthkit anchor
     static func fetch(type: HKQuantityType, anchor: HKQueryAnchor,
-                      predictateBuilder: HealthKitQueryPredictateBuilder, completion: @escaping (HKRequestData?, HKQueryAnchor?) -> Void) {
+                      predicateBuilder: HealthKitQueryPredicateBuilder, completion: @escaping (HKRequestData?, HKQueryAnchor?) -> Void) {
 
-        let sampleType = type as HKSampleType
+        self.dirtyBatches(sampleType: type, anchor: anchor, predicate: predicateBuilder.samplePredicate()) { batchDates, newAnchor in
 
-        self.dirtyBatches(sampleType: sampleType, anchor: anchor, predicate: predictateBuilder.samplePredicate()) { batchDates, newAnchor in
-
-            let predicate = predictateBuilder.statisticsCollectionsPredicate(batchDates: batchDates)
+            let predicate = predicateBuilder.statisticsCollectionsPredicate(batchDates: batchDates)
 
             if type == HKObjectType.quantityType(forIdentifier: .heartRate) {
                 self.fetchHrData(predicate: predicate, batchDates: batchDates) { results in

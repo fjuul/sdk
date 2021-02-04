@@ -48,7 +48,8 @@ public class BackgroundWorkManager {
             }
             case ENABLED: {
                 if (config.getCollectableFitnessMetrics().contains(FitnessMetricsType.WORKOUTS)) {
-                    gfSyncWorkManager.scheduleSessionsSyncWork(config.getGoogleFitSessionsBackgroundSyncMinSessionDuration());
+                    gfSyncWorkManager
+                        .scheduleSessionsSyncWork(config.getGoogleFitSessionsBackgroundSyncMinSessionDuration());
                 } else {
                     gfSyncWorkManager.cancelSessionsSyncWork();
                 }

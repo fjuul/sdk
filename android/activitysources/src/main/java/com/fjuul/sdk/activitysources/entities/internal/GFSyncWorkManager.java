@@ -36,10 +36,10 @@ public class GFSyncWorkManager {
     private volatile boolean sessionsSyncWorkEnqueued = false;
 
     public GFSyncWorkManager(@NonNull WorkManager workManager,
-                             @NonNull String userToken,
-                             @NonNull String userSecret,
-                             @NonNull String apiKey,
-                             @NonNull String baseUrl) {
+        @NonNull String userToken,
+        @NonNull String userSecret,
+        @NonNull String apiKey,
+        @NonNull String baseUrl) {
         this.workManager = workManager;
         this.userToken = userToken;
         this.userSecret = userSecret;
@@ -89,9 +89,9 @@ public class GFSyncWorkManager {
             return;
         }
         final String serializedDuration = minSessionDuration.toString();
-        final Data inputWorkRequestData = buildEssentialInputData()
-            .putString(GFSessionsSyncWorker.KEY_MIN_SESSION_DURATION_ARG, serializedDuration)
-            .build();
+        final Data inputWorkRequestData =
+            buildEssentialInputData().putString(GFSessionsSyncWorker.KEY_MIN_SESSION_DURATION_ARG, serializedDuration)
+                .build();
         final PeriodicWorkRequest periodicWorkRequest =
             new PeriodicWorkRequest.Builder(GFSessionsSyncWorker.class, 1, TimeUnit.HOURS)
                 .setConstraints(buildCommonWorkConstraints())

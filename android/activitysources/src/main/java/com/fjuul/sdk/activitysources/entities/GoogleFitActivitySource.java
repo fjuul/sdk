@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fjuul.sdk.activitysources.entities.internal.GFDataManager;
-import com.fjuul.sdk.activitysources.entities.internal.GFDataUtils;
 import com.fjuul.sdk.activitysources.entities.internal.GFDataManagerBuilder;
+import com.fjuul.sdk.activitysources.entities.internal.GFDataUtils;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata.GFSyncMetadataStore;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.ActivityRecognitionPermissionNotGrantedException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
@@ -307,7 +307,8 @@ public class GoogleFitActivitySource extends ActivitySource {
      * @param options session sync options
      * @param callback callback for the result
      */
-    public void syncSessions(@NonNull final GoogleFitSessionSyncOptions options, @Nullable final Callback<Void> callback) {
+    public void syncSessions(@NonNull final GoogleFitSessionSyncOptions options,
+        @Nullable final Callback<Void> callback) {
         final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         if (!areFitnessPermissionsGranted(account,
             Stream.of(FitnessMetricsType.WORKOUTS).collect(Collectors.toSet()))) {

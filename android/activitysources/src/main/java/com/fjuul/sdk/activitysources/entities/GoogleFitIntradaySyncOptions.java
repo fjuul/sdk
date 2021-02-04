@@ -25,15 +25,15 @@ public final class GoogleFitIntradaySyncOptions extends GoogleFitSyncOptions {
     }
 
     private GoogleFitIntradaySyncOptions(@NonNull Set<FitnessMetricsType> metrics,
-                                         @NonNull LocalDate startDate,
-                                         @NonNull LocalDate endDate) {
+        @NonNull LocalDate startDate,
+        @NonNull LocalDate endDate) {
         super(startDate, endDate);
         this.metrics = metrics;
     }
 
     /**
-     * Builder of {@link GoogleFitIntradaySyncOptions}. The start date, the end date, and at least one fitness metric must be
-     * specified during the building.
+     * Builder of {@link GoogleFitIntradaySyncOptions}. The start date, the end date, and at least one fitness metric
+     * must be specified during the building.
      */
     public static class Builder {
         @NonNull
@@ -87,8 +87,8 @@ public final class GoogleFitIntradaySyncOptions extends GoogleFitSyncOptions {
          * <li>dates exceed the allowed boundary to the past time which is a date of the next day number of the previous
          * month from today (for example, if today is 20th February, then the max allowed date in the past is 21th
          * January). In other words, the boundary can be calculated as {@code today - 1 month + 1 day}. Use
-         * {@link GoogleFitIntradaySyncOptions.Builder#getMaxAllowedPastDate()} to get the last allowed date of the past for
-         * the sync.</li>
+         * {@link GoogleFitIntradaySyncOptions.Builder#getMaxAllowedPastDate()} to get the last allowed date of the past
+         * for the sync.</li>
          * </ol>
          *
          * @param startDate start date of intraday data to be synced

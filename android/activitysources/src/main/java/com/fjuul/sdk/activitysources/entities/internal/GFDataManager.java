@@ -49,9 +49,9 @@ public class GFDataManager {
     final private @NonNull ActivitySourcesService activitySourcesService;
 
     GFDataManager(@NonNull GFClientWrapper client,
-                  @NonNull GFDataUtils gfUtils,
-                  @NonNull GFSyncMetadataStore gfSyncMetadataStore,
-                  @NonNull ActivitySourcesService activitySourcesService) {
+        @NonNull GFDataUtils gfUtils,
+        @NonNull GFSyncMetadataStore gfSyncMetadataStore,
+        @NonNull ActivitySourcesService activitySourcesService) {
         this.client = client;
         this.gfUtils = gfUtils;
         this.gfSyncMetadataStore = gfSyncMetadataStore;

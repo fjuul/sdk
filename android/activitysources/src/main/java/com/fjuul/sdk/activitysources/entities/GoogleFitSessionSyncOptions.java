@@ -18,8 +18,8 @@ public final class GoogleFitSessionSyncOptions extends GoogleFitSyncOptions {
     private final Duration minimumSessionDuration;
 
     private GoogleFitSessionSyncOptions(@NonNull LocalDate startDate,
-                                        @NonNull LocalDate endDate,
-                                        @NonNull Duration minimumSessionDuration) {
+        @NonNull LocalDate endDate,
+        @NonNull Duration minimumSessionDuration) {
         super(startDate, endDate);
         this.minimumSessionDuration = minimumSessionDuration;
     }
@@ -30,8 +30,8 @@ public final class GoogleFitSessionSyncOptions extends GoogleFitSyncOptions {
     }
 
     /**
-     * Builder of {@link GoogleFitSessionSyncOptions}. The start date, the end date, and the minimum session duration must be
-     * specified during the building.
+     * Builder of {@link GoogleFitSessionSyncOptions}. The start date, the end date, and the minimum session duration
+     * must be specified during the building.
      */
     public static class Builder {
         @NonNull

@@ -524,10 +524,11 @@ public class GoogleFitActivitySourceTest {
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
 
-                    final GoogleFitIntradaySyncOptions options = new GoogleFitIntradaySyncOptions.Builder(fixedTestClock)
-                        .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
-                        .include(FitnessMetricsType.INTRADAY_CALORIES)
-                        .build();
+                    final GoogleFitIntradaySyncOptions options =
+                        new GoogleFitIntradaySyncOptions.Builder(fixedTestClock)
+                            .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
+                            .include(FitnessMetricsType.INTRADAY_CALORIES)
+                            .build();
 
                     subject.syncIntradayMetrics(options, mockedCallback);
 
@@ -561,10 +562,11 @@ public class GoogleFitActivitySourceTest {
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
 
-                    final GoogleFitIntradaySyncOptions options = new GoogleFitIntradaySyncOptions.Builder(fixedTestClock)
-                        .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
-                        .include(FitnessMetricsType.INTRADAY_CALORIES)
-                        .build();
+                    final GoogleFitIntradaySyncOptions options =
+                        new GoogleFitIntradaySyncOptions.Builder(fixedTestClock)
+                            .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
+                            .include(FitnessMetricsType.INTRADAY_CALORIES)
+                            .build();
                     final GFDataManager mockedGfDataManager = mock(GFDataManager.class);
                     final MaxTriesCountExceededException gfException =
                         new MaxTriesCountExceededException("Possible tries count (3) exceeded");
@@ -607,10 +609,11 @@ public class GoogleFitActivitySourceTest {
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
 
-                    final GoogleFitIntradaySyncOptions options = new GoogleFitIntradaySyncOptions.Builder(fixedTestClock)
-                        .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
-                        .include(FitnessMetricsType.INTRADAY_CALORIES)
-                        .build();
+                    final GoogleFitIntradaySyncOptions options =
+                        new GoogleFitIntradaySyncOptions.Builder(fixedTestClock)
+                            .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
+                            .include(FitnessMetricsType.INTRADAY_CALORIES)
+                            .build();
                     final GFDataManager mockedGfDataManager = mock(GFDataManager.class);
                     when(mockedGfDataManager.syncIntradayMetrics(options)).thenReturn(Tasks.forResult(null));
                     when(mockedGfDataManagerBuilder.build(mockedGoogleSignInAccount)).thenReturn(mockedGfDataManager);

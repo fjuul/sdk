@@ -21,9 +21,9 @@ public class GFDataManagerBuilder {
     private final ActivitySourcesService sourcesService;
 
     public GFDataManagerBuilder(@NonNull Context context,
-                                @NonNull GFDataUtils gfDataUtils,
-                                @NonNull GFSyncMetadataStore syncMetadataStore,
-                                @NonNull ActivitySourcesService sourcesService) {
+        @NonNull GFDataUtils gfDataUtils,
+        @NonNull GFSyncMetadataStore syncMetadataStore,
+        @NonNull ActivitySourcesService sourcesService) {
         this.context = context;
         this.gfDataUtils = gfDataUtils;
         this.syncMetadataStore = syncMetadataStore;

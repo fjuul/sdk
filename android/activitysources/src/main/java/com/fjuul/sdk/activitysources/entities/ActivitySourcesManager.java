@@ -332,7 +332,8 @@ public final class ActivitySourcesManager {
     }
 
     /**
-     * Cancel any scheduled background works initiated by the user state and {@link ActivitySourcesManagerConfig} before.
+     * Cancel any scheduled background works initiated by the user state and {@link ActivitySourcesManagerConfig}
+     * before.
      *
      * @param applicationContext
      */

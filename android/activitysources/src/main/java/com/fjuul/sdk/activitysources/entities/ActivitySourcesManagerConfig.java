@@ -219,8 +219,10 @@ public class ActivitySourcesManagerConfig {
             if (created) {
                 throw new IllegalStateException("Do not reuse the builder for creating new instance");
             }
-            Objects.requireNonNull(config.googleFitIntradayBackgroundSyncMode, "GoogleFit intraday background sync mode must be set");
-            Objects.requireNonNull(config.googleFitSessionsBackgroundSyncMode, "GoogleFit sessions background sync mode must be set");
+            Objects.requireNonNull(config.googleFitIntradayBackgroundSyncMode,
+                "GoogleFit intraday background sync mode must be set");
+            Objects.requireNonNull(config.googleFitSessionsBackgroundSyncMode,
+                "GoogleFit sessions background sync mode must be set");
             Objects.requireNonNull(config.collectableFitnessMetrics, "Collectable fitness metrics must be set");
             this.created = true;
             return config;

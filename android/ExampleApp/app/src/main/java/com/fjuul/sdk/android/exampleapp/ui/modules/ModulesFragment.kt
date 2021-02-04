@@ -92,7 +92,7 @@ class ModulesFragment : Fragment() {
                                         .show()
                                     return@setPositiveButton
                                 }
-                                ActivitySourcesManager.disableBackgroundGFSyncWorkers(requireContext())
+                                ActivitySourcesManager.disableBackgroundWorkers(requireContext())
                                 dialog.dismiss()
                                 findNavController().popBackStack()
                             }.show()

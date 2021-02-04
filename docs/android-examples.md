@@ -80,7 +80,7 @@ import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig
 ...
 val config = ActivitySourcesManagerConfig.Builder()
     .setCollectableFitnessMetrics(setOf(FitnessMetricsType.INTRADAY_STEPS, FitnessMetricsType.INTRADAY_CALORIES))
-    .enableGFBackgroundSync(Duration.ofMinutes(3))
+    .enableGoogleFitBackgroundSync(Duration.ofMinutes(3))
     .build()
 ActivitySourcesManager.initialize(signedClient, config)
 ```
@@ -105,7 +105,7 @@ val sourcesManager = ActivitySourcesManager.getInstance()
 // connect to GoogleFit tracker
 sourcesManager.connect(GoogleFitActivitySource.getInstance()) { connectResult ->
     val connectIntent = connectResult.value
-    // this will show a window prompting GF permissions
+    // this will show a window prompting Google Fit permissions
     startActivityForResult(connectIntent, GOOGLE_SIGN_IN_REQUEST_CODE)
 }
 ```
@@ -127,21 +127,24 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
 Find out if the user has a current connection to Google Fit:
 ```kotlin
 val sourcesManager = ActivitySourcesManager.getInstance()
-val gfConnectionSource = sourcesManager.current?.find { connection -> connection.activitySource is GoogleFitActivitySource }
-if (gfConnectionSource == null) {
+val googleFitConnectionSource = sourcesManager.current?.find { connection -> connection.activitySource is GoogleFitActivitySource }
+if (googleFitConnectionSource == null) {
     return;
 }
 ```
 Sync intraday data:
 ```kotlin
-val gfActivitySource = gfConnectionSource.activitySource as GoogleFitActivitySource;
-val syncOptions = GFIntradaySyncOptions.Builder().apply {
+import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
+import com.fjuul.sdk.activitysources.entities.GoogleFitIntradaySyncOptions
+...
+val googleFitActivitySource = googleFitConnectionSource.activitySource as GoogleFitActivitySource;
+val syncOptions = GoogleFitIntradaySyncOptions.Builder().apply {
     setDateRange(LocalDate.now().minusDays(7), LocalDate.now())
-    include(GFIntradaySyncOptions.METRICS_TYPE.CALORIES)
-    include(GFIntradaySyncOptions.METRICS_TYPE.HEART_RATE)
-    include(GFIntradaySyncOptions.METRICS_TYPE.STEPS)
+    include(FitnessMetricsType.INTRADAY_CALORIES)
+    include(FitnessMetricsType.INTRADAY_HEART_RATE)
+    include(FitnessMetricsType.INTRADAY_STEPS)
 }.build()
-gfActivitySource.syncIntradayMetrics(syncOptions) { result ->
+googleFitActivitySource.syncIntradayMetrics(syncOptions) { result ->
     if (result.isError) {
         // handle error
     }
@@ -149,15 +152,18 @@ gfActivitySource.syncIntradayMetrics(syncOptions) { result ->
 ```
 Sync sessions data:
 ```kotlin
-val gfActivitySource = gfConnectionSource.activitySource as GoogleFitActivitySource;
-val syncOptions = GFSessionSyncOptions.Builder()
+import com.fjuul.sdk.activitysources.entities.GoogleFitSessionSyncOptions
+...
+val googleFitActivitySource = googleFitConnectionSource.activitySource as GoogleFitActivitySource;
+val syncOptions = GoogleFitSessionSyncOptions.Builder()
     .setDateRange(LocalDate.now().minusDays(7), LocalDate.now())
     .setMinimumSessionDuration(minSessionDuration)
     .build()
-gfActivitySource.syncSessions(syncOptions) { result ->
+googleFitActivitySource.syncSessions(syncOptions) { result ->
     if (result.isError) {
         // handle error
     }
+}
 ```
 
 ### Collect Google Fit data in the background
@@ -170,13 +176,13 @@ import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig
 
 val config = ActivitySourcesManagerConfig.Builder()
     .setCollectableFitnessMetrics(setOf(FitnessMetricsType.INTRADAY_STEPS, FitnessMetricsType.INTRADAY_CALORIES))
-    .enableGFIntradayBackgroundSync()
-    .enableGFSessionsBackgroundSync(Duration.ofMinutes(3))
+    .enableGoogleFitIntradayBackgroundSync()
+    .enableGoogleFitSessionsBackgroundSync(Duration.ofMinutes(3))
     .build()
 // or the same:
 //  val config = ActivitySourcesManagerConfig.Builder()
 //    .setCollectableFitnessMetrics(setOf(FitnessMetricsType.INTRADAY_STEPS, FitnessMetricsType.INTRADAY_CALORIES))
-//    .enableGFBackgroundSync(Duration.ofMinutes(3))
+//    .enableGoogleFitBackgroundSync(Duration.ofMinutes(3))
 //    .build()
 ActivitySourcesManager.initialize(client, config)
 ```

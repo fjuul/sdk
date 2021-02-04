@@ -15,7 +15,7 @@ import androidx.annotation.VisibleForTesting;
  * A class that encapsulates parameters for syncing intraday data of Google Fit. In order to build the instance of this
  * class, use {@link Builder}.
  */
-public final class GFIntradaySyncOptions extends GFSyncOptions {
+public final class GoogleFitIntradaySyncOptions extends GoogleFitSyncOptions {
     @NonNull
     private final Set<FitnessMetricsType> metrics;
 
@@ -24,7 +24,7 @@ public final class GFIntradaySyncOptions extends GFSyncOptions {
         return metrics;
     }
 
-    private GFIntradaySyncOptions(@NonNull Set<FitnessMetricsType> metrics,
+    private GoogleFitIntradaySyncOptions(@NonNull Set<FitnessMetricsType> metrics,
         @NonNull LocalDate startDate,
         @NonNull LocalDate endDate) {
         super(startDate, endDate);
@@ -32,8 +32,8 @@ public final class GFIntradaySyncOptions extends GFSyncOptions {
     }
 
     /**
-     * Builder of {@link GFIntradaySyncOptions}. The start date, the end date, and at least one fitness metric must be
-     * specified during the building.
+     * Builder of {@link GoogleFitIntradaySyncOptions}. The start date, the end date, and at least one fitness metric
+     * must be specified during the building.
      */
     public static class Builder {
         @NonNull
@@ -87,8 +87,8 @@ public final class GFIntradaySyncOptions extends GFSyncOptions {
          * <li>dates exceed the allowed boundary to the past time which is a date of the next day number of the previous
          * month from today (for example, if today is 20th February, then the max allowed date in the past is 21th
          * January). In other words, the boundary can be calculated as {@code today - 1 month + 1 day}. Use
-         * {@link GFIntradaySyncOptions.Builder#getMaxAllowedPastDate()} to get the last allowed date of the past for
-         * the sync.</li>
+         * {@link GoogleFitIntradaySyncOptions.Builder#getMaxAllowedPastDate()} to get the last allowed date of the past
+         * for the sync.</li>
          * </ol>
          *
          * @param startDate start date of intraday data to be synced
@@ -105,18 +105,18 @@ public final class GFIntradaySyncOptions extends GFSyncOptions {
 
         @SuppressLint("NewApi")
         @NonNull
-        public GFIntradaySyncOptions build() {
+        public GoogleFitIntradaySyncOptions build() {
             if (metrics.isEmpty() || startDate == null || endDate == null) {
                 throw new IllegalStateException("Date range and at least one metric type must be specified");
             }
             Set<FitnessMetricsType> metricsToSync = metrics.stream().collect(Collectors.toSet());
-            return new GFIntradaySyncOptions(metricsToSync, startDate, endDate);
+            return new GoogleFitIntradaySyncOptions(metricsToSync, startDate, endDate);
         }
 
         @SuppressLint("NewApi")
         @NonNull
         public static LocalDate getMaxAllowedPastDate() {
-            return GFSyncOptions.getMaxAllowedPastDate(Clock.systemDefaultZone());
+            return GoogleFitSyncOptions.getMaxAllowedPastDate(Clock.systemDefaultZone());
         }
     }
 }

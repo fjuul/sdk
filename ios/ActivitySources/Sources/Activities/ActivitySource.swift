@@ -23,6 +23,7 @@ protocol MountableActivitySource: ActivitySource {
     /// Unmount activity source and disables all background deliveries of update notifications. As example unmount HealthKit backgroud delivery.
     /// - Parameter:
     ///   - completion: completion with void or error. If an error occurred,
-    ///   this object contains information about the error (`FjuulError.activitySourceFailure.healthkitNotAvailableOnDevice`, `FjuulError.activitySourceFailure.activitySourceNotMounted`)
+    ///   this object contains information about the error (`FjuulError.activitySourceFailure.healthkitNotAvailableOnDevice`,
+    ///   `FjuulError.activitySourceFailure.activitySourceNotMounted`)
     func unmount(completion: @escaping (Result<Void, Error>) -> Void)
 }

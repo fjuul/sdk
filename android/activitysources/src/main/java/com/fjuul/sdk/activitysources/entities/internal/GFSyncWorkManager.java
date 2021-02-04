@@ -18,7 +18,7 @@ import androidx.work.NetworkType;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
-public class GoogleFitSyncWorkManager {
+public class GFSyncWorkManager {
     public static final String GF_INTRADAY_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.gf_intraday_sync";
     public static final String GF_SESSIONS_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.gf_sessions_sync";
 
@@ -35,11 +35,11 @@ public class GoogleFitSyncWorkManager {
     private volatile boolean intradaySyncWorkEnqueued = false;
     private volatile boolean sessionsSyncWorkEnqueued = false;
 
-    public GoogleFitSyncWorkManager(@NonNull WorkManager workManager,
-        @NonNull String userToken,
-        @NonNull String userSecret,
-        @NonNull String apiKey,
-        @NonNull String baseUrl) {
+    public GFSyncWorkManager(@NonNull WorkManager workManager,
+                             @NonNull String userToken,
+                             @NonNull String userSecret,
+                             @NonNull String apiKey,
+                             @NonNull String baseUrl) {
         this.workManager = workManager;
         this.userToken = userToken;
         this.userSecret = userSecret;

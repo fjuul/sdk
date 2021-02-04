@@ -10,7 +10,7 @@ import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthentic
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourcesStateStore;
 import com.fjuul.sdk.activitysources.entities.internal.BackgroundWorkManager;
-import com.fjuul.sdk.activitysources.entities.internal.GoogleFitSyncWorkManager;
+import com.fjuul.sdk.activitysources.entities.internal.GFSyncWorkManager;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.Callback;
@@ -122,7 +122,7 @@ public final class ActivitySourcesManager {
         final List<TrackerConnection> storedConnections = stateStore.getConnections();
         final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
         final WorkManager workManager = WorkManager.getInstance(client.getAppContext());
-        final GoogleFitSyncWorkManager gfSyncWorkManager = new GoogleFitSyncWorkManager(workManager,
+        final GFSyncWorkManager gfSyncWorkManager = new GFSyncWorkManager(workManager,
             client.getUserToken(),
             client.getUserSecret(),
             client.getApiKey(),
@@ -338,7 +338,7 @@ public final class ActivitySourcesManager {
      */
     public static void disableBackgroundWorkers(@NonNull Context applicationContext) {
         final WorkManager workManager = WorkManager.getInstance(applicationContext);
-        GoogleFitSyncWorkManager.cancelWorks(workManager);
+        GFSyncWorkManager.cancelWorks(workManager);
     }
 
     @SuppressLint("NewApi")

@@ -13,10 +13,10 @@ public class BackgroundWorkManager {
     @NonNull
     private final ActivitySourcesManagerConfig config;
     @NonNull
-    private final GoogleFitSyncWorkManager gfSyncWorkManager;
+    private final GFSyncWorkManager gfSyncWorkManager;
 
     public BackgroundWorkManager(@NonNull ActivitySourcesManagerConfig config,
-        @NonNull GoogleFitSyncWorkManager gfSyncWorkManager) {
+        @NonNull GFSyncWorkManager gfSyncWorkManager) {
         this.config = config;
         this.gfSyncWorkManager = gfSyncWorkManager;
     }

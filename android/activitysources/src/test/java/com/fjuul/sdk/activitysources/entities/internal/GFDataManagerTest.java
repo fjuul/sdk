@@ -43,8 +43,8 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
-import com.fjuul.sdk.activitysources.entities.GFIntradaySyncOptions;
-import com.fjuul.sdk.activitysources.entities.GFSessionSyncOptions;
+import com.fjuul.sdk.activitysources.entities.GoogleFitIntradaySyncOptions;
+import com.fjuul.sdk.activitysources.entities.GoogleFitSessionSyncOptions;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFCalorieDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPointsBatch;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRSummaryDataPoint;
@@ -64,7 +64,7 @@ import com.google.android.gms.tasks.Tasks;
 import android.os.Build;
 
 @RunWith(Enclosed.class)
-public class GoogleFitDataManagerTest {
+public class GFDataManagerTest {
     public static final ExecutorService testExecutor = Executors.newSingleThreadExecutor();
 
     @AfterClass
@@ -82,7 +82,7 @@ public class GoogleFitDataManagerTest {
         final ZoneId testZoneId = testTimeZone.toZoneId();
         final Clock fixedClock = Clock.fixed(Instant.parse(currentInstant), testZoneId);
 
-        GoogleFitDataManager subject;
+        GFDataManager subject;
         GFClientWrapper mockedGFClientWrapper;
         GFDataUtils gfDataUtilsSpy;
         GFSyncMetadataStore mockedGFSyncMetadataStore;
@@ -95,7 +95,7 @@ public class GoogleFitDataManagerTest {
             mockedActivitySourcesService = mock(ActivitySourcesService.class);
             GFDataUtils gfDataUtils = new GFDataUtils(testZoneId, fixedClock);
             gfDataUtilsSpy = spy(gfDataUtils);
-            subject = new GoogleFitDataManager(mockedGFClientWrapper,
+            subject = new GFDataManager(mockedGFClientWrapper,
                 gfDataUtilsSpy,
                 mockedGFSyncMetadataStore,
                 mockedActivitySourcesService);
@@ -106,8 +106,8 @@ public class GoogleFitDataManagerTest {
             throws ExecutionException, InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
-            final GFIntradaySyncOptions options =
-                new GFIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_CALORIES)
+            final GoogleFitIntradaySyncOptions options =
+                new GoogleFitIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_CALORIES)
                     .setDateRange(startDate, endDate)
                     .build();
 
@@ -143,8 +143,8 @@ public class GoogleFitDataManagerTest {
         public void syncIntradayMetrics_failedGFRequestForSteps_returnsFailedTask() throws InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
-            final GFIntradaySyncOptions options =
-                new GFIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_STEPS)
+            final GoogleFitIntradaySyncOptions options =
+                new GoogleFitIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_STEPS)
                     .setDateRange(startDate, endDate)
                     .build();
 
@@ -183,8 +183,8 @@ public class GoogleFitDataManagerTest {
             throws ExecutionException, InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
-            final GFIntradaySyncOptions options =
-                new GFIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_CALORIES)
+            final GoogleFitIntradaySyncOptions options =
+                new GoogleFitIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_CALORIES)
                     .setDateRange(startDate, endDate)
                     .build();
 
@@ -234,8 +234,8 @@ public class GoogleFitDataManagerTest {
             throws InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
-            final GFIntradaySyncOptions options =
-                new GFIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_CALORIES)
+            final GoogleFitIntradaySyncOptions options =
+                new GoogleFitIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_CALORIES)
                     .setDateRange(startDate, endDate)
                     .build();
 
@@ -308,8 +308,8 @@ public class GoogleFitDataManagerTest {
             throws InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
-            final GFIntradaySyncOptions options =
-                new GFIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_CALORIES)
+            final GoogleFitIntradaySyncOptions options =
+                new GoogleFitIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_CALORIES)
                     .setDateRange(startDate, endDate)
                     .build();
 
@@ -378,8 +378,8 @@ public class GoogleFitDataManagerTest {
             throws InterruptedException, ExecutionException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
-            final GFIntradaySyncOptions options =
-                new GFIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_CALORIES)
+            final GoogleFitIntradaySyncOptions options =
+                new GoogleFitIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_CALORIES)
                     .include(FitnessMetricsType.INTRADAY_HEART_RATE)
                     .include(FitnessMetricsType.INTRADAY_STEPS)
                     .setDateRange(startDate, endDate)
@@ -518,7 +518,7 @@ public class GoogleFitDataManagerTest {
         final ZoneId testZoneId = testTimeZone.toZoneId();
         final Clock fixedClock = Clock.fixed(Instant.parse(currentInstant), testZoneId);
 
-        GoogleFitDataManager subject;
+        GFDataManager subject;
         GFClientWrapper mockedGFClientWrapper;
         GFDataUtils gfDataUtilsSpy;
         GFSyncMetadataStore mockedGFSyncMetadataStore;
@@ -531,7 +531,7 @@ public class GoogleFitDataManagerTest {
             mockedActivitySourcesService = mock(ActivitySourcesService.class);
             GFDataUtils gfDataUtils = new GFDataUtils(testZoneId, fixedClock);
             gfDataUtilsSpy = spy(gfDataUtils);
-            subject = new GoogleFitDataManager(mockedGFClientWrapper,
+            subject = new GFDataManager(mockedGFClientWrapper,
                 gfDataUtilsSpy,
                 mockedGFSyncMetadataStore,
                 mockedActivitySourcesService);
@@ -543,8 +543,8 @@ public class GoogleFitDataManagerTest {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
             final Duration minDuration = Duration.ofMinutes(5);
-            final GFSessionSyncOptions options =
-                new GFSessionSyncOptions.Builder(fixedClock).setMinimumSessionDuration(minDuration)
+            final GoogleFitSessionSyncOptions options =
+                new GoogleFitSessionSyncOptions.Builder(fixedClock).setMinimumSessionDuration(minDuration)
                     .setDateRange(startDate, endDate)
                     .build();
 
@@ -574,8 +574,8 @@ public class GoogleFitDataManagerTest {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
             final Duration minDuration = Duration.ofMinutes(5);
-            final GFSessionSyncOptions options =
-                new GFSessionSyncOptions.Builder(fixedClock).setMinimumSessionDuration(minDuration)
+            final GoogleFitSessionSyncOptions options =
+                new GoogleFitSessionSyncOptions.Builder(fixedClock).setMinimumSessionDuration(minDuration)
                     .setDateRange(startDate, endDate)
                     .build();
 
@@ -609,8 +609,8 @@ public class GoogleFitDataManagerTest {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
             final Duration minDuration = Duration.ofMinutes(5);
-            final GFSessionSyncOptions options =
-                new GFSessionSyncOptions.Builder(fixedClock).setMinimumSessionDuration(minDuration)
+            final GoogleFitSessionSyncOptions options =
+                new GoogleFitSessionSyncOptions.Builder(fixedClock).setMinimumSessionDuration(minDuration)
                     .setDateRange(startDate, endDate)
                     .build();
 
@@ -666,8 +666,8 @@ public class GoogleFitDataManagerTest {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
             final Duration minDuration = Duration.ofMinutes(5);
-            final GFSessionSyncOptions options =
-                new GFSessionSyncOptions.Builder(fixedClock).setMinimumSessionDuration(minDuration)
+            final GoogleFitSessionSyncOptions options =
+                new GoogleFitSessionSyncOptions.Builder(fixedClock).setMinimumSessionDuration(minDuration)
                     .setDateRange(startDate, endDate)
                     .build();
 

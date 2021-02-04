@@ -43,8 +43,8 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowPackageManager;
 
-import com.fjuul.sdk.activitysources.entities.internal.GoogleFitDataManager;
-import com.fjuul.sdk.activitysources.entities.internal.GoogleFitDataManagerBuilder;
+import com.fjuul.sdk.activitysources.entities.internal.GFDataManager;
+import com.fjuul.sdk.activitysources.entities.internal.GFDataManagerBuilder;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.ActivityRecognitionPermissionNotGrantedException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.FitnessPermissionsNotGrantedException;
@@ -95,7 +95,7 @@ public class GoogleFitActivitySourceTest {
             ActivitySourcesService mockedActivitySourcesService;
             Set<FitnessMetricsType> collectableFitnessMetrics;
             Context context;
-            GoogleFitDataManagerBuilder mockedGfDataManagerBuilder;
+            GFDataManagerBuilder mockedGfDataManagerBuilder;
 
             @Before
             public void beforeTest() {
@@ -107,7 +107,7 @@ public class GoogleFitActivitySourceTest {
                             FitnessMetricsType.WORKOUTS)
                         .collect(Collectors.toSet());
                 mockedActivitySourcesService = mock(ActivitySourcesService.class);
-                mockedGfDataManagerBuilder = mock(GoogleFitDataManagerBuilder.class);
+                mockedGfDataManagerBuilder = mock(GFDataManagerBuilder.class);
             }
 
             @Test
@@ -238,7 +238,7 @@ public class GoogleFitActivitySourceTest {
             GoogleFitActivitySource subject;
             ActivitySourcesService mockedActivitySourcesService;
             Context context;
-            GoogleFitDataManagerBuilder mockedGfDataManagerBuilder;
+            GFDataManagerBuilder mockedGfDataManagerBuilder;
             Set<FitnessMetricsType> collectableFitnessMetrics;
 
             @Before
@@ -251,7 +251,7 @@ public class GoogleFitActivitySourceTest {
                             FitnessMetricsType.WORKOUTS)
                         .collect(Collectors.toSet());
                 mockedActivitySourcesService = mock(ActivitySourcesService.class);
-                mockedGfDataManagerBuilder = mock(GoogleFitDataManagerBuilder.class);
+                mockedGfDataManagerBuilder = mock(GFDataManagerBuilder.class);
             }
 
             @Test
@@ -494,7 +494,7 @@ public class GoogleFitActivitySourceTest {
         public static class SyncIntradayMetricsTests extends GivenRobolectricContext {
             GoogleFitActivitySource subject;
             ActivitySourcesService mockedActivitySourcesService;
-            GoogleFitDataManagerBuilder mockedGfDataManagerBuilder;
+            GFDataManagerBuilder mockedGfDataManagerBuilder;
             Context context;
             Set<FitnessMetricsType> collectableFitnessMetrics;
             Clock fixedTestClock = Clock.fixed(Instant.parse("2020-10-05T15:03:01.000Z"), ZoneId.of("UTC"));
@@ -503,7 +503,7 @@ public class GoogleFitActivitySourceTest {
             public void beforeTest() {
                 context = ApplicationProvider.getApplicationContext();
                 mockedActivitySourcesService = mock(ActivitySourcesService.class);
-                mockedGfDataManagerBuilder = mock(GoogleFitDataManagerBuilder.class);
+                mockedGfDataManagerBuilder = mock(GFDataManagerBuilder.class);
                 collectableFitnessMetrics = Stream.of(FitnessMetricsType.INTRADAY_CALORIES).collect(Collectors.toSet());
             }
 
@@ -524,10 +524,11 @@ public class GoogleFitActivitySourceTest {
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
 
-                    final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder(fixedTestClock)
-                        .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
-                        .include(FitnessMetricsType.INTRADAY_CALORIES)
-                        .build();
+                    final GoogleFitIntradaySyncOptions options =
+                        new GoogleFitIntradaySyncOptions.Builder(fixedTestClock)
+                            .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
+                            .include(FitnessMetricsType.INTRADAY_CALORIES)
+                            .build();
 
                     subject.syncIntradayMetrics(options, mockedCallback);
 
@@ -536,7 +537,7 @@ public class GoogleFitActivitySourceTest {
                     final Result<Void> callbackResult = callbackResultCaptor.getValue();
                     assertTrue("callback should have unsuccessful result", callbackResult.isError());
                     assertThat(callbackResult.getError(), instanceOf(FitnessPermissionsNotGrantedException.class));
-                    // should not even interact with GoogleFitDataManager
+                    // should not even interact with GFDataManager
                     verifyNoInteractions(mockedGfDataManagerBuilder);
                 }
             }
@@ -561,11 +562,12 @@ public class GoogleFitActivitySourceTest {
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
 
-                    final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder(fixedTestClock)
-                        .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
-                        .include(FitnessMetricsType.INTRADAY_CALORIES)
-                        .build();
-                    final GoogleFitDataManager mockedGfDataManager = mock(GoogleFitDataManager.class);
+                    final GoogleFitIntradaySyncOptions options =
+                        new GoogleFitIntradaySyncOptions.Builder(fixedTestClock)
+                            .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
+                            .include(FitnessMetricsType.INTRADAY_CALORIES)
+                            .build();
+                    final GFDataManager mockedGfDataManager = mock(GFDataManager.class);
                     final MaxTriesCountExceededException gfException =
                         new MaxTriesCountExceededException("Possible tries count (3) exceeded");
                     when(mockedGfDataManager.syncIntradayMetrics(options)).thenReturn(Tasks.forException(gfException));
@@ -580,9 +582,9 @@ public class GoogleFitActivitySourceTest {
                     assertEquals("callback result should have the gf exception",
                         gfException,
                         callbackResult.getError());
-                    // should ask GoogleFitDataManager to create an instance of GoogleFitDataManager
+                    // should ask GFDataManager to create an instance of GFDataManager
                     verify(mockedGfDataManagerBuilder).build(mockedGoogleSignInAccount);
-                    // should ask GoogleFitDataManager to sync intraday data
+                    // should ask GFDataManager to sync intraday data
                     verify(mockedGfDataManager).syncIntradayMetrics(options);
                 }
             }
@@ -607,11 +609,12 @@ public class GoogleFitActivitySourceTest {
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
 
-                    final GFIntradaySyncOptions options = new GFIntradaySyncOptions.Builder(fixedTestClock)
-                        .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
-                        .include(FitnessMetricsType.INTRADAY_CALORIES)
-                        .build();
-                    final GoogleFitDataManager mockedGfDataManager = mock(GoogleFitDataManager.class);
+                    final GoogleFitIntradaySyncOptions options =
+                        new GoogleFitIntradaySyncOptions.Builder(fixedTestClock)
+                            .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
+                            .include(FitnessMetricsType.INTRADAY_CALORIES)
+                            .build();
+                    final GFDataManager mockedGfDataManager = mock(GFDataManager.class);
                     when(mockedGfDataManager.syncIntradayMetrics(options)).thenReturn(Tasks.forResult(null));
                     when(mockedGfDataManagerBuilder.build(mockedGoogleSignInAccount)).thenReturn(mockedGfDataManager);
 
@@ -621,9 +624,9 @@ public class GoogleFitActivitySourceTest {
                     verify(mockedCallback).onResult(callbackResultCaptor.capture());
                     final Result<Void> callbackResult = callbackResultCaptor.getValue();
                     assertFalse("callback should have successful result", callbackResult.isError());
-                    // should ask GoogleFitDataManager to create an instance of GoogleFitDataManager
+                    // should ask GFDataManager to create an instance of GFDataManager
                     verify(mockedGfDataManagerBuilder).build(mockedGoogleSignInAccount);
-                    // should ask GoogleFitDataManager to sync intraday data
+                    // should ask GFDataManager to sync intraday data
                     verify(mockedGfDataManager).syncIntradayMetrics(options);
                 }
             }
@@ -632,7 +635,7 @@ public class GoogleFitActivitySourceTest {
         public static class SyncSessionsTests extends GivenRobolectricContext {
             GoogleFitActivitySource subject;
             ActivitySourcesService mockedActivitySourcesService;
-            GoogleFitDataManagerBuilder mockedGfDataManagerBuilder;
+            GFDataManagerBuilder mockedGfDataManagerBuilder;
             Context context;
             Set<FitnessMetricsType> collectableFitnessMetrics;
             Clock fixedTestClock = Clock.fixed(Instant.parse("2020-10-05T15:03:01.000Z"), ZoneId.of("UTC"));
@@ -647,7 +650,7 @@ public class GoogleFitActivitySourceTest {
                 final ShadowPackageManager shadowPackageManager = new ShadowPackageManager();
                 shadowPackageManager.installPackage(packageInfo);
                 mockedActivitySourcesService = mock(ActivitySourcesService.class);
-                mockedGfDataManagerBuilder = mock(GoogleFitDataManagerBuilder.class);
+                mockedGfDataManagerBuilder = mock(GFDataManagerBuilder.class);
                 collectableFitnessMetrics = Stream.of(FitnessMetricsType.WORKOUTS).collect(Collectors.toSet());
             }
 
@@ -668,7 +671,7 @@ public class GoogleFitActivitySourceTest {
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
 
-                    final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder(fixedTestClock)
+                    final GoogleFitSessionSyncOptions options = new GoogleFitSessionSyncOptions.Builder(fixedTestClock)
                         .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
                         .setMinimumSessionDuration(Duration.ofMinutes(3))
                         .build();
@@ -680,7 +683,7 @@ public class GoogleFitActivitySourceTest {
                     final Result<Void> callbackResult = callbackResultCaptor.getValue();
                     assertTrue("callback should have unsuccessful result", callbackResult.isError());
                     assertThat(callbackResult.getError(), instanceOf(FitnessPermissionsNotGrantedException.class));
-                    // should not even interact with GoogleFitDataManager
+                    // should not even interact with GFDataManager
                     verifyNoInteractions(mockedGfDataManagerBuilder);
                 }
             }
@@ -707,7 +710,7 @@ public class GoogleFitActivitySourceTest {
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
 
-                    final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder(fixedTestClock)
+                    final GoogleFitSessionSyncOptions options = new GoogleFitSessionSyncOptions.Builder(fixedTestClock)
                         .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
                         .setMinimumSessionDuration(Duration.ofMinutes(3))
                         .build();
@@ -725,7 +728,7 @@ public class GoogleFitActivitySourceTest {
                     assertEquals("error result should have message",
                         "ACTIVITY_RECOGNITION permission not granted",
                         exception.getMessage());
-                    // should not even interact with GoogleFitDataManager
+                    // should not even interact with GFDataManager
                     verifyNoInteractions(mockedGfDataManagerBuilder);
                 }
             }
@@ -754,11 +757,11 @@ public class GoogleFitActivitySourceTest {
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
 
-                    final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder(fixedTestClock)
+                    final GoogleFitSessionSyncOptions options = new GoogleFitSessionSyncOptions.Builder(fixedTestClock)
                         .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
                         .setMinimumSessionDuration(Duration.ofMinutes(3))
                         .build();
-                    final GoogleFitDataManager mockedGfDataManager = mock(GoogleFitDataManager.class);
+                    final GFDataManager mockedGfDataManager = mock(GFDataManager.class);
                     final MaxTriesCountExceededException gfException =
                         new MaxTriesCountExceededException("Possible tries count (3) exceeded");
                     when(mockedGfDataManager.syncSessions(options)).thenReturn(Tasks.forException(gfException));
@@ -773,9 +776,9 @@ public class GoogleFitActivitySourceTest {
                     assertEquals("callback result should have the gf exception",
                         gfException,
                         callbackResult.getError());
-                    // should ask GoogleFitDataManager to create an instance of GoogleFitDataManager
+                    // should ask GFDataManager to create an instance of GFDataManager
                     verify(mockedGfDataManagerBuilder).build(mockedGoogleSignInAccount);
-                    // should ask GoogleFitDataManager to sync intraday data
+                    // should ask GFDataManager to sync intraday data
                     verify(mockedGfDataManager).syncSessions(options);
                 }
             }
@@ -805,11 +808,11 @@ public class GoogleFitActivitySourceTest {
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
 
-                    final GFSessionSyncOptions options = new GFSessionSyncOptions.Builder(fixedTestClock)
+                    final GoogleFitSessionSyncOptions options = new GoogleFitSessionSyncOptions.Builder(fixedTestClock)
                         .setDateRange(LocalDate.parse("2020-10-01"), LocalDate.parse("2020-10-03"))
                         .setMinimumSessionDuration(Duration.ofMinutes(3))
                         .build();
-                    final GoogleFitDataManager mockedGfDataManager = mock(GoogleFitDataManager.class);
+                    final GFDataManager mockedGfDataManager = mock(GFDataManager.class);
                     when(mockedGfDataManager.syncSessions(options)).thenReturn(Tasks.forResult(null));
                     when(mockedGfDataManagerBuilder.build(mockedGoogleSignInAccount)).thenReturn(mockedGfDataManager);
 
@@ -819,9 +822,9 @@ public class GoogleFitActivitySourceTest {
                     verify(mockedCallback).onResult(callbackResultCaptor.capture());
                     final Result<Void> callbackResult = callbackResultCaptor.getValue();
                     assertFalse("callback should have successful result", callbackResult.isError());
-                    // should ask GoogleFitDataManager to create an instance of GoogleFitDataManager
+                    // should ask GFDataManager to create an instance of GFDataManager
                     verify(mockedGfDataManagerBuilder).build(mockedGoogleSignInAccount);
-                    // should ask GoogleFitDataManager to sync intraday data
+                    // should ask GFDataManager to sync intraday data
                     verify(mockedGfDataManager).syncSessions(options);
                 }
             }

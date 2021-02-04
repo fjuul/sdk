@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
-import com.fjuul.sdk.activitysources.entities.GFIntradaySyncOptions;
-import com.fjuul.sdk.activitysources.entities.GFSessionSyncOptions;
+import com.fjuul.sdk.activitysources.entities.GoogleFitIntradaySyncOptions;
+import com.fjuul.sdk.activitysources.entities.GoogleFitSessionSyncOptions;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFCalorieDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPointsBatch;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRSummaryDataPoint;
@@ -38,8 +38,8 @@ import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 
-public class GoogleFitDataManager {
-    private static final String TAG = "GoogleFitDataManager";
+public class GFDataManager {
+    private static final String TAG = "GFDataManager";
 
     private static final ExecutorService localBackgroundExecutor = Executors.newCachedThreadPool();
 
@@ -48,7 +48,7 @@ public class GoogleFitDataManager {
     final private @NonNull GFSyncMetadataStore gfSyncMetadataStore;
     final private @NonNull ActivitySourcesService activitySourcesService;
 
-    GoogleFitDataManager(@NonNull GFClientWrapper client,
+    GFDataManager(@NonNull GFClientWrapper client,
         @NonNull GFDataUtils gfUtils,
         @NonNull GFSyncMetadataStore gfSyncMetadataStore,
         @NonNull ActivitySourcesService activitySourcesService) {
@@ -60,7 +60,7 @@ public class GoogleFitDataManager {
 
     @SuppressLint("NewApi")
     @NonNull
-    public Task<Void> syncIntradayMetrics(@NonNull GFIntradaySyncOptions options) {
+    public Task<Void> syncIntradayMetrics(@NonNull GoogleFitIntradaySyncOptions options) {
         // todo: consider returning metadata of the sent data
         final ExecutorService sequentialExecutorService = Executors.newSingleThreadExecutor();
         final LocalDate startDate = options.getStartDate();
@@ -141,7 +141,7 @@ public class GoogleFitDataManager {
 
     @SuppressLint("NewApi")
     @NonNull
-    public Task<Void> syncSessions(@NonNull GFSessionSyncOptions options) {
+    public Task<Void> syncSessions(@NonNull GoogleFitSessionSyncOptions options) {
         final Pair<Date, Date> gfQueryDates =
             gfUtils.adjustInputDatesForGFRequest(options.getStartDate(), options.getEndDate());
         final Task<List<GFSessionBundle>> getNotSyncedSessionsTask =

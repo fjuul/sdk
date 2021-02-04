@@ -5,9 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
-import com.fjuul.sdk.activitysources.entities.GFIntradaySyncOptions
-import com.fjuul.sdk.activitysources.entities.GFSessionSyncOptions
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource
+import com.fjuul.sdk.activitysources.entities.GoogleFitIntradaySyncOptions
+import com.fjuul.sdk.activitysources.entities.GoogleFitSessionSyncOptions
 import java.lang.Exception
 import java.time.Duration
 import java.time.LocalDate
@@ -45,9 +45,9 @@ class GFSyncViewModel : ViewModel() {
             _errorMessage.value = "No active Google Fit connection"
             return
         }
-        lateinit var options: GFIntradaySyncOptions
+        lateinit var options: GoogleFitIntradaySyncOptions
         try {
-            options = GFIntradaySyncOptions.Builder().apply {
+            options = GoogleFitIntradaySyncOptions.Builder().apply {
                 setDateRange(_startDate.value!!, _endDate.value!!)
                 if (calories) { include(FitnessMetricsType.INTRADAY_CALORIES) }
                 if (hr) { include(FitnessMetricsType.INTRADAY_HEART_RATE) }
@@ -75,9 +75,9 @@ class GFSyncViewModel : ViewModel() {
             _errorMessage.value = "No active Google Fit connection"
             return
         }
-        lateinit var options: GFSessionSyncOptions
+        lateinit var options: GoogleFitSessionSyncOptions
         try {
-            options = GFSessionSyncOptions.Builder()
+            options = GoogleFitSessionSyncOptions.Builder()
                 .setDateRange(_startDate.value!!, _endDate.value!!)
                 .setMinimumSessionDuration(minSessionDuration)
                 .build()

@@ -17,7 +17,7 @@ import androidx.annotation.Nullable;
  * @see Builder
  */
 public class ActivitySourcesManagerConfig {
-    public enum GFBackgroundSyncMode {
+    public enum GoogleFitBackgroundSyncMode {
         ENABLED,
         DISABLED,
         /**
@@ -27,11 +27,11 @@ public class ActivitySourcesManagerConfig {
     }
 
     @NonNull
-    private GFBackgroundSyncMode gfIntradayBackgroundSyncMode;
+    private GoogleFitBackgroundSyncMode googleFitIntradayBackgroundSyncMode;
     @NonNull
-    private GFBackgroundSyncMode gfSessionsBackgroundSyncMode;
+    private GoogleFitBackgroundSyncMode googleFitSessionsBackgroundSyncMode;
     @Nullable
-    private Duration gfSessionsBackgroundSyncMinSessionDuration;
+    private Duration googleFitSessionsBackgroundSyncMinSessionDuration;
 
     @NonNull
     private Set<FitnessMetricsType> collectableFitnessMetrics;
@@ -42,8 +42,8 @@ public class ActivitySourcesManagerConfig {
      * @return background mode
      */
     @NonNull
-    public GFBackgroundSyncMode getGfIntradayBackgroundSyncMode() {
-        return gfIntradayBackgroundSyncMode;
+    public GoogleFitBackgroundSyncMode getGoogleFitIntradayBackgroundSyncMode() {
+        return googleFitIntradayBackgroundSyncMode;
     }
 
     /**
@@ -52,8 +52,8 @@ public class ActivitySourcesManagerConfig {
      * @return background mode
      */
     @NonNull
-    public GFBackgroundSyncMode getGfSessionsBackgroundSyncMode() {
-        return gfSessionsBackgroundSyncMode;
+    public GoogleFitBackgroundSyncMode getGoogleFitSessionsBackgroundSyncMode() {
+        return googleFitSessionsBackgroundSyncMode;
     }
 
     /**
@@ -62,8 +62,8 @@ public class ActivitySourcesManagerConfig {
      * @return duration
      */
     @Nullable
-    public Duration getGfSessionsBackgroundSyncMinSessionDuration() {
-        return gfSessionsBackgroundSyncMinSessionDuration;
+    public Duration getGoogleFitSessionsBackgroundSyncMinSessionDuration() {
+        return googleFitSessionsBackgroundSyncMinSessionDuration;
     }
 
     /**
@@ -97,8 +97,8 @@ public class ActivitySourcesManagerConfig {
          */
         @SuppressLint("NewApi")
         @NonNull
-        public Builder enableGFIntradayBackgroundSync() {
-            config.gfIntradayBackgroundSyncMode = GFBackgroundSyncMode.ENABLED;
+        public Builder enableGoogleFitIntradayBackgroundSync() {
+            config.googleFitIntradayBackgroundSyncMode = GoogleFitBackgroundSyncMode.ENABLED;
             return this;
         }
 
@@ -114,10 +114,10 @@ public class ActivitySourcesManagerConfig {
          * @return configured builder
          */
         @NonNull
-        public Builder enableGFSessionsBackgroundSync(@NonNull Duration minSessionDuration) {
+        public Builder enableGoogleFitSessionsBackgroundSync(@NonNull Duration minSessionDuration) {
             Objects.requireNonNull(minSessionDuration, "duration must be not null");
-            config.gfSessionsBackgroundSyncMode = GFBackgroundSyncMode.ENABLED;
-            config.gfSessionsBackgroundSyncMinSessionDuration = minSessionDuration;
+            config.googleFitSessionsBackgroundSyncMode = GoogleFitBackgroundSyncMode.ENABLED;
+            config.googleFitSessionsBackgroundSyncMinSessionDuration = minSessionDuration;
             return this;
         }
 
@@ -127,15 +127,15 @@ public class ActivitySourcesManagerConfig {
          * this option expresses an intent to have the background synchronization when it's applicable but it doesn't
          * mean a requirement of the connection to Google Fit.
          *
-         * @see #enableGFIntradayBackgroundSync
-         * @see #enableGFSessionsBackgroundSync
+         * @see #enableGoogleFitIntradayBackgroundSync
+         * @see #enableGoogleFitSessionsBackgroundSync
          * @param minSessionDuration min duration for sessions to be synced
          * @return configured builder
          */
         @NonNull
-        public Builder enableGFBackgroundSync(@NonNull Duration minSessionDuration) {
-            enableGFIntradayBackgroundSync();
-            enableGFSessionsBackgroundSync(minSessionDuration);
+        public Builder enableGoogleFitBackgroundSync(@NonNull Duration minSessionDuration) {
+            enableGoogleFitIntradayBackgroundSync();
+            enableGoogleFitSessionsBackgroundSync(minSessionDuration);
             return this;
         }
 
@@ -145,8 +145,8 @@ public class ActivitySourcesManagerConfig {
          * @return configured builder
          */
         @NonNull
-        public Builder disableGFIntradayBackgroundSync() {
-            config.gfIntradayBackgroundSyncMode = GFBackgroundSyncMode.DISABLED;
+        public Builder disableGoogleFitIntradayBackgroundSync() {
+            config.googleFitIntradayBackgroundSyncMode = GoogleFitBackgroundSyncMode.DISABLED;
             return this;
         }
 
@@ -156,9 +156,9 @@ public class ActivitySourcesManagerConfig {
          * @return configured builder
          */
         @NonNull
-        public Builder disableGFSessionsBackgroundSync() {
-            config.gfSessionsBackgroundSyncMode = GFBackgroundSyncMode.DISABLED;
-            config.gfSessionsBackgroundSyncMinSessionDuration = null;
+        public Builder disableGoogleFitSessionsBackgroundSync() {
+            config.googleFitSessionsBackgroundSyncMode = GoogleFitBackgroundSyncMode.DISABLED;
+            config.googleFitSessionsBackgroundSyncMinSessionDuration = null;
             return this;
         }
 
@@ -168,9 +168,9 @@ public class ActivitySourcesManagerConfig {
          * @return configured builder
          */
         @NonNull
-        public Builder disableGFBackgroundSync() {
-            disableGFIntradayBackgroundSync();
-            disableGFSessionsBackgroundSync();
+        public Builder disableGoogleFitBackgroundSync() {
+            disableGoogleFitIntradayBackgroundSync();
+            disableGoogleFitSessionsBackgroundSync();
             return this;
         }
 
@@ -181,10 +181,10 @@ public class ActivitySourcesManagerConfig {
          * @return configured builder
          */
         @NonNull
-        public Builder keepUntouchedGFBackgroundSync() {
-            config.gfIntradayBackgroundSyncMode = GFBackgroundSyncMode.UNTOUCHED;
-            config.gfSessionsBackgroundSyncMode = GFBackgroundSyncMode.UNTOUCHED;
-            config.gfSessionsBackgroundSyncMinSessionDuration = null;
+        public Builder keepUntouchedGoogleFitBackgroundSync() {
+            config.googleFitIntradayBackgroundSyncMode = GoogleFitBackgroundSyncMode.UNTOUCHED;
+            config.googleFitSessionsBackgroundSyncMode = GoogleFitBackgroundSyncMode.UNTOUCHED;
+            config.googleFitSessionsBackgroundSyncMinSessionDuration = null;
             return this;
         }
 
@@ -219,8 +219,10 @@ public class ActivitySourcesManagerConfig {
             if (created) {
                 throw new IllegalStateException("Do not reuse the builder for creating new instance");
             }
-            Objects.requireNonNull(config.gfIntradayBackgroundSyncMode, "GF intraday background sync mode must be set");
-            Objects.requireNonNull(config.gfSessionsBackgroundSyncMode, "GF sessions background sync mode must be set");
+            Objects.requireNonNull(config.googleFitIntradayBackgroundSyncMode,
+                "GoogleFit intraday background sync mode must be set");
+            Objects.requireNonNull(config.googleFitSessionsBackgroundSyncMode,
+                "GoogleFit sessions background sync mode must be set");
             Objects.requireNonNull(config.collectableFitnessMetrics, "Collectable fitness metrics must be set");
             this.created = true;
             return config;
@@ -245,7 +247,7 @@ public class ActivitySourcesManagerConfig {
                     FitnessMetricsType.WORKOUTS)
                 .collect(Collectors.toSet());
         final ActivitySourcesManagerConfig config =
-            new ActivitySourcesManagerConfig.Builder().enableGFBackgroundSync(minSessionDuration)
+            new ActivitySourcesManagerConfig.Builder().enableGoogleFitBackgroundSync(minSessionDuration)
                 .setCollectableFitnessMetrics(allFitnessMetrics)
                 .build();
         return config;

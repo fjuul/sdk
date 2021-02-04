@@ -17,13 +17,13 @@ import androidx.annotation.Nullable;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-public abstract class GoogleFitSyncWorker extends Worker {
+public abstract class GFSyncWorker extends Worker {
     public static final String KEY_USER_TOKEN_ARG = "USER_TOKEN";
     public static final String KEY_USER_SECRET_ARG = "USER_SECRET";
     public static final String KEY_API_KEY_ARG = "API_KEY";
     public static final String KEY_BASE_URL_ARG = "BASE_URL";
 
-    public GoogleFitSyncWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+    public GFSyncWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
     }
 
@@ -49,7 +49,7 @@ public abstract class GoogleFitSyncWorker extends Worker {
             // It would be good to create an internal non-static instance of ActivitySourcesManager for background
             // workers with their own isolated state.
             final ActivitySourcesManagerConfig config =
-                new ActivitySourcesManagerConfig.Builder().keepUntouchedGFBackgroundSync()
+                new ActivitySourcesManagerConfig.Builder().keepUntouchedGoogleFitBackgroundSync()
                     .setCollectableFitnessMetrics(Collections.emptySet())
                     .build();
             ActivitySourcesManager.initialize(client, config);

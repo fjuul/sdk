@@ -6,13 +6,13 @@ import java.time.LocalDate;
 import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 
-public abstract class GFSyncOptions {
+public abstract class GoogleFitSyncOptions {
     @NonNull
     protected final LocalDate startDate;
     @NonNull
     protected final LocalDate endDate;
 
-    public GFSyncOptions(@NonNull LocalDate startDate, @NonNull LocalDate endDate) {
+    public GoogleFitSyncOptions(@NonNull LocalDate startDate, @NonNull LocalDate endDate) {
         this.startDate = startDate;
         this.endDate = endDate;
     }

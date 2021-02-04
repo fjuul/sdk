@@ -14,9 +14,9 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fjuul.sdk.activitysources.entities.internal.GFDataManager;
+import com.fjuul.sdk.activitysources.entities.internal.GFDataManagerBuilder;
 import com.fjuul.sdk.activitysources.entities.internal.GFDataUtils;
-import com.fjuul.sdk.activitysources.entities.internal.GoogleFitDataManager;
-import com.fjuul.sdk.activitysources.entities.internal.GoogleFitDataManagerBuilder;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata.GFSyncMetadataStore;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.ActivityRecognitionPermissionNotGrantedException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
@@ -70,7 +70,7 @@ public class GoogleFitActivitySource extends ActivitySource {
     private final @NonNull Set<FitnessMetricsType> collectableFitnessMetrics;
     private final @NonNull ActivitySourcesService sourcesService;
     private final @NonNull Context context;
-    private final @NonNull GoogleFitDataManagerBuilder gfDataManagerBuilder;
+    private final @NonNull GFDataManagerBuilder gfDataManagerBuilder;
     private final @NonNull ExecutorService localSequentialBackgroundExecutor;
 
     static synchronized void initialize(@NonNull ApiClient client,
@@ -93,8 +93,8 @@ public class GoogleFitActivitySource extends ActivitySource {
         final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
         final GFDataUtils gfUtils = new GFDataUtils();
         final GFSyncMetadataStore syncMetadataStore = new GFSyncMetadataStore(client.getStorage());
-        final GoogleFitDataManagerBuilder gfDataManagerBuilder =
-            new GoogleFitDataManagerBuilder(context, gfUtils, syncMetadataStore, sourcesService);
+        final GFDataManagerBuilder gfDataManagerBuilder =
+            new GFDataManagerBuilder(context, gfUtils, syncMetadataStore, sourcesService);
         instance = new GoogleFitActivitySource(requestOfflineAccess,
             serverClientId,
             sourcesManagerConfig.getCollectableFitnessMetrics(),
@@ -125,7 +125,7 @@ public class GoogleFitActivitySource extends ActivitySource {
         @NonNull Set<FitnessMetricsType> collectableFitnessMetrics,
         @NonNull ActivitySourcesService sourcesService,
         @NonNull Context context,
-        @NonNull GoogleFitDataManagerBuilder gfDataManagerBuilder,
+        @NonNull GFDataManagerBuilder gfDataManagerBuilder,
         @NonNull ExecutorService localSequentialBackgroundExecutor) {
         this.requestOfflineAccess = requestOfflineAccess;
         this.serverClientId = serverClientId;
@@ -277,7 +277,7 @@ public class GoogleFitActivitySource extends ActivitySource {
      * @param callback callback for the result
      */
     @SuppressLint("NewApi")
-    public void syncIntradayMetrics(@NonNull final GFIntradaySyncOptions options,
+    public void syncIntradayMetrics(@NonNull final GoogleFitIntradaySyncOptions options,
         @Nullable final Callback<Void> callback) {
         final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         if (!areFitnessPermissionsGranted(account, options.getMetrics())) {
@@ -288,8 +288,8 @@ public class GoogleFitActivitySource extends ActivitySource {
             }
             return;
         }
-        final GoogleFitDataManager googleFitDataManager = gfDataManagerBuilder.build(account);
-        performTaskAlongWithCallback(() -> googleFitDataManager.syncIntradayMetrics(options), callback);
+        final GFDataManager GFDataManager = gfDataManagerBuilder.build(account);
+        performTaskAlongWithCallback(() -> GFDataManager.syncIntradayMetrics(options), callback);
     }
 
     /**
@@ -307,7 +307,8 @@ public class GoogleFitActivitySource extends ActivitySource {
      * @param options session sync options
      * @param callback callback for the result
      */
-    public void syncSessions(@NonNull final GFSessionSyncOptions options, @Nullable final Callback<Void> callback) {
+    public void syncSessions(@NonNull final GoogleFitSessionSyncOptions options,
+        @Nullable final Callback<Void> callback) {
         final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         if (!areFitnessPermissionsGranted(account,
             Stream.of(FitnessMetricsType.WORKOUTS).collect(Collectors.toSet()))) {
@@ -326,8 +327,8 @@ public class GoogleFitActivitySource extends ActivitySource {
             }
             return;
         }
-        final GoogleFitDataManager googleFitDataManager = gfDataManagerBuilder.build(account);
-        performTaskAlongWithCallback(() -> googleFitDataManager.syncSessions(options), callback);
+        final GFDataManager GFDataManager = gfDataManagerBuilder.build(account);
+        performTaskAlongWithCallback(() -> GFDataManager.syncSessions(options), callback);
     }
 
     /**

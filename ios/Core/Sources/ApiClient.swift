@@ -74,8 +74,24 @@ public class ApiClient {
         return credentials.token
     }
 
-    /// Deletes the stored user file of the shared preferences created internally for persisting the state of Fjuul SDK.
-    /// Note that if you want to perform the logout, then you need also to disable all backgroundDelivery observers for HealthKitActivitySource
+    /**
+     Deletes the stored user file of the shared preferences created internally for persisting the state of Fjuul SDK.
+     Ideally, you should not use this method until you actually decide to clear all user data, as the repeated storage clearance will lead to data being unnecessarily uploaded/downloaded multiple times.
+    
+     Keep in mind that if you want to fully reset SDK to the default state, then you need also to disable all backgroundDelivery observers for HealthKitActivitySource by call ActivitySourcesManager.unmout.
+     
+     ~~~
+     apiClient.clearPersistentStorage()
+     apiClient.activitySourcesManager?.unmout { result in
+         switch result {
+         case .success:
+             apiClient = nil
+         case .failure(let err):
+             self.error = err
+         }
+     }
+     ~~~
+     */
     /// - Returns: Bool which indicates the success of the operation
     public func clearPersistentStorage() -> Bool {
         return type(of: self.persistor).remove(matchKey: self.userToken)

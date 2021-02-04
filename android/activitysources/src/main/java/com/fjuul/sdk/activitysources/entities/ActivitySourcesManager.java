@@ -332,12 +332,11 @@ public final class ActivitySourcesManager {
     }
 
     /**
-     * Cancel any scheduled background works for syncing GoogleFit data. The main use case of this method is to cancel
-     * any background syncs after a user logged out.
+     * Cancel any scheduled background works initiated by the user state and {@link ActivitySourcesManagerConfig} before.
      *
      * @param applicationContext
      */
-    public static void disableBackgroundGFSyncWorkers(@NonNull Context applicationContext) {
+    public static void disableBackgroundWorkers(@NonNull Context applicationContext) {
         final WorkManager workManager = WorkManager.getInstance(applicationContext);
         GoogleFitSyncWorkManager.cancelWorks(workManager);
     }

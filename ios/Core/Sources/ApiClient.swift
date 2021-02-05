@@ -80,11 +80,11 @@ public class ApiClient {
      uploaded/downloaded multiple times.
     
      Keep in mind that if you want to fully reset SDK to the default state, then you need also to disable all backgroundDelivery observers for
-     HealthKitActivitySource by call ActivitySourcesManager.unmout.
+     HealthKitActivitySource by call ActivitySourcesManager.unmount.
      
      ~~~
      apiClient.clearPersistentStorage()
-     apiClient.activitySourcesManager?.unmout { result in
+     apiClient.activitySourcesManager?.unmount { result in
          switch result {
          case .success:
              apiClient = nil

@@ -38,7 +38,6 @@ final class ActivitySourceManagerTests: XCTestCase {
     func testInitializeWithEmptyStoredActyvityConnections() {
         // Then
         XCTAssert(sut.mountedActivitySourceConnections.isEmpty, "Should not mount ActivitySourceConnections")
-        XCTAssert(sut.mountedActivitySourceConnections.count == 0, "Incorrect mounted ActivitySourceConnections")
     }
 
     func testInitializeWithExistsStoredActyvityConnections() {

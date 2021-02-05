@@ -12,7 +12,7 @@ public struct ConnectionStatus {
  Deeplinks https://developer.apple.com/documentation/xcode/allowing_apps_and_websites_to_link_to_your_content?language=objc
 
  ~~~
- //  Deeplink Handling for Scene bases app
+ //  Deeplink Handling for Scene based app
  func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
      guard let url = URLContexts.first?.url else {
          return

@@ -44,10 +44,6 @@ final class ActivitySourceHKTests: XCTestCase {
         XCTAssertEqual(sut.trackerValue, TrackerValue.HEALTHKIT)
     }
 
-    func testRequestAccess() {
-        // Given
-    }
-
     func testSuccessMount() {
         // Given
         let promise = expectation(description: "Success mount")

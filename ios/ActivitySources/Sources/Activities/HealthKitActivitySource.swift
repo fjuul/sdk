@@ -42,7 +42,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
         }
     }
 
-    /// Setup Healthkit backgroundDelivery for fetch disired data types based on ActivitySourceConfig
+    /// Setup Healthkit backgroundDelivery for fetch desired data types based on ActivitySourceConfig
     /// - Parameters:
     ///   - apiClient: instance of ActivitySourcesApiClient
     ///   - config: instance of ActivitySourceConfigBuilder

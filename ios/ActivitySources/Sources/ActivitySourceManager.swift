@@ -1,12 +1,10 @@
 import Foundation
 import FjuulCore
 
-// FIXME: Add link on deep linking description
 /**
  The ActivitySourcesManager encapsulates a connection to fitness trackers, access to current user's tracker connections.
- This is a high-level entity and entry point of the ActivitySources module. The class is designed as the singleton, so you need first to initialize it
- before getting the instance. For the proper initialization, you have to provide the configured API-client built with the user credentials.
-  
+ This is a high-level entity and entry point of the ActivitySources module.
+
  One of the main functions of this module is to connect to activity sources. There are local (i.e. HealthKit) and external trackers (i.e. Polar, Garmin, Fitbit, etc).
  External trackers require user authentication in the web browser.
  
@@ -115,7 +113,7 @@ final public class ActivitySourceManager {
     /// Unmount all ActivitySources. Useful for logout from app case. The trackers will not be disconnected,
     /// but all locally mounted ActivitySources will be unmounted on the device. Currently only HealthKitActivitySource is mountable
     /// - Parameter completion: void or error
-    public func unmout(completion: @escaping (Result<Void, Error>) -> Void) {
+    public func unmount(completion: @escaping (Result<Void, Error>) -> Void) {
         let group = DispatchGroup()
         var error: Error?
 
@@ -179,7 +177,7 @@ final public class ActivitySourceManager {
                     case .success:
                         self.mountedActivitySourceConnections.removeAll { value in value.id == activitySourceConnection.id }
                     case .failure(let err):
-                        DataLogger.shared.error("Error on unmout \(err)")
+                        DataLogger.shared.error("Error on unmount \(err)")
                     }
                 }
             }

@@ -21,7 +21,8 @@ import org.robolectric.annotation.Config;
 import android.os.Build;
 
 @RunWith(Enclosed.class)
-public class GFIntradaySyncOptionsTest {
+public class GoogleFitSessionSyncOptionsTest {
+
     @RunWith(RobolectricTestRunner.class)
     @Config(sdk = {Build.VERSION_CODES.P})
     public abstract static class GivenRobolectricContext {}
@@ -37,7 +38,7 @@ public class GFIntradaySyncOptionsTest {
 
         @Test
         public void setDateRange_whenStartDateIsAfterEndDate_throwsException() {
-            final GFIntradaySyncOptions.Builder subject = new GFIntradaySyncOptions.Builder(testClock);
+            final GoogleFitSessionSyncOptions.Builder subject = new GoogleFitSessionSyncOptions.Builder(testClock);
             try {
                 subject.setDateRange(LocalDate.parse("2020-12-05"), LocalDate.parse("2020-12-01"));
                 assertTrue("should throw the exception", false);
@@ -51,7 +52,7 @@ public class GFIntradaySyncOptionsTest {
 
         @Test
         public void setDateRange_whenEndDatePointsAtTheFuture_throwsException() {
-            final GFIntradaySyncOptions.Builder subject = new GFIntradaySyncOptions.Builder(testClock);
+            final GoogleFitSessionSyncOptions.Builder subject = new GoogleFitSessionSyncOptions.Builder(testClock);
             try {
                 subject.setDateRange(LocalDate.parse("2020-11-27"), LocalDate.parse("2020-12-05"));
                 assertTrue("should throw the exception", false);
@@ -64,7 +65,7 @@ public class GFIntradaySyncOptionsTest {
         @Test
         public void setDateRange_whenStartDateExceedsLimit_throwsException() {
             Clock clock1 = Clock.fixed(Instant.parse("2020-02-29T15:56:23Z"), ZoneId.of("UTC"));
-            GFIntradaySyncOptions.Builder subject = new GFIntradaySyncOptions.Builder(clock1);
+            GoogleFitSessionSyncOptions.Builder subject = new GoogleFitSessionSyncOptions.Builder(clock1);
 
             try {
                 subject.setDateRange(LocalDate.parse("2020-01-29"), LocalDate.parse("2020-02-29"));
@@ -77,7 +78,7 @@ public class GFIntradaySyncOptionsTest {
             }
 
             Clock clock2 = Clock.fixed(Instant.parse("2020-02-28T15:56:23Z"), ZoneId.of("UTC"));
-            subject = new GFIntradaySyncOptions.Builder(clock2);
+            subject = new GoogleFitSessionSyncOptions.Builder(clock2);
             try {
                 subject.setDateRange(LocalDate.parse("2020-01-28"), LocalDate.parse("2020-02-28"));
                 assertTrue("should throw the exception", false);
@@ -89,7 +90,7 @@ public class GFIntradaySyncOptionsTest {
             }
 
             Clock clock3 = Clock.fixed(Instant.parse("2020-02-15T15:56:23Z"), ZoneId.of("UTC"));
-            subject = new GFIntradaySyncOptions.Builder(clock3);
+            subject = new GoogleFitSessionSyncOptions.Builder(clock3);
             try {
                 subject.setDateRange(LocalDate.parse("2020-01-15"), LocalDate.parse("2020-02-15"));
                 assertTrue("should throw the exception", false);
@@ -101,7 +102,7 @@ public class GFIntradaySyncOptionsTest {
             }
 
             Clock clock4 = Clock.fixed(Instant.parse("2020-08-31T15:56:23Z"), ZoneId.of("UTC"));
-            subject = new GFIntradaySyncOptions.Builder(clock4);
+            subject = new GoogleFitSessionSyncOptions.Builder(clock4);
             try {
                 subject.setDateRange(LocalDate.parse("2020-07-31"), LocalDate.parse("2020-08-31"));
                 assertTrue("should throw the exception", false);
@@ -115,7 +116,7 @@ public class GFIntradaySyncOptionsTest {
 
         @Test
         public void setDateRange_whenDateRangeIsValid_doNotThrowException() {
-            final GFIntradaySyncOptions.Builder subject = new GFIntradaySyncOptions.Builder(testClock);
+            final GoogleFitSessionSyncOptions.Builder subject = new GoogleFitSessionSyncOptions.Builder(testClock);
             try {
                 subject.setDateRange(LocalDate.parse("2020-11-02"), LocalDate.parse("2020-12-01"));
                 assertTrue("shouldn't throw the exception", true);

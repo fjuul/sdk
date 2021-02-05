@@ -10,7 +10,7 @@ import com.google.android.gms.fitness.SessionsClient;
 import android.content.Context;
 import androidx.annotation.NonNull;
 
-public class GoogleFitDataManagerBuilder {
+public class GFDataManagerBuilder {
     @NonNull
     private final Context context;
     @NonNull
@@ -20,7 +20,7 @@ public class GoogleFitDataManagerBuilder {
     @NonNull
     private final ActivitySourcesService sourcesService;
 
-    public GoogleFitDataManagerBuilder(@NonNull Context context,
+    public GFDataManagerBuilder(@NonNull Context context,
         @NonNull GFDataUtils gfDataUtils,
         @NonNull GFSyncMetadataStore syncMetadataStore,
         @NonNull ActivitySourcesService sourcesService) {
@@ -31,10 +31,10 @@ public class GoogleFitDataManagerBuilder {
     }
 
     @NonNull
-    public GoogleFitDataManager build(@NonNull GoogleSignInAccount account) {
+    public GFDataManager build(@NonNull GoogleSignInAccount account) {
         final HistoryClient historyClient = Fitness.getHistoryClient(context, account);
         final SessionsClient sessionsClient = Fitness.getSessionsClient(context, account);
         final GFClientWrapper clientWrapper = new GFClientWrapper(historyClient, sessionsClient, gfDataUtils);
-        return new GoogleFitDataManager(clientWrapper, gfDataUtils, syncMetadataStore, sourcesService);
+        return new GFDataManager(clientWrapper, gfDataUtils, syncMetadataStore, sourcesService);
     }
 }

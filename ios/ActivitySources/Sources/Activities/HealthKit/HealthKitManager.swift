@@ -135,8 +135,8 @@ class HealthKitManager: HealthKitManaging {
                             switch result {
                             case .success:
                                 do {
-                                    defer { DataLogger.shared.info("Success handled backgroundDelivery for \(sampleType)") }
                                     try self.anchorStore.save(type: sampleType, newAnchor: newAnchor)
+                                    DataLogger.shared.info("Success handled backgroundDelivery for \(sampleType)")
                                 } catch {
                                     DataLogger.shared.error("Unexpected error: \(error).")
                                 }

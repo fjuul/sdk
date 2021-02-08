@@ -38,11 +38,11 @@ final public class ActivitySourceManager {
     }
 
     /// Connect specified ActivitySource.
-    /// After getting it in the callback, you need to do one of the following:
-    ///  1) If connects to the Healthkit tracker, iOS will show a modal prompting with list of required Healthkit data permissions.
-    ///  2) If connects to the any external trackers (Garmin, Polar, etc...), This will open the user's web browser on the page with authorization of the specified tracker.
-    ///    After the user successfully authenticates, the user will be redirected back to the app by the link
-    ///    matched with the scheme provided to you or coordinated with you by Fjuul.
+    /// ConnectionResult can have 2 states:
+    /// 1) connected: it will contain TrackerConnection data
+    /// 2) authenticationUrl: it will contain authenticationUrl, the SDK consumer needs to open that URL in the browser to allow the user to finish authentication (Garmin, Polar, etc...)
+    ///
+    /// Healthkit tracker will show an iOS modal prompting with a list of required Healthkit data permissions.
     /// After a user succeeds in the connection, please invoke refreshing current connections `ActivitySourcesManager#getCurrentConnections`
     /// - Parameters:
     ///   - activitySource: ActivitySource instance to connect (PolarActivitySource.shared, HealthKitActivitySource.shared, etc...)

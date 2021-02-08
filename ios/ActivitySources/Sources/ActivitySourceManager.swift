@@ -11,12 +11,13 @@ import FjuulCore
  For handle authentication with external trackers, it require support deep linking in app.
 */
 final public class ActivitySourceManager {
-    var apiClient: ActivitySourcesApiClient
-    var mountedActivitySourceConnections: [ActivitySourceConnection] = []
-    var config: ActivitySourceConfigBuilder
+    let apiClient: ActivitySourcesApiClient
+    let config: ActivitySourceConfigBuilder
 
-    private var persistor: Persistor
-    private var connectionsLocalStore: ActivitySourcesStateStore
+    var mountedActivitySourceConnections: [ActivitySourceConnection] = []
+
+    private let persistor: Persistor
+    private let connectionsLocalStore: ActivitySourcesStateStore
 
     /// Internal initializer
     /// - Parameters:

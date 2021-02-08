@@ -3,7 +3,7 @@ import Foundation
 /// Status of external connection from the deeplink handler
 public struct ConnectionStatus {
     public var tracker: TrackerValue?
-    public var success: Bool
+    public let success: Bool
 }
 
 /**

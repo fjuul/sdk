@@ -196,9 +196,9 @@ class HealthKitManager: HealthKitManaging {
             return
         }
 
-        let predicatBuilder = HealthKitQueryPredicateBuilder(healthKitConfig: self.config.healthKitConfig)
+        let predicateBuilder = HealthKitQueryPredicateBuilder(healthKitConfig: self.config.healthKitConfig)
 
-        WorkoutFetcher.fetch(anchor: anchor, predicateBuilder: predicatBuilder) { requestData, newAnchor in
+        WorkoutFetcher.fetch(anchor: anchor, predicateBuilder: predicateBuilder) { requestData, newAnchor in
 
             completion(requestData, newAnchor)
         }
@@ -211,9 +211,9 @@ class HealthKitManager: HealthKitManaging {
             return
         }
 
-        let predicatBuilder = HealthKitQueryPredicateBuilder(healthKitConfig: self.config.healthKitConfig)
+        let predicateBuilder = HealthKitQueryPredicateBuilder(healthKitConfig: self.config.healthKitConfig)
 
-        AggregatedDataFetcher.fetch(type: sampleType, anchor: anchor, predicateBuilder: predicatBuilder) { hkRequestData, newAnchor in
+        AggregatedDataFetcher.fetch(type: sampleType, anchor: anchor, predicateBuilder: predicateBuilder) { hkRequestData, newAnchor in
 
             completion(hkRequestData, newAnchor)
         }

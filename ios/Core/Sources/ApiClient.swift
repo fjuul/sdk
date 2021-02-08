@@ -39,7 +39,7 @@ public class ApiClient {
     ///   - persistor: instance of Persistor
     ///   - userToken: user token
     /// - Returns: Bool which indicates the success of the operation
-    public static func clearPersistentStorage(persistor: Persistor, userToken: String) -> Bool {
+    public static func clearPersistentStorage(userToken: String) -> Bool {
         return DiskPersistor.remove(matchKey: userToken)
     }
 

@@ -47,7 +47,7 @@ struct OnboardingScreen: View {
                         if let apiClient = FjuulApiBuilder.buildApiClient() {
                             ApiClientHolder.default.apiClient = apiClient
 
-                            FjuulApiBuilder.buildActivitySourceManager(apiClient: apiClient)
+                            FjuulApiBuilder.buildActivitySourcesManager(apiClient: apiClient)
                         }
                     }
                     self.viewRouter.presentedView = .moduleSelection

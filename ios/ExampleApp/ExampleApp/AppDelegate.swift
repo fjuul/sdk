@@ -26,7 +26,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if let apiClient = FjuulApiBuilder.buildApiClient() {
             ApiClientHolder.default.apiClient = apiClient
 
-            FjuulApiBuilder.buildActivitySourceManager(apiClient: apiClient)
+            FjuulApiBuilder.buildActivitySourcesManager(apiClient: apiClient)
         }
 
         return true

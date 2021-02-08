@@ -91,9 +91,9 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
 private var AssociatedObjectHandle: UInt8 = 0
 
 public extension ApiClient {
-    var activitySourcesManager: ActivitySourceManager? {
+    var activitySourcesManager: ActivitySourcesManager? {
         get {
-            if let manager = objc_getAssociatedObject(self, &AssociatedObjectHandle) as? ActivitySourceManager {
+            if let manager = objc_getAssociatedObject(self, &AssociatedObjectHandle) as? ActivitySourcesManager {
                 return manager
             } else {
                 return nil
@@ -109,7 +109,7 @@ public extension ApiClient {
     /// for example in AppDelegate (didFinishLaunchingWithOptions)
     /// - Parameter config: ActivitySourceConfigBuilder config with desire config for list of Data types for sync.
     func initActivitySourcesManager(config: ActivitySourceConfigBuilder) {
-        self.activitySourcesManager = ActivitySourceManager(
+        self.activitySourcesManager = ActivitySourcesManager(
             userToken: self.userToken,
             persistor: self.persistor,
             apiClient: ActivitySourcesApi(apiClient: self),

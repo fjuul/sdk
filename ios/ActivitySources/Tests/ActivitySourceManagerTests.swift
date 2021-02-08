@@ -5,8 +5,8 @@ import SwiftyMocky
 
 @testable import FjuulActivitySources
 
-final class ActivitySourceManagerTests: XCTestCase {
-    var sut: ActivitySourceManager!
+final class ActivitySourcesManagerTests: XCTestCase {
+    var sut: ActivitySourcesManager!
     var apiClientMock: ActivitySourcesApiClientMock!
 
     let credentials = UserCredentials(
@@ -27,7 +27,7 @@ final class ActivitySourceManagerTests: XCTestCase {
         let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
         apiClientMock = ActivitySourcesApiClientMock()
 
-        sut = ActivitySourceManager(userToken: client.userToken, persistor: persistor, apiClient: apiClientMock, config: config)
+        sut = ActivitySourcesManager(userToken: client.userToken, persistor: persistor, apiClient: apiClientMock, config: config)
     }
 
     override func tearDown() {
@@ -53,7 +53,7 @@ final class ActivitySourceManagerTests: XCTestCase {
         connectionsLocalStore.connections = trackerConnections
 
         // When
-        let sut = ActivitySourceManager(userToken: client.userToken, persistor: persistor, apiClient: apiClientMock, config: config)
+        let sut = ActivitySourcesManager(userToken: client.userToken, persistor: persistor, apiClient: apiClientMock, config: config)
 
         // Then
         XCTAssertNotNil(sut.apiClient)

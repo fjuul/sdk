@@ -81,7 +81,7 @@ Modules of Fjuul SDK for iOS platform library written in Swift.
 
 ### Distibution
 
-Fjuul iOS SDK modules are published to the private packages at Github Packages registry with the url `https://github.com/fjuul/sdk`. In order to access Fjuul SDK modules you need to:
+Fjuul iOS SDK packages are published at Github repo with the URL `https://github.com/fjuul/sdk`. In order to access Fjuul SDK modules you need to:
 
 1. In XCode from menu, select `File > Swift Packages > Add Package Dependency`.
 2. Fill package repository URL `https://github.com/fjuul/sdk`

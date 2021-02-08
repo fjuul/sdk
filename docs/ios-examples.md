@@ -44,7 +44,7 @@ import FjuulCore
 let baseUrl = "https://xxx.api.fjuul.com"
 
 // initialize Fjuul ApiClient with user credentials
-let apiCleint = ApiClient(
+let apiClient = ApiClient(
     baseUrl: baseUrl,
     apiKey: "YOUR_API_KEY",
     credentials: UserCredentials(
@@ -92,14 +92,14 @@ HealthKitActivitySource after connect will register background delivery observer
 ``` swift
 import FjuulActivitySources
 
-apiCleint.activitySourcesManager?.connect(activitySource: HealthKitActivitySource.shared) { result in
+apiClient.activitySourcesManager?.connect(activitySource: HealthKitActivitySource.shared) { result in
     switch result {
     case .success(let connectionResult):
         switch connectionResult {
         case .connected:
 
           // After connect or disconnect always call ActivitySourcesManager.refreshCurrent() for mount new and unmount locally new and removed ActivitySource's.
-          apiCleint.activitySourcesManager?.refreshCurrent { result in
+          apiClient.activitySourcesManager?.refreshCurrent { result in
               switch result {
               case .success(let connections):
                   // Array of current ActivitySourceConnection's
@@ -126,7 +126,7 @@ import FjuulActivitySources
 let connectionStatus = ExternalAuthenticationFlowHandler.handle(url: url)
 if connectionStatus.status {
     // Update activitySource list
-    apiCleint.activitySourcesManager?.refreshCurrent { result in
+    apiClient.activitySourcesManager?.refreshCurrent { result in
         switch result {
         case .success(let connections):
             // Array of current ActivitySourceConnection's

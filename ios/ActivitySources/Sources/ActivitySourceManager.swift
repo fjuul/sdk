@@ -40,7 +40,8 @@ final public class ActivitySourceManager {
     /// Connect specified ActivitySource.
     /// ConnectionResult can have 2 states:
     /// 1) connected: it will contain TrackerConnection data
-    /// 2) authenticationUrl: it will contain authenticationUrl, the SDK consumer needs to open that URL in the browser to allow the user to finish authentication (Garmin, Polar, etc...)
+    /// 2) authenticationUrl: it will contain authenticationUrl, the SDK consumer needs to open that URL in the browser to allow the user to finish
+    /// authentication (Garmin, Polar, etc...)
     ///
     /// Healthkit tracker will show an iOS modal prompting with a list of required Healthkit data permissions.
     /// After a user succeeds in the connection, please invoke refreshing current connections `ActivitySourcesManager#getCurrentConnections`

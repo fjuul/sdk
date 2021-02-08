@@ -32,6 +32,17 @@ public class ApiClient {
 
     }
 
+    /// Deletes the stored user file of the shared preferences created internally for persisting the state of Fjuul SDK.
+    /// Ideally, you should not use this method until you actually decide to clear all user data, as the repeated storage clearance will lead to data
+    /// being unnecessarily uploaded/downloaded multiple times.
+    /// - Parameters:
+    ///   - persistor: instance of Persistor
+    ///   - userToken: user token
+    /// - Returns: Bool which indicates the success of the operation
+    public static func clearPersistentStorage(persistor: Persistor, userToken: String) -> Bool {
+        return type(of: persistor).remove(matchKey: userToken)
+    }
+
     /// An HTTP session which applies bearer authentication to all requests.
     /// **This is for internal use only.**
     public let bearerAuthenticatedSession: Session

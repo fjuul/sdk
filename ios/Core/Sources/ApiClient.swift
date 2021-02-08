@@ -40,7 +40,7 @@ public class ApiClient {
     ///   - userToken: user token
     /// - Returns: Bool which indicates the success of the operation
     public static func clearPersistentStorage(persistor: Persistor, userToken: String) -> Bool {
-        return type(of: persistor).remove(matchKey: userToken)
+        return DiskPersistor.remove(matchKey: userToken)
     }
 
     /// An HTTP session which applies bearer authentication to all requests.

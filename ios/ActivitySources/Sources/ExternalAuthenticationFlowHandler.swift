@@ -8,7 +8,7 @@ public struct ConnectionStatus {
 
 /**
  Handler for the result of connecting to external activity sources.
- Before calling the call ExternalAuthenticationFlowHandler.handle function, you should check that the schema that incoming matches the expected for Fjuul SDK.
+ Before calling the call ExternalAuthenticationFlowHandler.handle function, you should check that the schema that incoming URL matches the expected for Fjuul SDK.
  Deeplinks https://developer.apple.com/documentation/xcode/allowing_apps_and_websites_to_link_to_your_content?language=objc
 
  ~~~

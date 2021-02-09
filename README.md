@@ -67,3 +67,28 @@ In your `app/build.grade`:
 Please follow the [link](docs/android-examples.md) to see examples of working with the Fjuul Android SDK API.
 
 You can also refer to [ExampleApp](android/ExampleApp) which built for demonstration purposes.
+
+
+# Fjuul iOS SDK
+
+Modules of Fjuul SDK for iOS platform library written in Swift.
+
+### Restrictions
+
+- Fjuul SDK for iOS runs on devices with iOS 10+
+- Fjuul SDK for iOS requires Xcode 11.4+ and Swift 5.2+
+
+
+### Distibution
+
+Fjuul iOS SDK packages are published at Github repo with the URL `https://github.com/fjuul/sdk`. In order to access Fjuul SDK modules you need to:
+
+1. In XCode from menu, select `File > Swift Packages > Add Package Dependency`.
+2. Fill package repository URL `https://github.com/fjuul/sdk`
+3. Choose required package products: `FjuulCore, FjuulUser, FjuulAnalytics, FjuulActivitySources`
+
+
+### Getting started
+Please follow the [link](docs/ios-examples.md) to see examples of working with the Fjuul iOS SDK API.
+
+You can also refer to [ExampleApp](ios/ExampleApp) which built for demonstration purposes.

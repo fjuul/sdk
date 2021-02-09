@@ -17,10 +17,10 @@ let package = Package(
         .library(name: "FjuulUser", targets: ["FjuulUser"])
     ],
     dependencies: [
-        .package(url: "https://github.com/Alamofire/Alamofire.git", .upToNextMajor(from: "5.2.0")),
-        .package(url: "https://github.com/AliSoftware/OHHTTPStubs.git", .upToNextMajor(from: "9.0.0")),
-        .package(name: "swiftymocky", url: "https://github.com/MakeAWishFoundation/SwiftyMocky", from: "4.0.1"),
-        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
+        .package(url: "https://github.com/Alamofire/Alamofire.git", .upToNextMajor(from: "5.4.1")),
+        .package(url: "https://github.com/AliSoftware/OHHTTPStubs.git", .upToNextMajor(from: "9.1.0")),
+        .package(name: "swiftymocky", url: "https://github.com/MakeAWishFoundation/SwiftyMocky", .upToNextMajor(from: "4.0.3")),
+        .package(url: "https://github.com/apple/swift-log.git", .upToNextMajor(from: "1.4.0")),
     ],
     targets: [
         .target(

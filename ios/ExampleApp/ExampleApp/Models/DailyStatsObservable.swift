@@ -7,7 +7,7 @@ class DailyStatsObservable: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var error: ErrorHolder?
 
-    @Published var fromDate: Date = Date(timeIntervalSinceNow: -7 * 24 * 60 * 60)
+    @Published var fromDate: Date = Date()
     @Published var toDate: Date = Date()
     @Published var value: [DailyStats] = []
 

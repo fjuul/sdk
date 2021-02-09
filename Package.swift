@@ -12,17 +12,23 @@ let package = Package(
     ],
     products: [
         .library(name: "FjuulCore", targets: ["FjuulCore"]),
+        .library(name: "FjuulActivitySources", targets: ["FjuulActivitySources"]),
         .library(name: "FjuulAnalytics", targets: ["FjuulAnalytics"]),
         .library(name: "FjuulUser", targets: ["FjuulUser"])
     ],
     dependencies: [
         .package(url: "https://github.com/Alamofire/Alamofire.git", .upToNextMajor(from: "5.2.0")),
-        .package(url: "https://github.com/AliSoftware/OHHTTPStubs.git", .upToNextMajor(from: "9.0.0"))
+        .package(url: "https://github.com/AliSoftware/OHHTTPStubs.git", .upToNextMajor(from: "9.0.0")),
+        .package(name: "swiftymocky", url: "https://github.com/MakeAWishFoundation/SwiftyMocky", from: "4.0.1"),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
     ],
     targets: [
         .target(
             name: "FjuulCore",
-            dependencies: ["Alamofire"],
+            dependencies: [
+                "Alamofire",
+                .product(name: "Logging", package: "swift-log")
+            ],
             path: "ios/Core/Sources"
         ),
         .testTarget(
@@ -31,8 +37,28 @@ let package = Package(
             path: "ios/Core/Tests"
         ),
         .target(
+            name: "FjuulActivitySources",
+            dependencies: [
+                "FjuulCore",
+                .product(name: "Logging", package: "swift-log")
+            ],
+            path: "ios/ActivitySources/Sources"
+        ),
+        .testTarget(
+            name: "FjuulActivitySourcesTests",
+            dependencies: [
+                .product(name: "OHHTTPStubsSwift", package: "OHHTTPStubs"),
+                .product(name: "SwiftyMocky", package: "swiftymocky"),
+                "FjuulActivitySources"
+            ],
+            path: "ios/ActivitySources/Tests"
+        ),
+        .target(
             name: "FjuulAnalytics",
-            dependencies: ["FjuulCore"],
+            dependencies: [
+                "FjuulCore",
+                .product(name: "Logging", package: "swift-log")
+            ],
             path: "ios/Analytics/Sources"
         ),
         .testTarget(

@@ -1,13 +1,34 @@
 import Foundation
 
-class DiskPersistor: Persistor {
+public class DiskPersistor: Persistor {
+    static internal let PERSISTANCE_PREFIX = "com.fjuul.sdk.persistence"
 
-    func set<T: Encodable>(key: String, value: T?) {
+    public init() {}
+
+    public static func remove(matchKey: String) -> Bool {
+        do {
+            let storeFolderURL = DiskPersistor.getStorageDirectory()
+            let fileURLs = try FileManager.default.contentsOfDirectory(at: storeFolderURL, includingPropertiesForKeys: nil)
+
+            try fileURLs.forEach { fileURL in
+                if fileURL.path.range(of: "(\(DiskPersistor.PERSISTANCE_PREFIX)).+(\(matchKey))", options: .regularExpression) != nil {
+                    try FileManager.default.removeItem(at: fileURL)
+                }
+            }
+
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    public func set<T: Encodable>(key: String, value: T?) {
         do {
             // The Application Support directory does not exist by default, thus we need to create it here explicitly.
             // This is a no-op if the directory already exists.
-            try FileManager.default.createDirectory(at: getStorageDirectory(), withIntermediateDirectories: true, attributes: nil)
-            let fullPath = getFullPathForKey(key)
+            try FileManager.default.createDirectory(at: DiskPersistor.getStorageDirectory(), withIntermediateDirectories: true, attributes: nil)
+            let fullPath = DiskPersistor.getFullPathForKey(key)
+
             guard let unwrapped = value else {
                 if FileManager.default.fileExists(atPath: fullPath.path) {
                     try FileManager.default.removeItem(atPath: fullPath.path)
@@ -20,13 +41,13 @@ class DiskPersistor: Persistor {
             archiver.finishEncoding()
             try mutableData.write(to: fullPath, options: .atomic)
         } catch {
-            print("error while persisting object: \(error)")
+            DataLogger.shared.error("Error while reading persisted object: \(error)")
         }
     }
 
-    func get<T: Decodable>(key: String) -> T? {
+    public func get<T: Decodable>(key: String) -> T? {
         do {
-            let path = getFullPathForKey(key)
+            let path = DiskPersistor.getFullPathForKey(key)
             if !(FileManager.default.fileExists(atPath: path.path)) {
                 return nil
             }
@@ -34,18 +55,29 @@ class DiskPersistor: Persistor {
             let unarchiver = NSKeyedUnarchiver(forReadingWith: data)
             return try unarchiver.decodeTopLevelDecodable(T.self, forKey: NSKeyedArchiveRootObjectKey)
         } catch {
-            print("error while reading persisted object: \(error)")
+            DataLogger.shared.error("Error while reading persisted object: \(error)")
             return nil
         }
     }
 
-    private func getStorageDirectory() -> URL {
+    public func remove(key: String) -> Bool {
+        let fileURL = DiskPersistor.getFullPathForKey(key)
+
+        do {
+            try FileManager.default.removeItem(at: fileURL)
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    private static func getStorageDirectory() -> URL {
         let paths = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
         return paths[0]
     }
 
-    private func getFullPathForKey(_ key: String) -> URL {
-        getStorageDirectory().appendingPathComponent("com.fjuul.sdk.persistence.\(key)")
+    private static func getFullPathForKey(_ key: String) -> URL {
+        getStorageDirectory().appendingPathComponent("\(DiskPersistor.PERSISTANCE_PREFIX).\(key)")
     }
 
 }

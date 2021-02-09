@@ -16,10 +16,11 @@ public class UserApi {
         if profileData[\.timezone] == nil {
             profileData[\.timezone] = TimeZone.current
         }
-        if profileData[\.locale] == nil {
+        if (profileData[\.locale] ?? "").isEmpty {
             profileData[\.locale] = Bundle.main.preferredLocalizations.first ?? "en"
         }
-        ApiClient.requestUnauthenticated(url, apiKey: apiKey, method: .post, parameters: profileData.asJsonEncodableDictionary(), encoding: JSONEncoding.default).apiResponse { response in
+        ApiClient.requestUnauthenticated(url, apiKey: apiKey, method: .post,
+                                         parameters: profileData.asJsonEncodableDictionary(), encoding: JSONEncoding.default).apiResponse { response in
             let decodedResponse = response.tryMap { try Decoders.yyyyMMddLocale.decode(UserCreationResult.self, from: $0) }
             return completion(decodedResponse.result)
         }

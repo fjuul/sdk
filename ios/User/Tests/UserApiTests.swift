@@ -144,7 +144,6 @@ final class UserApiTests: XCTestCase {
             XCTAssertEqual(request.httpMethod, "PUT")
             do {
                 let bodyData: [String: Any] = try JSONSerialization.jsonObject(with: request.ohhttpStubs_httpBody!) as! [String: Any]
-                print(bodyData)
                 XCTAssertEqual(bodyData["weight"] as? Int, update[\.weight])
                 XCTAssertEqual(bodyData.count, 1)
             } catch {

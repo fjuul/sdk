@@ -15,15 +15,12 @@ import java.util.regex.Pattern;
 
 import timber.log.Timber;
 
-public class FjuulSDKTimberTree extends Timber.Tree {
-    private static final int MAX_LOG_LENGTH = 4000;
+public abstract class FjuulSDKTimberTree extends Timber.Tree {
     protected static final String TAG = "Fjuul-SDK";
     protected static final Pattern SDK_MODULE_NAME = Pattern.compile("^com.fjuul.sdk.([^.]+)\\.");
 
     @Override
     protected void log(int priority, @Nullable String _tag, @NotNull String message, @Nullable Throwable t) {
-        // TODO: provide our own implementation of log
-        // TODO: allow SDK consumers to override 'log' method with the same formatting and tagging
         final List<StackTraceElement> filteredTrace = getFilteredStackTraceOfCaller();
         String messagePrefix = "";
         if (filteredTrace.size() > 0) {
@@ -35,32 +32,11 @@ public class FjuulSDKTimberTree extends Timber.Tree {
             }
             messagePrefix = messagePrefixBuilder.append(String.format(Locale.ROOT," %s: ", callerClassName)).toString();
         }
-        message = messagePrefix + message;
-        if (message.length() < MAX_LOG_LENGTH) {
-            if (priority == Log.ASSERT) {
-                Log.wtf(TAG, message);
-            } else {
-                Log.println(priority, TAG, message);
-            }
-            return;
-        }
-
-        // Split by line, then ensure each line can fit into Log's maximum length.
-        for (int i = 0, length = message.length(); i < length; i++) {
-            int newline = message.indexOf('\n', i);
-            newline = newline != -1 ? newline : length;
-            do {
-                int end = Math.min(newline, i + MAX_LOG_LENGTH);
-                String part = message.substring(i, end);
-                if (priority == Log.ASSERT) {
-                    Log.wtf(TAG, part);
-                } else {
-                    Log.println(priority, TAG, part);
-                }
-                i = end;
-            } while (i < newline);
-        }
+        final String correctedMessage = messagePrefix + message;
+        doLog(priority, TAG, correctedMessage, t);
     }
+
+    protected abstract void doLog(int priority, @Nullable String tag, @NotNull String message, @Nullable Throwable t);
 
     protected List<StackTraceElement> getFilteredStackTraceOfCaller() {
         final StackTraceElement[] rawStackTrace = new Throwable().getStackTrace();

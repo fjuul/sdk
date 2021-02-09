@@ -13,6 +13,8 @@ The Fjuul SDK is structured as a set of independent modules, each of which is de
 - **Activity Sources** - the module responsible for setting up activity sources for the user, as well as collecting activity data from on-device sources.
 - **Analytics** -  the module for accessing aggregated statistics from the collected data sources.
 
+## Versioning
+This project follows the [semantic versioning](https://semver.org/) principles, with the restriction that all modules of both Android and iOS SDKs will receive version bumps in lockstep. This means that a major version bump is not necessarily always a breaking release, and there can be version-only bump releases without actual changes in a module. Breaking changes and version-only bumps will be especially highlighted in the [changelog](https://github.com/fjuul/sdk/releases).
 
 ## Android
 Fjuul SDK for Android is written in plain Java, so there shouldn't be any problems with integrating it to your Java project. In addition, the project follows the [interoperability rules](https://developer.android.com/kotlin/interop#java_for_kotlin_consumption) for working with Kotlin (the ExampleApp demonstrating the usage of the SDK is implemented in Kotlin).

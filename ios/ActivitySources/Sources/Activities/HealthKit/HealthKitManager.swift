@@ -42,7 +42,7 @@ class HealthKitManager: HealthKitManaging {
             if let err = error {
                 completion(.failure(err))
             } else if !success {
-                completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitAuthorization)))
+                completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitAuthorizationMissing)))
             } else {
                 completion(.success(()))
             }

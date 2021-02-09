@@ -108,6 +108,57 @@ final class UserApiTests: XCTestCase {
         waitForExpectations(timeout: 5.0, handler: nil)
     }
 
+    func testCreateUserWithValidationError() {
+        let e = expectation(description: "Alamofire")
+        let profile = PartialUserProfile([
+            \UserProfile.birthDate: DateFormatters.yyyyMMddLocale.date(from: "1989-11-03"),
+            \UserProfile.gender: Gender.other,
+            \UserProfile.height: 170,
+            \UserProfile.weight: -1,
+            \UserProfile.timezone: TimeZone(identifier: "Europe/Paris"),
+            \UserProfile.locale: "fi",
+        ])
+        let createStub = stub(condition: isHost("apibase") && isPath("/sdk/users/v1")) { request in
+            XCTAssertEqual(request.httpMethod, "POST")
+            let json = "{
+            \"message\": \"Bad Request: Validation error\",
+            \"errors\": [{\"property\":\"weight\",\"constraints\": {\"isPositive\": \"weight must be a positive number\"}, \"value\":\"-1\"}]}"
+            let stubData = json.data(using: String.Encoding.utf8)
+            return HTTPStubsResponse(data: stubData!, statusCode: 400, headers: nil)
+        }
+        ApiClient.createUser(baseUrl: "https://apibase", apiKey: "", profile: profile) { result in
+            switch result {
+            case .success:
+                XCTFail("Should be failed request")
+            case .failure(let fjuulError):
+                XCTAssertEqual(fjuulError.localizedDescription, "Bad Request: Validation error")
+
+                switch fjuulError {
+                case FjuulError.userFailure(let userError):
+                    switch userError {
+                    case .validation(let error):
+                        XCTAssertEqual(error.errors.count, 1)
+                        let propertyError = error.errors.first!
+
+                        XCTAssertEqual(propertyError.property, "weight")
+                        XCTAssertEqual(propertyError.value, "-1")
+                        XCTAssertEqual(propertyError.constraints.count, 1)
+                        XCTAssertEqual(propertyError.constraints["isPositive"], "weight must be a positive number")
+
+                        e.fulfill()
+                    default:
+                        XCTFail("Wrong error type")
+                    }
+                default:
+                    XCTFail("Wrong error type")
+                }
+            }
+
+            HTTPStubs.removeStub(createStub)
+        }
+        waitForExpectations(timeout: 5.0, handler: nil)
+    }
+
     func testGetProfile() {
         let e = expectation(description: "Alamofire")
         let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: InMemoryPersistor())

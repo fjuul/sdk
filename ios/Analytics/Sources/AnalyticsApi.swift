@@ -30,7 +30,14 @@ public class AnalyticsApi {
             return completion(.failure(FjuulError.invalidConfig))
         }
         apiClient.signedSession.request(url, method: .get).apiResponse { response in
-            let decodedResponse = response.tryMap { try Decoders.yyyyMMddLocale.decode(DailyStats.self, from: $0) }
+            let decodedResponse = response
+                .tryMap { try Decoders.yyyyMMddLocale.decode(DailyStats.self, from: $0) }
+                .mapError { err -> Error in
+                    guard let responseData = response.data else { return err }
+                    guard let errorResponse = try? Decoders.iso8601Full.decode(ErrorJSONBodyResponse.self, from: responseData) else { return err }
+
+                    return FjuulError.analyticsFailure(reason: .generic(errorResponse.message))
+                }
             completion(decodedResponse.result)
         }
     }
@@ -51,7 +58,14 @@ public class AnalyticsApi {
             "to": DateFormatters.yyyyMMddLocale.string(from: to),
         ]
         apiClient.signedSession.request(url, method: .get, parameters: parameters).apiResponse { response in
-            let decodedResponse = response.tryMap { try Decoders.yyyyMMddLocale.decode([DailyStats].self, from: $0) }
+            let decodedResponse = response
+                .tryMap { try Decoders.yyyyMMddLocale.decode([DailyStats].self, from: $0) }
+                .mapError { err -> Error in
+                    guard let responseData = response.data else { return err }
+                    guard let errorResponse = try? Decoders.iso8601Full.decode(ErrorJSONBodyResponse.self, from: responseData) else { return err }
+
+                    return FjuulError.analyticsFailure(reason: .generic(errorResponse.message))
+                }
             completion(decodedResponse.result)
         }
     }

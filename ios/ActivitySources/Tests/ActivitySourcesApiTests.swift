@@ -123,7 +123,8 @@ final class ActivitySourcesApiTests: XCTestCase {
                     XCTFail("Connection result should not ask auth flow")
                 }
             case .failure(let err):
-                XCTAssertEqual(err.localizedDescription, FjuulError.activitySourceConnectionFailure(reason: .sourceAlreadyConnected).localizedDescription)
+                XCTAssertEqual(err.localizedDescription,
+                               FjuulError.activitySourceConnectionFailure(reason: .sourceAlreadyConnected("Response status code was unacceptable: 409.")).localizedDescription)
                 e.fulfill()
             }
         }

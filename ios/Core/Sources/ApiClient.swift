@@ -32,6 +32,17 @@ public class ApiClient {
 
     }
 
+    /// Deletes the stored user file of the shared preferences created internally for persisting the state of Fjuul SDK.
+    /// Ideally, you should not use this method until you actually decide to clear all user data, as the repeated storage clearance will lead to data
+    /// being unnecessarily uploaded/downloaded multiple times.
+    /// - Parameters:
+    ///   - persistor: instance of Persistor
+    ///   - userToken: user token
+    /// - Returns: Bool which indicates the success of the operation
+    public static func clearPersistentStorage(userToken: String) -> Bool {
+        return DiskPersistor.remove(matchKey: userToken)
+    }
+
     /// An HTTP session which applies bearer authentication to all requests.
     /// **This is for internal use only.**
     public let bearerAuthenticatedSession: Session
@@ -43,8 +54,9 @@ public class ApiClient {
     /// The API base URL this API client was initialized with.
     public let baseUrl: String
 
+    public let persistor: Persistor
+
     let credentials: UserCredentials
-    let persistor: Persistor
 
     /// Initializes a Fjuul API client.
     ///
@@ -73,6 +85,31 @@ public class ApiClient {
         return credentials.token
     }
 
+    /**
+     Deletes the stored user file of the shared preferences created internally for persisting the state of Fjuul SDK.
+     Ideally, you should not use this method until you actually decide to clear all user data, as the repeated storage clearance will lead to data being unnecessarily
+     uploaded/downloaded multiple times.
+    
+     Keep in mind that if you want to fully reset SDK to the default state, then you need also to disable all backgroundDelivery observers for
+     HealthKitActivitySource by call ActivitySourcesManager.unmount.
+     
+     ~~~
+     apiClient.clearPersistentStorage()
+     apiClient.activitySourcesManager?.unmount { result in
+         switch result {
+         case .success:
+             apiClient = nil
+         case .failure(let err):
+             self.error = err
+         }
+     }
+     ~~~
+     */
+    /// - Returns: Bool which indicates the success of the operation
+    public func clearPersistentStorage() -> Bool {
+        return type(of: self.persistor).remove(matchKey: self.userToken)
+    }
+
 }
 
 fileprivate extension ApiClient {
@@ -80,11 +117,13 @@ fileprivate extension ApiClient {
     static func buildBearerAuthenticatedSession(apiKey: String, credentials: UserCredentials) -> Session {
         let apiKeyAdapter = ApiKeyAdapter(apiKey: apiKey)
         let bearerAuthAdapter = BearerAuthenticationAdapter(userCredentials: credentials)
+        let userAgentAdapter = UserAgentAdapter(sdkVersion: FjuulSDKVersion.version)
         let compositeInterceptor = Interceptor(
-            adapters: [apiKeyAdapter, bearerAuthAdapter],
+            adapters: [apiKeyAdapter, bearerAuthAdapter, userAgentAdapter],
             retriers: [],
             interceptors: []
         )
+
         let configuration = URLSessionConfiguration.af.default
         configuration.urlCache = nil
         return Session(configuration: configuration, interceptor: compositeInterceptor)
@@ -93,20 +132,19 @@ fileprivate extension ApiClient {
     static func buildSignedSession(apiKey: String, baseUrl: String, refreshSession: Session, credentialStore: HmacCredentialStore) -> Session {
 
         let apiKeyAdapter = ApiKeyAdapter(apiKey: apiKey)
+        let userAgentAdapter = UserAgentAdapter(sdkVersion: FjuulSDKVersion.version)
 
         let authenticator = HmacAuthenticatior(baseUrl: baseUrl, refreshSession: refreshSession, credentialStore: credentialStore)
         let authInterceptor = AuthenticationInterceptor(authenticator: authenticator, credential: credentialStore.signingKey)
 
         let compositeInterceptor = Interceptor(
-            adapters: [apiKeyAdapter],
+            adapters: [apiKeyAdapter, userAgentAdapter],
             retriers: [],
             interceptors: [authInterceptor]
         )
 
         let configuration = URLSessionConfiguration.af.default
         configuration.urlCache = nil
-        return Session(configuration: configuration, interceptor: compositeInterceptor)
-
+        return Session(configuration: configuration, interceptor: compositeInterceptor, eventMonitors: [])
     }
-
 }

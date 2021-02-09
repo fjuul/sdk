@@ -16,16 +16,21 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - run: swift test
     - name: lint
       run: |
-        HOMEBREW_NO_AUTO_UPDATE=1 brew install swiftlint
         (cd ios; swiftlint)
-    - name: xcode test
+    - name: xcode test Fjuul SDK-Package
+      run: |
+        set -o pipefail && xcodebuild \
+          -scheme "Fjuul SDK-Package" \
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=14.3' \
+          test | xcpretty
+    - name: xcode test ExampleApp
       run: |
         set -o pipefail && xcodebuild \
           -workspace ios/SDK.xcworkspace \
           -scheme ExampleApp \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=13.7' \
+          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=14.3' \
           test | xcpretty

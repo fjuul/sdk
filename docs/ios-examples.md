@@ -1,28 +1,25 @@
 # iOS Examples
 
 ## User module
-
 ### Create user
 
 ``` swift
 import FjuulCore
 import FjuulUser
 
-let baseUrl = "https://xxx.api.fjuul.com"
+let baseUrl = "https://[env].api.fjuul.com"
 
 let profileData = PartialUserProfile([
     UserProfile.birthDate: birthDate,
     UserProfile.gender: gender,
     UserProfile.height: height,
     UserProfile.weight: weight,
-    UserProfile.timezone: timezone,
-    UserProfile.locale: locale,
 ])
 
 ApiClient.createUser(baseUrl: baseUrl, apiKey: "YOUR_API_KEY", profile: profileData) { result in
     switch result {
     case .success(let creationResult):
-      // You will need save token/secret in the persisted store
+      // You will need to persist token/secret
       // creationResult.user.token
       // creationResult.secret
     case .failure(let err):
@@ -31,17 +28,17 @@ ApiClient.createUser(baseUrl: baseUrl, apiKey: "YOUR_API_KEY", profile: profileD
 }
 ```
 
-The result of the creation is an instance of `UserCreationResult` class which is a composition of the user profile and secret of the user. You should save the token and secret of the user.  
+The result of the creation is an instance of `UserCreationResult`, which is a composition of the user profile and secret of the user. You should persist the token and secret of the user.  
 To perform user-authorized actions, you must provide the user credentials to the `ApiClient` initializer. The user credentials are a pair of token and secret.
 
-## Core module
-### Initialize of API Client
-In order to use Fjuul SDK API you need to initialize `ApiClient` from **Core** module:
+## Core Module
+### Initialize ApiClient
+In order to use the Fjuul SDK API you need to initialize an `ApiClient` instance from the **Core** module:
 
 ``` swift
 import FjuulCore
 
-let baseUrl = "https://xxx.api.fjuul.com"
+let baseUrl = "https://[env].api.fjuul.com"
 
 // initialize Fjuul ApiClient with user credentials
 let apiClient = ApiClient(
@@ -54,10 +51,10 @@ let apiClient = ApiClient(
 )
 ```
 
-## Activity Sources module
+## Activity Sources Module
 ### Initialize ActivitySourcesManager
 
-ActivitySourcesManager should be Initialize once as soon as possible after up app, for setup background delivery for the HealthKit to fetch intraday data, for example in AppDelegate.
+ActivitySourcesManager should be initialized once as early as possible in your app lifecycle, for example in AppDelegate. This is required for fetching intraday data from HealthKit through background delivery.
 
 ``` swift
 import FjuulActivitySources
@@ -65,7 +62,7 @@ import FjuulActivitySources
 class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
-        // Init apiClient with user credentials before init ActivitySourcesManager (see example in `Initialize of API Client`)
+        // Init apiClient with user credentials before initializing ActivitySourcesManager (see example in `Initialize ApiClient`)
         ...
 
         let config = ActivitySourceConfigBuilder { builder in
@@ -81,11 +78,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 }
 ```
 
-After call `apiClient.initActivitySourcesManager`, the `ActivitySourceManager` will be available by the call `apiClient.activitySourcesManager`.
+After calling `apiClient.initActivitySourcesManager`, the `ActivitySourceManager` instance will be available as `apiClient.activitySourcesManager`.
 
-### Collect HealthKit data
+### Collect HealthKit Data
 
-HealthKitActivitySource after connect will register background delivery observers. Then HealthKit will trigger the app each time when a new data type (types from HealthKitActivitySourceConfig) will be stored in HealthKit.
+HealthKitActivitySource will register background delivery observers after connecting. HealthKit will then trigger the app each time when new data (corresponding to the types from HealthKitActivitySourceConfig) was stored in HealthKit.
 
 ### Connect ActivitySource
 
@@ -118,7 +115,7 @@ apiClient.activitySourcesManager?.connect(activitySource: HealthKitActivitySourc
 }
 ```
 
-For external trackers like Polar, Garmin, Suunto, the ConnectionResult will have `authenticationUrl` that need to be open in browser, for allow user go through auth flow. At the end of Auth flow, the app will be triggered by the deep link. To handle deep link there is prepared class `ExternalAuthenticationFlowHandler`:
+For external trackers like Polar, Garmin, Suunto, the ConnectionResult will expose an `authenticationUrl` that needs to be opened in an external browser, where the user will have to complete the vendors OAuth flow. At the end of the auth flow, the user will be redirected to the app through a deep link. To handle this deep link the SDK provides the utility class `ExternalAuthenticationFlowHandler`:
 
 ``` swift
 import FjuulActivitySources
@@ -137,8 +134,8 @@ if connectionStatus.status {
 }
 ```
 
-## Analytics module
-### Getting DailyStats
+## Analytics Module
+### Get DailyStats
 
 ``` swift
 import FjuulAnalytics

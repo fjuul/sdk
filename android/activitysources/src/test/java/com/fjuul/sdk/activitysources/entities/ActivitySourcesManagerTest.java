@@ -10,6 +10,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -28,6 +29,7 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
@@ -37,22 +39,58 @@ import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourcesStateStore;
 import com.fjuul.sdk.activitysources.entities.internal.BackgroundWorkManager;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
+import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.Callback;
 import com.fjuul.sdk.core.entities.Result;
+import com.fjuul.sdk.core.entities.UserCredentials;
 import com.fjuul.sdk.core.exceptions.ApiExceptions;
 import com.fjuul.sdk.core.http.utils.ApiCall;
 import com.fjuul.sdk.core.http.utils.ApiCallCallback;
 import com.fjuul.sdk.core.http.utils.ApiCallResult;
 import com.google.android.gms.tasks.Tasks;
 
+import com.fjuul.sdk.core.fixtures.LoggableTestSuite;
+
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.util.Log;
+
+import androidx.test.core.app.ApplicationProvider;
+import androidx.work.WorkManager;
+
+import com.fjuul.sdk.core.fixtures.utils.TimberLogEntry;
 
 @RunWith(Enclosed.class)
 public class ActivitySourcesManagerTest {
+
     @RunWith(RobolectricTestRunner.class)
     @Config(sdk = {Build.VERSION_CODES.P})
-    public abstract static class GivenRobolectricContext {}
+    public abstract static class GivenRobolectricContext extends LoggableTestSuite { }
+
+    @RunWith(Enclosed.class)
+    public static class StaticMethods {
+        public static class InitializeTests extends GivenRobolectricContext {
+            @Test
+            public void initialize_whenWithoutConfig_logsAboutInitialization() {
+                try (final MockedStatic<WorkManager> staticWorkManager = mockStatic(WorkManager.class)) {
+                    final Context testContext = ApplicationProvider.getApplicationContext();
+                    final WorkManager mockedWorkManager = mock(WorkManager.class);
+                    staticWorkManager.when(() -> WorkManager.getInstance(testContext)).thenReturn(mockedWorkManager);
+                    final ApiClient client = new ApiClient.Builder(testContext, "https://fjuul.com/", "1234")
+                        .setUserCredentials(new UserCredentials("token", "secret"))
+                        .build();
+                    ActivitySourcesManager.initialize(client);
+                    assertEquals("should log only one message", 1, LOGGER.size());
+                    final TimberLogEntry logEntry = LOGGER.getLogEntries().get(0);
+                    assertEquals(
+                        "[activitysources] ActivitySourcesManager: initialized successfully (the previous one could be overridden)",
+                        logEntry.getMessage());
+                    assertEquals(Log.DEBUG,logEntry.getPriority());
+                }
+            }
+        }
+    }
 
     @RunWith(Enclosed.class)
     public static class InstanceMethods {

@@ -16,11 +16,11 @@ import java.util.regex.Pattern;
 import timber.log.Timber;
 
 public abstract class FjuulSDKTimberTree extends Timber.Tree {
-    protected static final String TAG = "Fjuul-SDK";
     protected static final Pattern SDK_MODULE_NAME = Pattern.compile("^com.fjuul.sdk.([^.]+)\\.");
+    private static final Pattern ANONYMOUS_CLASS = Pattern.compile("(\\$\\d+)+$");
 
     @Override
-    protected void log(int priority, @Nullable String _tag, @NotNull String message, @Nullable Throwable t) {
+    protected void log(int priority, @Nullable String tag, @NotNull String message, @Nullable Throwable t) {
         final List<StackTraceElement> filteredTrace = getFilteredStackTraceOfCaller();
         String messagePrefix = "";
         if (filteredTrace.size() > 0) {
@@ -33,7 +33,7 @@ public abstract class FjuulSDKTimberTree extends Timber.Tree {
             messagePrefix = messagePrefixBuilder.append(String.format(Locale.ROOT," %s: ", callerClassName)).toString();
         }
         final String correctedMessage = messagePrefix + message;
-        doLog(priority, TAG, correctedMessage, t);
+        doLog(priority, tag, correctedMessage, t);
     }
 
     protected abstract void doLog(int priority, @Nullable String tag, @NotNull String message, @Nullable Throwable t);
@@ -62,7 +62,12 @@ public abstract class FjuulSDKTimberTree extends Timber.Tree {
     }
 
     private boolean isTimberStackTraceElement(@NonNull StackTraceElement element) {
-        return element.getClassName().equals(Timber.class.getName());
+        String elementClassName = element.getClassName();
+        Matcher matcher = ANONYMOUS_CLASS.matcher(elementClassName);
+        if (matcher.find()) {
+            elementClassName = matcher.replaceAll("");
+        }
+        return elementClassName.equals(Timber.class.getName());
     }
 
     protected String inferCallerClassName(@NonNull StackTraceElement element) {

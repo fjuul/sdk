@@ -19,6 +19,10 @@ public abstract class FjuulSDKTimberTree extends Timber.Tree {
     protected static final Pattern SDK_MODULE_NAME = Pattern.compile("^com.fjuul.sdk.([^.]+)\\.");
     private static final Pattern ANONYMOUS_CLASS = Pattern.compile("(\\$\\d+)+$");
 
+    @Override protected boolean isLoggable(@Nullable String tag, int priority) {
+        return FjuulSDKLogger.TAG.equals(tag);
+    }
+
     @Override
     protected void log(int priority, @Nullable String tag, @NotNull String message, @Nullable Throwable t) {
         final List<StackTraceElement> filteredTrace = getFilteredStackTraceOfCaller();

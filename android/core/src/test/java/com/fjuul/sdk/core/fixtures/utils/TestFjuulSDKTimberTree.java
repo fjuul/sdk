@@ -22,6 +22,14 @@ public class TestFjuulSDKTimberTree extends FjuulSDKTimberTree {
         return Collections.unmodifiableList(logEntries);
     }
 
+    public boolean isEmpty() {
+        return logEntries.isEmpty();
+    }
+
+    public int size() {
+        return logEntries.size();
+    }
+
     public void reset() {
         logEntries.clear();
     }

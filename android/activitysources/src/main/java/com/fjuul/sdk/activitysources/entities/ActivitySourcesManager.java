@@ -16,6 +16,7 @@ import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.Callback;
 import com.fjuul.sdk.core.entities.Result;
 import com.fjuul.sdk.core.exceptions.FjuulException;
+import com.fjuul.sdk.core.utils.FjuulSDKLogger;
 import com.google.android.gms.tasks.Task;
 
 import android.annotation.SuppressLint;
@@ -138,6 +139,7 @@ public final class ActivitySourcesManager {
             stateStore,
             activitySourceResolver,
             storedConnections);
+        FjuulSDKLogger.get().d("initialized successfully (the previous one could be overridden)");
     }
 
     /**

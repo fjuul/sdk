@@ -15,6 +15,15 @@ import java.util.regex.Pattern;
 
 import timber.log.Timber;
 
+/**
+ * A base class for all Timber Trees that log messages in FjuulSDK.<br>
+ * The implementation overrides the required {@link Timber.Tree#log(int, String, String, Throwable)} method to
+ * automatically infer the class and module names by the caller's stacktrace, but delegates writing the output itself to
+ * sub-classes ({@link #doLog(int, String, String, Throwable)}).<br>
+ * Usually, you may want to extend this class in the case of monitoring internal events of FjuulSDK by your event
+ * tracker (Firebase Analytics, Sentry, etc.). Please check a set of overridable methods of {@link Timber.Tree} for
+ * fully understanding capabilities.
+ */
 public abstract class FjuulSDKTimberTree extends Timber.Tree {
     protected static final Pattern SDK_MODULE_NAME = Pattern.compile("^com.fjuul.sdk.([^.]+)\\.");
     private static final Pattern ANONYMOUS_CLASS = Pattern.compile("(\\$\\d+)+$");

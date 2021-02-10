@@ -10,6 +10,10 @@ import java.lang.reflect.Method;
 
 import timber.log.Timber;
 
+/**
+ * Debug implementation of {@link FjuulSDKTimberTree} that writes messages with any priority via android's {@link Log}.<br>
+ * You can extend this class and override {@link #isLoggable(String, int)} to keep logs only with the desired priority.
+ */
 public class DebugFjuulSDKTimberTree extends FjuulSDKTimberTree {
     private final Timber.DebugTree delegate;
     private @Nullable Method delegateMethod;

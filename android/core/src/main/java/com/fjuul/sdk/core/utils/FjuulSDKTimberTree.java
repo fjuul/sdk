@@ -33,7 +33,7 @@ public abstract class FjuulSDKTimberTree extends Timber.Tree {
     }
 
     @Override
-    protected void log(int priority, @Nullable String tag, @NotNull String message, @Nullable Throwable t) {
+    protected final void log(int priority, @Nullable String tag, @NotNull String message, @Nullable Throwable t) {
         final List<StackTraceElement> filteredTrace = getFilteredStackTraceOfCaller();
         String messagePrefix = "";
         if (filteredTrace.size() > 0) {

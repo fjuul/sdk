@@ -10,6 +10,7 @@ import com.fjuul.sdk.core.entities.Keystore;
 import com.fjuul.sdk.core.entities.SigningKey;
 import com.fjuul.sdk.core.http.services.ISigningService;
 import com.fjuul.sdk.core.http.utils.RequestSigner;
+import com.fjuul.sdk.core.utils.FjuulSDKLogger;
 
 import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
@@ -20,9 +21,9 @@ import okhttp3.Response;
 import okhttp3.Route;
 
 public class SigningAuthInterceptor implements Interceptor, Authenticator {
-    private Keystore keystore;
-    private RequestSigner requestSigner;
-    private ISigningService signingService;
+    private final Keystore keystore;
+    private final RequestSigner requestSigner;
+    private final ISigningService signingService;
     private final Pattern signatureHeaderKeyIdPattern = Pattern.compile("keyId=\"(.+?)\"");
 
     public SigningAuthInterceptor(@NonNull Keystore keystore,
@@ -36,9 +37,8 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
     @SuppressLint({"NewApi", "UnknownNullness"})
     @Override
     public Response intercept(Chain chain) throws IOException {
-        // TODO: handle case when current valid signing key was expired already
         Optional<SigningKey> keyOptional = this.keystore.getValidKey();
-        SigningKey signingKey = null;
+        SigningKey signingKey;
         if (!keyOptional.isPresent()) {
             // need to request a new signing key
             synchronized (this) {
@@ -46,12 +46,14 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
                 keyOptional = this.keystore.getValidKey();
                 // if still no valid key => request new one
                 if (!keyOptional.isPresent()) {
-                    retrofit2.Response<SigningKey> newKeyResponse = issueNewKey();
+                    FjuulSDKLogger.get().d("Retrieving a new signing key");
+                    final retrofit2.Response<SigningKey> newKeyResponse = issueNewKey();
                     if (newKeyResponse.isSuccessful()) {
-                        SigningKey newKey = newKeyResponse.body();
+                        final SigningKey newKey = newKeyResponse.body();
                         keystore.setKey(newKey);
                         signingKey = newKey;
                     } else {
+                        FjuulSDKLogger.get().d("Failed to retrieve the signing key");
                         // return response of a request of the signing key to infer http error
                         return extractOriginalRawResponse(newKeyResponse);
                     }
@@ -62,7 +64,7 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
         } else {
             signingKey = keyOptional.get();
         }
-        Request signedRequest = requestSigner.signRequestByKey(chain.request(), signingKey);
+        final Request signedRequest = requestSigner.signRequestByKey(chain.request(), signingKey);
         return chain.proceed(signedRequest);
     }
 
@@ -76,11 +78,11 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
 
         // NOTE: try to retrieve a signing key once if error_code is `expired_signing_key` or
         // 'invalid_key_id'
-        String authenticationErrorCode = response.header("x-authentication-error");
+        final String authenticationErrorCode = response.header("x-authentication-error");
         if (!Arrays.asList("invalid_key_id", "expired_signing_key").contains(authenticationErrorCode)) {
             return null;
         }
-        Request request = getRelatedRequest(response);
+        final Request request = getRelatedRequest(response);
         if (request == null) {
             return null;
         }
@@ -88,21 +90,23 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
         synchronized (this) {
             // NOTE: double check if we have now new signing key
             // (it could be possible since this code block is synchronized)
-            Optional<SigningKey> keyOptional = this.keystore.getValidKey();
-            Matcher matcher = signatureHeaderKeyIdPattern.matcher(request.header("Signature"));
+            final Optional<SigningKey> keyOptional = this.keystore.getValidKey();
+            final Matcher matcher = signatureHeaderKeyIdPattern.matcher(request.header("Signature"));
             matcher.find();
-            String keyIdMatch = matcher.group(1);
+            final String keyIdMatch = matcher.group(1);
             if (keyOptional.isPresent() && !keyOptional.get().getId().equals(keyIdMatch)) {
-                SigningKey key = keyOptional.get();
+                final SigningKey key = keyOptional.get();
                 return requestSigner.signRequestByKey(response.request(), key);
             }
             // if still no valid key => request new one
-            retrofit2.Response<SigningKey> newKeyResponse = issueNewKey();
+            FjuulSDKLogger.get().d("Retrieving a new signing key");
+            final retrofit2.Response<SigningKey> newKeyResponse = issueNewKey();
             if (newKeyResponse.isSuccessful()) {
-                SigningKey newKey = newKeyResponse.body();
+                final SigningKey newKey = newKeyResponse.body();
                 keystore.setKey(newKey);
                 return requestSigner.signRequestByKey(response.request(), newKey);
             } else {
+                FjuulSDKLogger.get().d("Failed to retrieve the signing key");
                 return null;
             }
         }

@@ -1,11 +1,5 @@
 package com.fjuul.sdk.core.utils;
 
-import android.util.Log;
-
-import androidx.annotation.NonNull;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +7,10 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import androidx.annotation.NonNull;
 import timber.log.Timber;
 
 /**
@@ -28,7 +26,8 @@ public abstract class FjuulSDKTimberTree extends Timber.Tree {
     protected static final Pattern SDK_MODULE_NAME = Pattern.compile("^com.fjuul.sdk.([^.]+)\\.");
     private static final Pattern ANONYMOUS_CLASS = Pattern.compile("(\\$\\d+)+$");
 
-    @Override protected boolean isLoggable(@Nullable String tag, int priority) {
+    @Override
+    protected boolean isLoggable(@Nullable String tag, int priority) {
         return FjuulSDKLogger.TAG.equals(tag);
     }
 
@@ -43,7 +42,8 @@ public abstract class FjuulSDKTimberTree extends Timber.Tree {
             if (sdkModuleName != null) {
                 messagePrefixBuilder.append(String.format(Locale.ROOT, "[%s]", sdkModuleName));
             }
-            messagePrefix = messagePrefixBuilder.append(String.format(Locale.ROOT," %s: ", callerClassName)).toString();
+            messagePrefix =
+                messagePrefixBuilder.append(String.format(Locale.ROOT, " %s: ", callerClassName)).toString();
         }
         final String correctedMessage = messagePrefix + message;
         doLog(priority, tag, correctedMessage, t);

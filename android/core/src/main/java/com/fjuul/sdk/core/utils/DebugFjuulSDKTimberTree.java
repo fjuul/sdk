@@ -1,17 +1,17 @@
 package com.fjuul.sdk.core.utils;
 
-import android.util.Log;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
+import android.util.Log;
 import timber.log.Timber;
 
 /**
- * Debug implementation of {@link FjuulSDKTimberTree} that writes messages with any priority via android's {@link Log}.<br>
+ * Debug implementation of {@link FjuulSDKTimberTree} that writes messages with any priority via android's
+ * {@link Log}.<br>
  * You can extend this class and override {@link #isLoggable(String, int)} to keep logs only with the desired priority.
  */
 public class DebugFjuulSDKTimberTree extends FjuulSDKTimberTree {
@@ -21,7 +21,8 @@ public class DebugFjuulSDKTimberTree extends FjuulSDKTimberTree {
     public DebugFjuulSDKTimberTree() {
         this.delegate = new Timber.DebugTree();
         try {
-            delegateMethod = delegate.getClass().getDeclaredMethod("log", int.class, String.class, String.class, Throwable.class);
+            delegateMethod =
+                delegate.getClass().getDeclaredMethod("log", int.class, String.class, String.class, Throwable.class);
             delegateMethod.setAccessible(true);
         } catch (NoSuchMethodException e) {
             Log.e(DebugFjuulSDKTimberTree.class.getSimpleName(), "Can't access the 'log' method of Timber.DebugTree");
@@ -34,6 +35,6 @@ public class DebugFjuulSDKTimberTree extends FjuulSDKTimberTree {
     protected void doLog(int priority, @Nullable String tag, @NotNull String message, @Nullable Throwable t) {
         try {
             delegateMethod.invoke(delegate, priority, tag, message, t);
-        } catch (IllegalAccessException | InvocationTargetException e) { }
+        } catch (IllegalAccessException | InvocationTargetException e) {}
     }
 }

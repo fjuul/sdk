@@ -47,26 +47,23 @@ import com.fjuul.sdk.core.exceptions.ApiExceptions;
 import com.fjuul.sdk.core.http.utils.ApiCall;
 import com.fjuul.sdk.core.http.utils.ApiCallCallback;
 import com.fjuul.sdk.core.http.utils.ApiCallResult;
-import com.google.android.gms.tasks.Tasks;
-
 import com.fjuul.sdk.test.LoggableTestSuite;
+import com.fjuul.sdk.test.utils.TimberLogEntry;
+import com.google.android.gms.tasks.Tasks;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
-
 import androidx.test.core.app.ApplicationProvider;
 import androidx.work.WorkManager;
-
-import com.fjuul.sdk.test.utils.TimberLogEntry;
 
 @RunWith(Enclosed.class)
 public class ActivitySourcesManagerTest {
 
     @RunWith(RobolectricTestRunner.class)
     @Config(sdk = {Build.VERSION_CODES.P})
-    public abstract static class GivenRobolectricContext extends LoggableTestSuite { }
+    public abstract static class GivenRobolectricContext extends LoggableTestSuite {}
 
     @RunWith(Enclosed.class)
     public static class StaticMethods {
@@ -86,7 +83,7 @@ public class ActivitySourcesManagerTest {
                     assertEquals(
                         "[activitysources] ActivitySourcesManager: initialized successfully (the previous one could be overridden)",
                         logEntry.getMessage());
-                    assertEquals(Log.DEBUG,logEntry.getPriority());
+                    assertEquals(Log.DEBUG, logEntry.getPriority());
                 }
             }
         }

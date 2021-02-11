@@ -28,13 +28,12 @@ import com.fjuul.sdk.core.entities.Keystore;
 import com.fjuul.sdk.core.entities.SigningKey;
 import com.fjuul.sdk.core.entities.UserCredentials;
 import com.fjuul.sdk.core.http.utils.ApiCallResult;
+import com.fjuul.sdk.test.http.TestApiClient;
 import com.fjuul.sdk.user.entities.Gender;
 import com.fjuul.sdk.user.entities.UserCreationResult;
 import com.fjuul.sdk.user.entities.UserProfile;
 import com.fjuul.sdk.user.exceptions.UserApiExceptions.ValidationErrorBadRequestException;
 import com.fjuul.sdk.user.http.responses.ValidationError;
-
-import com.fjuul.sdk.test.http.TestApiClient;
 
 import android.os.Build;
 import androidx.core.os.LocaleListCompat;

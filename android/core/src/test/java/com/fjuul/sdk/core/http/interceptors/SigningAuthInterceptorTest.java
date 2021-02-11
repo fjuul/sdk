@@ -27,13 +27,11 @@ import com.fjuul.sdk.core.entities.Keystore;
 import com.fjuul.sdk.core.entities.SigningKey;
 import com.fjuul.sdk.core.http.services.UserSigningService;
 import com.fjuul.sdk.core.http.utils.RequestSigner;
-
 import com.fjuul.sdk.test.LoggableTestSuite;
 import com.fjuul.sdk.test.utils.TimberLogEntry;
 
 import android.os.Build;
 import android.util.Log;
-
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;

@@ -62,11 +62,13 @@ public class GFUploadData {
 
     @Override
     public String toString() {
+        //@formatter:off
         return "GFUploadData{" +
             "calories=" + caloriesData.size() +
             ", steps=" + stepsData.size() +
             ", heartRates=" + hrData.size() +
             ", sessions=" + sessionsData.size() +
             '}';
+        //@formatter:on
     }
 }

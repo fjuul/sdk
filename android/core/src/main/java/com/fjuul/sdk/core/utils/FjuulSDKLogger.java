@@ -1,7 +1,6 @@
 package com.fjuul.sdk.core.utils;
 
 import androidx.annotation.NonNull;
-
 import timber.log.Timber;
 
 /**
@@ -17,6 +16,7 @@ public final class FjuulSDKLogger {
 
     /**
      * Returns Timber with the set tag.
+     *
      * @return Timber tree
      */
     @NonNull

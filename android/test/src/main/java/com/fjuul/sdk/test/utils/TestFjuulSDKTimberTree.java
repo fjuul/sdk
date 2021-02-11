@@ -1,15 +1,15 @@
 package com.fjuul.sdk.test.utils;
 
-import androidx.annotation.NonNull;
-
-import com.fjuul.sdk.core.utils.FjuulSDKTimberTree;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import com.fjuul.sdk.core.utils.FjuulSDKTimberTree;
+
+import androidx.annotation.NonNull;
 
 public class TestFjuulSDKTimberTree extends FjuulSDKTimberTree {
     @NonNull

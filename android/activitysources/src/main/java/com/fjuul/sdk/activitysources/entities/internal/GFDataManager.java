@@ -39,7 +39,6 @@ import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 
-import timber.log.Timber;
 
 public class GFDataManager {
     private static final String TAG = "GFDataManager";
@@ -64,10 +63,11 @@ public class GFDataManager {
     @SuppressLint("NewApi")
     @NonNull
     public Task<Void> syncIntradayMetrics(@NonNull GoogleFitIntradaySyncOptions options) {
-        FjuulSDKLogger.get().d("start syncing GF intraday metrics (%s) for %s - %s",
-            options.getMetrics().stream().map(metric -> metric.toString()).collect(Collectors.joining(", ")),
-            options.getStartDate().toString(),
-            options.getEndDate().toString());
+        FjuulSDKLogger.get()
+            .d("start syncing GF intraday metrics (%s) for %s - %s",
+                options.getMetrics().stream().map(metric -> metric.toString()).collect(Collectors.joining(", ")),
+                options.getStartDate().toString(),
+                options.getEndDate().toString());
         // todo: consider returning metadata of the sent data
         final ExecutorService sequentialExecutorService = Executors.newSingleThreadExecutor();
         final LocalDate startDate = options.getStartDate();
@@ -151,9 +151,10 @@ public class GFDataManager {
     @SuppressLint("NewApi")
     @NonNull
     public Task<Void> syncSessions(@NonNull GoogleFitSessionSyncOptions options) {
-        FjuulSDKLogger.get().d("start syncing GF sessions for %s - %s",
-            options.getStartDate().toString(),
-            options.getEndDate().toString());
+        FjuulSDKLogger.get()
+            .d("start syncing GF sessions for %s - %s",
+                options.getStartDate().toString(),
+                options.getEndDate().toString());
         final Pair<Date, Date> gfQueryDates =
             gfUtils.adjustInputDatesForGFRequest(options.getStartDate(), options.getEndDate());
         final Task<List<GFSessionBundle>> getNotSyncedSessionsTask =

@@ -4,7 +4,6 @@ import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.Keystore;
 
 import android.content.Context;
-
 import androidx.annotation.NonNull;
 import androidx.test.core.app.ApplicationProvider;
 import okhttp3.mockwebserver.MockWebServer;

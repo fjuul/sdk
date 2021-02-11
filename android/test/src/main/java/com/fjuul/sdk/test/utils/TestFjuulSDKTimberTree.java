@@ -25,6 +25,10 @@ public class TestFjuulSDKTimberTree extends FjuulSDKTimberTree {
         return logEntries.isEmpty();
     }
 
+    public TimberLogEntry removeFirst() {
+        return logEntries.remove(0);
+    }
+
     public int size() {
         return logEntries.size();
     }

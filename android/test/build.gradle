@@ -9,6 +9,7 @@
 apply plugin: 'com.android.library'
 
 repositories {
+    jcenter()
     google()
 }
 
@@ -42,7 +43,6 @@ android {
 dependencies {
     api project(':core')
 
-    // Use JUnit test framework
     implementation 'junit:junit:4.12'
     implementation "com.squareup.okhttp3:mockwebserver:$rootProject.ext.okHttpVersion"
     implementation 'androidx.test:core:1.2.0'

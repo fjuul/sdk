@@ -1,10 +1,10 @@
-package com.fjuul.sdk.core.fixtures;
+package com.fjuul.sdk.test;
 
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
-import com.fjuul.sdk.core.fixtures.utils.TestFjuulSDKTimberTree;
+import com.fjuul.sdk.test.utils.TestFjuulSDKTimberTree;
 
 import timber.log.Timber;
 

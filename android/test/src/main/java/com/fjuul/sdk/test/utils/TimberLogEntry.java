@@ -1,4 +1,4 @@
-package com.fjuul.sdk.core.fixtures.utils;
+package com.fjuul.sdk.test.utils;
 
 import org.jetbrains.annotations.Nullable;
 

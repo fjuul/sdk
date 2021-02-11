@@ -1,4 +1,4 @@
-package com.fjuul.sdk.core.fixtures.http;
+package com.fjuul.sdk.test.http;
 
 import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.Keystore;

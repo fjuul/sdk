@@ -49,7 +49,7 @@ import com.fjuul.sdk.core.http.utils.ApiCallCallback;
 import com.fjuul.sdk.core.http.utils.ApiCallResult;
 import com.google.android.gms.tasks.Tasks;
 
-import com.fjuul.sdk.core.fixtures.LoggableTestSuite;
+import com.fjuul.sdk.test.LoggableTestSuite;
 
 import android.content.Context;
 import android.content.Intent;
@@ -59,7 +59,7 @@ import android.util.Log;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.work.WorkManager;
 
-import com.fjuul.sdk.core.fixtures.utils.TimberLogEntry;
+import com.fjuul.sdk.test.utils.TimberLogEntry;
 
 @RunWith(Enclosed.class)
 public class ActivitySourcesManagerTest {

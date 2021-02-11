@@ -31,8 +31,9 @@ import com.fjuul.sdk.core.entities.Keystore;
 import com.fjuul.sdk.core.entities.SigningKey;
 import com.fjuul.sdk.core.entities.UserCredentials;
 import com.fjuul.sdk.core.exceptions.ApiExceptions;
-import com.fjuul.sdk.core.fixtures.http.TestApiClient;
 import com.fjuul.sdk.core.http.utils.ApiCallResult;
+
+import com.fjuul.sdk.test.http.TestApiClient;
 
 import android.os.Build;
 import okhttp3.mockwebserver.MockResponse;

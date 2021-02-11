@@ -1,0 +1,19 @@
+# Mockfile is a SwiftyMocky YAML configuration file
+sourceryCommand: null
+unit.tests.mock:    # Name of your mock
+  sources:
+    include:        # All swift files here would be scanned for AutoMockable types
+        - ./Sources
+    exclude: []     # You can exclude files as well
+  output:           # Generated mock file location and name
+    ./Tests/Mocks/Mock.generated.swift
+  targets:          # Specify XCodeproj targets for your mock. Used for linting
+    - FjuulActivitySourcesTests
+  testable: ["FjuulActivitySources"]      # Specify  list of imported/@testable modules referenced in mock
+  import: ["FjuulActivitySources", "FjuulCore", "HealthKit"]        # You can use 'swiftymocky autoimport' to update it automatically
+args:
+  git:
+    - force_cast
+    - function_body_length
+    - line_length
+    - vertical_whitespace

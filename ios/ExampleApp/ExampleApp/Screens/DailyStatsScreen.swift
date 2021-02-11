@@ -4,6 +4,12 @@ struct DailyStatsScreen: View {
 
     @ObservedObject var dailyStats = DailyStatsObservable()
 
+    static let taskDateFormat: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        return formatter
+    }()
+
     var body: some View {
         Form {
             Section {
@@ -15,7 +21,45 @@ struct DailyStatsScreen: View {
                     Text("Loading")
                 } else {
                     List(dailyStats.value, id: \.date) { each in
-                        Text("Stats for \(each.date): mod \(each.moderate.metMinutes) high \(each.high.metMinutes)")
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Image(systemName: "calendar")
+                                    .frame(width: 30, height: 10, alignment: .leading)
+                                Text("\(each.date, formatter: Self.taskDateFormat)")
+                                    .frame(height: 10, alignment: .leading)
+                            }
+                            HStack {
+                                Image(systemName: "bolt")
+                                    .frame(width: 30, height: 10, alignment: .leading)
+                                Text("low \(each.low.metMinutes, specifier: "%.1f")")
+                                Spacer()
+                                Text("\(self.formatTime(time: each.low.seconds))")
+                            }
+                            HStack {
+                                Image(systemName: "bolt")
+                                    .frame(width: 30, height: 10, alignment: .leading)
+                                Text("mod \(each.moderate.metMinutes, specifier: "%.1f")")
+                                Spacer()
+                                Text("\(self.formatTime(time: each.moderate.seconds))")
+                            }
+                            HStack {
+                                Image(systemName: "bolt")
+                                    .frame(width: 30, height: 10, alignment: .leading)
+                                Text("high \(each.high.metMinutes, specifier: "%.1f")")
+                                Spacer()
+                                Text("\(self.formatTime(time: each.high.seconds))")
+                            }
+                            HStack {
+                                Image(systemName: "flame")
+                                    .frame(width: 30, height: 10, alignment: .leading)
+                                Text("activeKcal \(each.activeKcal, specifier: "%.1f")")
+                            }
+                            HStack {
+                                Image(systemName: "bolt.heart")
+                                    .frame(width: 30, height: 10, alignment: .leading)
+                                Text("bmr \(each.bmr, specifier: "%.1f")")
+                            }
+                        }.padding(.top, 5)
                     }
                 }
             }
@@ -26,10 +70,20 @@ struct DailyStatsScreen: View {
         .navigationBarTitle("Daily Stats")
     }
 
+    func formatTime(time: TimeInterval, units: NSCalendar.Unit = [.hour, .minute]) -> String {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = units
+        formatter.unitsStyle = .abbreviated
+        formatter.zeroFormattingBehavior = .pad
+
+        return formatter.string(from: time) ?? ""
+    }
 }
 
 struct DailyStatsScreen_Previews: PreviewProvider {
     static var previews: some View {
-        DailyStatsScreen()
+        Group {
+            DailyStatsScreen()
+        }
     }
 }

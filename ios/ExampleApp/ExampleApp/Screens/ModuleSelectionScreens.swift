@@ -9,6 +9,9 @@ struct ModuleSelectionScreens: View {
                 NavigationLink(destination: LazyView(UserProfileScreen())) {
                     Text("Profile")
                 }
+                NavigationLink(destination: LazyView(ActivitySourcesScreen())) {
+                    Text("Activity Sources")
+                }
             }
             Section(header: Text("Analytics")) {
                 NavigationLink(destination: LazyView(DailyStatsScreen())) {
@@ -17,7 +20,6 @@ struct ModuleSelectionScreens: View {
             }
         }
         .navigationBarTitle("Modules", displayMode: .inline)
-
     }
 
 }

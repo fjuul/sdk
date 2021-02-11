@@ -19,7 +19,6 @@ struct CreateUserScreen: View {
                     self.userProfile.createNewUser(baseUrl: self.userDefaultsManager.environment.baseUrl, apiKey: self.userDefaultsManager.apiKey) { result in
                         switch result {
                         case .success(let user):
-                            print(user)
                             self.userDefaultsManager.token = user.user.token
                             self.userDefaultsManager.secret = user.secret
                             self.presentation.wrappedValue.dismiss()
@@ -30,7 +29,6 @@ struct CreateUserScreen: View {
             }
         }
         .navigationBarTitle("Create User", displayMode: .inline)
-
     }
 
 }

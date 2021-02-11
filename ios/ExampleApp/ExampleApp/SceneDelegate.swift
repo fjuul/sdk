@@ -1,9 +1,10 @@
 import UIKit
 import SwiftUI
+import FjuulActivitySources
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
-
     var window: UIWindow?
+    var activitySourceObserver = ActivitySourceObservable()
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         // Use this method to optionally configure and attach the UIWindow to the provided UIWindowScene `scene`.
@@ -18,9 +19,22 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Use a UIHostingController as window root view controller.
         if let windowScene = scene as? UIWindowScene {
             let window = UIWindow(windowScene: windowScene)
-            window.rootViewController = UIHostingController(rootView: contentView)
+            window.rootViewController = UIHostingController(rootView: contentView.environmentObject(activitySourceObserver))
             self.window = window
             window.makeKeyAndVisible()
+        }
+    }
+
+    //  Deeplink Handling for Scene based app
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        guard let url = URLContexts.first?.url else {
+            return
+        }
+
+        let connectionStatus = ExternalAuthenticationFlowHandler.handle(url: url)
+        if connectionStatus.tracker != nil {
+            // Update activitySource list
+            activitySourceObserver.getCurrentConnections()
         }
     }
 

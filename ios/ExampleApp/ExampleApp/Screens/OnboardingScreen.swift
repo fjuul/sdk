@@ -1,5 +1,6 @@
 import SwiftUI
 import FjuulCore
+import FjuulActivitySources
 
 struct OnboardingScreen: View {
 
@@ -41,14 +42,14 @@ struct OnboardingScreen: View {
             }
             Section {
                 Button("Continue") {
-                    ApiClientHolder.default.apiClient = ApiClient(
-                        baseUrl: self.userDefaultsManager.environment.baseUrl,
-                        apiKey: self.userDefaultsManager.apiKey,
-                        credentials: UserCredentials(
-                            token: self.userDefaultsManager.token,
-                            secret: self.userDefaultsManager.secret
-                        )
-                    )
+                    // Configure ApiClient if not yet configured in the AppDelegate didFinishLaunchingWithOptions (require for setup backgroundDeliviry)
+                    if ApiClientHolder.default.apiClient == nil {
+                        if let apiClient = FjuulApiBuilder.buildApiClient() {
+                            ApiClientHolder.default.apiClient = apiClient
+
+                            FjuulApiBuilder.buildActivitySourcesManager(apiClient: apiClient)
+                        }
+                    }
                     self.viewRouter.presentedView = .moduleSelection
                 }.disabled(!everythingProvided)
             }

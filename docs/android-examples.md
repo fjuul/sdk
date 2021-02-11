@@ -1,14 +1,14 @@
 # Android Examples
 
-## Getting started with initialization
-In order to use Fjuul SDK API you need to initialize `ApiClient` from **Core** module:
+## Getting Started with Initialization
+In order to use the Fjuul SDK API you need to initialize an `ApiClient` from the **Core** module:
 
 ``` kotlin
 import com.fjuul.sdk.core.ApiClient
 ...
 val client = ApiClient.Builder(appContext, "YOUR_BASE_URL","YOUR_API_KEY").build()
 ```
-This was initialization without user credentials, which is considered valid only for a few basic operations (for example, creating a user).  
+This initialization without user credentials is considered valid only for a few basic operations (for example, creating a user).  
 If you plan to perform an action authorized by some user, you must provide credentials:
 ``` kotlin
 import com.fjuul.sdk.core.ApiClient
@@ -18,19 +18,19 @@ val signedClient = ApiClient.Builder(appContext, "YOUR_BASE_URL", "YOUR_API_KEY"
             .setUserCredentials(UserCredentials("USER_TOKEN", "USER_SECRET"))
             .build()
 ```
-Don't worry about how to get the user credentials, it will be described soon.
+Refer to the "[Create a User](#create-a-user)" section on insturctions how to obtain user credentials.
 
 ### Keeping the same reference of ApiClient
-It's highly recommended to reuse the same instance of the once initialized client for all places. For that, you can implement a static singleton that will store the ref to the last initialized `ApiClient`. When you need to change something in the setup (for example, `UserCredentials`), just re-create the global instance of `ApiClient`.
+It's highly recommended to initialize an `ApiClient` once and reuse the same instance throughout your codebase. For that, you can implement a static singleton that will store the reference to the last initialized `ApiClient`. When you need to change something in the setup (for example, `UserCredentials`), just re-create the global instance of `ApiClient`.
 
 ## HTTP Requests
-The SDK provides `ApiCall` to perform an HTTP request to the server. `ApiСall` has the ability to make a request in both asynchronous mode (`enqueue`) and synchronous mode (`execute`), blocking the thread in which it was called.  
-For simplicity, the examples often use synchronous query execution.
+The SDK provides `ApiCall` to perform HTTP requests to the server. `ApiСall` has the ability to make requests in both asynchronous mode (`enqueue`) and synchronous mode (`execute`), blocking the thread in which it was called.
+For simplicity, the examples in this document use synchronous query execution.
 
-## User module
+## User Module
 `UserService` - the main class for working with users.
 
-### Create a user
+### Create a User
 With basic `ApiClient` initialization, you can create a user: 
 ```kotlin
 import com.fjuul.sdk.core.ApiClient
@@ -53,8 +53,8 @@ val userCreationResult = createUserApiCallResult.value!!
 val userProfile = userCreationResult.user
 val userSecret = userCreationResult.secret
 ```
-The result of the creation is an instance of `UserCreationResult` class which is a composition of the user profile and secret of the user. You should save the token and secret of the user.  
-As mentioned earlier, to perform user-authorized actions, you must provide the user credentials to the `ApiClient.Builder`. The user credentials is a pair of token and secret:
+The result of the creation is an instance of `UserCreationResult`, which is a composition of the user profile and secret of the user. You should persist the token and secret of the user.  
+To perform user-authorized actions, you must provide the user credentials to the `ApiClient.Builder`. User credentials are a pair of token and secret:
 ```kotlin
 // reinitialize Fjuul api-client with user credentials for signing all user authorized HTTP requests
 val signedClient = ApiClient.Builder(appContext,
@@ -64,9 +64,8 @@ val signedClient = ApiClient.Builder(appContext,
     .build()
 ```
 
-## Activity Sources module
-`ActivitySourcesManager` is a high-level and main entity of **AcivitySources** module.  
-It designed as the singleton, and before you will start using it, you must initialize it:
+## Activity Sources Module
+`ActivitySourcesManager` is the high-level and main entity of the **AcivitySources** module. It is designed as a singleton, which must be initialized before the first use:
 ```kotlin
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
 ...
@@ -166,8 +165,8 @@ googleFitActivitySource.syncSessions(syncOptions) { result ->
 }
 ```
 
-### Collect Google Fit data in the background
-The SDK has the ability to sync Google Fit data in the background when all conditions are met:
+### Collect Google Fit Data in the Background
+The SDK has the ability to sync Google Fit data in the background when all of the following conditions are met:
 
 1. the corresponding options must be enabled in the `ActivitySourcesManagerConfig` configuration (they are enabled in the default configuration):
 ```kotlin
@@ -186,10 +185,10 @@ val config = ActivitySourcesManagerConfig.Builder()
 //    .build()
 ActivitySourcesManager.initialize(client, config)
 ```
-2. the user must have a current connection to Google Fit;
-3. Android OS or its vendor modifications allow your application to run in the background and do not restrict its execution. You can refer to [dontkillmyapp.com](https://dontkillmyapp.com/)  for getting more details.
+2. the user must have a current connection to Google Fit
+3. Android OS or its vendor modifications allow your application to run in the background and do not restrict its execution. You can refer to [dontkillmyapp.com](https://dontkillmyapp.com/) for getting more details.
 
-## Analytics module
+## Analytics Module
 ### Getting DailyStats
 ```kotlin
 import com.fjuul.sdk.analytics.http.services.AnalyticsService

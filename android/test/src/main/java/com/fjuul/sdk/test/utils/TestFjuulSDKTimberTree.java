@@ -1,5 +1,7 @@
 package com.fjuul.sdk.test.utils;
 
+import androidx.annotation.NonNull;
+
 import com.fjuul.sdk.core.utils.FjuulSDKTimberTree;
 
 import org.jetbrains.annotations.NotNull;
@@ -10,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class TestFjuulSDKTimberTree extends FjuulSDKTimberTree {
+    @NonNull
     private List<TimberLogEntry> logEntries = Collections.synchronizedList(new ArrayList<>());
 
     @Override
@@ -17,6 +20,7 @@ public class TestFjuulSDKTimberTree extends FjuulSDKTimberTree {
         logEntries.add(new TimberLogEntry(priority, message, t));
     }
 
+    @NonNull
     public List<TimberLogEntry> getLogEntries() {
         return Collections.unmodifiableList(logEntries);
     }
@@ -25,6 +29,7 @@ public class TestFjuulSDKTimberTree extends FjuulSDKTimberTree {
         return logEntries.isEmpty();
     }
 
+    @NonNull
     public TimberLogEntry removeFirst() {
         return logEntries.remove(0);
     }

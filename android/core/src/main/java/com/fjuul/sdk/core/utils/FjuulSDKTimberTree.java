@@ -51,6 +51,7 @@ public abstract class FjuulSDKTimberTree extends Timber.Tree {
 
     protected abstract void doLog(int priority, @Nullable String tag, @NotNull String message, @Nullable Throwable t);
 
+    @NonNull
     protected List<StackTraceElement> getFilteredStackTraceOfCaller() {
         final StackTraceElement[] rawStackTrace = new Throwable().getStackTrace();
         final ArrayList<StackTraceElement> filteredStackTrace = new ArrayList<>();
@@ -83,6 +84,7 @@ public abstract class FjuulSDKTimberTree extends Timber.Tree {
         return elementClassName.equals(Timber.class.getName());
     }
 
+    @NonNull
     protected String inferCallerClassName(@NonNull StackTraceElement element) {
         final String fullClassName = element.getClassName();
         return fullClassName.substring(fullClassName.lastIndexOf('.') + 1);

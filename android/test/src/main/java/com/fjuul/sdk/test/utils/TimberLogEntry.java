@@ -19,10 +19,12 @@ public class TimberLogEntry {
         return priority;
     }
 
+    @Nullable
     public String getMessage() {
         return message;
     }
 
+    @Nullable
     public Throwable getThrowable() {
         return throwable;
     }

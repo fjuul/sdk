@@ -56,7 +56,7 @@ dependencies {
     def workVersion = "2.4.0"
 
     implementation "androidx.annotation:annotation:$rootProject.ext.androidXAnnotationVersion"
-    implementation 'androidx.core:core:1.3.1'
+    implementation "androidx.core:core:$rootProject.ext.androidXCoreVersion"
 
     implementation 'com.google.android.gms:play-services-auth:19.0.0'
     implementation 'com.google.android.gms:play-services-fitness:20.0.0'
@@ -66,7 +66,7 @@ dependencies {
     api project(':core')
 
     // Use JUnit test framework
-    testImplementation 'junit:junit:4.12'
+    testImplementation "junit:junit:$rootProject.ext.junitVersion"
     testImplementation 'org.mockito:mockito-core:3.4.4'
     testImplementation('org.mockito:mockito-inline:3.4.4')
     testImplementation "com.squareup.okhttp3:mockwebserver:$rootProject.ext.okHttpVersion"
@@ -75,5 +75,5 @@ dependencies {
 
     testImplementation "org.robolectric:robolectric:$rootProject.ext.robolectricVersion"
     testImplementation 'org.hamcrest:hamcrest:2.2'
-    testImplementation 'androidx.test:core:1.2.0'
+    testImplementation "androidx.test:core:$rootProject.ext.androidXTestCoreVersion"
 }

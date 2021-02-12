@@ -64,11 +64,11 @@ dependencies {
     api project(':core')
 
     // Use JUnit test framework
-    testImplementation 'junit:junit:4.12'
+    testImplementation "junit:junit:$rootProject.ext.junitVersion"
     testImplementation 'org.mockito:mockito-core:3.4.4'
     testImplementation "com.squareup.okhttp3:mockwebserver:$rootProject.ext.okHttpVersion"
     testImplementation project(':test')
 
     testImplementation "org.robolectric:robolectric:$rootProject.ext.robolectricVersion"
-    testImplementation 'androidx.test:core:1.2.0'
+    testImplementation "androidx.test:core:$rootProject.ext.androidXTestCoreVersion"
 }

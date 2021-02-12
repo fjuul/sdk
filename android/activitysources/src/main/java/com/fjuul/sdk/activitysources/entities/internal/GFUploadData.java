@@ -59,4 +59,16 @@ public class GFUploadData {
     public boolean isEmpty() {
         return caloriesData.isEmpty() && stepsData.isEmpty() && hrData.isEmpty() && sessionsData.isEmpty();
     }
+
+    @Override
+    public String toString() {
+        //@formatter:off
+        return "GFUploadData{" +
+            "calories=" + caloriesData.size() +
+            ", steps=" + stepsData.size() +
+            ", heartRates=" + hrData.size() +
+            ", sessions=" + sessionsData.size() +
+            '}';
+        //@formatter:on
+    }
 }

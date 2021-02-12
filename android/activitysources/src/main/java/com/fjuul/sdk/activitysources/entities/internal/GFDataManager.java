@@ -28,6 +28,7 @@ import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceException
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.activitysources.utils.GoogleTaskUtils;
 import com.fjuul.sdk.core.http.utils.ApiCallResult;
+import com.fjuul.sdk.core.utils.Logger;
 import com.google.android.gms.tasks.CancellationToken;
 import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.gms.tasks.Task;
@@ -37,6 +38,7 @@ import com.google.android.gms.tasks.Tasks;
 import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
+
 
 public class GFDataManager {
     private static final String TAG = "GFDataManager";
@@ -61,6 +63,11 @@ public class GFDataManager {
     @SuppressLint("NewApi")
     @NonNull
     public Task<Void> syncIntradayMetrics(@NonNull GoogleFitIntradaySyncOptions options) {
+        Logger.get()
+            .d("start syncing GF intraday metrics (%s) for %s - %s",
+                options.getMetrics().stream().map(metric -> metric.toString()).collect(Collectors.joining(", ")),
+                options.getStartDate().toString(),
+                options.getEndDate().toString());
         // todo: consider returning metadata of the sent data
         final ExecutorService sequentialExecutorService = Executors.newSingleThreadExecutor();
         final LocalDate startDate = options.getStartDate();
@@ -123,8 +130,10 @@ public class GFDataManager {
         final Task<Void> sendDataIfNotEmptyTask =
             prepareUploadDataTask.onSuccessTask(localBackgroundExecutor, (uploadData) -> {
                 if (uploadData.isEmpty()) {
+                    Logger.get().d("no new data to send");
                     return Tasks.forResult(null);
                 }
+                Logger.get().d("sending new GF data: %s", uploadData.toString());
                 return this.sendGFUploadData(uploadData).onSuccessTask(localBackgroundExecutor, (apiCallResult) -> {
                     return Tasks.forResult(apiCallResult.getValue());
                 });
@@ -142,6 +151,10 @@ public class GFDataManager {
     @SuppressLint("NewApi")
     @NonNull
     public Task<Void> syncSessions(@NonNull GoogleFitSessionSyncOptions options) {
+        Logger.get()
+            .d("start syncing GF sessions for %s - %s",
+                options.getStartDate().toString(),
+                options.getEndDate().toString());
         final Pair<Date, Date> gfQueryDates =
             gfUtils.adjustInputDatesForGFRequest(options.getStartDate(), options.getEndDate());
         final Task<List<GFSessionBundle>> getNotSyncedSessionsTask =
@@ -161,8 +174,10 @@ public class GFDataManager {
         final Task<Void> sendDataIfNotEmptyTask =
             prepareUploadDataTask.onSuccessTask(localBackgroundExecutor, (uploadData) -> {
                 if (uploadData.isEmpty()) {
+                    Logger.get().d("no new data to send");
                     return Tasks.forResult(null);
                 }
+                Logger.get().d("sending new GF data: %s", uploadData.toString());
                 return this.sendGFUploadData(uploadData).onSuccessTask(localBackgroundExecutor, (apiCallResult) -> {
                     return Tasks.forResult(apiCallResult.getValue());
                 });
@@ -241,11 +256,13 @@ public class GFDataManager {
         final TaskCompletionSource<ApiCallResult<Void>> sendDataTaskCompletionSource = new TaskCompletionSource<>();
         activitySourcesService.uploadGoogleFitData(uploadData).enqueue((apiCall, result) -> {
             if (result.isError()) {
+                Logger.get().d("failed to send GF data: %s", result.getError().getMessage());
                 final CommonException exception =
                     new CommonException("Failed to send data to the server", result.getError());
                 sendDataTaskCompletionSource.trySetException(exception);
                 return;
             }
+            Logger.get().d("succeeded to send GF data");
             sendDataTaskCompletionSource.trySetResult(result);
         });
         return sendDataTaskCompletionSource.getTask();

@@ -10,8 +10,7 @@ import android.util.Log;
 import timber.log.Timber;
 
 /**
- * Debug implementation of {@link TimberTree} that writes messages with any priority via android's
- * {@link Log}.<br>
+ * Debug implementation of {@link TimberTree} that writes messages with any priority via android's {@link Log}.<br>
  * You can extend this class and override {@link #isLoggable(String, int)} to keep logs only with the desired priority.
  */
 public class DebugTimberTree extends TimberTree {

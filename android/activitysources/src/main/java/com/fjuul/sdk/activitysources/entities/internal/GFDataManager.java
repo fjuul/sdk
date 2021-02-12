@@ -28,7 +28,7 @@ import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceException
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.activitysources.utils.GoogleTaskUtils;
 import com.fjuul.sdk.core.http.utils.ApiCallResult;
-import com.fjuul.sdk.core.utils.FjuulSDKLogger;
+import com.fjuul.sdk.core.utils.Logger;
 import com.google.android.gms.tasks.CancellationToken;
 import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.gms.tasks.Task;
@@ -63,7 +63,7 @@ public class GFDataManager {
     @SuppressLint("NewApi")
     @NonNull
     public Task<Void> syncIntradayMetrics(@NonNull GoogleFitIntradaySyncOptions options) {
-        FjuulSDKLogger.get()
+        Logger.get()
             .d("start syncing GF intraday metrics (%s) for %s - %s",
                 options.getMetrics().stream().map(metric -> metric.toString()).collect(Collectors.joining(", ")),
                 options.getStartDate().toString(),
@@ -130,10 +130,10 @@ public class GFDataManager {
         final Task<Void> sendDataIfNotEmptyTask =
             prepareUploadDataTask.onSuccessTask(localBackgroundExecutor, (uploadData) -> {
                 if (uploadData.isEmpty()) {
-                    FjuulSDKLogger.get().d("no new data to send");
+                    Logger.get().d("no new data to send");
                     return Tasks.forResult(null);
                 }
-                FjuulSDKLogger.get().d("sending new GF data: %s", uploadData.toString());
+                Logger.get().d("sending new GF data: %s", uploadData.toString());
                 return this.sendGFUploadData(uploadData).onSuccessTask(localBackgroundExecutor, (apiCallResult) -> {
                     return Tasks.forResult(apiCallResult.getValue());
                 });
@@ -151,7 +151,7 @@ public class GFDataManager {
     @SuppressLint("NewApi")
     @NonNull
     public Task<Void> syncSessions(@NonNull GoogleFitSessionSyncOptions options) {
-        FjuulSDKLogger.get()
+        Logger.get()
             .d("start syncing GF sessions for %s - %s",
                 options.getStartDate().toString(),
                 options.getEndDate().toString());
@@ -174,10 +174,10 @@ public class GFDataManager {
         final Task<Void> sendDataIfNotEmptyTask =
             prepareUploadDataTask.onSuccessTask(localBackgroundExecutor, (uploadData) -> {
                 if (uploadData.isEmpty()) {
-                    FjuulSDKLogger.get().d("no new data to send");
+                    Logger.get().d("no new data to send");
                     return Tasks.forResult(null);
                 }
-                FjuulSDKLogger.get().d("sending new GF data: %s", uploadData.toString());
+                Logger.get().d("sending new GF data: %s", uploadData.toString());
                 return this.sendGFUploadData(uploadData).onSuccessTask(localBackgroundExecutor, (apiCallResult) -> {
                     return Tasks.forResult(apiCallResult.getValue());
                 });
@@ -256,13 +256,13 @@ public class GFDataManager {
         final TaskCompletionSource<ApiCallResult<Void>> sendDataTaskCompletionSource = new TaskCompletionSource<>();
         activitySourcesService.uploadGoogleFitData(uploadData).enqueue((apiCall, result) -> {
             if (result.isError()) {
-                FjuulSDKLogger.get().d("failed to send GF data: %s", result.getError().getMessage());
+                Logger.get().d("failed to send GF data: %s", result.getError().getMessage());
                 final CommonException exception =
                     new CommonException("Failed to send data to the server", result.getError());
                 sendDataTaskCompletionSource.trySetException(exception);
                 return;
             }
-            FjuulSDKLogger.get().d("succeeded to send GF data");
+            Logger.get().d("succeeded to send GF data");
             sendDataTaskCompletionSource.trySetResult(result);
         });
         return sendDataTaskCompletionSource.getTask();

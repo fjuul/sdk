@@ -10,7 +10,7 @@ import com.fjuul.sdk.core.entities.Keystore;
 import com.fjuul.sdk.core.entities.SigningKey;
 import com.fjuul.sdk.core.http.services.ISigningService;
 import com.fjuul.sdk.core.http.utils.RequestSigner;
-import com.fjuul.sdk.core.utils.FjuulSDKLogger;
+import com.fjuul.sdk.core.utils.Logger;
 
 import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
@@ -46,14 +46,14 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
                 keyOptional = this.keystore.getValidKey();
                 // if still no valid key => request new one
                 if (!keyOptional.isPresent()) {
-                    FjuulSDKLogger.get().d("retrieving a new signing key");
+                    Logger.get().d("retrieving a new signing key");
                     final retrofit2.Response<SigningKey> newKeyResponse = issueNewKey();
                     if (newKeyResponse.isSuccessful()) {
                         final SigningKey newKey = newKeyResponse.body();
                         keystore.setKey(newKey);
                         signingKey = newKey;
                     } else {
-                        FjuulSDKLogger.get().d("failed to retrieve the signing key");
+                        Logger.get().d("failed to retrieve the signing key");
                         // return response of a request of the signing key to infer http error
                         return extractOriginalRawResponse(newKeyResponse);
                     }
@@ -99,14 +99,14 @@ public class SigningAuthInterceptor implements Interceptor, Authenticator {
                 return requestSigner.signRequestByKey(response.request(), key);
             }
             // if still no valid key => request new one
-            FjuulSDKLogger.get().d("retrieving a new signing key");
+            Logger.get().d("retrieving a new signing key");
             final retrofit2.Response<SigningKey> newKeyResponse = issueNewKey();
             if (newKeyResponse.isSuccessful()) {
                 final SigningKey newKey = newKeyResponse.body();
                 keystore.setKey(newKey);
                 return requestSigner.signRequestByKey(response.request(), newKey);
             } else {
-                FjuulSDKLogger.get().d("failed to retrieve the signing key");
+                Logger.get().d("failed to retrieve the signing key");
                 return null;
             }
         }

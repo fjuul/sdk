@@ -7,7 +7,7 @@ import timber.log.Timber;
  * An internal helper class for retrieving the Timber logger with the pre-initialized tag.<br>
  * SDK consumers should not use it in their own applications.
  */
-public final class FjuulSDKLogger {
+public final class Logger {
     /**
      * Constant TAG which all log entries must have when published from Fjuul SDK. It can be used to distinguish what a
      * log entry comes from.

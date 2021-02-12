@@ -28,7 +28,7 @@ public abstract class FjuulSDKTimberTree extends Timber.Tree {
 
     @Override
     protected boolean isLoggable(@Nullable String tag, int priority) {
-        return FjuulSDKLogger.TAG.equals(tag);
+        return Logger.TAG.equals(tag);
     }
 
     @Override

@@ -228,6 +228,9 @@ public class MainApplication {
 ```
 Also, you can extend this default debug implementation to filter only wanted entries:
 ```kotlin
+import com.fjuul.sdk.core.utils.DebugFjuulSDKTimberTree
+import timber.log.Timber
+
 Timber.plant(object: DebugFjuulSDKTimberTree() {
     override fun isLoggable(tag: String?, priority: Int): Boolean {
         return super.isLoggable(tag, priority) && priority >= Log.WARN
@@ -237,8 +240,10 @@ Timber.plant(object: DebugFjuulSDKTimberTree() {
 
 ### Change logs output
 You are free to implement your own logger for FjuulSDK by extending `FjuulSDKTimberTree` and applying it to Timber:
-
 ``` kotlin
+import com.fjuul.sdk.core.utils.FjuulSDKTimberTree
+import timber.log.Timber
+
 Timber.plant(object: FjuulSDKTimberTree() {
     override fun doLog(priority: Int, tag: String?, message: String, t: Throwable?) {
         // Crashlytics.logEvent("$tag: $message")
@@ -249,9 +254,12 @@ Timber.plant(object: FjuulSDKTimberTree() {
 If you plan to use Timber in your application then you should exclude all incoming entries from Fjuul SDK by tag:
 
 ``` kotlin
+import com.fjuul.sdk.core.utils.Logger
+import timber.log.Timber
+
 Timber.plant(object: Timber.DebugTree() {
     override fun isLoggable(tag: String?, priority: Int): Boolean {
-        return tag != FjuulSDKLogger.TAG
+        return tag != Logger.TAG
     }
 })
 ```

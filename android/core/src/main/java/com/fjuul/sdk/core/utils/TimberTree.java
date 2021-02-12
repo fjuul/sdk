@@ -22,7 +22,7 @@ import timber.log.Timber;
  * tracker (Firebase Analytics, Sentry, etc.). Please check a set of overridable methods of {@link Timber.Tree} for
  * fully understanding capabilities.
  */
-public abstract class FjuulSDKTimberTree extends Timber.Tree {
+public abstract class TimberTree extends Timber.Tree {
     protected static final Pattern SDK_MODULE_NAME = Pattern.compile("^com.fjuul.sdk.([^.]+)\\.");
     private static final Pattern ANONYMOUS_CLASS = Pattern.compile("(\\$\\d+)+$");
 

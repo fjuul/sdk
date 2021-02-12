@@ -7,11 +7,11 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.fjuul.sdk.core.utils.FjuulSDKTimberTree;
+import com.fjuul.sdk.core.utils.TimberTree;
 
 import androidx.annotation.NonNull;
 
-public class TestFjuulSDKTimberTree extends FjuulSDKTimberTree {
+public class TestTimberTree extends TimberTree {
     @NonNull
     private List<TimberLogEntry> logEntries = Collections.synchronizedList(new ArrayList<>());
 

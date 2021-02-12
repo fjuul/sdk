@@ -212,26 +212,26 @@ dailyStats.forEach { item ->
 
 ## Logging
 Fjuul SDK uses [Timber](https://github.com/JakeWharton/timber) for logging internal events and exposes this dependency to consumers.<br/>
-For ordinary debugging, you can use `DebugFjuulSDKTimberTree` that writes everything from Fjuul SDK to the standard android's Log:
+For ordinary debugging, you can use `DebugTimberTree` that writes everything from Fjuul SDK to the standard android's Log:
 ``` kotlin
-import com.fjuul.sdk.core.utils.DebugFjuulSDKTimberTree
+import com.fjuul.sdk.core.utils.DebugTimberTree
 import timber.log.Timber
 
 public class MainApplication {
     override fun onCreate() {
         super.onCreate()
         if (BuildConfig.DEBUG) {
-            Timber.plant(DebugFjuulSDKTimberTree())
+            Timber.plant(DebugTimberTree())
         }
     }
 }
 ```
 Also, you can extend this default debug implementation to filter only wanted entries:
 ```kotlin
-import com.fjuul.sdk.core.utils.DebugFjuulSDKTimberTree
+import com.fjuul.sdk.core.utils.DebugTimberTree
 import timber.log.Timber
 
-Timber.plant(object: DebugFjuulSDKTimberTree() {
+Timber.plant(object: DebugTimberTree() {
     override fun isLoggable(tag: String?, priority: Int): Boolean {
         return super.isLoggable(tag, priority) && priority >= Log.WARN
     }
@@ -239,12 +239,12 @@ Timber.plant(object: DebugFjuulSDKTimberTree() {
 ```
 
 ### Change logs output
-You are free to implement your own logger for FjuulSDK by extending `FjuulSDKTimberTree` and applying it to Timber:
+You are free to implement your own logger for Fjuul SDK by extending `TimberTree` and applying it to Timber:
 ``` kotlin
-import com.fjuul.sdk.core.utils.FjuulSDKTimberTree
+import com.fjuul.sdk.core.utils.TimberTree
 import timber.log.Timber
 
-Timber.plant(object: FjuulSDKTimberTree() {
+Timber.plant(object: TimberTree() {
     override fun doLog(priority: Int, tag: String?, message: String, t: Throwable?) {
         // Crashlytics.logEvent("$tag: $message")
     }

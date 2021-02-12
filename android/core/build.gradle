@@ -74,9 +74,5 @@ dependencies {
     testImplementation "org.robolectric:robolectric:$rootProject.ext.robolectricVersion"
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation "androidx.test:core:$rootProject.ext.androidXTestCoreVersion"
-
-    // android
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 }
 

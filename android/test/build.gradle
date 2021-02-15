@@ -43,7 +43,7 @@ android {
 dependencies {
     api project(':core')
 
-    implementation 'junit:junit:4.12'
+    implementation "junit:junit:$rootProject.ext.junitVersion"
     implementation "com.squareup.okhttp3:mockwebserver:$rootProject.ext.okHttpVersion"
-    implementation 'androidx.test:core:1.2.0'
+    implementation "androidx.test:core:$rootProject.ext.androidXTestCoreVersion"
 }

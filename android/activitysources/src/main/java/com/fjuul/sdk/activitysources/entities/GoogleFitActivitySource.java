@@ -460,6 +460,12 @@ public class GoogleFitActivitySource extends ActivitySource {
                 .addDataType(DataType.TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
                 .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_READ);
         }
+        if (fitnessMetrics.contains(FitnessMetricsType.HEIGHT)) {
+            fitnessOptionsBuilder.addDataType(DataType.TYPE_HEIGHT, FitnessOptions.ACCESS_READ);
+        }
+        if (fitnessMetrics.contains(FitnessMetricsType.WEIGHT)) {
+            fitnessOptionsBuilder.addDataType(DataType.TYPE_WEIGHT, FitnessOptions.ACCESS_READ);
+        }
         final FitnessOptions fitnessOptions = fitnessOptionsBuilder.build();
         GoogleSignInOptions.Builder googleSignInOptionsBuilder = new GoogleSignInOptions.Builder();
         googleSignInOptionsBuilder.addExtension(fitnessOptions);

@@ -8,7 +8,7 @@ import com.fjuul.sdk.core.ApiClient
 ...
 val client = ApiClient.Builder(appContext, "YOUR_BASE_URL","YOUR_API_KEY").build()
 ```
-This initialization without user credentials is considered valid only for a few basic operations (for example, creating a user).  
+This initialization without user credentials is considered valid only for a few basic operations (for example, creating a user).<br/>
 If you plan to perform an action authorized by some user, you must provide credentials:
 ``` kotlin
 import com.fjuul.sdk.core.ApiClient
@@ -31,7 +31,7 @@ For simplicity, the examples in this document use synchronous query execution.
 `UserService` - the main class for working with users.
 
 ### Create a User
-With basic `ApiClient` initialization, you can create a user: 
+With basic `ApiClient` initialization, you can create a user:<br/>
 ```kotlin
 import com.fjuul.sdk.core.ApiClient
 
@@ -53,7 +53,7 @@ val userCreationResult = createUserApiCallResult.value!!
 val userProfile = userCreationResult.user
 val userSecret = userCreationResult.secret
 ```
-The result of the creation is an instance of `UserCreationResult`, which is a composition of the user profile and secret of the user. You should persist the token and secret of the user.  
+The result of the creation is an instance of `UserCreationResult`, which is a composition of the user profile and secret of the user. You should persist the token and secret of the user.<br/>
 To perform user-authorized actions, you must provide the user credentials to the `ApiClient.Builder`. User credentials are a pair of token and secret:
 ```kotlin
 // reinitialize Fjuul api-client with user credentials for signing all user authorized HTTP requests
@@ -71,7 +71,7 @@ import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
 ...
 ActivitySourcesManager.initialize(signedClient)
 ```
-The call above initializes `ActivitySourcesManager` with the default config.  
+The call above initializes `ActivitySourcesManager` with the default config.<br/>
 Consider using the overloaded method that receives the config as a parameter, if you need to adjust the behavior:
 ```kotlin
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
@@ -208,4 +208,58 @@ dailyStats.forEach { item ->
         |high: ${item.high.metMinutes} metMinutes""".trimMargin()
         println(formattedItem)
 }
+```
+
+## Logging
+Fjuul SDK uses [Timber](https://github.com/JakeWharton/timber) for logging internal events and exposes this dependency to consumers.<br/>
+For ordinary debugging, you can use `DebugTimberTree` that writes everything from Fjuul SDK to the standard android's Log:
+``` kotlin
+import com.fjuul.sdk.core.utils.DebugTimberTree
+import timber.log.Timber
+
+public class MainApplication {
+    override fun onCreate() {
+        super.onCreate()
+        if (BuildConfig.DEBUG) {
+            Timber.plant(DebugTimberTree())
+        }
+    }
+}
+```
+Also, you can extend this default debug implementation to filter only wanted entries:
+```kotlin
+import com.fjuul.sdk.core.utils.DebugTimberTree
+import timber.log.Timber
+
+Timber.plant(object: DebugTimberTree() {
+    override fun isLoggable(tag: String?, priority: Int): Boolean {
+        return super.isLoggable(tag, priority) && priority >= Log.WARN
+    }
+})
+```
+
+### Change logs output
+You are free to implement your own logger for Fjuul SDK by extending `TimberTree` and applying it to Timber:
+``` kotlin
+import com.fjuul.sdk.core.utils.TimberTree
+import timber.log.Timber
+
+Timber.plant(object: TimberTree() {
+    override fun doLog(priority: Int, tag: String?, message: String, t: Throwable?) {
+        // Crashlytics.logEvent("$tag: $message")
+    }
+})
+```
+### Using Timber for your own logging
+If you plan to use Timber in your application then you should exclude all incoming entries from Fjuul SDK by tag:
+
+``` kotlin
+import com.fjuul.sdk.core.utils.Logger
+import timber.log.Timber
+
+Timber.plant(object: Timber.DebugTree() {
+    override fun isLoggable(tag: String?, priority: Int): Boolean {
+        return tag != Logger.TAG
+    }
+})
 ```

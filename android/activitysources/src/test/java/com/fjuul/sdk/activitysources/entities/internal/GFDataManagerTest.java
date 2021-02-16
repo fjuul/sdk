@@ -1,5 +1,6 @@
 package com.fjuul.sdk.activitysources.entities.internal;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -58,10 +59,13 @@ import com.fjuul.sdk.core.exceptions.ApiExceptions;
 import com.fjuul.sdk.core.http.utils.ApiCall;
 import com.fjuul.sdk.core.http.utils.ApiCallCallback;
 import com.fjuul.sdk.core.http.utils.ApiCallResult;
+import com.fjuul.sdk.test.LoggableTestSuite;
+import com.fjuul.sdk.test.utils.TimberLogEntry;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
 import android.os.Build;
+import android.util.Log;
 
 @RunWith(Enclosed.class)
 public class GFDataManagerTest {
@@ -74,9 +78,9 @@ public class GFDataManagerTest {
 
     @RunWith(RobolectricTestRunner.class)
     @Config(sdk = {Build.VERSION_CODES.P})
-    public abstract static class GivenRobolectricContext {}
+    abstract static class GivenRobolectricContext extends LoggableTestSuite {}
 
-    public static class SyncIntradayMetricsTest extends GFClientWrapperTest.GivenRobolectricContext {
+    public static class SyncIntradayMetricsTest extends GivenRobolectricContext {
         final String currentInstant = "2020-10-05T09:30:00Z";
         final TimeZone testTimeZone = TimeZone.getTimeZone("Europe/Zurich");
         final ZoneId testZoneId = testTimeZone.toZoneId();
@@ -137,6 +141,16 @@ public class GFDataManagerTest {
             verifyNoInteractions(mockedActivitySourcesService);
             // should even not interact with the sync metadata store
             verifyNoInteractions(mockedGFSyncMetadataStore);
+
+            assertEquals("logger should have entries", 2, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals(
+                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_CALORIES) for 2020-10-01 - 2020-10-02",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: no new data to send", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
         @Test
@@ -176,6 +190,13 @@ public class GFDataManagerTest {
             verifyNoInteractions(mockedActivitySourcesService);
             // should even not interact with the sync metadata store
             verifyNoInteractions(mockedGFSyncMetadataStore);
+
+            assertEquals("logger should have entry", 1, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals(
+                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_STEPS) for 2020-10-01 - 2020-10-02",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
         @Test
@@ -227,6 +248,16 @@ public class GFDataManagerTest {
             }));
             // shouldn't interact with the activity sources service
             verifyNoInteractions(mockedActivitySourcesService);
+
+            assertEquals("logger should have entries", 2, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals(
+                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_CALORIES) for 2020-10-01 - 2020-10-02",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: no new data to send", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
         @Test
@@ -301,6 +332,21 @@ public class GFDataManagerTest {
                 assertEquals("should send the calories data", uploadData.getCaloriesData(), calories);
                 return true;
             }));
+
+            assertEquals("logger should have entries", 3, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals(
+                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_CALORIES) for 2020-10-01 - 2020-10-02",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals(
+                "[activitysources] GFDataManager: sending new GF data: GFUploadData{calories=1, steps=0, heartRates=0, sessions=0}",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: failed to send GF data: Bad request", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
         @Test
@@ -371,6 +417,21 @@ public class GFDataManagerTest {
                 assertEquals("should send the calories data", uploadData.getCaloriesData(), calories);
                 return true;
             }));
+
+            assertEquals("logger should have entries", 3, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals(
+                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_CALORIES) for 2020-10-01 - 2020-10-02",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals(
+                "[activitysources] GFDataManager: sending new GF data: GFUploadData{calories=1, steps=0, heartRates=0, sessions=0}",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: succeeded to send GF data", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
         @Test
@@ -509,10 +570,26 @@ public class GFDataManagerTest {
                 assertEquals("should send the hr data", hr, uploadData.getHrData());
                 return true;
             }));
+
+            assertEquals("logger should have entries", 3, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertThat(logEntry.getMessage(), containsString("INTRADAY_STEPS"));
+            assertThat(logEntry.getMessage(), containsString("INTRADAY_HEART_RATE"));
+            assertThat(logEntry.getMessage(), containsString("INTRADAY_CALORIES"));
+            assertThat(logEntry.getMessage(), containsString("for 2020-10-01 - 2020-10-02"));
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals(
+                "[activitysources] GFDataManager: sending new GF data: GFUploadData{calories=1, steps=1, heartRates=1, sessions=0}",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: succeeded to send GF data", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
         }
     }
 
-    public static class SyncSessions extends GFClientWrapperTest.GivenRobolectricContext {
+    public static class SyncSessions extends GivenRobolectricContext {
         final String currentInstant = "2020-10-05T09:30:00Z";
         final TimeZone testTimeZone = TimeZone.getTimeZone("Europe/Zurich");
         final ZoneId testZoneId = testTimeZone.toZoneId();
@@ -566,6 +643,15 @@ public class GFDataManagerTest {
             verifyNoInteractions(mockedActivitySourcesService);
             // should even not interact with the sync metadata store
             verifyNoInteractions(mockedGFSyncMetadataStore);
+
+            assertEquals("logger should have entries", 2, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: start syncing GF sessions for 2020-10-01 - 2020-10-02",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: no new data to send", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
         @Test
@@ -601,6 +687,15 @@ public class GFDataManagerTest {
             verifyNoMoreInteractions(mockedGFSyncMetadataStore);
             // shouldn't interact with the activity sources service
             verifyNoInteractions(mockedActivitySourcesService);
+
+            assertEquals("logger should have entries", 2, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: start syncing GF sessions for 2020-10-01 - 2020-10-02",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: no new data to send", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
         @Test
@@ -658,6 +753,20 @@ public class GFDataManagerTest {
                     uploadData.getSessionsData());
                 return true;
             }));
+
+            assertEquals("logger should have entries", 3, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: start syncing GF sessions for 2020-10-01 - 2020-10-02",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals(
+                "[activitysources] GFDataManager: sending new GF data: GFUploadData{calories=0, steps=0, heartRates=0, sessions=1}",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: failed to send GF data: Bad request", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
         @Test
@@ -706,6 +815,20 @@ public class GFDataManagerTest {
                     uploadData.getSessionsData());
                 return true;
             }));
+
+            assertEquals("logger should have entries", 3, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: start syncing GF sessions for 2020-10-01 - 2020-10-02",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals(
+                "[activitysources] GFDataManager: sending new GF data: GFUploadData{calories=0, steps=0, heartRates=0, sessions=1}",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: succeeded to send GF data", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
         }
     }
 }

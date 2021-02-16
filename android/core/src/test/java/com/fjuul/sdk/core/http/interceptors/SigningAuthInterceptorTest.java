@@ -27,8 +27,11 @@ import com.fjuul.sdk.core.entities.Keystore;
 import com.fjuul.sdk.core.entities.SigningKey;
 import com.fjuul.sdk.core.http.services.UserSigningService;
 import com.fjuul.sdk.core.http.utils.RequestSigner;
+import com.fjuul.sdk.test.LoggableTestSuite;
+import com.fjuul.sdk.test.utils.TimberLogEntry;
 
 import android.os.Build;
+import android.util.Log;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
@@ -42,7 +45,7 @@ import retrofit2.Response;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = {Build.VERSION_CODES.P})
-public class SigningAuthInterceptorTest {
+public class SigningAuthInterceptorTest extends LoggableTestSuite {
     @Test
     public void intercept_EmptyKeystoreWithFailedIssueResult_returnIssueResponse() throws Exception {
         MockWebServer mockWebServer = new MockWebServer();
@@ -80,6 +83,13 @@ public class SigningAuthInterceptorTest {
             mockedSigningKeyResponse.raw().code(),
             returnedResponse.code());
         mockWebServer.shutdown();
+        assertEquals("logger should have entries", 2, LOGGER.size());
+        TimberLogEntry firstEntry = LOGGER.getLogEntries().get(0);
+        assertEquals("[core] SigningAuthInterceptor: retrieving a new signing key", firstEntry.getMessage());
+        assertEquals(Log.DEBUG, firstEntry.getPriority());
+        TimberLogEntry secondEntry = LOGGER.getLogEntries().get(1);
+        assertEquals("[core] SigningAuthInterceptor: failed to retrieve the signing key", secondEntry.getMessage());
+        assertEquals(Log.DEBUG, secondEntry.getPriority());
     }
 
     @Test
@@ -107,6 +117,10 @@ public class SigningAuthInterceptorTest {
         RecordedRequest request = mockWebServer.takeRequest();
         assertThat("carries new key-id", request.getHeader("Signature"), CoreMatchers.containsString("valid-key-id"));
         mockWebServer.shutdown();
+        assertEquals("logger should have only one entry", 1, LOGGER.size());
+        TimberLogEntry logEntry = LOGGER.getLogEntries().get(0);
+        assertEquals("[core] SigningAuthInterceptor: retrieving a new signing key", logEntry.getMessage());
+        assertEquals(Log.DEBUG, logEntry.getPriority());
     }
 
     @Test

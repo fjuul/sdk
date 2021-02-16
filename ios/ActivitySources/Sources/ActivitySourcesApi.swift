@@ -45,13 +45,13 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
                     case 200:
                         let json = try JSONSerialization.jsonObject(with: result, options: []) as? [String: Any]
                         guard let authenticationUrl = json?["url"] as? String else {
-                            throw FjuulError.activitySourceConnectionFailure(reason: .generic(nil))
+                            throw FjuulError.activitySourceConnectionFailure(reason: .generic(message: nil))
                         }
                         return .externalAuthenticationFlowRequired(authenticationUrl: authenticationUrl)
                     case 201:
                         let trackerConnection = try Decoders.iso8601Full.decode(TrackerConnection.self, from: result)
                         return .connected(trackerConnection: trackerConnection)
-                    default: throw FjuulError.activitySourceConnectionFailure(reason: .generic(nil))
+                    default: throw FjuulError.activitySourceConnectionFailure(reason: .generic(message: nil))
                     }
                 }
                 .mapError { err -> Error in
@@ -59,10 +59,10 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
                     guard let errorResponse = try? Decoders.iso8601Full.decode(ErrorJSONBodyResponse.self, from: responseData) else { return err }
 
                     if response.response?.statusCode == 409 {
-                        return FjuulError.activitySourceConnectionFailure(reason: .sourceAlreadyConnected(errorResponse.message))
+                        return FjuulError.activitySourceConnectionFailure(reason: .sourceAlreadyConnected(message: errorResponse.message))
                     }
 
-                    return FjuulError.activitySourceConnectionFailure(reason: .generic(errorResponse.message))
+                    return FjuulError.activitySourceConnectionFailure(reason: .generic(message: errorResponse.message))
                 }
             completion(mappedResponse.result)
         }
@@ -80,7 +80,7 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
                     guard let responseData = response.data else { return err }
                     guard let errorResponse = try? Decoders.iso8601Full.decode(ErrorJSONBodyResponse.self, from: responseData) else { return err }
 
-                    return FjuulError.activitySourceConnectionFailure(reason: .generic(errorResponse.message))
+                    return FjuulError.activitySourceConnectionFailure(reason: .generic(message: errorResponse.message))
                 }
             completion(decodedResponse.result)
         }
@@ -99,7 +99,7 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
                     guard let responseData = response.data else { return err }
                     guard let errorResponse = try? Decoders.iso8601Full.decode(ErrorJSONBodyResponse.self, from: responseData) else { return err }
 
-                    return FjuulError.activitySourceConnectionFailure(reason: .generic(errorResponse.message))
+                    return FjuulError.activitySourceConnectionFailure(reason: .generic(message: errorResponse.message))
                 }
             completion(decodedResponse.result)
         }

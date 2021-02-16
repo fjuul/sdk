@@ -139,7 +139,7 @@ final class ActivitySourcesManagerTests: XCTestCase {
         let promise = expectation(description: "Handle server response with error")
 
         Perform(apiClientMock, .connect(trackerValue: .value(TrackerValue.POLAR), completion: .any, perform: { (item, completion) in
-            completion(.failure(FjuulError.activitySourceConnectionFailure(reason: .sourceAlreadyConnected("Conflict, the source already connected"))))
+            completion(.failure(FjuulError.activitySourceConnectionFailure(reason: .sourceAlreadyConnected(message: "Conflict, the source already connected"))))
         }))
 
         // When

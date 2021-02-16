@@ -36,7 +36,7 @@ public class AnalyticsApi {
                     guard let responseData = response.data else { return err }
                     guard let errorResponse = try? Decoders.iso8601Full.decode(ErrorJSONBodyResponse.self, from: responseData) else { return err }
 
-                    return FjuulError.analyticsFailure(reason: .generic(errorResponse.message))
+                    return FjuulError.analyticsFailure(reason: .generic(message: errorResponse.message))
                 }
             completion(decodedResponse.result)
         }
@@ -64,7 +64,7 @@ public class AnalyticsApi {
                     guard let responseData = response.data else { return err }
                     guard let errorResponse = try? Decoders.iso8601Full.decode(ErrorJSONBodyResponse.self, from: responseData) else { return err }
 
-                    return FjuulError.analyticsFailure(reason: .generic(errorResponse.message))
+                    return FjuulError.analyticsFailure(reason: .generic(message: errorResponse.message))
                 }
             completion(decodedResponse.result)
         }

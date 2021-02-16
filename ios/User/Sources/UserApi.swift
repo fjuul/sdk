@@ -27,7 +27,7 @@ public class UserApi {
                     guard let responseData = response.data else { return err }
                     guard let errorResponse = try? Decoders.iso8601Full.decode(ValidationErrorJSONBodyResponse.self, from: responseData) else { return err }
 
-                    return FjuulError.userFailure(reason: .validation(errorResponse))
+                    return FjuulError.userFailure(reason: .validation(error: errorResponse))
                 }
             return completion(decodedResponse.result)
         }
@@ -59,7 +59,7 @@ public class UserApi {
                     guard let responseData = response.data else { return err }
                     guard let errorResponse = try? Decoders.iso8601Full.decode(ErrorJSONBodyResponse.self, from: responseData) else { return err }
 
-                    return FjuulError.activitySourceConnectionFailure(reason: .generic(errorResponse.message))
+                    return FjuulError.activitySourceConnectionFailure(reason: .generic(message: errorResponse.message))
                 }
             completion(decodedResponse.result)
         }
@@ -77,7 +77,7 @@ public class UserApi {
                     guard let responseData = response.data else { return err }
                     guard let errorResponse = try? Decoders.iso8601Full.decode(ValidationErrorJSONBodyResponse.self, from: responseData) else { return err }
 
-                    return FjuulError.userFailure(reason: .validation(errorResponse))
+                    return FjuulError.userFailure(reason: .validation(error: errorResponse))
                 }
             completion(decodedResponse.result)
         }

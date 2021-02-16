@@ -124,7 +124,7 @@ final class ActivitySourcesApiTests: XCTestCase {
                 }
             case .failure(let err):
                 XCTAssertEqual(err.localizedDescription,
-                               FjuulError.activitySourceConnectionFailure(reason: .sourceAlreadyConnected("Response status code was unacceptable: 409.")).localizedDescription)
+                   FjuulError.activitySourceConnectionFailure(reason: .sourceAlreadyConnected(message: "Response status code was unacceptable: 409.")).localizedDescription)
                 e.fulfill()
             }
         }

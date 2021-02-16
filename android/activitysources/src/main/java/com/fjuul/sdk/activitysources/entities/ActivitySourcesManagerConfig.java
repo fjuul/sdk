@@ -244,7 +244,9 @@ public class ActivitySourcesManagerConfig {
                 .of(FitnessMetricsType.INTRADAY_CALORIES,
                     FitnessMetricsType.INTRADAY_HEART_RATE,
                     FitnessMetricsType.INTRADAY_STEPS,
-                    FitnessMetricsType.WORKOUTS)
+                    FitnessMetricsType.WORKOUTS,
+                    FitnessMetricsType.HEIGHT,
+                    FitnessMetricsType.WEIGHT)
                 .collect(Collectors.toSet());
         final ActivitySourcesManagerConfig config =
             new ActivitySourcesManagerConfig.Builder().enableGoogleFitBackgroundSync(minSessionDuration)

@@ -16,6 +16,6 @@ public class GFHeightDataPoint extends GFScalarDataPoint<Float> {
     public String toString() {
         final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.getDefault());
         final String startFormatted = dateFormat.format(start);
-        return String.format(Locale.getDefault(), "GFHeightDataPoint: cm %f, start %s, dataSource %s", value, startFormatted);
+        return String.format(Locale.getDefault(), "GFHeightDataPoint: cm %.2f, start %s", value, startFormatted);
     }
 }

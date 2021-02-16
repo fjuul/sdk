@@ -1,9 +1,9 @@
 import Foundation
 
-protocol ErrorJSONBodyResponsable: Codable {
+protocol ErrorJSONBodyResponsible: Codable {
     var message: String { get }
 }
 
-public struct ErrorJSONBodyResponse: ErrorJSONBodyResponsable {
+public struct ErrorJSONBodyResponse: ErrorJSONBodyResponsible {
     public let message: String
 }

@@ -1,6 +1,6 @@
 import Foundation
 
-public struct ValidationErrorJSONBodyResponse: ErrorJSONBodyResponsable {
+public struct ValidationErrorJSONBodyResponse: ErrorJSONBodyResponsible {
     public let message: String
 
     public let errors: [ValidationError]

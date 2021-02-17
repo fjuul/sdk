@@ -8,6 +8,7 @@ import com.fjuul.sdk.activitysources.adapters.GFUploadDataJsonAdapter;
 import com.fjuul.sdk.activitysources.entities.ConnectionResult;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
+import com.fjuul.sdk.activitysources.entities.internal.GFSynchronizableProfileParams;
 import com.fjuul.sdk.activitysources.exceptions.ActivitySourcesApiExceptions;
 import com.fjuul.sdk.activitysources.http.ActivitySourcesApiResponseTransformer;
 import com.fjuul.sdk.activitysources.http.apis.ActivitySourcesApi;
@@ -113,5 +114,17 @@ public class ActivitySourcesService {
     @NonNull
     public ApiCall<Void> uploadGoogleFitData(@NonNull GFUploadData dataToUpload) {
         return apiClient.uploadGoogleFitData(clientBuilder.getUserToken(), dataToUpload);
+    }
+
+    /**
+     * Build the call to update the user profile with marking that changes originated from Google Fit. The method is
+     * intended to be used for syncing the user profile with Google Fit. the GoogleFit fitness data for processing.
+     *
+     * @param params - profile parameters
+     * @return ApiCall for updating the user profile
+     */
+    @NonNull
+    public ApiCall<Void> updateProfileOnBehalfOfGoogleFit(@NonNull GFSynchronizableProfileParams params) {
+        return apiClient.updateProfileOnBehalfOfGoogleFit(clientBuilder.getUserToken(), params);
     }
 }

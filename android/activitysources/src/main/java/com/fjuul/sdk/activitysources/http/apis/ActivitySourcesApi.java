@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
+import com.fjuul.sdk.activitysources.entities.internal.GFSynchronizableProfileParams;
 import com.fjuul.sdk.core.http.utils.ApiCall;
 
 import androidx.annotation.NonNull;
@@ -13,6 +14,7 @@ import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.QueryMap;
@@ -37,4 +39,9 @@ public interface ActivitySourcesApi {
     @NonNull
     @POST("/sdk/activity-sources/v1/{userToken}/googlefit")
     ApiCall<Void> uploadGoogleFitData(@Path("userToken") @NonNull String userToken, @Body @NonNull GFUploadData data);
+
+    @PUT("/sdk/activity-sources/v1/{userToken}/googlefit/profile")
+    @NonNull
+    ApiCall<Void> updateProfileOnBehalfOfGoogleFit(@Path("userToken") @NonNull String userToken,
+                                                   @Body @NonNull GFSynchronizableProfileParams params);
 }

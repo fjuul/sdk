@@ -14,8 +14,10 @@ import java.util.stream.Stream;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFCalorieDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPointsBatch;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRSummaryDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHeightDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSessionBundle;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFStepsDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFWeightDataPoint;
 import com.fjuul.sdk.core.adapters.LocalDateJsonAdapter;
 import com.fjuul.sdk.core.entities.IStorage;
 import com.squareup.moshi.JsonAdapter;
@@ -27,6 +29,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 public class GFSyncMetadataStore {
+    private static final String WEIGHT_LOOKUP_KEY = "gf-sync-metadata.weight";
+    private static final String HEIGHT_LOOKUP_KEY = "gf-sync-metadata.height";
+
     private final IStorage storage;
     private final ThreadLocal<SimpleDateFormat> dateFormatter = new ThreadLocal<SimpleDateFormat>() {
         @Nullable
@@ -51,6 +56,8 @@ public class GFSyncMetadataStore {
     private final JsonAdapter<GFSyncHRMetadata> syncHRMetadataJsonAdapter;
     private final JsonAdapter<GFSyncSessionMetadata> syncSessionMetadataJsonAdapter;
     private final JsonAdapter<GFSyncSessionsMetadata> syncSessionsMetadataJsonAdapter;
+    private final JsonAdapter<GFSyncWeightMetadata> syncWeightMetadataJsonAdapter;
+    private final JsonAdapter<GFSyncHeightMetadata> syncHeightMetadataJsonAdapter;
     private final Clock clock;
 
     @SuppressLint("NewApi")
@@ -62,13 +69,15 @@ public class GFSyncMetadataStore {
     public GFSyncMetadataStore(@NonNull IStorage storage, @NonNull Clock clock) {
         this.storage = storage;
         this.clock = clock;
-        Moshi moshi =
+        final Moshi moshi =
             new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter()).add(new LocalDateJsonAdapter()).build();
         this.syncCaloriesMetadataJsonAdapter = moshi.adapter(GFSyncCaloriesMetadata.class).nullSafe();
         this.syncStepsMetadataJsonAdapter = moshi.adapter(GFSyncStepsMetadata.class).nullSafe();
         this.syncHRMetadataJsonAdapter = moshi.adapter(GFSyncHRMetadata.class).nullSafe();
         this.syncSessionMetadataJsonAdapter = moshi.adapter(GFSyncSessionMetadata.class).nullSafe();
         this.syncSessionsMetadataJsonAdapter = moshi.adapter(GFSyncSessionsMetadata.class).nullSafe();
+        this.syncWeightMetadataJsonAdapter = moshi.adapter(GFSyncWeightMetadata.class).nullSafe();
+        this.syncHeightMetadataJsonAdapter = moshi.adapter(GFSyncHeightMetadata.class).nullSafe();
     }
 
     public boolean isNeededToSyncCaloriesBatch(@NonNull GFDataPointsBatch<GFCalorieDataPoint> caloriesBatch) {
@@ -112,6 +121,24 @@ public class GFSyncMetadataStore {
             return true;
         }
         final GFSyncSessionMetadata newMetadata = GFSyncSessionMetadata.buildFromSessionBundle(sessionBundle, clock);
+        return !newMetadata.equals(storedMetadata);
+    }
+
+    public boolean isNeededToSyncWeight(@NonNull GFWeightDataPoint weightDataPoint) {
+        final GFSyncWeightMetadata storedMetadata = retrieveSyncMetadataOf(GFSyncWeightMetadata.class, WEIGHT_LOOKUP_KEY);
+        if (storedMetadata == null) {
+            return true;
+        }
+        final GFSyncWeightMetadata newMetadata = GFSyncWeightMetadata.buildFromDataPoint(weightDataPoint, clock);
+        return !newMetadata.equals(storedMetadata);
+    }
+
+    public boolean isNeededToSyncHeight(@NonNull GFHeightDataPoint heightDataPoint) {
+        final GFSyncHeightMetadata storedMetadata = retrieveSyncMetadataOf(GFSyncHeightMetadata.class, HEIGHT_LOOKUP_KEY);
+        if (storedMetadata == null) {
+            return true;
+        }
+        final GFSyncHeightMetadata newMetadata = GFSyncHeightMetadata.buildFromDataPoint(heightDataPoint, clock);
         return !newMetadata.equals(storedMetadata);
     }
 
@@ -189,6 +216,18 @@ public class GFSyncMetadataStore {
         storage.set(key, jsonValue);
     }
 
+    public void saveSyncMetadataOfWeight(@NonNull GFWeightDataPoint dataPoint) {
+        final GFSyncWeightMetadata metadata = GFSyncWeightMetadata.buildFromDataPoint(dataPoint, clock);
+        final String jsonValue = syncWeightMetadataJsonAdapter.toJson(metadata);
+        storage.set(WEIGHT_LOOKUP_KEY, jsonValue);
+    }
+
+    public void saveSyncMetadataOfHeight(@NonNull GFHeightDataPoint dataPoint) {
+        final GFSyncHeightMetadata metadata = GFSyncHeightMetadata.buildFromDataPoint(dataPoint, clock);
+        final String jsonValue = syncHeightMetadataJsonAdapter.toJson(metadata);
+        storage.set(HEIGHT_LOOKUP_KEY, jsonValue);
+    }
+
     @Nullable
     private <T extends GFSyncEntityMetadata> T retrieveSyncMetadataOf(Class<T> tClass, @NonNull String lookupKey) {
         final String jsonValue = storage.get(lookupKey);
@@ -246,6 +285,10 @@ public class GFSyncMetadataStore {
             return (JsonAdapter<T>) this.syncSessionMetadataJsonAdapter;
         } else if (tClass == GFSyncSessionsMetadata.class) {
             return (JsonAdapter<T>) this.syncSessionsMetadataJsonAdapter;
+        } else if (tClass == GFSyncHeightMetadata.class) {
+            return (JsonAdapter<T>) this.syncHeightMetadataJsonAdapter;
+        } else if (tClass == GFSyncWeightMetadata.class) {
+            return (JsonAdapter<T>) this.syncWeightMetadataJsonAdapter;
         } else {
             throw new IllegalArgumentException("Invalid class to identify the json adapter");
         }

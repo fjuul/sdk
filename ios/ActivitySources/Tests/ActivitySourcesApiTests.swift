@@ -126,13 +126,13 @@ final class ActivitySourcesApiTests: XCTestCase {
                 switch err as? FjuulError {
                 case .activitySourceConnectionFailure(let reason):
                     switch reason {
-                    case .generic(let message):
+                    case .sourceAlreadyConnected(let message):
                         XCTAssertEqual(message, "Response status code was unacceptable: 409.")
                     default:
-                        XCTFail()
+                        XCTFail("Wrong error type")
                     }
                 default:
-                    XCTFail()
+                    XCTFail("Wrong error type")
                 }
                 XCTAssertEqual(err.localizedDescription,
                    FjuulError.activitySourceConnectionFailure(reason: .sourceAlreadyConnected(message: "Response status code was unacceptable: 409.")).localizedDescription)

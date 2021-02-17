@@ -29,6 +29,7 @@ public enum FjuulError: Error {
     }
 
     public enum UserFailureReason {
+        case generic(message: String?)
         case validation(error: ValidationErrorJSONBodyResponse)
     }
 
@@ -62,6 +63,8 @@ extension FjuulError: LocalizedError {
             }
         case .userFailure(let reason):
             switch reason {
+            case .generic(let message):
+                return message
             case .validation(let validationErr):
                 return validationErr.message
             }

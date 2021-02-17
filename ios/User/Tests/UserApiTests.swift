@@ -166,6 +166,8 @@ final class UserApiTests: XCTestCase {
                         XCTAssertEqual(thirdError.constraints["isIn"], "gender must be one of the following values: male, female, other")
 
                         e.fulfill()
+                    default:
+                        XCTFail("Wrong error type")
                     }
                 default:
                     XCTFail("Wrong error type")

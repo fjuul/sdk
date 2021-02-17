@@ -55,11 +55,10 @@ public class UserApi {
         apiClient.signedSession.request(url, method: .get).apiResponse { response in
             let decodedResponse = response
                 .tryMap { try Decoders.yyyyMMddLocale.decode(UserProfile.self, from: $0) }
-                .mapError { err -> Error in
-                    guard let responseData = response.data else { return err }
-                    guard let errorResponse = try? Decoders.iso8601Full.decode(ErrorJSONBodyResponse.self, from: responseData) else { return err }
+                .mapAPIError { _, jsonError in
+                    guard let jsonError = jsonError else { return nil }
 
-                    return FjuulError.activitySourceConnectionFailure(reason: .generic(message: errorResponse.message))
+                    return .userFailure(reason: .generic(message: jsonError.message))
                 }
             completion(decodedResponse.result)
         }

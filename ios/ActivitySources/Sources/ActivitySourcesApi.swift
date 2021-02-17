@@ -54,16 +54,23 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
                     default: throw FjuulError.activitySourceConnectionFailure(reason: .generic(message: nil))
                     }
                 }
-                .mapError { err -> Error in
-                    guard let responseData = response.data else { return err }
-                    guard let errorResponse = try? Decoders.iso8601Full.decode(ErrorJSONBodyResponse.self, from: responseData) else { return err }
-
-                    if response.response?.statusCode == 409 {
-                        return FjuulError.activitySourceConnectionFailure(reason: .sourceAlreadyConnected(message: errorResponse.message))
+                .mapActivitySourcesAPIError { resp, jsonError in
+                    if let jsonError = jsonError {
+                        return .generic(message: jsonError.message)
+                    } else {
+                        return nil
                     }
-
-                    return FjuulError.activitySourceConnectionFailure(reason: .generic(message: errorResponse.message))
                 }
+//                .mapError { err -> Error in
+//                    guard let responseData = response.data else { return err }
+//                    guard let errorResponse = try? Decoders.iso8601Full.decode(ErrorJSONBodyResponse.self, from: responseData) else { return err }
+//
+//                    if response.response?.statusCode == 409 {
+//                        return FjuulError.activitySourceConnectionFailure(reason: .sourceAlreadyConnected(message: errorResponse.message))
+//                    }
+//
+//                    return FjuulError.activitySourceConnectionFailure(reason: .generic(message: errorResponse.message))
+//                }
             completion(mappedResponse.result)
         }
     }
@@ -76,12 +83,17 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
         apiClient.signedSession.request(url, method: .delete).apiResponse { response in
             let decodedResponse = response
                 .map { _ -> Void in () }
-                .mapError { err -> Error in
-                    guard let responseData = response.data else { return err }
-                    guard let errorResponse = try? Decoders.iso8601Full.decode(ErrorJSONBodyResponse.self, from: responseData) else { return err }
-
-                    return FjuulError.activitySourceConnectionFailure(reason: .generic(message: errorResponse.message))
+                .mapActivitySourcesAPIError { resp, jsonError in
+                    guard let jsonError = jsonError else { return nil }
+                    
+                    return .generic(message: jsonError.message)
                 }
+//                .mapError { err -> Error in
+//                    guard let responseData = response.data else { return err }
+//                    guard let errorResponse = try? Decoders.iso8601Full.decode(ErrorJSONBodyResponse.self, from: responseData) else { return err }
+//
+//                    return FjuulError.activitySourceConnectionFailure(reason: .generic(message: errorResponse.message))
+//                }
             completion(decodedResponse.result)
         }
     }

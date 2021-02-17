@@ -109,7 +109,7 @@ final class ActivitySourcesApiTests: XCTestCase {
 
         stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/connections/\(TrackerValue.POLAR.value)")) { request in
             XCTAssertEqual(request.httpMethod, "POST")
-            let stubData = "".data(using: String.Encoding.utf8)
+            let stubData = "{ \"message\": \"Response status code was unacceptable: 409.\" }".data(using: String.Encoding.utf8)
             return HTTPStubsResponse(data: stubData!, statusCode: 409, headers: nil)
         }
 
@@ -123,6 +123,17 @@ final class ActivitySourcesApiTests: XCTestCase {
                     XCTFail("Connection result should not ask auth flow")
                 }
             case .failure(let err):
+                switch err as? FjuulError {
+                case .activitySourceConnectionFailure(let reason):
+                    switch reason {
+                    case .generic(let message):
+                        XCTAssertEqual(message, "Response status code was unacceptable: 409.")
+                    default:
+                        XCTFail()
+                    }
+                default:
+                    XCTFail()
+                }
                 XCTAssertEqual(err.localizedDescription,
                    FjuulError.activitySourceConnectionFailure(reason: .sourceAlreadyConnected(message: "Response status code was unacceptable: 409.")).localizedDescription)
                 e.fulfill()

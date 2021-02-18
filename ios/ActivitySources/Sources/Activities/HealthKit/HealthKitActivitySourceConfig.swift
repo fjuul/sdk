@@ -10,6 +10,7 @@ public enum HealthKitConfigType {
 public struct HealthKitActivitySourceConfig {
     private let dataTypesToRead: [HealthKitConfigType]
     let syncUserEnteredData: Bool
+    internal var syncDataFrom: Date?
 
     public init(dataTypesToRead: [HealthKitConfigType] = [.activeEnergyBurned, .stepCount, .distanceCycling, .distanceWalkingRunning, .heartRate, .workout],
                 syncUserEnteredData: Bool = true) {

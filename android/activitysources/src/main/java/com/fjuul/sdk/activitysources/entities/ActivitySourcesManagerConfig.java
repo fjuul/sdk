@@ -34,6 +34,9 @@ public class ActivitySourcesManagerConfig {
     private Duration googleFitSessionsBackgroundSyncMinSessionDuration;
 
     @NonNull
+    private BackgroundSyncMode profileBackgroundSyncMode;
+
+    @NonNull
     private Set<FitnessMetricsType> collectableFitnessMetrics;
 
     /**
@@ -54,6 +57,17 @@ public class ActivitySourcesManagerConfig {
     @NonNull
     public BackgroundSyncMode getGoogleFitSessionsBackgroundSyncMode() {
         return googleFitSessionsBackgroundSyncMode;
+    }
+
+    /**
+     * Returns the mode that indicates whether user profile properties should be synced from the local activity sources
+     * in the background.
+     *
+     * @return background mode
+     */
+    @NonNull
+    public BackgroundSyncMode getProfileBackgroundSyncMode() {
+        return profileBackgroundSyncMode;
     }
 
     /**
@@ -140,6 +154,19 @@ public class ActivitySourcesManagerConfig {
         }
 
         /**
+         * Enables background synchronization of user profile properties (e.g. height, weight) from the local activity sources.
+         * Note: SDK will schedule background syncs only if there are appropriate current connections to the local activity source. In other words,
+         * this option expresses an intent to have the background synchronization when it's applicable but it doesn't mean a strict requirement of having the appropriate connections.
+         *
+         * @return configured builder
+         */
+        @NonNull
+        public Builder enableProfileBackgroundSync() {
+            config.profileBackgroundSyncMode = BackgroundSyncMode.ENABLED;
+            return this;
+        }
+
+        /**
          * Disables background syncing of intraday data from Google Fit.
          *
          * @return configured builder
@@ -175,16 +202,41 @@ public class ActivitySourcesManagerConfig {
         }
 
         /**
+         * Disables background syncing of user profile properties (e.g. height, weight) from the local activity sources.
+         *
+         * @return configured builder
+         */
+        @NonNull
+        public Builder disableProfileBackgroundSync() {
+            config.profileBackgroundSyncMode = BackgroundSyncMode.DISABLED;
+            return this;
+        }
+
+        /**
+         * Disables any kind of background syncs. Use this building method if you want to sure that everything must be
+         * synchronized only manually by explicit invocations.
+         *
+         * @return configured builder
+         */
+        @NonNull
+        public Builder disableBackgroundSync() {
+            disableGoogleFitBackgroundSync();
+            disableProfileBackgroundSync();
+            return this;
+        }
+
+        /**
          * Sets the special background mode avoiding any changes of scheduled background workers. Currently, it supposed
          * to be used internally only.
          *
          * @return configured builder
          */
         @NonNull
-        public Builder keepUntouchedGoogleFitBackgroundSync() {
+        public Builder keepUntouchedBackgroundSync() {
             config.googleFitIntradayBackgroundSyncMode = BackgroundSyncMode.UNTOUCHED;
             config.googleFitSessionsBackgroundSyncMode = BackgroundSyncMode.UNTOUCHED;
             config.googleFitSessionsBackgroundSyncMinSessionDuration = null;
+            config.profileBackgroundSyncMode = BackgroundSyncMode.UNTOUCHED;
             return this;
         }
 
@@ -231,7 +283,7 @@ public class ActivitySourcesManagerConfig {
 
     /**
      * Build the default config with all collectable fitness metrics and enabled background synchronization for intraday
-     * and session data from Google Fit (minimum duration of sessions is 5 minutes).
+     * and session data from Google Fit (minimum duration of sessions is 5 minutes), user profile properties.
      *
      * @return config
      */
@@ -250,6 +302,7 @@ public class ActivitySourcesManagerConfig {
                 .collect(Collectors.toSet());
         final ActivitySourcesManagerConfig config =
             new ActivitySourcesManagerConfig.Builder().enableGoogleFitBackgroundSync(minSessionDuration)
+                .enableProfileBackgroundSync()
                 .setCollectableFitnessMetrics(allFitnessMetrics)
                 .build();
         return config;

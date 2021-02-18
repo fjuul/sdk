@@ -49,7 +49,7 @@ public abstract class GFSyncWorker extends Worker {
             // It would be good to create an internal non-static instance of ActivitySourcesManager for background
             // workers with their own isolated state.
             final ActivitySourcesManagerConfig config =
-                new ActivitySourcesManagerConfig.Builder().keepUntouchedGoogleFitBackgroundSync()
+                new ActivitySourcesManagerConfig.Builder().keepUntouchedBackgroundSync()
                     .setCollectableFitnessMetrics(Collections.emptySet())
                     .build();
             ActivitySourcesManager.initialize(client, config);

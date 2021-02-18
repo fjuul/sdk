@@ -17,7 +17,7 @@ import androidx.annotation.Nullable;
  * @see Builder
  */
 public class ActivitySourcesManagerConfig {
-    public enum GoogleFitBackgroundSyncMode {
+    public enum BackgroundSyncMode {
         ENABLED,
         DISABLED,
         /**
@@ -27,9 +27,9 @@ public class ActivitySourcesManagerConfig {
     }
 
     @NonNull
-    private GoogleFitBackgroundSyncMode googleFitIntradayBackgroundSyncMode;
+    private BackgroundSyncMode googleFitIntradayBackgroundSyncMode;
     @NonNull
-    private GoogleFitBackgroundSyncMode googleFitSessionsBackgroundSyncMode;
+    private BackgroundSyncMode googleFitSessionsBackgroundSyncMode;
     @Nullable
     private Duration googleFitSessionsBackgroundSyncMinSessionDuration;
 
@@ -42,7 +42,7 @@ public class ActivitySourcesManagerConfig {
      * @return background mode
      */
     @NonNull
-    public GoogleFitBackgroundSyncMode getGoogleFitIntradayBackgroundSyncMode() {
+    public BackgroundSyncMode getGoogleFitIntradayBackgroundSyncMode() {
         return googleFitIntradayBackgroundSyncMode;
     }
 
@@ -52,7 +52,7 @@ public class ActivitySourcesManagerConfig {
      * @return background mode
      */
     @NonNull
-    public GoogleFitBackgroundSyncMode getGoogleFitSessionsBackgroundSyncMode() {
+    public BackgroundSyncMode getGoogleFitSessionsBackgroundSyncMode() {
         return googleFitSessionsBackgroundSyncMode;
     }
 
@@ -98,7 +98,7 @@ public class ActivitySourcesManagerConfig {
         @SuppressLint("NewApi")
         @NonNull
         public Builder enableGoogleFitIntradayBackgroundSync() {
-            config.googleFitIntradayBackgroundSyncMode = GoogleFitBackgroundSyncMode.ENABLED;
+            config.googleFitIntradayBackgroundSyncMode = BackgroundSyncMode.ENABLED;
             return this;
         }
 
@@ -116,7 +116,7 @@ public class ActivitySourcesManagerConfig {
         @NonNull
         public Builder enableGoogleFitSessionsBackgroundSync(@NonNull Duration minSessionDuration) {
             Objects.requireNonNull(minSessionDuration, "duration must be not null");
-            config.googleFitSessionsBackgroundSyncMode = GoogleFitBackgroundSyncMode.ENABLED;
+            config.googleFitSessionsBackgroundSyncMode = BackgroundSyncMode.ENABLED;
             config.googleFitSessionsBackgroundSyncMinSessionDuration = minSessionDuration;
             return this;
         }
@@ -146,7 +146,7 @@ public class ActivitySourcesManagerConfig {
          */
         @NonNull
         public Builder disableGoogleFitIntradayBackgroundSync() {
-            config.googleFitIntradayBackgroundSyncMode = GoogleFitBackgroundSyncMode.DISABLED;
+            config.googleFitIntradayBackgroundSyncMode = BackgroundSyncMode.DISABLED;
             return this;
         }
 
@@ -157,7 +157,7 @@ public class ActivitySourcesManagerConfig {
          */
         @NonNull
         public Builder disableGoogleFitSessionsBackgroundSync() {
-            config.googleFitSessionsBackgroundSyncMode = GoogleFitBackgroundSyncMode.DISABLED;
+            config.googleFitSessionsBackgroundSyncMode = BackgroundSyncMode.DISABLED;
             config.googleFitSessionsBackgroundSyncMinSessionDuration = null;
             return this;
         }
@@ -182,8 +182,8 @@ public class ActivitySourcesManagerConfig {
          */
         @NonNull
         public Builder keepUntouchedGoogleFitBackgroundSync() {
-            config.googleFitIntradayBackgroundSyncMode = GoogleFitBackgroundSyncMode.UNTOUCHED;
-            config.googleFitSessionsBackgroundSyncMode = GoogleFitBackgroundSyncMode.UNTOUCHED;
+            config.googleFitIntradayBackgroundSyncMode = BackgroundSyncMode.UNTOUCHED;
+            config.googleFitSessionsBackgroundSyncMode = BackgroundSyncMode.UNTOUCHED;
             config.googleFitSessionsBackgroundSyncMinSessionDuration = null;
             return this;
         }

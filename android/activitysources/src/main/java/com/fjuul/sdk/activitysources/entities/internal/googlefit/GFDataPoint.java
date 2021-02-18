@@ -8,6 +8,9 @@ import androidx.annotation.Nullable;
 public abstract class GFDataPoint {
     @NonNull
     protected final Date start;
+    /**
+     * Note: end could be null for data points which have instant measurement (for example, HR, weight, height, etc).
+     */
     @Nullable
     protected final Date end;
     @Nullable
@@ -18,6 +21,9 @@ public abstract class GFDataPoint {
         return start;
     }
 
+    /**
+     * Note: end could be null for data points which have instant measurement (for example, HR, weight, height, etc).
+     */
     @Nullable
     public Date getEnd() {
         return end;

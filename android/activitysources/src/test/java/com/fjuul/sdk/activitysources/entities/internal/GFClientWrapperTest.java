@@ -46,6 +46,7 @@ import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFPowerDataPoin
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSessionBundle;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSpeedDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFStepsDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFWeightDataPoint;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.MaxTriesCountExceededException;
 import com.google.android.gms.fitness.FitnessActivities;
@@ -1286,7 +1287,7 @@ public class GFClientWrapperTest {
     }
 
     public static class GetLastKnownHeightTest extends GivenRobolectricContext {
-        static final DataSource heightDataSource =
+        static private final DataSource heightDataSource =
             new DataSource.Builder().setDataType(DataType.TYPE_HEIGHT)
                 .setType(DataSource.TYPE_RAW)
                 .build();
@@ -1295,7 +1296,7 @@ public class GFClientWrapperTest {
         SessionsClient mockedSessionsClient;
         GFDataUtils gfDataUtilsSpy;
 
-        public static boolean isCorrectSingleDataTypeReadRequest(DataReadRequest request) {
+        static private boolean isCorrectSingleDataTypeReadRequest(DataReadRequest request) {
             return request.getDataTypes().size() == 1 &&
                 request.getDataTypes().get(0).equals(DataType.TYPE_HEIGHT) &&
                 request.getStartTime(TimeUnit.MILLISECONDS) == 1 &&
@@ -1386,9 +1387,120 @@ public class GFClientWrapperTest {
 
             assertTrue("successful task", result.isSuccessful());
             GFHeightDataPoint heightDataPoint = result.getResult();
-            assertEquals("weight should have the date", timestamp, heightDataPoint.getStart());
-            assertEquals("weight should have the value", 182.4f, heightDataPoint.getValue(), 0.0001);
-            assertNull("weight should not have datasource", heightDataPoint.getDataSource());
+            assertEquals("height should have the date", timestamp, heightDataPoint.getStart());
+            assertEquals("height should have the value", 182.4f, heightDataPoint.getValue(), 0.0001);
+            assertNull("height should not have datasource", heightDataPoint.getDataSource());
+
+            InOrder inOrder = inOrder(mockedHistoryClient);
+            inOrder.verify(mockedHistoryClient).readData(argThat(arg -> isCorrectSingleDataTypeReadRequest(arg)));
+            inOrder.verifyNoMoreInteractions();
+        }
+    }
+
+    public static class GetLastKnownWeightTest extends GivenRobolectricContext {
+        static private final DataSource weightDataSource =
+            new DataSource.Builder().setDataType(DataType.TYPE_WEIGHT)
+                .setType(DataSource.TYPE_RAW)
+                .build();
+        GFClientWrapper subject;
+        HistoryClient mockedHistoryClient;
+        SessionsClient mockedSessionsClient;
+        GFDataUtils gfDataUtilsSpy;
+
+        static private boolean isCorrectSingleDataTypeReadRequest(DataReadRequest request) {
+            return request.getDataTypes().size() == 1 &&
+                request.getDataTypes().get(0).equals(DataType.TYPE_WEIGHT) &&
+                request.getStartTime(TimeUnit.MILLISECONDS) == 1 &&
+                request.getLimit() == 1;
+        }
+
+        @Before
+        public void beforeTests() {
+            mockedHistoryClient = mock(HistoryClient.class);
+            mockedSessionsClient = mock(SessionsClient.class);
+            GFDataUtils gfDataUtils = new GFDataUtils();
+            gfDataUtilsSpy = spy(gfDataUtils);
+            subject = new GFClientWrapper(TEST_CONFIG, mockedHistoryClient, mockedSessionsClient, gfDataUtilsSpy);
+        }
+
+        @Test
+        public void getLastKnownWeight_whenEmptyDataSet_returnsTaskWithNull() throws ExecutionException, InterruptedException {
+            DataSet emptyDataSet = DataSet.builder(weightDataSource).build();
+            DataReadResponse testResponse = createTestDataReadResponse(emptyDataSet);
+            when(mockedHistoryClient.readData(Mockito.any())).thenReturn(Tasks.forResult(testResponse));
+
+            Task<GFWeightDataPoint> result = subject.getLastKnownWeight();
+            testExecutor.submit(() -> Tasks.await(result)).get();
+            assertTrue("successful task", result.isSuccessful());
+            assertNull("task should have null value", result.getResult());
+
+            InOrder inOrder = inOrder(mockedHistoryClient);
+            inOrder.verify(mockedHistoryClient).readData(argThat(req -> isCorrectSingleDataTypeReadRequest(req)));
+            inOrder.verifyNoMoreInteractions();
+        }
+
+        @Test
+        public void getLastKnownWeight_whenFailedToDelivery_returnTasksWithException() throws InterruptedException {
+            when(mockedHistoryClient.readData(Mockito.any()))
+                .thenReturn(Tasks.forException(new Exception("Application needs OAuth consent from the user")));
+            Task<GFWeightDataPoint> result = subject.getLastKnownWeight();
+            try {
+                testExecutor.submit(() -> Tasks.await(result)).get();
+            } catch (ExecutionException exception) { }
+
+            assertFalse("unsuccessful task", result.isSuccessful());
+            Exception exception = result.getException();
+            assertThat(exception, instanceOf(CommonException.class));
+            CommonException gfException = (CommonException) exception;
+            assertEquals("should have error message",
+                "Application needs OAuth consent from the user",
+                gfException.getCause().getMessage());
+            InOrder inOrder = inOrder(mockedHistoryClient);
+            inOrder.verify(mockedHistoryClient).readData(argThat(arg -> isCorrectSingleDataTypeReadRequest(arg)));
+            inOrder.verifyNoMoreInteractions();
+        }
+
+        @Test
+        public void getLastKnownWeight_whenRequestExceedsTimeout_returnTasksWithException() throws InterruptedException {
+            when(mockedHistoryClient.readData(Mockito.any())).thenAnswer(invocation -> {
+                // NOTE: here we're simulating the dead request to GF
+                return Tasks.forResult(null).continueWithTask(testUtilExecutor, task -> {
+                    Thread.sleep(5000);
+                    return task;
+                });
+            });
+            Task<GFWeightDataPoint> result = subject.getLastKnownWeight();
+            try {
+                testExecutor.submit(() -> Tasks.await(result)).get();
+            } catch (ExecutionException exception) { }
+
+            assertFalse("unsuccessful task", result.isSuccessful());
+            Exception exception = result.getException();
+            assertThat(exception, instanceOf(MaxTriesCountExceededException.class));
+            MaxTriesCountExceededException gfException = (MaxTriesCountExceededException) exception;
+            assertEquals("should have error message",
+                "Possible tries count (1) exceeded for task \"fetch gf user's weight\"",
+                gfException.getMessage());
+            InOrder inOrder = inOrder(mockedHistoryClient);
+            inOrder.verify(mockedHistoryClient).readData(argThat(arg -> isCorrectSingleDataTypeReadRequest(arg)));
+            inOrder.verifyNoMoreInteractions();
+        }
+
+        @Test
+        public void getLastKnownWeight_whenRequestSucceeds_returnTasksWithDataPoint() throws InterruptedException, ExecutionException {
+            Date timestamp = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
+            DataPoint rawWeight = createRawDataPoint(weightDataSource, timestamp, Field.FIELD_WEIGHT, 70.55f);
+            DataSet dataSet = DataSet.builder(weightDataSource).add(rawWeight).build();
+            DataReadResponse testResponse = createTestDataReadResponse(dataSet);
+            when(mockedHistoryClient.readData(Mockito.any())).thenReturn(Tasks.forResult(testResponse));
+            Task<GFWeightDataPoint> result = subject.getLastKnownWeight();
+            testExecutor.submit(() -> Tasks.await(result)).get();
+
+            assertTrue("successful task", result.isSuccessful());
+            GFWeightDataPoint weightDataPoint = result.getResult();
+            assertEquals("weight should have the date", timestamp, weightDataPoint.getStart());
+            assertEquals("weight should have the value", 70.55f, weightDataPoint.getValue(), 0.0001);
+            assertNull("weight should not have datasource", weightDataPoint.getDataSource());
 
             InOrder inOrder = inOrder(mockedHistoryClient);
             inOrder.verify(mockedHistoryClient).readData(argThat(arg -> isCorrectSingleDataTypeReadRequest(arg)));

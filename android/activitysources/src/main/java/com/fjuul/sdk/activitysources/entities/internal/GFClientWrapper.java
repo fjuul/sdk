@@ -216,7 +216,8 @@ class GFClientWrapper {
                 .onSuccessTask(localBackgroundExecutor, convertData.andThen(Tasks::forResult)::apply);
             return new SupervisedTask<>("fetch gf user's height", task, config.queryTimeoutSeconds, config.queryRetriesCount);
         };
-        return runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
+        final Task<GFHeightDataPoint> getHeightTask = runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
+        return shutdownExecutorsOnComplete(localBackgroundExecutor, getHeightTask, gfTaskWatcherExecutor);
     }
 
     @SuppressLint("NewApi")
@@ -232,7 +233,8 @@ class GFClientWrapper {
                 .onSuccessTask(localBackgroundExecutor, convertData.andThen(Tasks::forResult)::apply);
             return new SupervisedTask<>("fetch gf user's weight", task, config.queryTimeoutSeconds, config.queryRetriesCount);
         };
-        return runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
+        final Task<GFWeightDataPoint> getWeightTask = runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
+        return shutdownExecutorsOnComplete(localBackgroundExecutor, getWeightTask, gfTaskWatcherExecutor);
     }
 
     @SuppressLint("NewApi")

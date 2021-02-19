@@ -78,11 +78,25 @@ open class ActivitySourcesApiClientMock: ActivitySourcesApiClient, Mock {
 		perform?(`completion`)
     }
 
+    open func sendHealthKitUserProfileData(data: HKUserProfileData, completion: @escaping (Result<Void, Error>) -> Void) {
+        addInvocation(.m_sendHealthKitUserProfileData__data_datacompletion_completion(Parameter<HKUserProfileData>.value(`data`), Parameter<(Result<Void, Error>) -> Void>.value(`completion`)))
+		let perform = methodPerformValue(.m_sendHealthKitUserProfileData__data_datacompletion_completion(Parameter<HKUserProfileData>.value(`data`), Parameter<(Result<Void, Error>) -> Void>.value(`completion`))) as? (HKUserProfileData, @escaping (Result<Void, Error>) -> Void) -> Void
+		perform?(`data`, `completion`)
+    }
+
+    open func sendHealthKitBatchData(data: HKBatchData, completion: @escaping (Result<Void, Error>) -> Void) {
+        addInvocation(.m_sendHealthKitBatchData__data_datacompletion_completion(Parameter<HKBatchData>.value(`data`), Parameter<(Result<Void, Error>) -> Void>.value(`completion`)))
+		let perform = methodPerformValue(.m_sendHealthKitBatchData__data_datacompletion_completion(Parameter<HKBatchData>.value(`data`), Parameter<(Result<Void, Error>) -> Void>.value(`completion`))) as? (HKBatchData, @escaping (Result<Void, Error>) -> Void) -> Void
+		perform?(`data`, `completion`)
+    }
+
 
     fileprivate enum MethodType {
         case m_connect__trackerValue_trackerValuecompletion_completion(Parameter<TrackerValue>, Parameter<(Result<ConnectionResult, Error>) -> Void>)
         case m_disconnect__activitySourceConnection_activitySourceConnectioncompletion_completion(Parameter<ActivitySourceConnection>, Parameter<(Result<Void, Error>) -> Void>)
         case m_getCurrentConnections__completion_completion(Parameter<(Result<[TrackerConnection], Error>) -> Void>)
+        case m_sendHealthKitUserProfileData__data_datacompletion_completion(Parameter<HKUserProfileData>, Parameter<(Result<Void, Error>) -> Void>)
+        case m_sendHealthKitBatchData__data_datacompletion_completion(Parameter<HKBatchData>, Parameter<(Result<Void, Error>) -> Void>)
         case p_apiClient_get
 
         static func compareParameters(lhs: MethodType, rhs: MethodType, matcher: Matcher) -> Matcher.ComparisonResult {
@@ -103,6 +117,18 @@ open class ActivitySourcesApiClientMock: ActivitySourcesApiClient, Mock {
 				var results: [Matcher.ParameterComparisonResult] = []
 				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsCompletion, rhs: rhsCompletion, with: matcher), lhsCompletion, rhsCompletion, "completion"))
 				return Matcher.ComparisonResult(results)
+
+            case (.m_sendHealthKitUserProfileData__data_datacompletion_completion(let lhsData, let lhsCompletion), .m_sendHealthKitUserProfileData__data_datacompletion_completion(let rhsData, let rhsCompletion)):
+				var results: [Matcher.ParameterComparisonResult] = []
+				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsData, rhs: rhsData, with: matcher), lhsData, rhsData, "data"))
+				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsCompletion, rhs: rhsCompletion, with: matcher), lhsCompletion, rhsCompletion, "completion"))
+				return Matcher.ComparisonResult(results)
+
+            case (.m_sendHealthKitBatchData__data_datacompletion_completion(let lhsData, let lhsCompletion), .m_sendHealthKitBatchData__data_datacompletion_completion(let rhsData, let rhsCompletion)):
+				var results: [Matcher.ParameterComparisonResult] = []
+				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsData, rhs: rhsData, with: matcher), lhsData, rhsData, "data"))
+				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsCompletion, rhs: rhsCompletion, with: matcher), lhsCompletion, rhsCompletion, "completion"))
+				return Matcher.ComparisonResult(results)
             case (.p_apiClient_get,.p_apiClient_get): return Matcher.ComparisonResult.match
             default: return .none
             }
@@ -113,6 +139,8 @@ open class ActivitySourcesApiClientMock: ActivitySourcesApiClient, Mock {
             case let .m_connect__trackerValue_trackerValuecompletion_completion(p0, p1): return p0.intValue + p1.intValue
             case let .m_disconnect__activitySourceConnection_activitySourceConnectioncompletion_completion(p0, p1): return p0.intValue + p1.intValue
             case let .m_getCurrentConnections__completion_completion(p0): return p0.intValue
+            case let .m_sendHealthKitUserProfileData__data_datacompletion_completion(p0, p1): return p0.intValue + p1.intValue
+            case let .m_sendHealthKitBatchData__data_datacompletion_completion(p0, p1): return p0.intValue + p1.intValue
             case .p_apiClient_get: return 0
             }
         }
@@ -121,6 +149,8 @@ open class ActivitySourcesApiClientMock: ActivitySourcesApiClient, Mock {
             case .m_connect__trackerValue_trackerValuecompletion_completion: return ".connect(trackerValue:completion:)"
             case .m_disconnect__activitySourceConnection_activitySourceConnectioncompletion_completion: return ".disconnect(activitySourceConnection:completion:)"
             case .m_getCurrentConnections__completion_completion: return ".getCurrentConnections(completion:)"
+            case .m_sendHealthKitUserProfileData__data_datacompletion_completion: return ".sendHealthKitUserProfileData(data:completion:)"
+            case .m_sendHealthKitBatchData__data_datacompletion_completion: return ".sendHealthKitBatchData(data:completion:)"
             case .p_apiClient_get: return "[get] .apiClient"
             }
         }
@@ -146,6 +176,8 @@ open class ActivitySourcesApiClientMock: ActivitySourcesApiClient, Mock {
         public static func connect(trackerValue: Parameter<TrackerValue>, completion: Parameter<(Result<ConnectionResult, Error>) -> Void>) -> Verify { return Verify(method: .m_connect__trackerValue_trackerValuecompletion_completion(`trackerValue`, `completion`))}
         public static func disconnect(activitySourceConnection: Parameter<ActivitySourceConnection>, completion: Parameter<(Result<Void, Error>) -> Void>) -> Verify { return Verify(method: .m_disconnect__activitySourceConnection_activitySourceConnectioncompletion_completion(`activitySourceConnection`, `completion`))}
         public static func getCurrentConnections(completion: Parameter<(Result<[TrackerConnection], Error>) -> Void>) -> Verify { return Verify(method: .m_getCurrentConnections__completion_completion(`completion`))}
+        public static func sendHealthKitUserProfileData(data: Parameter<HKUserProfileData>, completion: Parameter<(Result<Void, Error>) -> Void>) -> Verify { return Verify(method: .m_sendHealthKitUserProfileData__data_datacompletion_completion(`data`, `completion`))}
+        public static func sendHealthKitBatchData(data: Parameter<HKBatchData>, completion: Parameter<(Result<Void, Error>) -> Void>) -> Verify { return Verify(method: .m_sendHealthKitBatchData__data_datacompletion_completion(`data`, `completion`))}
         public static var apiClient: Verify { return Verify(method: .p_apiClient_get) }
     }
 
@@ -161,6 +193,12 @@ open class ActivitySourcesApiClientMock: ActivitySourcesApiClient, Mock {
         }
         public static func getCurrentConnections(completion: Parameter<(Result<[TrackerConnection], Error>) -> Void>, perform: @escaping (@escaping (Result<[TrackerConnection], Error>) -> Void) -> Void) -> Perform {
             return Perform(method: .m_getCurrentConnections__completion_completion(`completion`), performs: perform)
+        }
+        public static func sendHealthKitUserProfileData(data: Parameter<HKUserProfileData>, completion: Parameter<(Result<Void, Error>) -> Void>, perform: @escaping (HKUserProfileData, @escaping (Result<Void, Error>) -> Void) -> Void) -> Perform {
+            return Perform(method: .m_sendHealthKitUserProfileData__data_datacompletion_completion(`data`, `completion`), performs: perform)
+        }
+        public static func sendHealthKitBatchData(data: Parameter<HKBatchData>, completion: Parameter<(Result<Void, Error>) -> Void>, perform: @escaping (HKBatchData, @escaping (Result<Void, Error>) -> Void) -> Void) -> Perform {
+            return Perform(method: .m_sendHealthKitBatchData__data_datacompletion_completion(`data`, `completion`), performs: perform)
         }
     }
 

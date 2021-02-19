@@ -219,4 +219,50 @@ final class ActivitySourcesApiTests: XCTestCase {
         //Then
         XCTAssertNotNil(apiClient.activitySourcesManager)
     }
+
+    func testSendHealthKitBatchData() {
+        let e = expectation(description: "Request on send bacth data")
+
+        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/healthkit")) { request in
+            XCTAssertEqual(request.httpMethod, "POST")
+            let stubData = "".data(using: String.Encoding.utf8)
+            return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
+        }
+
+        let entries = [AggregatedDataPoint(value: 3.141592, start: Date())]
+        let batches = [BatchDataPoint(sourceBundleIdentifiers: ["com.apple.health.ADBA62D3-FDA1-413C-AA68-874E1D1A9DF1"], entries: entries)]
+        let batchData = HKBatchData(caloriesData: batches)
+
+        sut.sendHealthKitBatchData(data: batchData) { result in
+            switch result {
+            case .success:
+                e.fulfill()
+            case .failure:
+                XCTFail("Network level failure")
+            }
+        }
+        waitForExpectations(timeout: 5.0, handler: nil)
+    }
+
+    func testSendHealthKitUserProfileData() {
+        let e = expectation(description: "Request on send user profile data")
+
+        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/healthkit/profile")) { request in
+            XCTAssertEqual(request.httpMethod, "PUT")
+            let stubData = "".data(using: String.Encoding.utf8)
+            return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
+        }
+
+        let userProfileData = HKUserProfileData(height: 167.5, weight: 67)
+
+        sut.sendHealthKitUserProfileData(data: userProfileData) { result in
+            switch result {
+            case .success:
+                e.fulfill()
+            case .failure:
+                XCTFail("Network level failure")
+            }
+        }
+        waitForExpectations(timeout: 5.0, handler: nil)
+    }
 }

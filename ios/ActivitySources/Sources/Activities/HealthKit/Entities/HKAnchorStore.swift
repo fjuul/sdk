@@ -41,28 +41,34 @@ struct HKAnchorStore {
             anchors?[.heartRate] = newAnchor
         case HKObjectType.workoutType():
             anchors?[.workout] = newAnchor
+        case HKObjectType.quantityType(forIdentifier: .bodyMass):
+            anchors?[.bodyMass] = newAnchor
+        case HKObjectType.quantityType(forIdentifier: .height):
+            anchors?[.height] = newAnchor
         default:
             throw FjuulError.activitySourceFailure(reason: .wrongHealthKitObjectType)
         }
     }
 
     /// Fetch anchor from persisted store based on HKObjectType
-    func get(type: HKObjectType) throws -> HKQueryAnchor {
-        let defaultValue = HKQueryAnchor.init(fromValue: 0)
-
+    func get(type: HKObjectType) throws -> HKQueryAnchor? {
         switch type {
         case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned):
-            return anchors?[.activeEnergyBurned] ?? defaultValue
+            return anchors?[.activeEnergyBurned]
         case HKObjectType.quantityType(forIdentifier: .stepCount):
-            return anchors?[.stepCount] ?? defaultValue
+            return anchors?[.stepCount]
         case HKObjectType.quantityType(forIdentifier: .distanceCycling):
-            return anchors?[.distanceCycling] ?? defaultValue
+            return anchors?[.distanceCycling]
         case HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning):
-            return anchors?[.distanceWalkingRunning] ?? defaultValue
+            return anchors?[.distanceWalkingRunning]
         case HKObjectType.quantityType(forIdentifier: .heartRate):
-            return anchors?[.heartRate] ?? defaultValue
+            return anchors?[.heartRate]
         case HKObjectType.workoutType():
-            return anchors?[.workout] ?? defaultValue
+            return anchors?[.workout]
+        case HKObjectType.quantityType(forIdentifier: .bodyMass):
+            return anchors?[.bodyMass]
+        case HKObjectType.quantityType(forIdentifier: .height):
+            return anchors?[.height]
         default:
             throw FjuulError.activitySourceFailure(reason: .wrongHealthKitObjectType)
         }

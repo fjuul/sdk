@@ -170,7 +170,7 @@ class HealthKitManager: HealthKitManaging {
     /// Initiates HK queries for new data based on the given type
     ///
     /// - parameter sampleType: `HKObjectType` which has new data avilable.
-    /// - parameter completion: HKRequestData? and the new anchore
+    /// - parameter completion: HKBatchData? and the new anchore
     private func queryForUpdates(sampleType: HKSampleType, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
         switch sampleType {
         case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned),
@@ -179,43 +179,79 @@ class HealthKitManager: HealthKitManaging {
              HKObjectType.quantityType(forIdentifier: .heartRate),
              HKObjectType.quantityType(forIdentifier: .stepCount):
             self.fetchIntradayUpdates(sampleType: (sampleType as? HKQuantityType)!) { (data, newAnchor) in
-                completion(data, newAnchor)
+                guard let data = data else {
+                    completion(nil, newAnchor)
+                    return
+                }
+
+                completion(HKRequestData.batchData(data), newAnchor)
             }
         case HKObjectType.workoutType():
             self.fetchWorkoutsUpdates { (data, newAnchor) in
-                completion(data, newAnchor)
+                guard let data = data else {
+                    completion(nil, newAnchor)
+                    return
+                }
+
+                completion(HKRequestData.batchData(data), newAnchor)
+            }
+        case HKObjectType.quantityType(forIdentifier: .height), HKObjectType.quantityType(forIdentifier: .bodyMass):
+            self.fetchUserBodyUpdates(sampleType: (sampleType as? HKQuantityType)!) { (data, newAnchor) in
+                guard let data = data else {
+                    completion(nil, newAnchor)
+                    return
+                }
+
+                completion(HKRequestData.userProfileData(data), newAnchor)
             }
         default:
             completion(nil, nil)
         }
     }
 
-    private func fetchWorkoutsUpdates(completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
-        guard let anchor = try? self.anchorStore.get(type: HKObjectType.workoutType()) else {
+    private func fetchWorkoutsUpdates(completion: @escaping (_ data: HKBatchData?, _ newAnchor: HKQueryAnchor?) -> Void) {
+        do {
+            let anchor = try self.anchorStore.get(type: HKObjectType.workoutType())
+            let predicateBuilder = HealthKitQueryPredicateBuilder(healthKitConfig: self.config.healthKitConfig)
+
+            WorkoutFetcher.fetch(anchor: anchor, predicateBuilder: predicateBuilder) { requestData, newAnchor in
+
+                completion(requestData, newAnchor)
+            }
+        } catch {
+            DataLogger.shared.error("Unexpected error on get HKAnchor for the Workout type: \(error)")
             completion(nil, nil)
             return
-        }
-
-        let predicateBuilder = HealthKitQueryPredicateBuilder(healthKitConfig: self.config.healthKitConfig)
-
-        WorkoutFetcher.fetch(anchor: anchor, predicateBuilder: predicateBuilder) { requestData, newAnchor in
-
-            completion(requestData, newAnchor)
         }
     }
 
-    private func fetchIntradayUpdates(sampleType: HKQuantityType, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
-        guard let anchor = try? self.anchorStore.get(type: sampleType) else {
-            DataLogger.shared.error("Unexpected error on get HKAnchor for the type: \(sampleType).")
+    private func fetchIntradayUpdates(sampleType: HKQuantityType, completion: @escaping (_ data: HKBatchData?, _ newAnchor: HKQueryAnchor?) -> Void) {
+        do {
+            let anchor = try self.anchorStore.get(type: sampleType)
+            let predicateBuilder = HealthKitQueryPredicateBuilder(healthKitConfig: self.config.healthKitConfig)
+
+            AggregatedDataFetcher.fetch(type: sampleType, anchor: anchor, predicateBuilder: predicateBuilder) { hkBatchData, newAnchor in
+
+                completion(hkBatchData, newAnchor)
+            }
+        } catch {
+            DataLogger.shared.error("Unexpected error on get HKAnchor for the type: \(sampleType) \(error).")
             completion(nil, nil)
             return
         }
+    }
 
-        let predicateBuilder = HealthKitQueryPredicateBuilder(healthKitConfig: self.config.healthKitConfig)
+    private func fetchUserBodyUpdates(sampleType: HKQuantityType, completion: @escaping (_ data: HKUserProfileData?, _ newAnchor: HKQueryAnchor?) -> Void) {
+        do {
+            let anchor = try self.anchorStore.get(type: sampleType)
 
-        AggregatedDataFetcher.fetch(type: sampleType, anchor: anchor, predicateBuilder: predicateBuilder) { hkRequestData, newAnchor in
-
-            completion(hkRequestData, newAnchor)
+            UserProfileDataFetcher.fetch(type: sampleType, anchor: anchor) { hkUserProfileData, newAnchor in
+                completion(hkUserProfileData, newAnchor)
+            }
+        } catch {
+            DataLogger.shared.error("Unexpected error on get HKAnchor for the type: \(sampleType) \(error).")
+            completion(nil, nil)
+            return
         }
     }
 }

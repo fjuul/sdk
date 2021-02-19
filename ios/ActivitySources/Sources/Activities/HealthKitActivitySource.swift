@@ -77,38 +77,23 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
 
     /// Handler for new data from backgroundDelivery or manual sync
     /// - Parameters:
-    ///   - requestData: instance of HKRequestData
+    ///   - requestData: instance of HKBatchData
     ///   - completion: void or error
     private func dataHandler(_ requestData: HKRequestData?, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let apiClient = self.apiClient else { return  completion(.failure(FjuulError.invalidConfig))}
         guard let requestData = requestData else {
             completion(.success(()))
             return
         }
 
-        self.sendBatch(data: requestData) { result in
-            completion(result)
-        }
-    }
-
-    /// Sends data to back-end
-    /// - Parameters:
-    ///   - data: instance of HKRequestData
-    ///   - completion: void or error
-    private func sendBatch(data: HKRequestData, completion: @escaping (Result<Void, Error>) -> Void) {
-        guard let apiClient = self.apiClient else { return  completion(.failure(FjuulError.invalidConfig))}
-
-        let url = "\(apiClient.apiClient.baseUrl)/sdk/activity-sources/v1/\(apiClient.apiClient.userToken)/healthkit"
-
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .formatted(DateFormatters.iso8601Full)
-        let parameterEncoder = JSONParameterEncoder(encoder: encoder)
-
-        apiClient.apiClient.signedSession.request(url, method: .post, parameters: data, encoder: parameterEncoder).response { response in
-            switch response.result {
-            case .success:
-                return completion(.success(()))
-            case .failure(let err):
-                return completion(.failure(err))
+        switch requestData {
+        case .batchData(let batchData):
+            apiClient.sendHealthKitBatchData(data: batchData) { result in
+                completion(result)
+            }
+        case .userProfileData(let userProfile):
+            apiClient.sendHealthKitUserProfileData(data: userProfile) { result in
+                completion(result)
             }
         }
     }

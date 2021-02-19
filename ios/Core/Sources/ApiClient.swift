@@ -145,6 +145,6 @@ fileprivate extension ApiClient {
 
         let configuration = URLSessionConfiguration.af.default
         configuration.urlCache = nil
-        return Session(configuration: configuration, interceptor: compositeInterceptor, eventMonitors: [])
+        return Session(configuration: configuration, interceptor: compositeInterceptor)
     }
 }

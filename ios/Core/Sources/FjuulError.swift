@@ -12,8 +12,8 @@ public enum FjuulError: Error {
     }
 
     public enum ActivitySourceConnectionFailureReason {
-        case generic
-        case sourceAlreadyConnected
+        case generic(message: String?)
+        case sourceAlreadyConnected(message: String?)
     }
 
     public enum ActivitySourceFailureReason {
@@ -24,6 +24,15 @@ public enum FjuulError: Error {
         case backgroundDeliveryNotDisabled
     }
 
+    public enum AnalyticsFailureReason {
+        case generic(message: String?)
+    }
+
+    public enum UserFailureReason {
+        case generic(message: String?)
+        case validation(error: ValidationErrorJSONBodyResponse)
+    }
+
     case invalidConfig
     case authenticationFailure(reason: AuthenticationFailureReason)
 
@@ -32,5 +41,35 @@ public enum FjuulError: Error {
     // this as single entrypoint for all possible Errors.
     case activitySourceConnectionFailure(reason: ActivitySourceConnectionFailureReason)
     case activitySourceFailure(reason: ActivitySourceFailureReason)
+    case analyticsFailure(reason: AnalyticsFailureReason)
+    case userFailure(reason: UserFailureReason)
 
+}
+
+extension FjuulError: LocalizedError {
+    public var errorDescription: String? {
+        switch self {
+        case .activitySourceConnectionFailure(let reason):
+            switch reason {
+            case .generic(let message):
+                return message
+            case .sourceAlreadyConnected(let message):
+                return message
+            }
+        case .analyticsFailure(let reason):
+            switch reason {
+            case .generic(let message):
+                return message
+            }
+        case .userFailure(let reason):
+            switch reason {
+            case .generic(let message):
+                return message
+            case .validation(let validationErr):
+                return validationErr.message
+            }
+        default:
+            return nil
+        }
+    }
 }

@@ -21,7 +21,14 @@ public class UserApi {
         }
         ApiClient.requestUnauthenticated(url, apiKey: apiKey, method: .post,
                                          parameters: profileData.asJsonEncodableDictionary(), encoding: JSONEncoding.default).apiResponse { response in
-            let decodedResponse = response.tryMap { try Decoders.yyyyMMddLocale.decode(UserCreationResult.self, from: $0) }
+            let decodedResponse = response
+                .tryMap { try Decoders.yyyyMMddLocale.decode(UserCreationResult.self, from: $0) }
+                .mapError { err -> Error in
+                    guard let responseData = response.data else { return err }
+                    guard let errorResponse = try? Decoders.iso8601Full.decode(ValidationErrorJSONBodyResponse.self, from: responseData) else { return err }
+
+                    return FjuulError.userFailure(reason: .validation(error: errorResponse))
+                }
             return completion(decodedResponse.result)
         }
     }
@@ -46,7 +53,13 @@ public class UserApi {
             return completion(.failure(FjuulError.invalidConfig))
         }
         apiClient.signedSession.request(url, method: .get).apiResponse { response in
-            let decodedResponse = response.tryMap { try Decoders.yyyyMMddLocale.decode(UserProfile.self, from: $0) }
+            let decodedResponse = response
+                .tryMap { try Decoders.yyyyMMddLocale.decode(UserProfile.self, from: $0) }
+                .mapAPIError { _, jsonError in
+                    guard let jsonError = jsonError else { return nil }
+
+                    return .userFailure(reason: .generic(message: jsonError.message))
+                }
             completion(decodedResponse.result)
         }
     }
@@ -57,7 +70,14 @@ public class UserApi {
             return completion(.failure(FjuulError.invalidConfig))
         }
         apiClient.signedSession.request(url, method: .put, parameters: profile.asJsonEncodableDictionary(), encoding: JSONEncoding.default).apiResponse { response in
-            let decodedResponse = response.tryMap { try Decoders.yyyyMMddLocale.decode(UserProfile.self, from: $0) }
+            let decodedResponse = response
+                .tryMap { try Decoders.yyyyMMddLocale.decode(UserProfile.self, from: $0) }
+                .mapError { err -> Error in
+                    guard let responseData = response.data else { return err }
+                    guard let errorResponse = try? Decoders.iso8601Full.decode(ValidationErrorJSONBodyResponse.self, from: responseData) else { return err }
+
+                    return FjuulError.userFailure(reason: .validation(error: errorResponse))
+                }
             completion(decodedResponse.result)
         }
     }

@@ -73,6 +73,8 @@ class UserFormViewModel : ViewModel() {
         profileBuilder?.locale = locale
     }
 
+    val profileWasRefreshed = MutableLiveData<Boolean>(false)
+
     @Throws(Exception::class)
     fun createUser(context: Context, apiKey: String, sdkEnvironment: SdkEnvironment): ApiCall<UserCreationResult> {
         val partialProfile = _profileBuilder ?: throw Exception("empty profile params")

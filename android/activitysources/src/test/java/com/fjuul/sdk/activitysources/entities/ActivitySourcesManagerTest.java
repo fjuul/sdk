@@ -467,6 +467,7 @@ public class ActivitySourcesManagerTest {
                     gfActivitySourceConnection.getTracker());
                 // should configure background works because of the presence of the google-fit tracker
                 verify(mockedBackgroundWorkManager).configureGFSyncWorks();
+                verify(mockedBackgroundWorkManager).configureProfileSyncWork();
             }
 
             @Test
@@ -517,6 +518,7 @@ public class ActivitySourcesManagerTest {
                     polarActivitySourceConnection.getTracker());
                 // should cancel background works because of the absence of the google-fit tracker
                 verify(mockedBackgroundWorkManager).cancelGFSyncWorks();
+                verify(mockedBackgroundWorkManager).cancelProfileSyncWork();
                 final ArgumentCaptor<Result<List<ActivitySourceConnection>>> callbackResultArgumentCaptor =
                     ArgumentCaptor.forClass(Result.class);
                 // should pass new connections to the callback

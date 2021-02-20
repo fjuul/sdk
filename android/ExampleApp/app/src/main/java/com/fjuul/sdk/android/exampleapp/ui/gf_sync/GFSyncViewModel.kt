@@ -7,6 +7,7 @@ import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource
 import com.fjuul.sdk.activitysources.entities.GoogleFitIntradaySyncOptions
+import com.fjuul.sdk.activitysources.entities.GoogleFitProfileSyncOptions
 import com.fjuul.sdk.activitysources.entities.GoogleFitSessionSyncOptions
 import java.lang.Exception
 import java.time.Duration
@@ -17,12 +18,14 @@ class GFSyncViewModel : ViewModel() {
     private val _endDate = MutableLiveData<LocalDate>(LocalDate.now())
     private val _syncingIntradayMetrics = MutableLiveData<Boolean>(false)
     private val _syncingSessions = MutableLiveData<Boolean>(false)
+    private val _syncingProfile = MutableLiveData<Boolean>(false)
     private val _errorMessage = MutableLiveData<String?>()
 
     val startDate: LiveData<LocalDate> = _startDate
     val endDate: LiveData<LocalDate> = _endDate
     val syncingIntradayMetrics: LiveData<Boolean> = _syncingIntradayMetrics
     val syncingSessions: LiveData<Boolean> = _syncingSessions
+    val syncingProfile: LiveData<Boolean> = _syncingProfile
     val errorMessage: LiveData<String?> = _errorMessage
 
     fun setupDateRange(startDate: LocalDate? = null, endDate: LocalDate? = null) {
@@ -92,6 +95,33 @@ class GFSyncViewModel : ViewModel() {
             if (result.isError) {
                 _errorMessage.postValue(result.error?.message)
                 return@syncSessions
+            }
+        }
+    }
+
+    fun runProfileSync(height: Boolean, weight: Boolean) {
+        val manager = ActivitySourcesManager.getInstance()
+        val gfConnectionSource = manager.current?.find { connection -> connection.activitySource is GoogleFitActivitySource }
+        if (gfConnectionSource == null) {
+            _errorMessage.value = "No active Google Fit connection"
+            return
+        }
+        lateinit var options: GoogleFitProfileSyncOptions
+        try {
+            options = GoogleFitProfileSyncOptions.Builder().apply {
+                if (height) { include(FitnessMetricsType.HEIGHT) }
+                if (weight) { include(FitnessMetricsType.WEIGHT) }
+            }.build()
+        } catch (exc: Exception) {
+            _errorMessage.postValue(exc.message)
+            return
+        }
+        _syncingProfile.postValue(true)
+        (gfConnectionSource.activitySource as GoogleFitActivitySource).syncProfile(options) { result ->
+            _syncingProfile.postValue(false)
+            if (result.isError) {
+                _errorMessage.postValue(result.error?.message)
+                return@syncProfile
             }
         }
     }

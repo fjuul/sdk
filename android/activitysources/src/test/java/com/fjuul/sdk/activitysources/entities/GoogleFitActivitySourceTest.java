@@ -1028,6 +1028,21 @@ public class GoogleFitActivitySourceTest {
             }
 
             @Test
+            public void buildGoogleSignInOptions_whenNoOfflineAccessAndAllPossibleFitnessMetrics_returnsOptionsWithScopes() {
+                final GoogleSignInOptions result = GoogleFitActivitySource.buildGoogleSignInOptions(false,
+                    null,
+                    Stream.of(FitnessMetricsType.class.getEnumConstants()).collect(Collectors.toSet()));
+                assertEquals("should have several scopes",
+                    Stream
+                        .of(Fitness.SCOPE_LOCATION_READ,
+                            Fitness.SCOPE_BODY_READ,
+                            Fitness.SCOPE_ACTIVITY_READ,
+                            new Scope("https://www.googleapis.com/auth/fitness.heart_rate.read"))
+                        .collect(Collectors.toList()),
+                    result.getScopes());
+            }
+
+            @Test
             public void buildGoogleSignInOptions_whenOfflineAccessAndFitnessMetricsHasOnlyCalories_returnsOptionsWithAllScopes() {
                 final GoogleSignInOptions result = GoogleFitActivitySource.buildGoogleSignInOptions(true,
                     DUMMY_SERVER_CLIENT_ID,

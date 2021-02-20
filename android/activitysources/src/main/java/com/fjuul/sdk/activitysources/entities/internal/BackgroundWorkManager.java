@@ -13,19 +13,19 @@ public class BackgroundWorkManager {
     @NonNull
     private final ActivitySourcesManagerConfig config;
     @NonNull
-    private final GFSyncWorkManager gfSyncWorkManager;
+    private final ActivitySourceWorkScheduler activitySourceWorkScheduler;
 
     public BackgroundWorkManager(@NonNull ActivitySourcesManagerConfig config,
-        @NonNull GFSyncWorkManager gfSyncWorkManager) {
+        @NonNull ActivitySourceWorkScheduler activitySourceWorkScheduler) {
         this.config = config;
-        this.gfSyncWorkManager = gfSyncWorkManager;
+        this.activitySourceWorkScheduler = activitySourceWorkScheduler;
     }
 
     @SuppressLint("NewApi")
     public void configureBackgroundGFSyncWorks() {
         switch (config.getGoogleFitIntradayBackgroundSyncMode()) {
             case DISABLED: {
-                gfSyncWorkManager.cancelIntradaySyncWork();
+                activitySourceWorkScheduler.cancelGFIntradaySyncWork();
                 break;
             }
             case ENABLED: {
@@ -34,24 +34,24 @@ public class BackgroundWorkManager {
                     .filter(FitnessMetricsType::isIntradayMetricType)
                     .collect(Collectors.toSet());
                 if (intradayMetrics.isEmpty()) {
-                    gfSyncWorkManager.cancelIntradaySyncWork();
+                    activitySourceWorkScheduler.cancelGFIntradaySyncWork();
                 } else {
-                    gfSyncWorkManager.scheduleIntradaySyncWork(intradayMetrics);
+                    activitySourceWorkScheduler.scheduleGFIntradaySyncWork(intradayMetrics);
                 }
                 break;
             }
         }
         switch (config.getGoogleFitSessionsBackgroundSyncMode()) {
             case DISABLED: {
-                gfSyncWorkManager.cancelSessionsSyncWork();
+                activitySourceWorkScheduler.cancelGFSessionsSyncWork();
                 break;
             }
             case ENABLED: {
                 if (config.getCollectableFitnessMetrics().contains(FitnessMetricsType.WORKOUTS)) {
-                    gfSyncWorkManager
-                        .scheduleSessionsSyncWork(config.getGoogleFitSessionsBackgroundSyncMinSessionDuration());
+                    activitySourceWorkScheduler
+                        .scheduleGFSessionsSyncWork(config.getGoogleFitSessionsBackgroundSyncMinSessionDuration());
                 } else {
-                    gfSyncWorkManager.cancelSessionsSyncWork();
+                    activitySourceWorkScheduler.cancelGFSessionsSyncWork();
                 }
                 break;
             }
@@ -59,6 +59,6 @@ public class BackgroundWorkManager {
     }
 
     public void cancelBackgroundGFSyncWorks() {
-        gfSyncWorkManager.cancelWorks();
+        activitySourceWorkScheduler.cancelWorks();
     }
 }

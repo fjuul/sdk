@@ -10,7 +10,7 @@ import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthentic
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourcesStateStore;
 import com.fjuul.sdk.activitysources.entities.internal.BackgroundWorkManager;
-import com.fjuul.sdk.activitysources.entities.internal.GFSyncWorkManager;
+import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceWorkScheduler;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.Callback;
@@ -123,14 +123,14 @@ public final class ActivitySourcesManager {
         final List<TrackerConnection> storedConnections = stateStore.getConnections();
         final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
         final WorkManager workManager = WorkManager.getInstance(client.getAppContext());
-        final GFSyncWorkManager gfSyncWorkManager = new GFSyncWorkManager(workManager,
+        final ActivitySourceWorkScheduler activitySourceWorkScheduler = new ActivitySourceWorkScheduler(workManager,
             client.getUserToken(),
             client.getUserSecret(),
             client.getApiKey(),
             client.getBaseUrl());
         GoogleFitActivitySource.initialize(client, config);
 
-        final BackgroundWorkManager backgroundWorkManager = new BackgroundWorkManager(config, gfSyncWorkManager);
+        final BackgroundWorkManager backgroundWorkManager = new BackgroundWorkManager(config, activitySourceWorkScheduler);
         setupBackgroundWorksByConnections(storedConnections, backgroundWorkManager);
         final ActivitySourceResolver activitySourceResolver = new ActivitySourceResolver();
         instance = new ActivitySourcesManager(config,
@@ -341,7 +341,7 @@ public final class ActivitySourcesManager {
      */
     public static void disableBackgroundWorkers(@NonNull Context applicationContext) {
         final WorkManager workManager = WorkManager.getInstance(applicationContext);
-        GFSyncWorkManager.cancelWorks(workManager);
+        ActivitySourceWorkScheduler.cancelWorks(workManager);
     }
 
     @SuppressLint("NewApi")

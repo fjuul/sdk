@@ -24,4 +24,14 @@ public enum FitnessMetricsType {
                 return false;
         }
     }
+
+    public static boolean isProfileMetricType(@NonNull FitnessMetricsType metricsType) {
+        switch (metricsType) {
+            case HEIGHT:
+            case WEIGHT:
+                return true;
+            default:
+                return false;
+        }
+    }
 }

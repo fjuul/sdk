@@ -53,10 +53,9 @@ import androidx.work.testing.TestWorkerBuilder;
 public class GFSessionsSyncWorkerTest {
     @RunWith(RobolectricTestRunner.class)
     @Config(sdk = {Build.VERSION_CODES.P})
-    public abstract static class GivenRobolectricContext {}
+    private abstract static class GivenRobolectricContext {}
 
-    public static class GetOrInitializeActivitySourcesManagerTests
-        extends GFIntradaySyncWorkerTest.GivenRobolectricContext {
+    public static class GetOrInitializeActivitySourcesManagerTests extends GivenRobolectricContext {
         GFSessionsSyncWorker subject;
         TestWorkerBuilder<GFSessionsSyncWorker> workerBuilder;
 

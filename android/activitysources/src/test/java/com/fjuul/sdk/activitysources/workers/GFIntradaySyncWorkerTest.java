@@ -55,7 +55,7 @@ import androidx.work.testing.TestWorkerBuilder;
 public class GFIntradaySyncWorkerTest {
     @RunWith(RobolectricTestRunner.class)
     @Config(sdk = {Build.VERSION_CODES.P})
-    public abstract static class GivenRobolectricContext {}
+    private abstract static class GivenRobolectricContext {}
 
     public static class GetOrInitializeActivitySourcesManagerTests extends GivenRobolectricContext {
         GFIntradaySyncWorker subject;

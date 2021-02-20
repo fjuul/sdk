@@ -358,10 +358,13 @@ public final class ActivitySourcesManager {
 
     private static void setupBackgroundWorksByConnections(@Nullable List<TrackerConnection> trackerConnections,
         @NonNull BackgroundWorkManager backgroundWorkManager) {
+        // TODO: move out the line with configuring the profile sync work when there will be other local activity sources
         if (checkIfHasGoogleFitConnection(trackerConnections)) {
+            backgroundWorkManager.configureProfileSyncWork();
             backgroundWorkManager.configureGFSyncWorks();
         } else {
             backgroundWorkManager.cancelGFSyncWorks();
+            backgroundWorkManager.cancelProfileSyncWork();
         }
     }
 

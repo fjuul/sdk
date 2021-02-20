@@ -59,6 +59,32 @@ public class BackgroundWorkManager {
     }
 
     public void cancelGFSyncWorks() {
-        workScheduler.cancelWorks();
+        workScheduler.cancelGFIntradaySyncWork();
+        workScheduler.cancelGFSessionsSyncWork();
+    }
+
+    @SuppressLint("NewApi")
+    public void configureProfileSyncWork() {
+        switch (config.getProfileBackgroundSyncMode()) {
+            case DISABLED:
+                workScheduler.cancelProfileSyncWork();
+                break;
+            case ENABLED: {
+                final Set<FitnessMetricsType> profileMetrics = config.getCollectableFitnessMetrics()
+                    .stream()
+                    .filter(FitnessMetricsType::isProfileMetricType)
+                    .collect(Collectors.toSet());
+                if (profileMetrics.isEmpty()) {
+                    workScheduler.cancelProfileSyncWork();
+                } else {
+                    workScheduler.scheduleProfileSyncWork(profileMetrics);
+                }
+                break;
+            }
+        }
+    }
+
+    public void cancelProfileSyncWork() {
+        workScheduler.cancelProfileSyncWork();
     }
 }

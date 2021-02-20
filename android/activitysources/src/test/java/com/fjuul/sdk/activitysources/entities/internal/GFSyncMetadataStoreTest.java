@@ -27,10 +27,12 @@ import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFCalorieDataPo
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPointsBatch;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRSummaryDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHeightDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFPowerDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSessionBundle;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSpeedDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFStepsDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFWeightDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata.GFSyncMetadataStore;
 import com.fjuul.sdk.core.entities.IStorage;
 
@@ -268,6 +270,54 @@ public class GFSyncMetadataStoreTest {
             final String expectedSessionMetadataJson =
                 "{\"activitySegmentsCount\":0,\"applicationIdentifier\":\"com.google.android.apps.fitness\",\"caloriesCount\":0,\"editedAt\":\"2020-10-16T21:30:00.000Z\",\"heartRateCount\":0,\"id\":\"new_session_id\",\"name\":\"short walk\",\"powerCount\":0,\"schemaVersion\":1,\"speedCount\":0,\"stepsCount\":0,\"timeEnd\":\"2020-10-16T13:00:00.000Z\",\"timeStart\":\"2020-10-16T11:20:00.000Z\",\"type\":7}";
             verify(mockedStorage).set(expectedSessionKey, expectedSessionMetadataJson);
+        }
+    }
+
+    public static class SaveSyncMetadataOfHeightTest extends GivenRobolectricContext {
+        Clock fixedClock;
+        GFSyncMetadataStore gfSyncMetadataStore;
+        IStorage mockedStorage;
+
+        @Before
+        public void beforeTests() {
+            String instantExpected = "2020-09-15T21:30:00Z";
+            fixedClock = Clock.fixed(Instant.parse(instantExpected), ZoneId.of("UTC"));
+            mockedStorage = mock(IStorage.class);
+            gfSyncMetadataStore = new GFSyncMetadataStore(mockedStorage, fixedClock);
+        }
+
+        @Test
+        public void saveSyncMetadataOfHeight_createsAndSavesSyncMetadataInUTC() {
+            GFHeightDataPoint height = new GFHeightDataPoint(190.5f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));
+            gfSyncMetadataStore.saveSyncMetadataOfHeight(height);
+            final String expectedKey = "gf-sync-metadata.height";
+            final String expectedJson =
+                "{\"createdAt\":\"2020-09-10T10:00:00.000Z\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"height\":190.5,\"schemaVersion\":1}";
+            verify(mockedStorage, times(1)).set(expectedKey, expectedJson);
+        }
+    }
+
+    public static class SaveSyncMetadataOfWeightTest extends GivenRobolectricContext {
+        Clock fixedClock;
+        GFSyncMetadataStore gfSyncMetadataStore;
+        IStorage mockedStorage;
+
+        @Before
+        public void beforeTests() {
+            String instantExpected = "2020-09-15T21:30:00Z";
+            fixedClock = Clock.fixed(Instant.parse(instantExpected), ZoneId.of("UTC"));
+            mockedStorage = mock(IStorage.class);
+            gfSyncMetadataStore = new GFSyncMetadataStore(mockedStorage, fixedClock);
+        }
+
+        @Test
+        public void saveSyncMetadataOfWeight_createsAndSavesSyncMetadataInUTC() {
+            GFWeightDataPoint weight = new GFWeightDataPoint(77.6f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));
+            gfSyncMetadataStore.saveSyncMetadataOfWeight(weight);
+            final String expectedKey = "gf-sync-metadata.weight";
+            final String expectedJson =
+                "{\"createdAt\":\"2020-09-10T10:00:00.000Z\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"weight\":77.6}";
+            verify(mockedStorage, times(1)).set(expectedKey, expectedJson);
         }
     }
 
@@ -697,6 +747,126 @@ public class GFSyncMetadataStoreTest {
                 "{\"activitySegmentsCount\":2,\"applicationIdentifier\":\"com.google.android.apps.fitness\",\"caloriesCount\":3,\"editedAt\":\"2020-09-15T21:40:00.000Z\",\"heartRateCount\":3,\"id\":\"679acf3c-3d38-4931-8822-0b355d8134e1\",\"name\":\"short walk\",\"powerCount\":1,\"schemaVersion\":1,\"speedCount\":2,\"stepsCount\":3,\"timeEnd\":\"2020-10-16T13:00:00.000Z\",\"timeStart\":\"2020-10-16T11:20:00.000Z\",\"type\":7}";
             when(mockedStorage.get(expectedKey)).thenReturn(storedJson);
             boolean result = gfSyncMetadataStore.isNeededToSyncSessionBundle(session);
+            assertFalse("should not require the sync", result);
+            verify(mockedStorage, times(1)).get(expectedKey);
+        }
+    }
+
+    public static class CheckIfNeedToSyncHeightTest extends GivenRobolectricContext {
+        Clock fixedClock;
+        GFSyncMetadataStore gfSyncMetadataStore;
+        IStorage mockedStorage;
+
+        @Before
+        public void beforeTests() {
+            String instantExpected = "2020-09-15T21:40:00Z";
+            fixedClock = Clock.fixed(Instant.parse(instantExpected), ZoneId.of("UTC"));
+            mockedStorage = mock(IStorage.class);
+            gfSyncMetadataStore = new GFSyncMetadataStore(mockedStorage, fixedClock);
+        }
+
+        @Test
+        public void isNeededToSyncHeight_whenNoStoredMetadata_returnsTrue() {
+            final GFHeightDataPoint height = new GFHeightDataPoint(190.5f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
+            final String expectedKey = "gf-sync-metadata.height";
+            when(mockedStorage.get(expectedKey)).thenReturn(null);
+            boolean result = gfSyncMetadataStore.isNeededToSyncHeight(height);
+            assertTrue("should require the sync", result);
+            verify(mockedStorage, times(1)).get(expectedKey);
+        }
+
+        @Test
+        public void isNeededToSyncHeight_whenStoredMetadataHasDifferentCreatedAt_returnsTrue() {
+            final GFHeightDataPoint height = new GFHeightDataPoint(190.5f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
+            final String expectedKey = "gf-sync-metadata.height";
+            final String storedJson =
+                "{\"createdAt\":\"2020-06-01T15:20:00.000Z\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"height\":189.9,\"schemaVersion\":1}";
+            when(mockedStorage.get(expectedKey)).thenReturn(storedJson);
+            boolean result = gfSyncMetadataStore.isNeededToSyncHeight(height);
+            assertTrue("should require the sync", result);
+            verify(mockedStorage, times(1)).get(expectedKey);
+        }
+
+        @Test
+        public void isNeededToSyncHeight_whenStoredMetadataHasDifferentHeight_returnsTrue() {
+            final GFHeightDataPoint height = new GFHeightDataPoint(190.5f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
+            final String expectedKey = "gf-sync-metadata.height";
+            final String storedJson =
+                "{\"createdAt\":\"2020-09-10T10:00:00.000Z\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"height\":190.9,\"schemaVersion\":1}";
+            when(mockedStorage.get(expectedKey)).thenReturn(storedJson);
+            boolean result = gfSyncMetadataStore.isNeededToSyncHeight(height);
+            assertTrue("should require the sync", result);
+            verify(mockedStorage, times(1)).get(expectedKey);
+        }
+
+        @Test
+        public void isNeededToSyncHeight_whenStoredMetadataHasNoSignificantDifference_returnsFalse() {
+            final GFHeightDataPoint height = new GFHeightDataPoint(190.5f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
+            final String expectedKey = "gf-sync-metadata.height";
+            final String storedJson =
+                "{\"createdAt\":\"2020-09-10T10:00:00.000Z\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"height\":190.55,\"schemaVersion\":1}";
+            when(mockedStorage.get(expectedKey)).thenReturn(storedJson);
+            boolean result = gfSyncMetadataStore.isNeededToSyncHeight(height);
+            assertFalse("should not require the sync", result);
+            verify(mockedStorage, times(1)).get(expectedKey);
+        }
+    }
+
+    public static class CheckIfNeedToSyncWeightTest extends GivenRobolectricContext {
+        Clock fixedClock;
+        GFSyncMetadataStore gfSyncMetadataStore;
+        IStorage mockedStorage;
+
+        @Before
+        public void beforeTests() {
+            String instantExpected = "2020-09-15T21:40:00Z";
+            fixedClock = Clock.fixed(Instant.parse(instantExpected), ZoneId.of("UTC"));
+            mockedStorage = mock(IStorage.class);
+            gfSyncMetadataStore = new GFSyncMetadataStore(mockedStorage, fixedClock);
+        }
+
+        @Test
+        public void isNeededToSyncWeight_whenNoStoredMetadata_returnsTrue() {
+            final GFWeightDataPoint weight = new GFWeightDataPoint(77.7f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
+            final String expectedKey = "gf-sync-metadata.weight";
+            when(mockedStorage.get(expectedKey)).thenReturn(null);
+            boolean result = gfSyncMetadataStore.isNeededToSyncWeight(weight);
+            assertTrue("should require the sync", result);
+            verify(mockedStorage, times(1)).get(expectedKey);
+        }
+
+        @Test
+        public void isNeededToSyncWeight_whenStoredMetadataHasDifferentCreatedAt_returnsTrue() {
+            final GFWeightDataPoint weight = new GFWeightDataPoint(77.7f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
+            final String expectedKey = "gf-sync-metadata.weight";
+            final String storedJson =
+                "{\"createdAt\":\"2020-06-01T10:00:00.000Z\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"weight\":77.7}";
+            when(mockedStorage.get(expectedKey)).thenReturn(storedJson);
+            boolean result = gfSyncMetadataStore.isNeededToSyncWeight(weight);
+            assertTrue("should require the sync", result);
+            verify(mockedStorage, times(1)).get(expectedKey);
+        }
+
+        @Test
+        public void isNeededToSyncWeight_whenStoredMetadataHasDifferentWeight_returnsTrue() {
+            final GFWeightDataPoint weight = new GFWeightDataPoint(77.7f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
+            final String expectedKey = "gf-sync-metadata.weight";
+            final String storedJson =
+                "{\"createdAt\":\"2020-09-10T10:00:00.000Z\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"weight\":77.6}";
+            when(mockedStorage.get(expectedKey)).thenReturn(storedJson);
+            boolean result = gfSyncMetadataStore.isNeededToSyncWeight(weight);
+            assertTrue("should require the sync", result);
+            verify(mockedStorage, times(1)).get(expectedKey);
+        }
+
+        @Test
+        public void isNeededToSyncWeight_whenStoredMetadataHasNoSignificantDifference_returnsFalse() {
+            final GFWeightDataPoint weight = new GFWeightDataPoint(77.7f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
+            final String expectedKey = "gf-sync-metadata.weight";
+            final String storedJson =
+                "{\"createdAt\":\"2020-09-10T10:00:00.000Z\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"weight\":77.705}";
+            when(mockedStorage.get(expectedKey)).thenReturn(storedJson);
+            boolean result = gfSyncMetadataStore.isNeededToSyncWeight(weight);
             assertFalse("should not require the sync", result);
             verify(mockedStorage, times(1)).get(expectedKey);
         }

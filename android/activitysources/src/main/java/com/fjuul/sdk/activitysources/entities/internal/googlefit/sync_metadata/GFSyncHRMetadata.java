@@ -50,7 +50,8 @@ public class GFSyncHRMetadata extends GFSyncDatedEntityMetadata {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GFSyncHRMetadata that = (GFSyncHRMetadata) o;
-        return Objects.equals(date, that.date) && count == that.count
+        return Objects.equals(date, that.date)
+            && count == that.count
             && Math.abs(sumOfAverages - that.sumOfAverages) <= TOTAL_HR_ACCURACY;
     }
 }

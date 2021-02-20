@@ -50,7 +50,8 @@ public final class GFSyncCaloriesMetadata extends GFSyncDatedEntityMetadata {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GFSyncCaloriesMetadata that = (GFSyncCaloriesMetadata) o;
-        return Objects.equals(date, that.date) && count == that.count
+        return Objects.equals(date, that.date)
+            && count == that.count
             && Math.abs(totalKcals - that.totalKcals) <= TOTAL_CALORIES_ACCURACY;
     }
 }

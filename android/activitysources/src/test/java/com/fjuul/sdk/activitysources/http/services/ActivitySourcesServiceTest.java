@@ -317,12 +317,10 @@ public class ActivitySourcesServiceTest {
             mockWebServer.enqueue(mockResponse);
 
             GFUploadData data = new GFUploadData();
-            List<GFCalorieDataPoint> calories = Arrays.asList(
-                new GFCalorieDataPoint(5.2751f,
-                    Date.from(Instant.parse("2020-01-01T10:05:00Z")),
-                    Date.from(Instant.parse("2020-01-01T10:15:00Z")),
-                    "calories:googlefit")
-            );
+            List<GFCalorieDataPoint> calories = Arrays.asList(new GFCalorieDataPoint(5.2751f,
+                Date.from(Instant.parse("2020-01-01T10:05:00Z")),
+                Date.from(Instant.parse("2020-01-01T10:15:00Z")),
+                "calories:googlefit"));
             data.setCaloriesData(calories);
             ApiCallResult<Void> result = sourcesService.uploadGoogleFitData(data).execute();
             RecordedRequest request = mockWebServer.takeRequest();

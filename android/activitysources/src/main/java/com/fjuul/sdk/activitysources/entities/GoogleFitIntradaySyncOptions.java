@@ -69,7 +69,8 @@ public final class GoogleFitIntradaySyncOptions extends GoogleFitSyncOptions {
          */
         @NonNull
         public Builder include(@NonNull FitnessMetricsType type) {
-            if (FitnessMetricsType.INTRADAY_STEPS.equals(type) || FitnessMetricsType.INTRADAY_HEART_RATE.equals(type)
+            if (FitnessMetricsType.INTRADAY_STEPS.equals(type)
+                || FitnessMetricsType.INTRADAY_HEART_RATE.equals(type)
                 || FitnessMetricsType.INTRADAY_CALORIES.equals(type)) {
                 metrics.add(type);
             } else {

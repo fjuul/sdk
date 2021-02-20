@@ -200,14 +200,16 @@ public class GFClientWrapperTest {
                 boolean correctDataType = arg.getAggregatedDataTypes().size() == 1
                     && arg.getAggregatedDataTypes().contains(DataType.TYPE_CALORIES_EXPENDED);
                 return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z")))
-                    && isXMinutesBucketRequest(arg, 1) && correctDataType;
+                    && isXMinutesBucketRequest(arg, 1)
+                    && correctDataType;
             }));
             inOrder.verify(mockedHistoryClient).readData(argThat((arg) -> {
                 boolean correctDataType = arg.getAggregatedDataTypes().size() == 1
                     && arg.getAggregatedDataTypes().contains(DataType.TYPE_CALORIES_EXPENDED);
 
                 return isTimeIntervalOfRequest(arg, Date.from(Instant.parse("2020-10-02T00:00:00Z")), end)
-                    & isXMinutesBucketRequest(arg, 1) && correctDataType;
+                    & isXMinutesBucketRequest(arg, 1)
+                    && correctDataType;
             }));
 
             // should split input date ranges into 24-hour chunks
@@ -241,7 +243,8 @@ public class GFClientWrapperTest {
                     && arg.getAggregatedDataTypes().contains(DataType.TYPE_CALORIES_EXPENDED);
 
                 return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z")))
-                    && isXMinutesBucketRequest(arg, 1) && correctDataType;
+                    && isXMinutesBucketRequest(arg, 1)
+                    && correctDataType;
             }));
             inOrder.verifyNoMoreInteractions();
 
@@ -282,7 +285,8 @@ public class GFClientWrapperTest {
                 boolean correctDataType = arg.getAggregatedDataTypes().size() == 1
                     && arg.getAggregatedDataTypes().contains(DataType.TYPE_CALORIES_EXPENDED);
                 return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z")))
-                    && isXMinutesBucketRequest(arg, 1) && correctDataType;
+                    && isXMinutesBucketRequest(arg, 1)
+                    && correctDataType;
             }));
             inOrder.verifyNoMoreInteractions();
             // should split input date ranges into 24-hour chunks
@@ -348,7 +352,8 @@ public class GFClientWrapperTest {
             assertEquals("steps should have the number value", (Integer) 218, stepsDataPoint.getValue());
 
             verify(mockedHistoryClient).readData(argThat((arg) -> {
-                return isTimeIntervalOfRequest(arg, start, end) && isXMinutesBucketRequest(arg, 15)
+                return isTimeIntervalOfRequest(arg, start, end)
+                    && isXMinutesBucketRequest(arg, 15)
                     && isRequestedCorrectDataSource(arg);
             }));
 
@@ -395,11 +400,13 @@ public class GFClientWrapperTest {
             InOrder inOrder = inOrder(mockedHistoryClient);
             inOrder.verify(mockedHistoryClient).readData(argThat((arg) -> {
                 return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-08T00:00:00Z")))
-                    && isXMinutesBucketRequest(arg, 15) && isRequestedCorrectDataSource(arg);
+                    && isXMinutesBucketRequest(arg, 15)
+                    && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verify(mockedHistoryClient).readData(argThat((arg) -> {
                 return isTimeIntervalOfRequest(arg, Date.from(Instant.parse("2020-10-08T00:00:00Z")), end)
-                    && isXMinutesBucketRequest(arg, 15) && isRequestedCorrectDataSource(arg);
+                    && isXMinutesBucketRequest(arg, 15)
+                    && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verifyNoMoreInteractions();
 
@@ -431,7 +438,8 @@ public class GFClientWrapperTest {
             InOrder inOrder = inOrder(mockedHistoryClient);
             inOrder.verify(mockedHistoryClient).readData(argThat(arg -> {
                 return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-08T00:00:00Z")))
-                    && isXMinutesBucketRequest(arg, 15) && isRequestedCorrectDataSource(arg);
+                    && isXMinutesBucketRequest(arg, 15)
+                    && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verifyNoMoreInteractions();
 
@@ -470,7 +478,8 @@ public class GFClientWrapperTest {
             InOrder inOrder = inOrder(mockedHistoryClient);
             inOrder.verify(mockedHistoryClient).readData(argThat(arg -> {
                 return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-08T00:00:00Z")))
-                    && isXMinutesBucketRequest(arg, 15) && isRequestedCorrectDataSource(arg);
+                    && isXMinutesBucketRequest(arg, 15)
+                    && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verifyNoMoreInteractions();
             // should split input date ranges into 7-day chunks
@@ -534,7 +543,8 @@ public class GFClientWrapperTest {
             assertEquals("data point should have avg value", 72.5f, hrSummary.getAvg(), 0.00001);
 
             verify(mockedHistoryClient).readData(argThat((arg) -> {
-                return isTimeIntervalOfRequest(arg, start, end) && isXMinutesBucketRequest(arg, 1)
+                return isTimeIntervalOfRequest(arg, start, end)
+                    && isXMinutesBucketRequest(arg, 1)
                     && isRequestedCorrectDataSource(arg);
             }));
 
@@ -583,11 +593,13 @@ public class GFClientWrapperTest {
             InOrder inOrder = inOrder(mockedHistoryClient);
             inOrder.verify(mockedHistoryClient).readData(argThat((arg) -> {
                 return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z")))
-                    && isXMinutesBucketRequest(arg, 1) && isRequestedCorrectDataSource(arg);
+                    && isXMinutesBucketRequest(arg, 1)
+                    && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verify(mockedHistoryClient).readData(argThat((arg) -> {
                 return isTimeIntervalOfRequest(arg, Date.from(Instant.parse("2020-10-02T00:00:00Z")), end)
-                    && isXMinutesBucketRequest(arg, 1) && isRequestedCorrectDataSource(arg);
+                    && isXMinutesBucketRequest(arg, 1)
+                    && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verifyNoMoreInteractions();
 
@@ -619,7 +631,8 @@ public class GFClientWrapperTest {
             InOrder inOrder = inOrder(mockedHistoryClient);
             inOrder.verify(mockedHistoryClient).readData(argThat(arg -> {
                 return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z")))
-                    && isXMinutesBucketRequest(arg, 1) && isRequestedCorrectDataSource(arg);
+                    && isXMinutesBucketRequest(arg, 1)
+                    && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verifyNoMoreInteractions();
 
@@ -658,7 +671,8 @@ public class GFClientWrapperTest {
             InOrder inOrder = inOrder(mockedHistoryClient);
             inOrder.verify(mockedHistoryClient).readData(argThat(arg -> {
                 return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z")))
-                    && isXMinutesBucketRequest(arg, 1) && isRequestedCorrectDataSource(arg);
+                    && isXMinutesBucketRequest(arg, 1)
+                    && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verifyNoMoreInteractions();
             // should split input date ranges into 24-hour chunks
@@ -702,7 +716,8 @@ public class GFClientWrapperTest {
                         DataType.TYPE_POWER_SAMPLE,
                         DataType.TYPE_ACTIVITY_SEGMENT)
                     .collect(Collectors.toSet());
-            return request.includeSessionsFromAllApps() && request.getSessionId().equals(session.getIdentifier())
+            return request.includeSessionsFromAllApps()
+                && request.getSessionId().equals(session.getIdentifier())
                 && isTimeIntervalOfRequest(request, sessionStart, sessionEnd)
                 && request.getDataTypes().stream().collect(Collectors.toSet()).equals(readingSessionDataTypes);
         }
@@ -1295,8 +1310,10 @@ public class GFClientWrapperTest {
         GFDataUtils gfDataUtilsSpy;
 
         static private boolean isCorrectSingleDataTypeReadRequest(DataReadRequest request) {
-            return request.getDataTypes().size() == 1 && request.getDataTypes().get(0).equals(DataType.TYPE_HEIGHT)
-                && request.getStartTime(TimeUnit.MILLISECONDS) == 1 && request.getLimit() == 1;
+            return request.getDataTypes().size() == 1
+                && request.getDataTypes().get(0).equals(DataType.TYPE_HEIGHT)
+                && request.getStartTime(TimeUnit.MILLISECONDS) == 1
+                && request.getLimit() == 1;
         }
 
         @Before
@@ -1405,8 +1422,10 @@ public class GFClientWrapperTest {
         GFDataUtils gfDataUtilsSpy;
 
         static private boolean isCorrectSingleDataTypeReadRequest(DataReadRequest request) {
-            return request.getDataTypes().size() == 1 && request.getDataTypes().get(0).equals(DataType.TYPE_WEIGHT)
-                && request.getStartTime(TimeUnit.MILLISECONDS) == 1 && request.getLimit() == 1;
+            return request.getDataTypes().size() == 1
+                && request.getDataTypes().get(0).equals(DataType.TYPE_WEIGHT)
+                && request.getStartTime(TimeUnit.MILLISECONDS) == 1
+                && request.getLimit() == 1;
         }
 
         @Before

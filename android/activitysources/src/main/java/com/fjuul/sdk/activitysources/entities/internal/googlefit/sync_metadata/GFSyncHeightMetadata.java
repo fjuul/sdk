@@ -23,6 +23,7 @@ public class GFSyncHeightMetadata extends GFSyncEntityMetadata {
     }
 
     @SuppressLint("NewApi")
+    @NonNull
     static public GFSyncHeightMetadata buildFromDataPoint(@NonNull GFHeightDataPoint dataPoint, @NonNull Clock clock) {
         float height = dataPoint.getValue();
         final Date date = dataPoint.getStart();

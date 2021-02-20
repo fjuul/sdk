@@ -23,6 +23,7 @@ public class GFSyncWeightMetadata extends GFSyncEntityMetadata {
     }
 
     @SuppressLint("NewApi")
+    @NonNull
     static public GFSyncWeightMetadata buildFromDataPoint(@NonNull GFWeightDataPoint dataPoint, @NonNull Clock clock) {
         float weight = dataPoint.getValue();
         final Date date = dataPoint.getStart();

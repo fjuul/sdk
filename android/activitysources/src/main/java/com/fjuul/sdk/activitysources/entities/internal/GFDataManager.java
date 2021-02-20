@@ -197,6 +197,7 @@ public class GFDataManager {
     }
 
     @SuppressLint("NewApi")
+    @NonNull
     public Task<Boolean> syncProfile(@NonNull GoogleFitProfileSyncOptions options) {
         Logger.get()
             .d("start syncing GF profile metrics (%s)",

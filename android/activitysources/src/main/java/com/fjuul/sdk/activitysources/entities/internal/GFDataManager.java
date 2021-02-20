@@ -199,6 +199,9 @@ public class GFDataManager {
 
     @SuppressLint("NewApi")
     public Task<Boolean> syncProfile(@NonNull GoogleFitProfileSyncOptions options) {
+        Logger.get()
+            .d("start syncing GF profile metrics (%s)",
+                options.getMetrics().stream().map(metric -> metric.toString()).collect(Collectors.joining(", ")));
         final Task<GFWeightDataPoint> getWeightTask = options.getMetrics().contains(FitnessMetricsType.WEIGHT) ?
             getNotSyncedWeight(localBackgroundExecutor) :
             Tasks.forResult(null);
@@ -227,8 +230,10 @@ public class GFDataManager {
 
         final Task<Void> sendDataIfNotEmptyTask = prepareProfileParamsTask.onSuccessTask(localBackgroundExecutor, (profileParams) -> {
             if (profileParams.isEmpty()) {
+                Logger.get().d("no the updated profile parameters to send");
                 return Tasks.forResult(null);
             }
+            Logger.get().d("sending the updated profile parameters: %s", profileParams.toString());
             return this.sendGFProfileParams(profileParams).onSuccessTask(localBackgroundExecutor, (apiCallResult -> {
                 return Tasks.forResult(apiCallResult.getValue());
             }));
@@ -350,11 +355,13 @@ public class GFDataManager {
         final TaskCompletionSource<ApiCallResult<Void>> sendDataTaskCompletionSource = new TaskCompletionSource<>();
         activitySourcesService.updateProfileOnBehalfOfGoogleFit(profileParams).enqueue((apiCall, result) -> {
             if (result.isError()) {
+                Logger.get().d("failed to send the profile data: %s", result.getError().getMessage());
                 final CommonException exception =
                     new CommonException("Failed to send data to the server", result.getError());
                 sendDataTaskCompletionSource.trySetException(exception);
                 return;
             }
+            Logger.get().d("succeeded to send the profile data");
             sendDataTaskCompletionSource.trySetResult(result);
         });
         return sendDataTaskCompletionSource.getTask();

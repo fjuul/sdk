@@ -885,6 +885,16 @@ public class GFDataManagerTest {
             verifyNoInteractions(mockedActivitySourcesService);
             // should even not interact with the sync metadata store
             verifyNoInteractions(mockedGFSyncMetadataStore);
+
+            assertEquals("logger should have entries", 2, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals(
+                "[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: no the updated profile parameters to send", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
         @Test
@@ -909,6 +919,16 @@ public class GFDataManagerTest {
             // should ask the metadata store about the weight
             verify(mockedGFSyncMetadataStore).isNeededToSyncWeight(testWeightDataPoint);
             verifyNoMoreInteractions(mockedGFSyncMetadataStore);
+
+            assertEquals("logger should have entries", 2, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals(
+                "[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: no the updated profile parameters to send", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
         @Test
@@ -947,6 +967,19 @@ public class GFDataManagerTest {
             // should ask the metadata store about the weight
             verify(mockedGFSyncMetadataStore).isNeededToSyncWeight(testWeightDataPoint);
             verifyNoMoreInteractions(mockedGFSyncMetadataStore);
+
+            assertEquals("logger should have entries", 3, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals(
+                "[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: sending the updated profile parameters: GFSynchronizableProfileParams{weight=\"75.33\"}", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: failed to send the profile data: Bad request", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
         @Test
@@ -982,6 +1015,19 @@ public class GFDataManagerTest {
             // should ask the metadata store to save metadata of the weight
             verify(mockedGFSyncMetadataStore).saveSyncMetadataOfWeight(testWeightDataPoint);
             verifyNoMoreInteractions(mockedGFSyncMetadataStore);
+
+            assertEquals("logger should have entries", 3, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals(
+                "[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: sending the updated profile parameters: GFSynchronizableProfileParams{weight=\"75.33\"}", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: succeeded to send the profile data", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
         @Test
@@ -1023,6 +1069,19 @@ public class GFDataManagerTest {
             verify(mockedGFSyncMetadataStore).saveSyncMetadataOfWeight(testWeightDataPoint);
             verify(mockedGFSyncMetadataStore).saveSyncMetadataOfHeight(testHeightDataPoint);
             verifyNoMoreInteractions(mockedGFSyncMetadataStore);
+
+            assertEquals("logger should have entries", 3, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertThat(logEntry.getMessage(), containsString("[activitysources] GFDataManager: start syncing GF profile metrics"));
+            assertThat(logEntry.getMessage(), containsString("HEIGHT"));
+            assertThat(logEntry.getMessage(), containsString("WEIGHT"));
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: sending the updated profile parameters: GFSynchronizableProfileParams{height=\"182.9\", weight=\"75.33\"}", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: succeeded to send the profile data", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
         }
     }
 }

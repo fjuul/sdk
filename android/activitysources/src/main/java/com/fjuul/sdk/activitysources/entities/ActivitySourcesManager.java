@@ -359,9 +359,9 @@ public final class ActivitySourcesManager {
     private static void setupBackgroundWorksByConnections(@Nullable List<TrackerConnection> trackerConnections,
         @NonNull BackgroundWorkManager backgroundWorkManager) {
         if (checkIfHasGoogleFitConnection(trackerConnections)) {
-            backgroundWorkManager.configureBackgroundGFSyncWorks();
+            backgroundWorkManager.configureGFSyncWorks();
         } else {
-            backgroundWorkManager.cancelBackgroundGFSyncWorks();
+            backgroundWorkManager.cancelGFSyncWorks();
         }
     }
 

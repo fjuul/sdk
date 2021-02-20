@@ -131,6 +131,23 @@ if (googleFitConnectionSource == null) {
     return;
 }
 ```
+Sync the user profile from Google Fit:
+``` kotlin
+import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
+import com.fjuul.sdk.activitysources.entities.GoogleFitProfileSyncOptions
+...
+val googleFitActivitySource = googleFitConnectionSource.activitySource as GoogleFitActivitySource;
+val syncOptions = GoogleFitProfileSyncOptions.Builder()
+    .include(FitnessMetricsType.HEIGHT)
+    .include(FitnessMetricsType.WEIGHT)
+    .build()
+googleFitActivitySource.syncProfile(syncOptions) { result ->
+    if (result.isError) {
+        // handle error
+    }
+}
+```
+
 Sync intraday data:
 ```kotlin
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
@@ -177,11 +194,13 @@ val config = ActivitySourcesManagerConfig.Builder()
     .setCollectableFitnessMetrics(setOf(FitnessMetricsType.INTRADAY_STEPS, FitnessMetricsType.INTRADAY_CALORIES))
     .enableGoogleFitIntradayBackgroundSync()
     .enableGoogleFitSessionsBackgroundSync(Duration.ofMinutes(3))
+    .enableProfileBackgroundSync()
     .build()
 // or the same:
 //  val config = ActivitySourcesManagerConfig.Builder()
 //    .setCollectableFitnessMetrics(setOf(FitnessMetricsType.INTRADAY_STEPS, FitnessMetricsType.INTRADAY_CALORIES))
 //    .enableGoogleFitBackgroundSync(Duration.ofMinutes(3))
+//    .enableProfileBackgroundSync()
 //    .build()
 ActivitySourcesManager.initialize(client, config)
 ```

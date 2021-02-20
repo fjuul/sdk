@@ -1288,19 +1288,15 @@ public class GFClientWrapperTest {
 
     public static class GetLastKnownHeightTest extends GivenRobolectricContext {
         static private final DataSource heightDataSource =
-            new DataSource.Builder().setDataType(DataType.TYPE_HEIGHT)
-                .setType(DataSource.TYPE_RAW)
-                .build();
+            new DataSource.Builder().setDataType(DataType.TYPE_HEIGHT).setType(DataSource.TYPE_RAW).build();
         GFClientWrapper subject;
         HistoryClient mockedHistoryClient;
         SessionsClient mockedSessionsClient;
         GFDataUtils gfDataUtilsSpy;
 
         static private boolean isCorrectSingleDataTypeReadRequest(DataReadRequest request) {
-            return request.getDataTypes().size() == 1 &&
-                request.getDataTypes().get(0).equals(DataType.TYPE_HEIGHT) &&
-                request.getStartTime(TimeUnit.MILLISECONDS) == 1 &&
-                request.getLimit() == 1;
+            return request.getDataTypes().size() == 1 && request.getDataTypes().get(0).equals(DataType.TYPE_HEIGHT)
+                && request.getStartTime(TimeUnit.MILLISECONDS) == 1 && request.getLimit() == 1;
         }
 
         @Before
@@ -1313,7 +1309,8 @@ public class GFClientWrapperTest {
         }
 
         @Test
-        public void getLastKnownHeight_whenEmptyDataSet_returnsTaskWithNull() throws ExecutionException, InterruptedException {
+        public void getLastKnownHeight_whenEmptyDataSet_returnsTaskWithNull()
+            throws ExecutionException, InterruptedException {
             DataSet emptyDataSet = DataSet.builder(heightDataSource).build();
             DataReadResponse testResponse = createTestDataReadResponse(emptyDataSet);
             when(mockedHistoryClient.readData(Mockito.any())).thenReturn(Tasks.forResult(testResponse));
@@ -1335,7 +1332,7 @@ public class GFClientWrapperTest {
             Task<GFHeightDataPoint> result = subject.getLastKnownHeight();
             try {
                 testExecutor.submit(() -> Tasks.await(result)).get();
-            } catch (ExecutionException exception) { }
+            } catch (ExecutionException exception) {}
 
             assertFalse("unsuccessful task", result.isSuccessful());
             Exception exception = result.getException();
@@ -1350,7 +1347,8 @@ public class GFClientWrapperTest {
         }
 
         @Test
-        public void getLastKnownHeight_whenRequestExceedsTimeout_returnTasksWithException() throws InterruptedException {
+        public void getLastKnownHeight_whenRequestExceedsTimeout_returnTasksWithException()
+            throws InterruptedException {
             when(mockedHistoryClient.readData(Mockito.any())).thenAnswer(invocation -> {
                 // NOTE: here we're simulating the dead request to GF
                 return Tasks.forResult(null).continueWithTask(testUtilExecutor, task -> {
@@ -1361,7 +1359,7 @@ public class GFClientWrapperTest {
             Task<GFHeightDataPoint> result = subject.getLastKnownHeight();
             try {
                 testExecutor.submit(() -> Tasks.await(result)).get();
-            } catch (ExecutionException exception) { }
+            } catch (ExecutionException exception) {}
 
             assertFalse("unsuccessful task", result.isSuccessful());
             Exception exception = result.getException();
@@ -1376,7 +1374,8 @@ public class GFClientWrapperTest {
         }
 
         @Test
-        public void getLastKnownHeight_whenRequestSucceeds_returnTasksWithDataPoint() throws InterruptedException, ExecutionException {
+        public void getLastKnownHeight_whenRequestSucceeds_returnTasksWithDataPoint()
+            throws InterruptedException, ExecutionException {
             Date timestamp = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
             DataPoint rawHeight = createRawDataPoint(heightDataSource, timestamp, Field.FIELD_HEIGHT, 1.824f);
             DataSet dataSet = DataSet.builder(heightDataSource).add(rawHeight).build();
@@ -1399,19 +1398,15 @@ public class GFClientWrapperTest {
 
     public static class GetLastKnownWeightTest extends GivenRobolectricContext {
         static private final DataSource weightDataSource =
-            new DataSource.Builder().setDataType(DataType.TYPE_WEIGHT)
-                .setType(DataSource.TYPE_RAW)
-                .build();
+            new DataSource.Builder().setDataType(DataType.TYPE_WEIGHT).setType(DataSource.TYPE_RAW).build();
         GFClientWrapper subject;
         HistoryClient mockedHistoryClient;
         SessionsClient mockedSessionsClient;
         GFDataUtils gfDataUtilsSpy;
 
         static private boolean isCorrectSingleDataTypeReadRequest(DataReadRequest request) {
-            return request.getDataTypes().size() == 1 &&
-                request.getDataTypes().get(0).equals(DataType.TYPE_WEIGHT) &&
-                request.getStartTime(TimeUnit.MILLISECONDS) == 1 &&
-                request.getLimit() == 1;
+            return request.getDataTypes().size() == 1 && request.getDataTypes().get(0).equals(DataType.TYPE_WEIGHT)
+                && request.getStartTime(TimeUnit.MILLISECONDS) == 1 && request.getLimit() == 1;
         }
 
         @Before
@@ -1424,7 +1419,8 @@ public class GFClientWrapperTest {
         }
 
         @Test
-        public void getLastKnownWeight_whenEmptyDataSet_returnsTaskWithNull() throws ExecutionException, InterruptedException {
+        public void getLastKnownWeight_whenEmptyDataSet_returnsTaskWithNull()
+            throws ExecutionException, InterruptedException {
             DataSet emptyDataSet = DataSet.builder(weightDataSource).build();
             DataReadResponse testResponse = createTestDataReadResponse(emptyDataSet);
             when(mockedHistoryClient.readData(Mockito.any())).thenReturn(Tasks.forResult(testResponse));
@@ -1446,7 +1442,7 @@ public class GFClientWrapperTest {
             Task<GFWeightDataPoint> result = subject.getLastKnownWeight();
             try {
                 testExecutor.submit(() -> Tasks.await(result)).get();
-            } catch (ExecutionException exception) { }
+            } catch (ExecutionException exception) {}
 
             assertFalse("unsuccessful task", result.isSuccessful());
             Exception exception = result.getException();
@@ -1461,7 +1457,8 @@ public class GFClientWrapperTest {
         }
 
         @Test
-        public void getLastKnownWeight_whenRequestExceedsTimeout_returnTasksWithException() throws InterruptedException {
+        public void getLastKnownWeight_whenRequestExceedsTimeout_returnTasksWithException()
+            throws InterruptedException {
             when(mockedHistoryClient.readData(Mockito.any())).thenAnswer(invocation -> {
                 // NOTE: here we're simulating the dead request to GF
                 return Tasks.forResult(null).continueWithTask(testUtilExecutor, task -> {
@@ -1472,7 +1469,7 @@ public class GFClientWrapperTest {
             Task<GFWeightDataPoint> result = subject.getLastKnownWeight();
             try {
                 testExecutor.submit(() -> Tasks.await(result)).get();
-            } catch (ExecutionException exception) { }
+            } catch (ExecutionException exception) {}
 
             assertFalse("unsuccessful task", result.isSuccessful());
             Exception exception = result.getException();
@@ -1487,7 +1484,8 @@ public class GFClientWrapperTest {
         }
 
         @Test
-        public void getLastKnownWeight_whenRequestSucceeds_returnTasksWithDataPoint() throws InterruptedException, ExecutionException {
+        public void getLastKnownWeight_whenRequestSucceeds_returnTasksWithDataPoint()
+            throws InterruptedException, ExecutionException {
             Date timestamp = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
             DataPoint rawWeight = createRawDataPoint(weightDataSource, timestamp, Field.FIELD_WEIGHT, 70.55f);
             DataSet dataSet = DataSet.builder(weightDataSource).add(rawWeight).build();

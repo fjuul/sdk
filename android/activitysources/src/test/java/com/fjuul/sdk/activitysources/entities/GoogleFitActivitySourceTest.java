@@ -863,9 +863,7 @@ public class GoogleFitActivitySourceTest {
                         .thenReturn(mockedGoogleSignInAccount);
 
                     final GoogleFitProfileSyncOptions options =
-                        new GoogleFitProfileSyncOptions.Builder()
-                            .include(FitnessMetricsType.HEIGHT)
-                            .build();
+                        new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.HEIGHT).build();
 
                     subject.syncProfile(options, mockedCallback);
 
@@ -899,8 +897,7 @@ public class GoogleFitActivitySourceTest {
                         .thenReturn(mockedGoogleSignInAccount);
 
                     final GoogleFitProfileSyncOptions options =
-                        new GoogleFitProfileSyncOptions.Builder()
-                            .include(FitnessMetricsType.HEIGHT)
+                        new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.HEIGHT)
                             .include(FitnessMetricsType.WEIGHT)
                             .build();
                     final GFDataManager mockedGfDataManager = mock(GFDataManager.class);
@@ -945,8 +942,7 @@ public class GoogleFitActivitySourceTest {
                         .thenReturn(mockedGoogleSignInAccount);
 
                     final GoogleFitProfileSyncOptions options =
-                        new GoogleFitProfileSyncOptions.Builder()
-                            .include(FitnessMetricsType.HEIGHT)
+                        new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.HEIGHT)
                             .include(FitnessMetricsType.WEIGHT)
                             .build();
                     final GFDataManager mockedGfDataManager = mock(GFDataManager.class);

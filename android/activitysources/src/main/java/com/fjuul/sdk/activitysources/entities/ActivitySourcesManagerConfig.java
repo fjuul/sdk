@@ -154,11 +154,14 @@ public class ActivitySourcesManagerConfig {
         }
 
         /**
-         * Enables background synchronization of user profile properties (e.g. height, weight) from the local activity sources.
-         * Note: SDK will schedule background syncs only if there are appropriate current connections to the local activity source. In other words,
-         * this option expresses an intent to have the background synchronization when it's applicable but it doesn't mean a strict requirement of having the appropriate connections.<br>
+         * Enables background synchronization of user profile properties (e.g. height, weight) from the local activity
+         * sources.<br>
+         * Note: SDK will schedule background syncs only if there are appropriate current connections to the local
+         * activity source. In other words, this option expresses an intent to have the background synchronization when
+         * it's applicable but it doesn't mean a strict requirement of having the appropriate connections.<br>
          * If you enabled this then keep in mind that the user profile may be updated anytime, and therefore you should
          * try to get a fresh state of the profile at every session start of your application.
+         *
          * @return configured builder
          */
         @NonNull

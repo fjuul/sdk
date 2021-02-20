@@ -3,8 +3,10 @@ package com.fjuul.sdk.activitysources.entities.internal;
 import androidx.annotation.Nullable;
 
 public class GFSynchronizableProfileParams {
-    @Nullable private Float height;
-    @Nullable private Float weight;
+    @Nullable
+    private Float height;
+    @Nullable
+    private Float weight;
 
     public void setHeight(@Nullable Float height) {
         this.height = height;

@@ -3,8 +3,8 @@ package com.fjuul.sdk.activitysources.http.apis;
 import java.util.Map;
 
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
-import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
 import com.fjuul.sdk.activitysources.entities.internal.GFSynchronizableProfileParams;
+import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
 import com.fjuul.sdk.core.http.utils.ApiCall;
 
 import androidx.annotation.NonNull;
@@ -43,5 +43,5 @@ public interface ActivitySourcesApi {
     @PUT("/sdk/activity-sources/v1/{userToken}/googlefit/profile")
     @NonNull
     ApiCall<Void> updateProfileOnBehalfOfGoogleFit(@Path("userToken") @NonNull String userToken,
-                                                   @Body @NonNull GFSynchronizableProfileParams params);
+        @Body @NonNull GFSynchronizableProfileParams params);
 }

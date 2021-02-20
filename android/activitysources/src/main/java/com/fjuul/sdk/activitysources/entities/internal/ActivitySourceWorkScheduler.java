@@ -39,10 +39,10 @@ public class ActivitySourceWorkScheduler {
     private volatile boolean profileSyncWorkEnqueued = false;
 
     public ActivitySourceWorkScheduler(@NonNull WorkManager workManager,
-                                       @NonNull String userToken,
-                                       @NonNull String userSecret,
-                                       @NonNull String apiKey,
-                                       @NonNull String baseUrl) {
+        @NonNull String userToken,
+        @NonNull String userSecret,
+        @NonNull String apiKey,
+        @NonNull String baseUrl) {
         this.workManager = workManager;
         this.userToken = userToken;
         this.userSecret = userSecret;
@@ -118,18 +118,17 @@ public class ActivitySourceWorkScheduler {
             return;
         }
         final String[] serializedMetrics = serializeFitnessMetrics(profileMetrics);
-        final Data inputWorkRequestData = buildEssentialInputData()
-            .putStringArray(ProfileSyncWorker.KEY_PROFILE_METRICS_ARG, serializedMetrics)
-            .build();
+        final Data inputWorkRequestData =
+            buildEssentialInputData().putStringArray(ProfileSyncWorker.KEY_PROFILE_METRICS_ARG, serializedMetrics)
+                .build();
         final PeriodicWorkRequest periodicWorkRequest =
             new PeriodicWorkRequest.Builder(ProfileSyncWorker.class, 1, TimeUnit.HOURS)
                 .setConstraints(buildCommonWorkConstraints())
                 .setInitialDelay(1, TimeUnit.HOURS)
                 .setInputData(inputWorkRequestData)
                 .build();
-        workManager.enqueueUniquePeriodicWork(PROFILE_SYNC_WORK_NAME,
-            ExistingPeriodicWorkPolicy.REPLACE,
-            periodicWorkRequest);
+        workManager
+            .enqueueUniquePeriodicWork(PROFILE_SYNC_WORK_NAME, ExistingPeriodicWorkPolicy.REPLACE, periodicWorkRequest);
         profileSyncWorkEnqueued = true;
     }
 

@@ -767,7 +767,8 @@ public class GFSyncMetadataStoreTest {
 
         @Test
         public void isNeededToSyncHeight_whenNoStoredMetadata_returnsTrue() {
-            final GFHeightDataPoint height = new GFHeightDataPoint(190.5f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
+            final GFHeightDataPoint height =
+                new GFHeightDataPoint(190.5f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
             final String expectedKey = "gf-sync-metadata.height";
             when(mockedStorage.get(expectedKey)).thenReturn(null);
             boolean result = gfSyncMetadataStore.isNeededToSyncHeight(height);
@@ -777,7 +778,8 @@ public class GFSyncMetadataStoreTest {
 
         @Test
         public void isNeededToSyncHeight_whenStoredMetadataHasDifferentCreatedAt_returnsTrue() {
-            final GFHeightDataPoint height = new GFHeightDataPoint(190.5f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
+            final GFHeightDataPoint height =
+                new GFHeightDataPoint(190.5f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
             final String expectedKey = "gf-sync-metadata.height";
             final String storedJson =
                 "{\"createdAt\":\"2020-06-01T15:20:00.000Z\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"height\":189.9,\"schemaVersion\":1}";
@@ -789,7 +791,8 @@ public class GFSyncMetadataStoreTest {
 
         @Test
         public void isNeededToSyncHeight_whenStoredMetadataHasDifferentHeight_returnsTrue() {
-            final GFHeightDataPoint height = new GFHeightDataPoint(190.5f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
+            final GFHeightDataPoint height =
+                new GFHeightDataPoint(190.5f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
             final String expectedKey = "gf-sync-metadata.height";
             final String storedJson =
                 "{\"createdAt\":\"2020-09-10T10:00:00.000Z\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"height\":190.9,\"schemaVersion\":1}";
@@ -801,7 +804,8 @@ public class GFSyncMetadataStoreTest {
 
         @Test
         public void isNeededToSyncHeight_whenStoredMetadataHasNoSignificantDifference_returnsFalse() {
-            final GFHeightDataPoint height = new GFHeightDataPoint(190.5f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
+            final GFHeightDataPoint height =
+                new GFHeightDataPoint(190.5f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
             final String expectedKey = "gf-sync-metadata.height";
             final String storedJson =
                 "{\"createdAt\":\"2020-09-10T10:00:00.000Z\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"height\":190.55,\"schemaVersion\":1}";
@@ -827,7 +831,8 @@ public class GFSyncMetadataStoreTest {
 
         @Test
         public void isNeededToSyncWeight_whenNoStoredMetadata_returnsTrue() {
-            final GFWeightDataPoint weight = new GFWeightDataPoint(77.7f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
+            final GFWeightDataPoint weight =
+                new GFWeightDataPoint(77.7f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
             final String expectedKey = "gf-sync-metadata.weight";
             when(mockedStorage.get(expectedKey)).thenReturn(null);
             boolean result = gfSyncMetadataStore.isNeededToSyncWeight(weight);
@@ -837,7 +842,8 @@ public class GFSyncMetadataStoreTest {
 
         @Test
         public void isNeededToSyncWeight_whenStoredMetadataHasDifferentCreatedAt_returnsTrue() {
-            final GFWeightDataPoint weight = new GFWeightDataPoint(77.7f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
+            final GFWeightDataPoint weight =
+                new GFWeightDataPoint(77.7f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
             final String expectedKey = "gf-sync-metadata.weight";
             final String storedJson =
                 "{\"createdAt\":\"2020-06-01T10:00:00.000Z\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"weight\":77.7}";
@@ -849,7 +855,8 @@ public class GFSyncMetadataStoreTest {
 
         @Test
         public void isNeededToSyncWeight_whenStoredMetadataHasDifferentWeight_returnsTrue() {
-            final GFWeightDataPoint weight = new GFWeightDataPoint(77.7f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
+            final GFWeightDataPoint weight =
+                new GFWeightDataPoint(77.7f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
             final String expectedKey = "gf-sync-metadata.weight";
             final String storedJson =
                 "{\"createdAt\":\"2020-09-10T10:00:00.000Z\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"weight\":77.6}";
@@ -861,7 +868,8 @@ public class GFSyncMetadataStoreTest {
 
         @Test
         public void isNeededToSyncWeight_whenStoredMetadataHasNoSignificantDifference_returnsFalse() {
-            final GFWeightDataPoint weight = new GFWeightDataPoint(77.7f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
+            final GFWeightDataPoint weight =
+                new GFWeightDataPoint(77.7f, Date.from(Instant.parse("2020-09-10T10:00:00Z")));;
             final String expectedKey = "gf-sync-metadata.weight";
             final String storedJson =
                 "{\"createdAt\":\"2020-09-10T10:00:00.000Z\",\"editedAt\":\"2020-09-15T21:30:00.000Z\",\"schemaVersion\":1,\"weight\":77.705}";

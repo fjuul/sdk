@@ -56,7 +56,6 @@ import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 
 import android.annotation.SuppressLint;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
@@ -211,10 +210,15 @@ class GFClientWrapper {
 
         final Supplier<SupervisedTask<GFHeightDataPoint>> taskSupplier = () -> {
             final Function<DataReadResponse, GFHeightDataPoint> convertData =
-                response -> convertResponseDataSetToPoint(response, DataType.TYPE_HEIGHT, GFDataConverter::convertDataPointToHeight);
+                response -> convertResponseDataSetToPoint(response,
+                    DataType.TYPE_HEIGHT,
+                    GFDataConverter::convertDataPointToHeight);
             final Task<GFHeightDataPoint> task = readLastKnownDataPointOfType(DataType.TYPE_HEIGHT)
                 .onSuccessTask(localBackgroundExecutor, convertData.andThen(Tasks::forResult)::apply);
-            return new SupervisedTask<>("fetch gf user's height", task, config.queryTimeoutSeconds, config.queryRetriesCount);
+            return new SupervisedTask<>("fetch gf user's height",
+                task,
+                config.queryTimeoutSeconds,
+                config.queryRetriesCount);
         };
         final Task<GFHeightDataPoint> getHeightTask = runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
         return shutdownExecutorsOnComplete(localBackgroundExecutor, getHeightTask, gfTaskWatcherExecutor);
@@ -228,10 +232,15 @@ class GFClientWrapper {
 
         final Supplier<SupervisedTask<GFWeightDataPoint>> taskSupplier = () -> {
             final Function<DataReadResponse, GFWeightDataPoint> convertData =
-                response -> convertResponseDataSetToPoint(response, DataType.TYPE_WEIGHT, GFDataConverter::convertDataPointToWeight);
+                response -> convertResponseDataSetToPoint(response,
+                    DataType.TYPE_WEIGHT,
+                    GFDataConverter::convertDataPointToWeight);
             final Task<GFWeightDataPoint> task = readLastKnownDataPointOfType(DataType.TYPE_WEIGHT)
                 .onSuccessTask(localBackgroundExecutor, convertData.andThen(Tasks::forResult)::apply);
-            return new SupervisedTask<>("fetch gf user's weight", task, config.queryTimeoutSeconds, config.queryRetriesCount);
+            return new SupervisedTask<>("fetch gf user's weight",
+                task,
+                config.queryTimeoutSeconds,
+                config.queryRetriesCount);
         };
         final Task<GFWeightDataPoint> getWeightTask = runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
         return shutdownExecutorsOnComplete(localBackgroundExecutor, getWeightTask, gfTaskWatcherExecutor);
@@ -579,8 +588,8 @@ class GFClientWrapper {
     @SuppressLint("NewApi")
     @Nullable
     private static <T extends GFDataPoint> T convertResponseDataSetToPoint(@NonNull DataReadResponse response,
-                                                                           @NonNull DataType type,
-                                                                           Function<DataPoint, T> mapper) {
+        @NonNull DataType type,
+        Function<DataPoint, T> mapper) {
         final DataSet dataSet = response.getDataSet(type);
         if (dataSet.isEmpty()) {
             return null;

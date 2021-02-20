@@ -306,7 +306,8 @@ public class ActivitySourcesServiceTest {
         }
 
         @Test
-        public void uploadGoogleFitData_WithHttpOkResponseCode_RespondWithSuccessfulResult() throws InterruptedException {
+        public void uploadGoogleFitData_WithHttpOkResponseCode_RespondWithSuccessfulResult()
+            throws InterruptedException {
             clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
             testKeystore.setKey(validSigningKey);
             clientBuilder.setKeystore(testKeystore);
@@ -357,7 +358,8 @@ public class ActivitySourcesServiceTest {
         }
 
         @Test
-        public void updateProfileOnBehalfOfGoogleFit_WhenFullParamsAndHttpResponseCodeIsOK_RespondWithSuccessfulResult() throws InterruptedException {
+        public void updateProfileOnBehalfOfGoogleFit_WhenFullParamsAndHttpResponseCodeIsOK_RespondWithSuccessfulResult()
+            throws InterruptedException {
             clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
             testKeystore.setKey(validSigningKey);
             clientBuilder.setKeystore(testKeystore);
@@ -381,7 +383,8 @@ public class ActivitySourcesServiceTest {
         }
 
         @Test
-        public void updateProfileOnBehalfOfGoogleFit_WhenPartialParamsAndHttpResponseCodeIsOK_RespondWithSuccessfulResult() throws InterruptedException {
+        public void updateProfileOnBehalfOfGoogleFit_WhenPartialParamsAndHttpResponseCodeIsOK_RespondWithSuccessfulResult()
+            throws InterruptedException {
             clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
             testKeystore.setKey(validSigningKey);
             clientBuilder.setKeystore(testKeystore);

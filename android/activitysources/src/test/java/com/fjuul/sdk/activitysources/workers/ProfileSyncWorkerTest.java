@@ -1,44 +1,5 @@
 package com.fjuul.sdk.activitysources.workers;
 
-import android.content.Context;
-import android.os.Build;
-
-import androidx.test.core.app.ApplicationProvider;
-import androidx.work.Data;
-import androidx.work.ListenableWorker;
-import androidx.work.testing.TestWorkerBuilder;
-
-import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
-import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
-import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig;
-import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
-import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
-import com.fjuul.sdk.activitysources.entities.GoogleFitProfileSyncOptions;
-import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions;
-import com.fjuul.sdk.core.ApiClient;
-import com.fjuul.sdk.core.entities.Callback;
-
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.android.util.concurrent.PausedExecutorService;
-import org.robolectric.annotation.Config;
-
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import static androidx.work.ListenableWorker.Result.success;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -51,6 +12,43 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.android.util.concurrent.PausedExecutorService;
+import org.robolectric.annotation.Config;
+
+import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig;
+import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
+import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
+import com.fjuul.sdk.activitysources.entities.GoogleFitProfileSyncOptions;
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions;
+import com.fjuul.sdk.core.ApiClient;
+import com.fjuul.sdk.core.entities.Callback;
+
+import android.content.Context;
+import android.os.Build;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.work.Data;
+import androidx.work.ListenableWorker;
+import androidx.work.testing.TestWorkerBuilder;
 
 @RunWith(Enclosed.class)
 public class ProfileSyncWorkerTest {
@@ -72,7 +70,7 @@ public class ProfileSyncWorkerTest {
         @Test
         public void getOrInitializeActivitySourcesManager_whenNoInitializedInstance_initializesAndReturnsIt() {
             try (MockedStatic<ActivitySourcesManager> sourcesManagerStaticMock =
-                     mockStatic(ActivitySourcesManager.class)) {
+                mockStatic(ActivitySourcesManager.class)) {
                 sourcesManagerStaticMock.when(ActivitySourcesManager::getInstance)
                     .thenThrow(IllegalStateException.class)
                     .thenReturn(null);
@@ -82,7 +80,7 @@ public class ProfileSyncWorkerTest {
                     .putString("API_KEY", "FJUUL_API_KEY")
                     .putString("BASE_URL", "https://fjuul.com")
                     .build();
-                subject = (ProfileSyncWorker)workerBuilder.setInputData(inputData).build();
+                subject = (ProfileSyncWorker) workerBuilder.setInputData(inputData).build();
                 subject.getOrInitializeActivitySourcesManager();
 
                 final ArgumentCaptor<ApiClient> apiClientCaptor = ArgumentCaptor.forClass(ApiClient.class);
@@ -159,7 +157,8 @@ public class ProfileSyncWorkerTest {
             final ActivitySourcesManager mockedSourcesManager = mock(ActivitySourcesManager.class);
             final ActivitySourceConnection mockedGfSourceConnection = mock(ActivitySourceConnection.class);
             final GoogleFitActivitySource mockedGoogleFit = mock(GoogleFitActivitySource.class);
-            final GoogleFitActivitySourceExceptions.CommonException gfException = new GoogleFitActivitySourceExceptions.CommonException("Something went wrong");
+            final GoogleFitActivitySourceExceptions.CommonException gfException =
+                new GoogleFitActivitySourceExceptions.CommonException("Something went wrong");
             doAnswer((invocation -> {
                 Callback<Boolean> callback = invocation.getArgument(1, Callback.class);
                 callback.onResult(com.fjuul.sdk.core.entities.Result.error(gfException));
@@ -168,9 +167,8 @@ public class ProfileSyncWorkerTest {
             when(mockedGfSourceConnection.getActivitySource()).thenReturn(mockedGoogleFit);
             when(mockedSourcesManager.getCurrent()).thenReturn(Arrays.asList(mockedGfSourceConnection));
 
-            final Data inputData = new Data.Builder()
-                .putStringArray("PROFILE_METRICS", new String[] {"HEIGHT", "WEIGHT"})
-                .build();
+            final Data inputData =
+                new Data.Builder().putStringArray("PROFILE_METRICS", new String[] {"HEIGHT", "WEIGHT"}).build();
             spySubject = spy((ProfileSyncWorker) workerBuilder.setInputData(inputData).build());
             doReturn(mockedSourcesManager).when(spySubject).getOrInitializeActivitySourcesManager();
 

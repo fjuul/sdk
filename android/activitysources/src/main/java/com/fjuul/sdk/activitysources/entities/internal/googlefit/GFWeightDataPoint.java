@@ -1,10 +1,10 @@
 package com.fjuul.sdk.activitysources.entities.internal.googlefit;
 
-import androidx.annotation.NonNull;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import androidx.annotation.NonNull;
 
 public class GFWeightDataPoint extends GFScalarDataPoint<Float> {
     public GFWeightDataPoint(@NonNull Float kg, @NonNull Date start) {

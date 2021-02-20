@@ -332,9 +332,9 @@ public class GoogleFitActivitySource extends ActivitySource {
     }
 
     /**
-     * Puts the task of synchronizing the user profile from Google Fit in a sequential execution queue (i.e., only one sync task can be
-     * executed at a time) and will execute it when it comes to its turn. The synchronization result is available in the
-     * callback.<br>
+     * Puts the task of synchronizing the user profile from Google Fit in a sequential execution queue (i.e., only one
+     * sync task can be executed at a time) and will execute it when it comes to its turn. The synchronization result is
+     * available in the callback.<br>
      * The task is atomic, so it will either succeed for all the specified types of metrics, or it will not succeed at
      * all.<br>
      * It's recommended to call this method before any other syncing methods of {@link GoogleFitActivitySource} because
@@ -347,10 +347,12 @@ public class GoogleFitActivitySource extends ActivitySource {
      * <li>{@link com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.MaxTriesCountExceededException};</li>
      * <li>{@link com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException}.</li>
      * </ul>
+     *
      * @param options profile sync options
      * @param callback callback for the result
      */
-    public void syncProfile(@NonNull final GoogleFitProfileSyncOptions options, @Nullable final Callback<Boolean> callback) {
+    public void syncProfile(@NonNull final GoogleFitProfileSyncOptions options,
+        @Nullable final Callback<Boolean> callback) {
         final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         if (!areFitnessPermissionsGranted(account, options.getMetrics())) {
             if (callback != null) {

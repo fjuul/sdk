@@ -27,7 +27,6 @@ import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSessionBundle
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFStepsDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFWeightDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata.GFSyncMetadataStore;
-import com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata.GFSyncWeightMetadata;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.activitysources.utils.GoogleTaskUtils;
@@ -202,56 +201,59 @@ public class GFDataManager {
         Logger.get()
             .d("start syncing GF profile metrics (%s)",
                 options.getMetrics().stream().map(metric -> metric.toString()).collect(Collectors.joining(", ")));
-        final Task<GFWeightDataPoint> getWeightTask = options.getMetrics().contains(FitnessMetricsType.WEIGHT) ?
-            getNotSyncedWeight(localBackgroundExecutor) :
-            Tasks.forResult(null);
-        final Task<GFHeightDataPoint> getHeightTask = options.getMetrics().contains(FitnessMetricsType.HEIGHT) ?
-            getNotSyncedHeight(localBackgroundExecutor) :
-            Tasks.forResult(null);
+        final Task<GFWeightDataPoint> getWeightTask =
+            options.getMetrics().contains(FitnessMetricsType.WEIGHT) ? getNotSyncedWeight(localBackgroundExecutor)
+                : Tasks.forResult(null);
+        final Task<GFHeightDataPoint> getHeightTask =
+            options.getMetrics().contains(FitnessMetricsType.HEIGHT) ? getNotSyncedHeight(localBackgroundExecutor)
+                : Tasks.forResult(null);
         final List<Task<?>> allTasks = Arrays.asList(getHeightTask, getWeightTask);
         final Task<GFSynchronizableProfileParams> prepareProfileParamsTask =
             Tasks.whenAll(allTasks).continueWithTask(localBackgroundExecutor, commonResult -> {
-            if (!commonResult.isSuccessful() || commonResult.isCanceled()) {
-                final Optional<Exception> optionalException = GoogleTaskUtils.extractGFExceptionFromTasks(allTasks);
-                return Tasks.forException(optionalException.orElse(commonResult.getException()));
-            }
-            final GFWeightDataPoint weightDataPoint = getWeightTask.getResult();
-            final GFHeightDataPoint heightDataPoint = getHeightTask.getResult();
+                if (!commonResult.isSuccessful() || commonResult.isCanceled()) {
+                    final Optional<Exception> optionalException = GoogleTaskUtils.extractGFExceptionFromTasks(allTasks);
+                    return Tasks.forException(optionalException.orElse(commonResult.getException()));
+                }
+                final GFWeightDataPoint weightDataPoint = getWeightTask.getResult();
+                final GFHeightDataPoint heightDataPoint = getHeightTask.getResult();
 
-            final GFSynchronizableProfileParams profileParams = new GFSynchronizableProfileParams();
-            if (weightDataPoint != null) {
-                profileParams.setWeight(weightDataPoint.getValue());
-            }
-            if (heightDataPoint != null) {
-                profileParams.setHeight(heightDataPoint.getValue());
-            }
-            return Tasks.forResult(profileParams);
-        });
+                final GFSynchronizableProfileParams profileParams = new GFSynchronizableProfileParams();
+                if (weightDataPoint != null) {
+                    profileParams.setWeight(weightDataPoint.getValue());
+                }
+                if (heightDataPoint != null) {
+                    profileParams.setHeight(heightDataPoint.getValue());
+                }
+                return Tasks.forResult(profileParams);
+            });
 
-        final Task<Void> sendDataIfNotEmptyTask = prepareProfileParamsTask.onSuccessTask(localBackgroundExecutor, (profileParams) -> {
-            if (profileParams.isEmpty()) {
-                Logger.get().d("no the updated profile parameters to send");
-                return Tasks.forResult(null);
-            }
-            Logger.get().d("sending the updated profile parameters: %s", profileParams.toString());
-            return this.sendGFProfileParams(profileParams).onSuccessTask(localBackgroundExecutor, (apiCallResult -> {
-                return Tasks.forResult(apiCallResult.getValue());
-            }));
-        });
-        final Task<Boolean> saveSyncMetadataTask = sendDataIfNotEmptyTask.onSuccessTask(localBackgroundExecutor, apiCallResult -> {
-            boolean changed = false;
-            final GFWeightDataPoint weightDataPoint = getWeightTask.getResult();
-            if (weightDataPoint != null) {
-                gfSyncMetadataStore.saveSyncMetadataOfWeight(weightDataPoint);
-                changed = true;
-            }
-            final GFHeightDataPoint heightDataPoint = getHeightTask.getResult();
-            if (heightDataPoint != null) {
-                gfSyncMetadataStore.saveSyncMetadataOfHeight(heightDataPoint);
-                changed = true;
-            }
-            return Tasks.forResult(changed);
-        });
+        final Task<Void> sendDataIfNotEmptyTask =
+            prepareProfileParamsTask.onSuccessTask(localBackgroundExecutor, (profileParams) -> {
+                if (profileParams.isEmpty()) {
+                    Logger.get().d("no the updated profile parameters to send");
+                    return Tasks.forResult(null);
+                }
+                Logger.get().d("sending the updated profile parameters: %s", profileParams.toString());
+                return this.sendGFProfileParams(profileParams)
+                    .onSuccessTask(localBackgroundExecutor, (apiCallResult -> {
+                        return Tasks.forResult(apiCallResult.getValue());
+                    }));
+            });
+        final Task<Boolean> saveSyncMetadataTask =
+            sendDataIfNotEmptyTask.onSuccessTask(localBackgroundExecutor, apiCallResult -> {
+                boolean changed = false;
+                final GFWeightDataPoint weightDataPoint = getWeightTask.getResult();
+                if (weightDataPoint != null) {
+                    gfSyncMetadataStore.saveSyncMetadataOfWeight(weightDataPoint);
+                    changed = true;
+                }
+                final GFHeightDataPoint heightDataPoint = getHeightTask.getResult();
+                if (heightDataPoint != null) {
+                    gfSyncMetadataStore.saveSyncMetadataOfHeight(heightDataPoint);
+                    changed = true;
+                }
+                return Tasks.forResult(changed);
+            });
         return saveSyncMetadataTask;
     }
 

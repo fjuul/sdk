@@ -89,20 +89,23 @@ class UserProfileFragment : Fragment() {
             localeTextField.visibility = View.VISIBLE
             submitButton.text = "UPDATE"
 
-            model.profileWasRefreshed.observe(viewLifecycleOwner, Observer { refreshed ->
-                if (refreshed) { return@Observer }
-                model.profileWasRefreshed.value = true
-                authorizedUserDataViewModel.fetchUserProfile(ApiClientHolder.sdkClient) { _, exception ->
-                    if (exception != null) {
-                        AlertDialog.Builder(requireContext()).setMessage(exception.message).show()
-                        return@fetchUserProfile
-                    }
-                    val profile = authorizedUserDataViewModel.profile.value
-                    if (profile != null) {
-                        prefillWithUserProfile(profile)
+            model.profileWasRefreshed.observe(
+                viewLifecycleOwner,
+                Observer { refreshed ->
+                    if (refreshed) { return@Observer }
+                    model.profileWasRefreshed.value = true
+                    authorizedUserDataViewModel.fetchUserProfile(ApiClientHolder.sdkClient) { _, exception ->
+                        if (exception != null) {
+                            AlertDialog.Builder(requireContext()).setMessage(exception.message).show()
+                            return@fetchUserProfile
+                        }
+                        val profile = authorizedUserDataViewModel.profile.value
+                        if (profile != null) {
+                            prefillWithUserProfile(profile)
+                        }
                     }
                 }
-            })
+            )
 
             val profile = authorizedUserDataViewModel.profile.value
             if (!wasPrefilled && profile != null) {

@@ -1,12 +1,11 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
 
 /**
  * A class that encapsulates parameters for syncing body parameters of the user profile from Google Fit. In order to
@@ -26,14 +25,15 @@ public class GoogleFitProfileSyncOptions {
     }
 
     /**
-     * Builder of {@link GoogleFitProfileSyncOptions}. At least one fitness metric must be specified during the building.
+     * Builder of {@link GoogleFitProfileSyncOptions}. At least one fitness metric must be specified during the
+     * building.
      */
     public static class Builder {
         private final Set<FitnessMetricsType> metrics = new HashSet<>();
 
         /**
-         * Adds the given user metric to the set of data to be synced. This method throws
-         * IllegalArgumentException if the fitness metric is not supported for the profile sync.
+         * Adds the given user metric to the set of data to be synced. This method throws IllegalArgumentException if
+         * the fitness metric is not supported for the profile sync.
          *
          * @param type user metrics (height, weight)
          * @return builder

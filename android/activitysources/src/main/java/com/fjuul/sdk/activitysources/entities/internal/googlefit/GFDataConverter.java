@@ -125,7 +125,7 @@ public class GFDataConverter {
     @NonNull
     public static GFHeightDataPoint convertDataPointToHeight(@NonNull DataPoint dataPoint) {
         float heightInM = dataPoint.getValue(Field.FIELD_HEIGHT).asFloat();
-        float heightInCm = (float)Math.floor(heightInM * 1000f) / 10f;
+        float heightInCm = (float) Math.floor(heightInM * 1000f) / 10f;
         return new GFHeightDataPoint(heightInCm, new Date(dataPoint.getTimestamp(TimeUnit.MILLISECONDS)));
     }
 

@@ -1,13 +1,12 @@
 package com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
+import java.time.Clock;
+import java.util.Date;
 
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHeightDataPoint;
 
-import java.time.Clock;
-import java.util.Date;
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
 
 public class GFSyncHeightMetadata extends GFSyncEntityMetadata {
     public static final int CURRENT_SCHEMA_VERSION = 1;
@@ -39,4 +38,3 @@ public class GFSyncHeightMetadata extends GFSyncEntityMetadata {
         return createdAt.equals(that.createdAt) && Math.abs(height - that.height) <= HEIGHT_CM_ACCURACY;
     }
 }
-

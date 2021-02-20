@@ -844,7 +844,7 @@ public class GFDataManagerTest {
         final GFWeightDataPoint testWeightDataPoint =
             new GFWeightDataPoint(75.33f, Date.from(Instant.parse("2020-10-01T10:00:05Z")));
         final GFHeightDataPoint testHeightDataPoint =
-            new GFHeightDataPoint(182.9f,Date.from(Instant.parse("2020-10-01T10:00:05Z")));
+            new GFHeightDataPoint(182.9f, Date.from(Instant.parse("2020-10-01T10:00:05Z")));
 
         GFDataManager subject;
         GFClientWrapper mockedGFClientWrapper;
@@ -888,12 +888,12 @@ public class GFDataManagerTest {
 
             assertEquals("logger should have entries", 2, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
-            assertEquals(
-                "[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
+            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("[activitysources] GFDataManager: no the updated profile parameters to send", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: no the updated profile parameters to send",
+                logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
@@ -922,12 +922,12 @@ public class GFDataManagerTest {
 
             assertEquals("logger should have entries", 2, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
-            assertEquals(
-                "[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
+            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("[activitysources] GFDataManager: no the updated profile parameters to send", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: no the updated profile parameters to send",
+                logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
@@ -970,20 +970,23 @@ public class GFDataManagerTest {
 
             assertEquals("logger should have entries", 3, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
-            assertEquals(
-                "[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
+            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("[activitysources] GFDataManager: sending the updated profile parameters: GFSynchronizableProfileParams{weight=\"75.33\"}", logEntry.getMessage());
+            assertEquals(
+                "[activitysources] GFDataManager: sending the updated profile parameters: GFSynchronizableProfileParams{weight=\"75.33\"}",
+                logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("[activitysources] GFDataManager: failed to send the profile data: Bad request", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: failed to send the profile data: Bad request",
+                logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
         @Test
-        public void syncProfile_notSyncedWeightWithSuccessfulApiRequest_returnsFailedTask() throws InterruptedException {
+        public void syncProfile_notSyncedWeightWithSuccessfulApiRequest_returnsFailedTask()
+            throws InterruptedException {
             final GoogleFitProfileSyncOptions options =
                 new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.WEIGHT).build();
             when(mockedGFClientWrapper.getLastKnownWeight()).thenReturn(Tasks.forResult(testWeightDataPoint));
@@ -1018,12 +1021,13 @@ public class GFDataManagerTest {
 
             assertEquals("logger should have entries", 3, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
-            assertEquals(
-                "[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
+            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("[activitysources] GFDataManager: sending the updated profile parameters: GFSynchronizableProfileParams{weight=\"75.33\"}", logEntry.getMessage());
+            assertEquals(
+                "[activitysources] GFDataManager: sending the updated profile parameters: GFSynchronizableProfileParams{weight=\"75.33\"}",
+                logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
             assertEquals("[activitysources] GFDataManager: succeeded to send the profile data", logEntry.getMessage());
@@ -1031,7 +1035,8 @@ public class GFDataManagerTest {
         }
 
         @Test
-        public void syncProfile_notSyncedProfileFieldsWithSuccessfulApiRequest_returnsFailedTask() throws InterruptedException {
+        public void syncProfile_notSyncedProfileFieldsWithSuccessfulApiRequest_returnsFailedTask()
+            throws InterruptedException {
             final GoogleFitProfileSyncOptions options =
                 new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.WEIGHT)
                     .include(FitnessMetricsType.HEIGHT)
@@ -1072,12 +1077,15 @@ public class GFDataManagerTest {
 
             assertEquals("logger should have entries", 3, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
-            assertThat(logEntry.getMessage(), containsString("[activitysources] GFDataManager: start syncing GF profile metrics"));
+            assertThat(logEntry.getMessage(),
+                containsString("[activitysources] GFDataManager: start syncing GF profile metrics"));
             assertThat(logEntry.getMessage(), containsString("HEIGHT"));
             assertThat(logEntry.getMessage(), containsString("WEIGHT"));
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("[activitysources] GFDataManager: sending the updated profile parameters: GFSynchronizableProfileParams{height=\"182.9\", weight=\"75.33\"}", logEntry.getMessage());
+            assertEquals(
+                "[activitysources] GFDataManager: sending the updated profile parameters: GFSynchronizableProfileParams{height=\"182.9\", weight=\"75.33\"}",
+                logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
             assertEquals("[activitysources] GFDataManager: succeeded to send the profile data", logEntry.getMessage());

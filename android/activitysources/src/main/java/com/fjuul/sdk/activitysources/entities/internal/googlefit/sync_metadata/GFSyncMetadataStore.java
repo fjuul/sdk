@@ -125,7 +125,8 @@ public class GFSyncMetadataStore {
     }
 
     public boolean isNeededToSyncWeight(@NonNull GFWeightDataPoint weightDataPoint) {
-        final GFSyncWeightMetadata storedMetadata = retrieveSyncMetadataOf(GFSyncWeightMetadata.class, WEIGHT_LOOKUP_KEY);
+        final GFSyncWeightMetadata storedMetadata =
+            retrieveSyncMetadataOf(GFSyncWeightMetadata.class, WEIGHT_LOOKUP_KEY);
         if (storedMetadata == null) {
             return true;
         }
@@ -134,7 +135,8 @@ public class GFSyncMetadataStore {
     }
 
     public boolean isNeededToSyncHeight(@NonNull GFHeightDataPoint heightDataPoint) {
-        final GFSyncHeightMetadata storedMetadata = retrieveSyncMetadataOf(GFSyncHeightMetadata.class, HEIGHT_LOOKUP_KEY);
+        final GFSyncHeightMetadata storedMetadata =
+            retrieveSyncMetadataOf(GFSyncHeightMetadata.class, HEIGHT_LOOKUP_KEY);
         if (storedMetadata == null) {
             return true;
         }

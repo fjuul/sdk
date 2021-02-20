@@ -1,10 +1,6 @@
 package com.fjuul.sdk.activitysources.workers;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-
-import androidx.annotation.NonNull;
-import androidx.work.WorkerParameters;
+import java.util.concurrent.ExecutionException;
 
 import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
@@ -14,7 +10,10 @@ import com.fjuul.sdk.activitysources.entities.GoogleFitProfileSyncOptions;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 
-import java.util.concurrent.ExecutionException;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import androidx.annotation.NonNull;
+import androidx.work.WorkerParameters;
 
 // NOTE: currently it inherits from GFSyncWorker and syncs only with Google Fit but in the future, it will be changed.
 public class ProfileSyncWorker extends GFSyncWorker {

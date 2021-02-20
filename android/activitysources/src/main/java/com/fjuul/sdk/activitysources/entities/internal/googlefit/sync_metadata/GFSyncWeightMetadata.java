@@ -1,13 +1,12 @@
 package com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
+import java.time.Clock;
+import java.util.Date;
 
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFWeightDataPoint;
 
-import java.time.Clock;
-import java.util.Date;
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
 
 public class GFSyncWeightMetadata extends GFSyncEntityMetadata {
     public static final int CURRENT_SCHEMA_VERSION = 1;
@@ -28,7 +27,7 @@ public class GFSyncWeightMetadata extends GFSyncEntityMetadata {
         float weight = dataPoint.getValue();
         final Date date = dataPoint.getStart();
         final Date editedAt = Date.from(clock.instant());
-        return new GFSyncWeightMetadata(weight,date, editedAt);
+        return new GFSyncWeightMetadata(weight, date, editedAt);
     }
 
     @Override

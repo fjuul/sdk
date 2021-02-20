@@ -337,6 +337,8 @@ public class GoogleFitActivitySource extends ActivitySource {
      * callback.<br>
      * The task is atomic, so it will either succeed for all the specified types of metrics, or it will not succeed at
      * all.<br>
+     * It's recommended to call this method before any other syncing methods of {@link GoogleFitActivitySource} because
+     * the current profile state can affect the statistics calculation.<br>
      * The boolean result which is available in callback indicates if one of the specified metrics has been updated and
      * you need to refresh the user profile.<br>
      * Dedicated result errors:

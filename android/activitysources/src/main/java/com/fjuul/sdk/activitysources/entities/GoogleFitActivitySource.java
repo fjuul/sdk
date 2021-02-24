@@ -332,6 +332,41 @@ public class GoogleFitActivitySource extends ActivitySource {
     }
 
     /**
+     * Puts the task of synchronizing the user profile from Google Fit in a sequential execution queue (i.e., only one
+     * sync task can be executed at a time) and will execute it when it comes to its turn. The synchronization result is
+     * available in the callback.<br>
+     * The task is atomic, so it will either succeed for all the specified types of metrics, or it will not succeed at
+     * all.<br>
+     * It's recommended to call this method before any other syncing methods of {@link GoogleFitActivitySource} because
+     * the current profile state can affect the statistics calculation.<br>
+     * The boolean result which is available in callback indicates if one of the specified metrics has been updated and
+     * you need to refresh the user profile.<br>
+     * Dedicated result errors:
+     * <ul>
+     * <li>{@link com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.FitnessPermissionsNotGrantedException};</li>
+     * <li>{@link com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.MaxTriesCountExceededException};</li>
+     * <li>{@link com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException}.</li>
+     * </ul>
+     *
+     * @param options profile sync options
+     * @param callback callback for the result
+     */
+    public void syncProfile(@NonNull final GoogleFitProfileSyncOptions options,
+        @Nullable final Callback<Boolean> callback) {
+        final GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
+        if (!areFitnessPermissionsGranted(account, options.getMetrics())) {
+            if (callback != null) {
+                Result<Boolean> errorResult = Result.error(
+                    new FitnessPermissionsNotGrantedException("Not all required GoogleFit permissions were granted"));
+                callback.onResult(errorResult);
+            }
+            return;
+        }
+        final GFDataManager GFDataManager = gfDataManagerBuilder.build(account);
+        performTaskAlongWithCallback(() -> GFDataManager.syncProfile(options), callback);
+    }
+
+    /**
      * Check whether the Google Fit app is installed on the user's device. You don't have to have the installed
      * application to work with the Google Fit API. However, this is the easiest way to record and detect the user's
      * physical activity during the day.
@@ -459,6 +494,12 @@ public class GoogleFitActivitySource extends ActivitySource {
                 .addDataType(DataType.TYPE_POWER_SAMPLE, FitnessOptions.ACCESS_READ)
                 .addDataType(DataType.TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
                 .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_READ);
+        }
+        if (fitnessMetrics.contains(FitnessMetricsType.HEIGHT)) {
+            fitnessOptionsBuilder.addDataType(DataType.TYPE_HEIGHT, FitnessOptions.ACCESS_READ);
+        }
+        if (fitnessMetrics.contains(FitnessMetricsType.WEIGHT)) {
+            fitnessOptionsBuilder.addDataType(DataType.TYPE_WEIGHT, FitnessOptions.ACCESS_READ);
         }
         final FitnessOptions fitnessOptions = fitnessOptionsBuilder.build();
         GoogleSignInOptions.Builder googleSignInOptionsBuilder = new GoogleSignInOptions.Builder();

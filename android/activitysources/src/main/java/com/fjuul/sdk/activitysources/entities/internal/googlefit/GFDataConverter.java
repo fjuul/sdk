@@ -122,6 +122,20 @@ public class GFDataConverter {
         return new GFSpeedDataPoint(metersPerSecond, start, dataSourceId);
     }
 
+    @NonNull
+    public static GFHeightDataPoint convertDataPointToHeight(@NonNull DataPoint dataPoint) {
+        float heightInM = dataPoint.getValue(Field.FIELD_HEIGHT).asFloat();
+        float heightInCm = (float) Math.floor(heightInM * 1000f) / 10f;
+        return new GFHeightDataPoint(heightInCm, new Date(dataPoint.getTimestamp(TimeUnit.MILLISECONDS)));
+    }
+
+    @NonNull
+    public static GFWeightDataPoint convertDataPointToWeight(@NonNull DataPoint dataPoint) {
+        Date timestamp = new Date(dataPoint.getTimestamp(TimeUnit.MILLISECONDS));
+        float weight = dataPoint.getValue(Field.FIELD_WEIGHT).asFloat();
+        return new GFWeightDataPoint(weight, timestamp);
+    }
+
     /**
      * NOTE: we don't use provided {@code streamIdentifier} and {@code streamName} from DataSource API because in
      * practice the name of the stream (the last part of {@code streamIdentifier}) may vary which violates the

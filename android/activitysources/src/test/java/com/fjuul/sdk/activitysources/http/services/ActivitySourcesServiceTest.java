@@ -10,9 +10,12 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -25,6 +28,9 @@ import org.robolectric.annotation.Config;
 import com.fjuul.sdk.activitysources.entities.ConnectionResult;
 import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthenticationFlowRequired;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
+import com.fjuul.sdk.activitysources.entities.internal.GFSynchronizableProfileParams;
+import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFCalorieDataPoint;
 import com.fjuul.sdk.activitysources.exceptions.ActivitySourcesApiExceptions.SourceAlreadyConnectedException;
 import com.fjuul.sdk.core.entities.InMemoryStorage;
 import com.fjuul.sdk.core.entities.Keystore;
@@ -273,6 +279,129 @@ public class ActivitySourcesServiceTest {
                 Date.from(ZonedDateTime.parse("2020-05-18T15:30:53.978Z").toInstant()),
                 connections[1].getCreatedAt());
             assertNull("should not have endedAt", connections[1].getEndedAt());
+        }
+    }
+
+    public static class UploadGoogleFitData extends GivenRobolectricContext {
+        ActivitySourcesService sourcesService;
+        MockWebServer mockWebServer;
+        TestApiClient.Builder clientBuilder;
+        Keystore testKeystore;
+        SigningKey validSigningKey;
+
+        @Before
+        public void setup() throws IOException {
+            mockWebServer = new MockWebServer();
+            mockWebServer.start();
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR, 2);
+            validSigningKey = new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime());
+            testKeystore = new Keystore(new InMemoryStorage());
+            clientBuilder = new TestApiClient.Builder(mockWebServer);
+        }
+
+        @After
+        public void teardown() throws IOException {
+            mockWebServer.shutdown();
+        }
+
+        @Test
+        public void uploadGoogleFitData_WithHttpOkResponseCode_RespondWithSuccessfulResult()
+            throws InterruptedException {
+            clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
+            testKeystore.setKey(validSigningKey);
+            clientBuilder.setKeystore(testKeystore);
+            sourcesService = new ActivitySourcesService(clientBuilder.build());
+
+            MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK);
+            mockWebServer.enqueue(mockResponse);
+
+            GFUploadData data = new GFUploadData();
+            List<GFCalorieDataPoint> calories = Arrays.asList(new GFCalorieDataPoint(5.2751f,
+                Date.from(Instant.parse("2020-01-01T10:05:00Z")),
+                Date.from(Instant.parse("2020-01-01T10:15:00Z")),
+                "calories:googlefit"));
+            data.setCaloriesData(calories);
+            ApiCallResult<Void> result = sourcesService.uploadGoogleFitData(data).execute();
+            RecordedRequest request = mockWebServer.takeRequest();
+
+            assertFalse("successful result", result.isError());
+            assertEquals("request's body should carry the gf data",
+                "{\"caloriesData\":[{\"dataSource\":\"calories:googlefit\",\"entries\":[{\"start\":\"2020-01-01T10:05:00.000Z\",\"value\":5.2751}]}],\"hrData\":[],\"sessionsData\":[],\"stepsData\":[]}",
+                request.getBody().readUtf8());
+        }
+    }
+
+    public static class UpdateProfileOnBehalfOfGoogleFit extends GivenRobolectricContext {
+        ActivitySourcesService sourcesService;
+        MockWebServer mockWebServer;
+        TestApiClient.Builder clientBuilder;
+        Keystore testKeystore;
+        SigningKey validSigningKey;
+
+        @Before
+        public void setup() throws IOException {
+            mockWebServer = new MockWebServer();
+            mockWebServer.start();
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR, 2);
+            validSigningKey = new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime());
+            testKeystore = new Keystore(new InMemoryStorage());
+            clientBuilder = new TestApiClient.Builder(mockWebServer);
+        }
+
+        @After
+        public void teardown() throws IOException {
+            mockWebServer.shutdown();
+        }
+
+        @Test
+        public void updateProfileOnBehalfOfGoogleFit_WhenFullParamsAndHttpResponseCodeIsOK_RespondWithSuccessfulResult()
+            throws InterruptedException {
+            clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
+            testKeystore.setKey(validSigningKey);
+            clientBuilder.setKeystore(testKeystore);
+            sourcesService = new ActivitySourcesService(clientBuilder.build());
+
+            MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK);
+            mockWebServer.enqueue(mockResponse);
+
+            GFSynchronizableProfileParams profileParams = new GFSynchronizableProfileParams();
+            profileParams.setHeight(180.45f);
+            profileParams.setWeight(77.77f);
+            ApiCallResult<Void> result = sourcesService.updateProfileOnBehalfOfGoogleFit(profileParams).execute();
+            assertFalse("successful result", result.isError());
+
+            RecordedRequest request = mockWebServer.takeRequest();
+            assertEquals("request's body should carry correct json",
+                "{\"height\":180.45,\"weight\":77.77}",
+                request.getBody().readUtf8());
+            assertEquals("PUT", request.getMethod());
+            assertEquals("/sdk/activity-sources/v1/USER_TOKEN/googlefit/profile", request.getPath());
+        }
+
+        @Test
+        public void updateProfileOnBehalfOfGoogleFit_WhenPartialParamsAndHttpResponseCodeIsOK_RespondWithSuccessfulResult()
+            throws InterruptedException {
+            clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
+            testKeystore.setKey(validSigningKey);
+            clientBuilder.setKeystore(testKeystore);
+            sourcesService = new ActivitySourcesService(clientBuilder.build());
+
+            MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK);
+            mockWebServer.enqueue(mockResponse);
+
+            GFSynchronizableProfileParams profileParams = new GFSynchronizableProfileParams();
+            profileParams.setHeight(180.45f);
+            ApiCallResult<Void> result = sourcesService.updateProfileOnBehalfOfGoogleFit(profileParams).execute();
+            assertFalse("successful result", result.isError());
+
+            RecordedRequest request = mockWebServer.takeRequest();
+            assertEquals("request's body should carry the correct json",
+                "{\"height\":180.45}",
+                request.getBody().readUtf8());
+            assertEquals("PUT", request.getMethod());
+            assertEquals("/sdk/activity-sources/v1/USER_TOKEN/googlefit/profile", request.getPath());
         }
     }
 }

@@ -251,5 +251,70 @@
                 android:visibility="invisible"/>
         </LinearLayout>
 
+        <include
+            android:id="@+id/profile_section_text"
+            layout="@layout/section_list_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/sessions_sync"
+            android:layout_marginTop="10dp"/>
+
+        <LinearLayout
+            android:id="@+id/profile_options"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/profile_section_text"
+            android:layout_marginTop="8dp"
+            android:paddingStart="10dp"
+            app:layout_constraintStart_toStartOf="parent">
+            <CheckBox
+                android:id="@+id/height_check_box"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Height"
+                android:checked="true"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/profile_options" />
+
+            <CheckBox
+                android:id="@+id/weight_check_box"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="Weight"
+                android:checked="true"
+                app:layout_constraintStart_toEndOf="@+id/height_check_box"
+                app:layout_constraintTop_toTopOf="@+id/profile_options" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/profile_sync"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:paddingStart="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/profile_options"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <Button
+                android:id="@+id/run_profile_sync_button"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="Sync profile"
+                android:gravity="center"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ProgressBar
+                android:id="@+id/profile_sync_progress_bar"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:visibility="invisible"/>
+        </LinearLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

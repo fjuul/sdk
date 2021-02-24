@@ -22,7 +22,8 @@ public final class ExternalAuthenticationFlowHandler {
     @Nullable
     public static ConnectionStatus handle(@NonNull Uri data) {
         Objects.requireNonNull(data);
-        if (data.getHost() != null && data.getHost().contains("external_connect")
+        if (data.getHost() != null
+            && data.getHost().contains("external_connect")
             && data.getQueryParameterNames().containsAll(Arrays.asList("success", "service"))) {
             final String service = data.getQueryParameter("service");
             final boolean success = data.getBooleanQueryParameter("success", false);

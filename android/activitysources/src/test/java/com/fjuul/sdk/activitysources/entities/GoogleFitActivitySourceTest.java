@@ -829,6 +829,139 @@ public class GoogleFitActivitySourceTest {
                 }
             }
         }
+
+        public static class SyncProfileTests extends GivenRobolectricContext {
+            GoogleFitActivitySource subject;
+            ActivitySourcesService mockedActivitySourcesService;
+            GFDataManagerBuilder mockedGfDataManagerBuilder;
+            Context context;
+            Set<FitnessMetricsType> collectableFitnessMetrics;
+
+            @Before
+            public void beforeTest() {
+                context = ApplicationProvider.getApplicationContext();
+                mockedActivitySourcesService = mock(ActivitySourcesService.class);
+                mockedGfDataManagerBuilder = mock(GFDataManagerBuilder.class);
+                collectableFitnessMetrics = Stream.of(FitnessMetricsType.INTRADAY_CALORIES).collect(Collectors.toSet());
+            }
+
+            @Test
+            public void syncProfile_whenNoNeededFitnessPermissions_bringsErrorToCallback() {
+                try (MockedStatic<GoogleSignIn> mockGoogleSignIn = mockStatic(GoogleSignIn.class)) {
+                    subject = new GoogleFitActivitySource(false,
+                        null,
+                        collectableFitnessMetrics,
+                        mockedActivitySourcesService,
+                        context,
+                        mockedGfDataManagerBuilder,
+                        testInlineExecutor);
+
+                    final Callback<Boolean> mockedCallback = mock(Callback.class);
+                    final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
+                    when(mockedGoogleSignInAccount.getGrantedScopes()).thenReturn(Collections.emptySet());
+                    mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
+                        .thenReturn(mockedGoogleSignInAccount);
+
+                    final GoogleFitProfileSyncOptions options =
+                        new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.HEIGHT).build();
+
+                    subject.syncProfile(options, mockedCallback);
+
+                    final ArgumentCaptor<Result<Boolean>> callbackResultCaptor = ArgumentCaptor.forClass(Result.class);
+                    verify(mockedCallback).onResult(callbackResultCaptor.capture());
+                    final Result<Boolean> callbackResult = callbackResultCaptor.getValue();
+                    assertTrue("callback should have unsuccessful result", callbackResult.isError());
+                    assertThat(callbackResult.getError(), instanceOf(FitnessPermissionsNotGrantedException.class));
+                    // should not even interact with GFDataManager
+                    verifyNoInteractions(mockedGfDataManagerBuilder);
+                }
+            }
+
+            @Test
+            public void syncProfile_whenGoogleFitReturnsError_bringsErrorToCallback() {
+                try (MockedStatic<GoogleSignIn> mockGoogleSignIn = mockStatic(GoogleSignIn.class)) {
+                    subject = new GoogleFitActivitySource(false,
+                        null,
+                        collectableFitnessMetrics,
+                        mockedActivitySourcesService,
+                        context,
+                        mockedGfDataManagerBuilder,
+                        testInlineExecutor);
+
+                    final Callback<Boolean> mockedCallback = mock(Callback.class);
+                    final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
+                    final Set<Scope> grantedScopes =
+                        Stream.of(new Scope(Scopes.FITNESS_BODY_READ)).collect(Collectors.toSet());
+                    when(mockedGoogleSignInAccount.getGrantedScopes()).thenReturn(grantedScopes);
+                    mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
+                        .thenReturn(mockedGoogleSignInAccount);
+
+                    final GoogleFitProfileSyncOptions options =
+                        new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.HEIGHT)
+                            .include(FitnessMetricsType.WEIGHT)
+                            .build();
+                    final GFDataManager mockedGfDataManager = mock(GFDataManager.class);
+                    final MaxTriesCountExceededException gfException =
+                        new MaxTriesCountExceededException("Possible tries count (3) exceeded");
+                    when(mockedGfDataManager.syncProfile(options)).thenReturn(Tasks.forException(gfException));
+                    when(mockedGfDataManagerBuilder.build(mockedGoogleSignInAccount)).thenReturn(mockedGfDataManager);
+
+                    subject.syncProfile(options, mockedCallback);
+
+                    final ArgumentCaptor<Result<Boolean>> callbackResultCaptor = ArgumentCaptor.forClass(Result.class);
+                    verify(mockedCallback).onResult(callbackResultCaptor.capture());
+                    final Result<Boolean> callbackResult = callbackResultCaptor.getValue();
+                    assertTrue("callback should have unsuccessful result", callbackResult.isError());
+                    assertEquals("callback result should have the gf exception",
+                        gfException,
+                        callbackResult.getError());
+                    // should ask GFDataManager to create an instance of GFDataManager
+                    verify(mockedGfDataManagerBuilder).build(mockedGoogleSignInAccount);
+                    // should ask GFDataManager to sync profile
+                    verify(mockedGfDataManager).syncProfile(options);
+                }
+            }
+
+            @Test
+            public void syncProfile_whenGoogleFitReturnsSuccessfulTask_bringsResultToCallback() {
+                try (MockedStatic<GoogleSignIn> mockGoogleSignIn = mockStatic(GoogleSignIn.class)) {
+                    subject = new GoogleFitActivitySource(false,
+                        null,
+                        collectableFitnessMetrics,
+                        mockedActivitySourcesService,
+                        context,
+                        mockedGfDataManagerBuilder,
+                        testInlineExecutor);
+
+                    final Callback<Boolean> mockedCallback = mock(Callback.class);
+                    final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
+                    final Set<Scope> grantedScopes =
+                        Stream.of(new Scope(Scopes.FITNESS_BODY_READ)).collect(Collectors.toSet());
+                    when(mockedGoogleSignInAccount.getGrantedScopes()).thenReturn(grantedScopes);
+                    mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
+                        .thenReturn(mockedGoogleSignInAccount);
+
+                    final GoogleFitProfileSyncOptions options =
+                        new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.HEIGHT)
+                            .include(FitnessMetricsType.WEIGHT)
+                            .build();
+                    final GFDataManager mockedGfDataManager = mock(GFDataManager.class);
+                    when(mockedGfDataManager.syncProfile(options)).thenReturn(Tasks.forResult(true));
+                    when(mockedGfDataManagerBuilder.build(mockedGoogleSignInAccount)).thenReturn(mockedGfDataManager);
+
+                    subject.syncProfile(options, mockedCallback);
+
+                    final ArgumentCaptor<Result<Boolean>> callbackResultCaptor = ArgumentCaptor.forClass(Result.class);
+                    verify(mockedCallback).onResult(callbackResultCaptor.capture());
+                    final Result<Boolean> callbackResult = callbackResultCaptor.getValue();
+                    assertFalse("callback should have successful result", callbackResult.isError());
+                    // should ask GFDataManager to create an instance of GFDataManager
+                    verify(mockedGfDataManagerBuilder).build(mockedGoogleSignInAccount);
+                    // should ask GFDataManager to sync profile
+                    verify(mockedGfDataManager).syncProfile(options);
+                }
+            }
+        }
     }
 
     @RunWith(Enclosed.class)
@@ -884,6 +1017,21 @@ public class GoogleFitActivitySourceTest {
                 assertEquals("should have several scopes",
                     Stream
                         .of(Fitness.SCOPE_LOCATION_READ,
+                            Fitness.SCOPE_ACTIVITY_READ,
+                            new Scope("https://www.googleapis.com/auth/fitness.heart_rate.read"))
+                        .collect(Collectors.toList()),
+                    result.getScopes());
+            }
+
+            @Test
+            public void buildGoogleSignInOptions_whenNoOfflineAccessAndAllPossibleFitnessMetrics_returnsOptionsWithScopes() {
+                final GoogleSignInOptions result = GoogleFitActivitySource.buildGoogleSignInOptions(false,
+                    null,
+                    Stream.of(FitnessMetricsType.class.getEnumConstants()).collect(Collectors.toSet()));
+                assertEquals("should have several scopes",
+                    Stream
+                        .of(Fitness.SCOPE_LOCATION_READ,
+                            Fitness.SCOPE_BODY_READ,
                             Fitness.SCOPE_ACTIVITY_READ,
                             new Scope("https://www.googleapis.com/auth/fitness.heart_rate.read"))
                         .collect(Collectors.toList()),

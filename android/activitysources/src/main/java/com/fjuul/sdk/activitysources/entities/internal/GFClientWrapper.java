@@ -26,10 +26,12 @@ import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataConverter
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRSummaryDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHeightDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFPowerDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSessionBundle;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSpeedDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFStepsDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFWeightDataPoint;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.MaxTriesCountExceededException;
@@ -54,6 +56,7 @@ import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 
 import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.core.util.Supplier;
@@ -197,6 +200,50 @@ class GFClientWrapper {
                 return runReadDetailedSessionBundles(sessions, gfReadSessionsWatcher);
             }));
         return shutdownExecutorsOnComplete(localBackgroundExecutor, getSessionsTask, gfTaskWatcherExecutor);
+    }
+
+    @SuppressLint("NewApi")
+    public Task<GFHeightDataPoint> getLastKnownHeight() {
+        final ExecutorService gfTaskWatcherExecutor = createGfTaskWatcherExecutor();
+        final CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        final SupervisedExecutor gfTaskWatcher = new SupervisedExecutor(gfTaskWatcherExecutor, cancellationTokenSource);
+
+        final Supplier<SupervisedTask<GFHeightDataPoint>> taskSupplier = () -> {
+            final Function<DataReadResponse, GFHeightDataPoint> convertData =
+                response -> convertResponseDataSetToPoint(response,
+                    DataType.TYPE_HEIGHT,
+                    GFDataConverter::convertDataPointToHeight);
+            final Task<GFHeightDataPoint> task = readLastKnownDataPointOfType(DataType.TYPE_HEIGHT)
+                .onSuccessTask(localBackgroundExecutor, convertData.andThen(Tasks::forResult)::apply);
+            return new SupervisedTask<>("fetch gf user's height",
+                task,
+                config.queryTimeoutSeconds,
+                config.queryRetriesCount);
+        };
+        final Task<GFHeightDataPoint> getHeightTask = runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
+        return shutdownExecutorsOnComplete(localBackgroundExecutor, getHeightTask, gfTaskWatcherExecutor);
+    }
+
+    @SuppressLint("NewApi")
+    public Task<GFWeightDataPoint> getLastKnownWeight() {
+        final ExecutorService gfTaskWatcherExecutor = createGfTaskWatcherExecutor();
+        final CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        final SupervisedExecutor gfTaskWatcher = new SupervisedExecutor(gfTaskWatcherExecutor, cancellationTokenSource);
+
+        final Supplier<SupervisedTask<GFWeightDataPoint>> taskSupplier = () -> {
+            final Function<DataReadResponse, GFWeightDataPoint> convertData =
+                response -> convertResponseDataSetToPoint(response,
+                    DataType.TYPE_WEIGHT,
+                    GFDataConverter::convertDataPointToWeight);
+            final Task<GFWeightDataPoint> task = readLastKnownDataPointOfType(DataType.TYPE_WEIGHT)
+                .onSuccessTask(localBackgroundExecutor, convertData.andThen(Tasks::forResult)::apply);
+            return new SupervisedTask<>("fetch gf user's weight",
+                task,
+                config.queryTimeoutSeconds,
+                config.queryRetriesCount);
+        };
+        final Task<GFWeightDataPoint> getWeightTask = runGFTaskUnderWatch(taskSupplier, gfTaskWatcher);
+        return shutdownExecutorsOnComplete(localBackgroundExecutor, getWeightTask, gfTaskWatcherExecutor);
     }
 
     @SuppressLint("NewApi")
@@ -539,6 +586,18 @@ class GFClientWrapper {
     }
 
     @SuppressLint("NewApi")
+    @Nullable
+    private static <T extends GFDataPoint> T convertResponseDataSetToPoint(@NonNull DataReadResponse response,
+        @NonNull DataType type,
+        Function<DataPoint, T> mapper) {
+        final DataSet dataSet = response.getDataSet(type);
+        if (dataSet.isEmpty()) {
+            return null;
+        }
+        return mapper.apply(dataSet.getDataPoints().get(0));
+    }
+
+    @SuppressLint("NewApi")
     private static <T extends GFDataPoint> List<T> convertResponseBucketsToPoints(DataReadResponse response,
         Function<Bucket, T> mapper) {
         return response.getBuckets().stream().map(mapper).filter(Objects::nonNull).collect(Collectors.toList());
@@ -580,6 +639,14 @@ class GFClientWrapper {
         DataReadRequest request = new DataReadRequest.Builder().aggregate(DataType.TYPE_HEART_RATE_BPM)
             .bucketByTime(1, TimeUnit.MINUTES)
             .setTimeRange(start.getTime(), end.getTime(), TimeUnit.MILLISECONDS)
+            .build();
+        return historyClient.readData(request);
+    }
+
+    private Task<DataReadResponse> readLastKnownDataPointOfType(DataType type) {
+        final DataReadRequest request = new DataReadRequest.Builder().read(type)
+            .setTimeRange(1, new Date().getTime(), TimeUnit.MILLISECONDS)
+            .setLimit(1)
             .build();
         return historyClient.readData(request);
     }

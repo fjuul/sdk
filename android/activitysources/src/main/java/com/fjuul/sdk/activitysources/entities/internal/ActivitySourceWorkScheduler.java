@@ -8,6 +8,7 @@ import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
 import com.fjuul.sdk.activitysources.workers.GFIntradaySyncWorker;
 import com.fjuul.sdk.activitysources.workers.GFSessionsSyncWorker;
 import com.fjuul.sdk.activitysources.workers.GFSyncWorker;
+import com.fjuul.sdk.activitysources.workers.ProfileSyncWorker;
 
 import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
@@ -18,9 +19,10 @@ import androidx.work.NetworkType;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
-public class GFSyncWorkManager {
+public class ActivitySourceWorkScheduler {
     public static final String GF_INTRADAY_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.gf_intraday_sync";
     public static final String GF_SESSIONS_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.gf_sessions_sync";
+    public static final String PROFILE_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.profile_sync";
 
     @NonNull
     private final WorkManager workManager;
@@ -32,10 +34,11 @@ public class GFSyncWorkManager {
     private final String apiKey;
     @NonNull
     private final String baseUrl;
-    private volatile boolean intradaySyncWorkEnqueued = false;
-    private volatile boolean sessionsSyncWorkEnqueued = false;
+    private volatile boolean gfIntradaySyncWorkEnqueued = false;
+    private volatile boolean gfSessionsSyncWorkEnqueued = false;
+    private volatile boolean profileSyncWorkEnqueued = false;
 
-    public GFSyncWorkManager(@NonNull WorkManager workManager,
+    public ActivitySourceWorkScheduler(@NonNull WorkManager workManager,
         @NonNull String userToken,
         @NonNull String userSecret,
         @NonNull String apiKey,
@@ -50,20 +53,21 @@ public class GFSyncWorkManager {
     public static void cancelWorks(@NonNull WorkManager workManager) {
         workManager.cancelUniqueWork(GF_INTRADAY_SYNC_WORK_NAME);
         workManager.cancelUniqueWork(GF_SESSIONS_SYNC_WORK_NAME);
+        workManager.cancelUniqueWork(PROFILE_SYNC_WORK_NAME);
     }
 
     public synchronized void cancelWorks() {
-        cancelWorks(workManager);
-        intradaySyncWorkEnqueued = false;
-        sessionsSyncWorkEnqueued = false;
+        cancelGFIntradaySyncWork();
+        cancelGFSessionsSyncWork();
+        cancelProfileSyncWork();
     }
 
     @SuppressLint("NewApi")
-    public synchronized void scheduleIntradaySyncWork(@NonNull Set<FitnessMetricsType> intradayMetrics) {
-        if (intradaySyncWorkEnqueued) {
+    public synchronized void scheduleGFIntradaySyncWork(@NonNull Set<FitnessMetricsType> intradayMetrics) {
+        if (gfIntradaySyncWorkEnqueued) {
             return;
         }
-        final String[] serializedIntradayMetrics = intradayMetrics.stream().map(Enum::toString).toArray(String[]::new);
+        final String[] serializedIntradayMetrics = serializeFitnessMetrics(intradayMetrics);
         final Data inputWorkRequestData = buildEssentialInputData()
             .putStringArray(GFIntradaySyncWorker.KEY_INTRADAY_METRICS_ARG, serializedIntradayMetrics)
             .build();
@@ -76,16 +80,16 @@ public class GFSyncWorkManager {
         workManager.enqueueUniquePeriodicWork(GF_INTRADAY_SYNC_WORK_NAME,
             ExistingPeriodicWorkPolicy.REPLACE,
             periodicWorkRequest);
-        intradaySyncWorkEnqueued = true;
+        gfIntradaySyncWorkEnqueued = true;
     }
 
-    public synchronized void cancelIntradaySyncWork() {
+    public synchronized void cancelGFIntradaySyncWork() {
         workManager.cancelUniqueWork(GF_INTRADAY_SYNC_WORK_NAME);
-        intradaySyncWorkEnqueued = false;
+        gfIntradaySyncWorkEnqueued = false;
     }
 
-    public synchronized void scheduleSessionsSyncWork(@NonNull Duration minSessionDuration) {
-        if (sessionsSyncWorkEnqueued) {
+    public synchronized void scheduleGFSessionsSyncWork(@NonNull Duration minSessionDuration) {
+        if (gfSessionsSyncWorkEnqueued) {
             return;
         }
         final String serializedDuration = minSessionDuration.toString();
@@ -101,12 +105,36 @@ public class GFSyncWorkManager {
         workManager.enqueueUniquePeriodicWork(GF_SESSIONS_SYNC_WORK_NAME,
             ExistingPeriodicWorkPolicy.REPLACE,
             periodicWorkRequest);
-        sessionsSyncWorkEnqueued = true;
+        gfSessionsSyncWorkEnqueued = true;
     }
 
-    public synchronized void cancelSessionsSyncWork() {
+    public synchronized void cancelGFSessionsSyncWork() {
         workManager.cancelUniqueWork(GF_SESSIONS_SYNC_WORK_NAME);
-        sessionsSyncWorkEnqueued = false;
+        gfSessionsSyncWorkEnqueued = false;
+    }
+
+    public synchronized void scheduleProfileSyncWork(@NonNull Set<FitnessMetricsType> profileMetrics) {
+        if (profileSyncWorkEnqueued) {
+            return;
+        }
+        final String[] serializedMetrics = serializeFitnessMetrics(profileMetrics);
+        final Data inputWorkRequestData =
+            buildEssentialInputData().putStringArray(ProfileSyncWorker.KEY_PROFILE_METRICS_ARG, serializedMetrics)
+                .build();
+        final PeriodicWorkRequest periodicWorkRequest =
+            new PeriodicWorkRequest.Builder(ProfileSyncWorker.class, 1, TimeUnit.HOURS)
+                .setConstraints(buildCommonWorkConstraints())
+                .setInitialDelay(1, TimeUnit.HOURS)
+                .setInputData(inputWorkRequestData)
+                .build();
+        workManager
+            .enqueueUniquePeriodicWork(PROFILE_SYNC_WORK_NAME, ExistingPeriodicWorkPolicy.REPLACE, periodicWorkRequest);
+        profileSyncWorkEnqueued = true;
+    }
+
+    public synchronized void cancelProfileSyncWork() {
+        workManager.cancelUniqueWork(PROFILE_SYNC_WORK_NAME);
+        profileSyncWorkEnqueued = false;
     }
 
     private Data.Builder buildEssentialInputData() {
@@ -118,5 +146,10 @@ public class GFSyncWorkManager {
 
     private Constraints buildCommonWorkConstraints() {
         return new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();
+    }
+
+    @SuppressLint("NewApi")
+    private String[] serializeFitnessMetrics(Set<FitnessMetricsType> metrics) {
+        return metrics.stream().map(Enum::toString).toArray(String[]::new);
     }
 }

@@ -41,10 +41,12 @@ import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFActivitySegme
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFCalorieDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRSummaryDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHeightDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFPowerDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSessionBundle;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSpeedDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFStepsDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFWeightDataPoint;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.MaxTriesCountExceededException;
 import com.google.android.gms.fitness.FitnessActivities;
@@ -198,14 +200,16 @@ public class GFClientWrapperTest {
                 boolean correctDataType = arg.getAggregatedDataTypes().size() == 1
                     && arg.getAggregatedDataTypes().contains(DataType.TYPE_CALORIES_EXPENDED);
                 return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z")))
-                    && isXMinutesBucketRequest(arg, 1) && correctDataType;
+                    && isXMinutesBucketRequest(arg, 1)
+                    && correctDataType;
             }));
             inOrder.verify(mockedHistoryClient).readData(argThat((arg) -> {
                 boolean correctDataType = arg.getAggregatedDataTypes().size() == 1
                     && arg.getAggregatedDataTypes().contains(DataType.TYPE_CALORIES_EXPENDED);
 
                 return isTimeIntervalOfRequest(arg, Date.from(Instant.parse("2020-10-02T00:00:00Z")), end)
-                    & isXMinutesBucketRequest(arg, 1) && correctDataType;
+                    & isXMinutesBucketRequest(arg, 1)
+                    && correctDataType;
             }));
 
             // should split input date ranges into 24-hour chunks
@@ -239,7 +243,8 @@ public class GFClientWrapperTest {
                     && arg.getAggregatedDataTypes().contains(DataType.TYPE_CALORIES_EXPENDED);
 
                 return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z")))
-                    && isXMinutesBucketRequest(arg, 1) && correctDataType;
+                    && isXMinutesBucketRequest(arg, 1)
+                    && correctDataType;
             }));
             inOrder.verifyNoMoreInteractions();
 
@@ -280,7 +285,8 @@ public class GFClientWrapperTest {
                 boolean correctDataType = arg.getAggregatedDataTypes().size() == 1
                     && arg.getAggregatedDataTypes().contains(DataType.TYPE_CALORIES_EXPENDED);
                 return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z")))
-                    && isXMinutesBucketRequest(arg, 1) && correctDataType;
+                    && isXMinutesBucketRequest(arg, 1)
+                    && correctDataType;
             }));
             inOrder.verifyNoMoreInteractions();
             // should split input date ranges into 24-hour chunks
@@ -346,7 +352,8 @@ public class GFClientWrapperTest {
             assertEquals("steps should have the number value", (Integer) 218, stepsDataPoint.getValue());
 
             verify(mockedHistoryClient).readData(argThat((arg) -> {
-                return isTimeIntervalOfRequest(arg, start, end) && isXMinutesBucketRequest(arg, 15)
+                return isTimeIntervalOfRequest(arg, start, end)
+                    && isXMinutesBucketRequest(arg, 15)
                     && isRequestedCorrectDataSource(arg);
             }));
 
@@ -393,11 +400,13 @@ public class GFClientWrapperTest {
             InOrder inOrder = inOrder(mockedHistoryClient);
             inOrder.verify(mockedHistoryClient).readData(argThat((arg) -> {
                 return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-08T00:00:00Z")))
-                    && isXMinutesBucketRequest(arg, 15) && isRequestedCorrectDataSource(arg);
+                    && isXMinutesBucketRequest(arg, 15)
+                    && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verify(mockedHistoryClient).readData(argThat((arg) -> {
                 return isTimeIntervalOfRequest(arg, Date.from(Instant.parse("2020-10-08T00:00:00Z")), end)
-                    && isXMinutesBucketRequest(arg, 15) && isRequestedCorrectDataSource(arg);
+                    && isXMinutesBucketRequest(arg, 15)
+                    && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verifyNoMoreInteractions();
 
@@ -429,7 +438,8 @@ public class GFClientWrapperTest {
             InOrder inOrder = inOrder(mockedHistoryClient);
             inOrder.verify(mockedHistoryClient).readData(argThat(arg -> {
                 return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-08T00:00:00Z")))
-                    && isXMinutesBucketRequest(arg, 15) && isRequestedCorrectDataSource(arg);
+                    && isXMinutesBucketRequest(arg, 15)
+                    && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verifyNoMoreInteractions();
 
@@ -468,7 +478,8 @@ public class GFClientWrapperTest {
             InOrder inOrder = inOrder(mockedHistoryClient);
             inOrder.verify(mockedHistoryClient).readData(argThat(arg -> {
                 return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-08T00:00:00Z")))
-                    && isXMinutesBucketRequest(arg, 15) && isRequestedCorrectDataSource(arg);
+                    && isXMinutesBucketRequest(arg, 15)
+                    && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verifyNoMoreInteractions();
             // should split input date ranges into 7-day chunks
@@ -532,7 +543,8 @@ public class GFClientWrapperTest {
             assertEquals("data point should have avg value", 72.5f, hrSummary.getAvg(), 0.00001);
 
             verify(mockedHistoryClient).readData(argThat((arg) -> {
-                return isTimeIntervalOfRequest(arg, start, end) && isXMinutesBucketRequest(arg, 1)
+                return isTimeIntervalOfRequest(arg, start, end)
+                    && isXMinutesBucketRequest(arg, 1)
                     && isRequestedCorrectDataSource(arg);
             }));
 
@@ -581,11 +593,13 @@ public class GFClientWrapperTest {
             InOrder inOrder = inOrder(mockedHistoryClient);
             inOrder.verify(mockedHistoryClient).readData(argThat((arg) -> {
                 return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z")))
-                    && isXMinutesBucketRequest(arg, 1) && isRequestedCorrectDataSource(arg);
+                    && isXMinutesBucketRequest(arg, 1)
+                    && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verify(mockedHistoryClient).readData(argThat((arg) -> {
                 return isTimeIntervalOfRequest(arg, Date.from(Instant.parse("2020-10-02T00:00:00Z")), end)
-                    && isXMinutesBucketRequest(arg, 1) && isRequestedCorrectDataSource(arg);
+                    && isXMinutesBucketRequest(arg, 1)
+                    && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verifyNoMoreInteractions();
 
@@ -617,7 +631,8 @@ public class GFClientWrapperTest {
             InOrder inOrder = inOrder(mockedHistoryClient);
             inOrder.verify(mockedHistoryClient).readData(argThat(arg -> {
                 return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z")))
-                    && isXMinutesBucketRequest(arg, 1) && isRequestedCorrectDataSource(arg);
+                    && isXMinutesBucketRequest(arg, 1)
+                    && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verifyNoMoreInteractions();
 
@@ -656,7 +671,8 @@ public class GFClientWrapperTest {
             InOrder inOrder = inOrder(mockedHistoryClient);
             inOrder.verify(mockedHistoryClient).readData(argThat(arg -> {
                 return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z")))
-                    && isXMinutesBucketRequest(arg, 1) && isRequestedCorrectDataSource(arg);
+                    && isXMinutesBucketRequest(arg, 1)
+                    && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verifyNoMoreInteractions();
             // should split input date ranges into 24-hour chunks
@@ -700,7 +716,8 @@ public class GFClientWrapperTest {
                         DataType.TYPE_POWER_SAMPLE,
                         DataType.TYPE_ACTIVITY_SEGMENT)
                     .collect(Collectors.toSet());
-            return request.includeSessionsFromAllApps() && request.getSessionId().equals(session.getIdentifier())
+            return request.includeSessionsFromAllApps()
+                && request.getSessionId().equals(session.getIdentifier())
                 && isTimeIntervalOfRequest(request, sessionStart, sessionEnd)
                 && request.getDataTypes().stream().collect(Collectors.toSet()).equals(readingSessionDataTypes);
         }
@@ -1284,6 +1301,230 @@ public class GFClientWrapperTest {
         }
     }
 
+    public static class GetLastKnownHeightTest extends GivenRobolectricContext {
+        static private final DataSource heightDataSource =
+            new DataSource.Builder().setDataType(DataType.TYPE_HEIGHT).setType(DataSource.TYPE_RAW).build();
+        GFClientWrapper subject;
+        HistoryClient mockedHistoryClient;
+        SessionsClient mockedSessionsClient;
+        GFDataUtils gfDataUtilsSpy;
+
+        static private boolean isCorrectSingleDataTypeReadRequest(DataReadRequest request) {
+            return request.getDataTypes().size() == 1
+                && request.getDataTypes().get(0).equals(DataType.TYPE_HEIGHT)
+                && request.getStartTime(TimeUnit.MILLISECONDS) == 1
+                && request.getLimit() == 1;
+        }
+
+        @Before
+        public void beforeTests() {
+            mockedHistoryClient = mock(HistoryClient.class);
+            mockedSessionsClient = mock(SessionsClient.class);
+            GFDataUtils gfDataUtils = new GFDataUtils();
+            gfDataUtilsSpy = spy(gfDataUtils);
+            subject = new GFClientWrapper(TEST_CONFIG, mockedHistoryClient, mockedSessionsClient, gfDataUtilsSpy);
+        }
+
+        @Test
+        public void getLastKnownHeight_whenEmptyDataSet_returnsTaskWithNull()
+            throws ExecutionException, InterruptedException {
+            DataSet emptyDataSet = DataSet.builder(heightDataSource).build();
+            DataReadResponse testResponse = createTestDataReadResponse(emptyDataSet);
+            when(mockedHistoryClient.readData(Mockito.any())).thenReturn(Tasks.forResult(testResponse));
+
+            Task<GFHeightDataPoint> result = subject.getLastKnownHeight();
+            testExecutor.submit(() -> Tasks.await(result)).get();
+            assertTrue("successful task", result.isSuccessful());
+            assertNull("task should have null value", result.getResult());
+
+            InOrder inOrder = inOrder(mockedHistoryClient);
+            inOrder.verify(mockedHistoryClient).readData(argThat(req -> isCorrectSingleDataTypeReadRequest(req)));
+            inOrder.verifyNoMoreInteractions();
+        }
+
+        @Test
+        public void getLastKnownHeight_whenFailedToDelivery_returnTasksWithException() throws InterruptedException {
+            when(mockedHistoryClient.readData(Mockito.any()))
+                .thenReturn(Tasks.forException(new Exception("Application needs OAuth consent from the user")));
+            Task<GFHeightDataPoint> result = subject.getLastKnownHeight();
+            try {
+                testExecutor.submit(() -> Tasks.await(result)).get();
+            } catch (ExecutionException exception) {}
+
+            assertFalse("unsuccessful task", result.isSuccessful());
+            Exception exception = result.getException();
+            assertThat(exception, instanceOf(CommonException.class));
+            CommonException gfException = (CommonException) exception;
+            assertEquals("should have error message",
+                "Application needs OAuth consent from the user",
+                gfException.getCause().getMessage());
+            InOrder inOrder = inOrder(mockedHistoryClient);
+            inOrder.verify(mockedHistoryClient).readData(argThat(arg -> isCorrectSingleDataTypeReadRequest(arg)));
+            inOrder.verifyNoMoreInteractions();
+        }
+
+        @Test
+        public void getLastKnownHeight_whenRequestExceedsTimeout_returnTasksWithException()
+            throws InterruptedException {
+            when(mockedHistoryClient.readData(Mockito.any())).thenAnswer(invocation -> {
+                // NOTE: here we're simulating the dead request to GF
+                return Tasks.forResult(null).continueWithTask(testUtilExecutor, task -> {
+                    Thread.sleep(5000);
+                    return task;
+                });
+            });
+            Task<GFHeightDataPoint> result = subject.getLastKnownHeight();
+            try {
+                testExecutor.submit(() -> Tasks.await(result)).get();
+            } catch (ExecutionException exception) {}
+
+            assertFalse("unsuccessful task", result.isSuccessful());
+            Exception exception = result.getException();
+            assertThat(exception, instanceOf(MaxTriesCountExceededException.class));
+            MaxTriesCountExceededException gfException = (MaxTriesCountExceededException) exception;
+            assertEquals("should have error message",
+                "Possible tries count (1) exceeded for task \"fetch gf user's height\"",
+                gfException.getMessage());
+            InOrder inOrder = inOrder(mockedHistoryClient);
+            inOrder.verify(mockedHistoryClient).readData(argThat(arg -> isCorrectSingleDataTypeReadRequest(arg)));
+            inOrder.verifyNoMoreInteractions();
+        }
+
+        @Test
+        public void getLastKnownHeight_whenRequestSucceeds_returnTasksWithDataPoint()
+            throws InterruptedException, ExecutionException {
+            Date timestamp = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
+            DataPoint rawHeight = createRawDataPoint(heightDataSource, timestamp, Field.FIELD_HEIGHT, 1.824f);
+            DataSet dataSet = DataSet.builder(heightDataSource).add(rawHeight).build();
+            DataReadResponse testResponse = createTestDataReadResponse(dataSet);
+            when(mockedHistoryClient.readData(Mockito.any())).thenReturn(Tasks.forResult(testResponse));
+            Task<GFHeightDataPoint> result = subject.getLastKnownHeight();
+            testExecutor.submit(() -> Tasks.await(result)).get();
+
+            assertTrue("successful task", result.isSuccessful());
+            GFHeightDataPoint heightDataPoint = result.getResult();
+            assertEquals("height should have the date", timestamp, heightDataPoint.getStart());
+            assertEquals("height should have the value", 182.4f, heightDataPoint.getValue(), 0.0001);
+            assertNull("height should not have datasource", heightDataPoint.getDataSource());
+
+            InOrder inOrder = inOrder(mockedHistoryClient);
+            inOrder.verify(mockedHistoryClient).readData(argThat(arg -> isCorrectSingleDataTypeReadRequest(arg)));
+            inOrder.verifyNoMoreInteractions();
+        }
+    }
+
+    public static class GetLastKnownWeightTest extends GivenRobolectricContext {
+        static private final DataSource weightDataSource =
+            new DataSource.Builder().setDataType(DataType.TYPE_WEIGHT).setType(DataSource.TYPE_RAW).build();
+        GFClientWrapper subject;
+        HistoryClient mockedHistoryClient;
+        SessionsClient mockedSessionsClient;
+        GFDataUtils gfDataUtilsSpy;
+
+        static private boolean isCorrectSingleDataTypeReadRequest(DataReadRequest request) {
+            return request.getDataTypes().size() == 1
+                && request.getDataTypes().get(0).equals(DataType.TYPE_WEIGHT)
+                && request.getStartTime(TimeUnit.MILLISECONDS) == 1
+                && request.getLimit() == 1;
+        }
+
+        @Before
+        public void beforeTests() {
+            mockedHistoryClient = mock(HistoryClient.class);
+            mockedSessionsClient = mock(SessionsClient.class);
+            GFDataUtils gfDataUtils = new GFDataUtils();
+            gfDataUtilsSpy = spy(gfDataUtils);
+            subject = new GFClientWrapper(TEST_CONFIG, mockedHistoryClient, mockedSessionsClient, gfDataUtilsSpy);
+        }
+
+        @Test
+        public void getLastKnownWeight_whenEmptyDataSet_returnsTaskWithNull()
+            throws ExecutionException, InterruptedException {
+            DataSet emptyDataSet = DataSet.builder(weightDataSource).build();
+            DataReadResponse testResponse = createTestDataReadResponse(emptyDataSet);
+            when(mockedHistoryClient.readData(Mockito.any())).thenReturn(Tasks.forResult(testResponse));
+
+            Task<GFWeightDataPoint> result = subject.getLastKnownWeight();
+            testExecutor.submit(() -> Tasks.await(result)).get();
+            assertTrue("successful task", result.isSuccessful());
+            assertNull("task should have null value", result.getResult());
+
+            InOrder inOrder = inOrder(mockedHistoryClient);
+            inOrder.verify(mockedHistoryClient).readData(argThat(req -> isCorrectSingleDataTypeReadRequest(req)));
+            inOrder.verifyNoMoreInteractions();
+        }
+
+        @Test
+        public void getLastKnownWeight_whenFailedToDelivery_returnTasksWithException() throws InterruptedException {
+            when(mockedHistoryClient.readData(Mockito.any()))
+                .thenReturn(Tasks.forException(new Exception("Application needs OAuth consent from the user")));
+            Task<GFWeightDataPoint> result = subject.getLastKnownWeight();
+            try {
+                testExecutor.submit(() -> Tasks.await(result)).get();
+            } catch (ExecutionException exception) {}
+
+            assertFalse("unsuccessful task", result.isSuccessful());
+            Exception exception = result.getException();
+            assertThat(exception, instanceOf(CommonException.class));
+            CommonException gfException = (CommonException) exception;
+            assertEquals("should have error message",
+                "Application needs OAuth consent from the user",
+                gfException.getCause().getMessage());
+            InOrder inOrder = inOrder(mockedHistoryClient);
+            inOrder.verify(mockedHistoryClient).readData(argThat(arg -> isCorrectSingleDataTypeReadRequest(arg)));
+            inOrder.verifyNoMoreInteractions();
+        }
+
+        @Test
+        public void getLastKnownWeight_whenRequestExceedsTimeout_returnTasksWithException()
+            throws InterruptedException {
+            when(mockedHistoryClient.readData(Mockito.any())).thenAnswer(invocation -> {
+                // NOTE: here we're simulating the dead request to GF
+                return Tasks.forResult(null).continueWithTask(testUtilExecutor, task -> {
+                    Thread.sleep(5000);
+                    return task;
+                });
+            });
+            Task<GFWeightDataPoint> result = subject.getLastKnownWeight();
+            try {
+                testExecutor.submit(() -> Tasks.await(result)).get();
+            } catch (ExecutionException exception) {}
+
+            assertFalse("unsuccessful task", result.isSuccessful());
+            Exception exception = result.getException();
+            assertThat(exception, instanceOf(MaxTriesCountExceededException.class));
+            MaxTriesCountExceededException gfException = (MaxTriesCountExceededException) exception;
+            assertEquals("should have error message",
+                "Possible tries count (1) exceeded for task \"fetch gf user's weight\"",
+                gfException.getMessage());
+            InOrder inOrder = inOrder(mockedHistoryClient);
+            inOrder.verify(mockedHistoryClient).readData(argThat(arg -> isCorrectSingleDataTypeReadRequest(arg)));
+            inOrder.verifyNoMoreInteractions();
+        }
+
+        @Test
+        public void getLastKnownWeight_whenRequestSucceeds_returnTasksWithDataPoint()
+            throws InterruptedException, ExecutionException {
+            Date timestamp = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
+            DataPoint rawWeight = createRawDataPoint(weightDataSource, timestamp, Field.FIELD_WEIGHT, 70.55f);
+            DataSet dataSet = DataSet.builder(weightDataSource).add(rawWeight).build();
+            DataReadResponse testResponse = createTestDataReadResponse(dataSet);
+            when(mockedHistoryClient.readData(Mockito.any())).thenReturn(Tasks.forResult(testResponse));
+            Task<GFWeightDataPoint> result = subject.getLastKnownWeight();
+            testExecutor.submit(() -> Tasks.await(result)).get();
+
+            assertTrue("successful task", result.isSuccessful());
+            GFWeightDataPoint weightDataPoint = result.getResult();
+            assertEquals("weight should have the date", timestamp, weightDataPoint.getStart());
+            assertEquals("weight should have the value", 70.55f, weightDataPoint.getValue(), 0.0001);
+            assertNull("weight should not have datasource", weightDataPoint.getDataSource());
+
+            InOrder inOrder = inOrder(mockedHistoryClient);
+            inOrder.verify(mockedHistoryClient).readData(argThat(arg -> isCorrectSingleDataTypeReadRequest(arg)));
+            inOrder.verifyNoMoreInteractions();
+        }
+    }
+
     public static Bucket createMockedSoleBucket(Date start, Date end, DataSource source, DataPoint... dataPoints) {
         Bucket mockedBucket = mock(Bucket.class);
         DataSet ds = DataSet.builder(source).addAll(Arrays.asList(dataPoints)).build();
@@ -1296,6 +1537,13 @@ public class GFClientWrapperTest {
     public static DataPoint createRawDataPoint(DataSource source, Date start, Date end, Field field, float value) {
         return DataPoint.builder(source)
             .setTimeInterval(start.getTime(), end.getTime(), TimeUnit.MILLISECONDS)
+            .setField(field, value)
+            .build();
+    }
+
+    public static DataPoint createRawDataPoint(DataSource source, Date timestamp, Field field, float value) {
+        return DataPoint.builder(source)
+            .setTimestamp(timestamp.getTime(), TimeUnit.MILLISECONDS)
             .setField(field, value)
             .build();
     }

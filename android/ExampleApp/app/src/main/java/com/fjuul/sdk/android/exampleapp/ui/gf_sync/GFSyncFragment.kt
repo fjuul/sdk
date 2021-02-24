@@ -38,6 +38,7 @@ class GFSyncFragment : Fragment() {
 
         (intraday_section_text as TextView).text = "Intraday metrics"
         (sessions_section_text as TextView).text = "Sessions"
+        (profile_section_text as TextView).text = "Profile"
 
         viewModel.startDate.observe(
             viewLifecycleOwner,
@@ -65,6 +66,15 @@ class GFSyncFragment : Fragment() {
             viewLifecycleOwner,
             Observer { syncing ->
                 sessions_sync_progress_bar.visibility = when (syncing) {
+                    true -> View.VISIBLE
+                    false -> View.INVISIBLE
+                }
+            }
+        )
+        viewModel.syncingProfile.observe(
+            viewLifecycleOwner,
+            Observer { syncing ->
+                profile_sync_progress_bar.visibility = when (syncing) {
                     true -> View.VISIBLE
                     false -> View.INVISIBLE
                 }
@@ -136,6 +146,12 @@ class GFSyncFragment : Fragment() {
                 return@setOnClickListener
             }
             viewModel.runSessionsSync(minSessionDuration)
+        }
+
+        run_profile_sync_button.setOnClickListener {
+            val height = height_check_box.isChecked
+            val weight = weight_check_box.isChecked
+            viewModel.runProfileSync(height, weight)
         }
     }
 }

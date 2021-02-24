@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -45,12 +46,15 @@ import org.robolectric.annotation.Config;
 
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
 import com.fjuul.sdk.activitysources.entities.GoogleFitIntradaySyncOptions;
+import com.fjuul.sdk.activitysources.entities.GoogleFitProfileSyncOptions;
 import com.fjuul.sdk.activitysources.entities.GoogleFitSessionSyncOptions;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFCalorieDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPointsBatch;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRSummaryDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHeightDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSessionBundle;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFStepsDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFWeightDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata.GFSyncMetadataStore;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.MaxTriesCountExceededException;
@@ -828,6 +832,263 @@ public class GFDataManagerTest {
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
             assertEquals("[activitysources] GFDataManager: succeeded to send GF data", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+        }
+    }
+
+    public static class SyncProfileTest extends GivenRobolectricContext {
+        final String currentInstant = "2020-10-05T09:30:00Z";
+        final TimeZone testTimeZone = TimeZone.getTimeZone("Europe/Zurich");
+        final ZoneId testZoneId = testTimeZone.toZoneId();
+        final Clock fixedClock = Clock.fixed(Instant.parse(currentInstant), testZoneId);
+        final GFWeightDataPoint testWeightDataPoint =
+            new GFWeightDataPoint(75.33f, Date.from(Instant.parse("2020-10-01T10:00:05Z")));
+        final GFHeightDataPoint testHeightDataPoint =
+            new GFHeightDataPoint(182.9f, Date.from(Instant.parse("2020-10-01T10:00:05Z")));
+
+        GFDataManager subject;
+        GFClientWrapper mockedGFClientWrapper;
+        GFDataUtils gfDataUtilsSpy;
+        GFSyncMetadataStore mockedGFSyncMetadataStore;
+        ActivitySourcesService mockedActivitySourcesService;
+
+        @Before
+        public void beforeTests() {
+            mockedGFClientWrapper = mock(GFClientWrapper.class);
+            mockedGFSyncMetadataStore = mock(GFSyncMetadataStore.class);
+            mockedActivitySourcesService = mock(ActivitySourcesService.class);
+            GFDataUtils gfDataUtils = new GFDataUtils(testZoneId, fixedClock);
+            gfDataUtilsSpy = spy(gfDataUtils);
+            subject = new GFDataManager(mockedGFClientWrapper,
+                gfDataUtilsSpy,
+                mockedGFSyncMetadataStore,
+                mockedActivitySourcesService);
+        }
+
+        @Test
+        public void syncProfile_noWeightFromGoogleFit_returnsSuccessfulTaskWithFalse()
+            throws ExecutionException, InterruptedException {
+            final GoogleFitProfileSyncOptions options =
+                new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.WEIGHT).build();
+            when(mockedGFClientWrapper.getLastKnownWeight()).thenReturn(Tasks.forResult(null));
+
+            Task<Boolean> result = subject.syncProfile(options);
+            testExecutor.submit(() -> Tasks.await(result)).get();
+
+            assertTrue("should return successful task", result.isSuccessful());
+            assertFalse("task result should be false", result.getResult());
+            // should ask client-wrapper for data for the specified time interval in the local timezone
+            verify(mockedGFClientWrapper).getLastKnownWeight();
+            // shouldn't request the last known height
+            verify(mockedGFClientWrapper, never()).getLastKnownHeight();
+            // shouldn't interact with the activity sources service
+            verifyNoInteractions(mockedActivitySourcesService);
+            // should even not interact with the sync metadata store
+            verifyNoInteractions(mockedGFSyncMetadataStore);
+
+            assertEquals("logger should have entries", 2, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: no the updated profile parameters to send",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+        }
+
+        @Test
+        public void syncProfile_alreadySyncedWeightFromGoogleFit_returnsSuccessfulTaskWithFalse()
+            throws ExecutionException, InterruptedException {
+            final GoogleFitProfileSyncOptions options =
+                new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.WEIGHT).build();
+            when(mockedGFClientWrapper.getLastKnownWeight()).thenReturn(Tasks.forResult(testWeightDataPoint));
+            when(mockedGFSyncMetadataStore.isNeededToSyncWeight(testWeightDataPoint)).thenReturn(false);
+
+            Task<Boolean> result = subject.syncProfile(options);
+            testExecutor.submit(() -> Tasks.await(result)).get();
+
+            assertTrue("should return successful task", result.isSuccessful());
+            assertFalse("task result should be false", result.getResult());
+            // should ask client-wrapper for data for the specified time interval in the local timezone
+            verify(mockedGFClientWrapper).getLastKnownWeight();
+            // shouldn't request the last known height
+            verify(mockedGFClientWrapper, never()).getLastKnownHeight();
+            // shouldn't interact with the activity sources service
+            verifyNoInteractions(mockedActivitySourcesService);
+            // should ask the metadata store about the weight
+            verify(mockedGFSyncMetadataStore).isNeededToSyncWeight(testWeightDataPoint);
+            verifyNoMoreInteractions(mockedGFSyncMetadataStore);
+
+            assertEquals("logger should have entries", 2, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: no the updated profile parameters to send",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+        }
+
+        @Test
+        public void syncProfile_notSyncedWeightWithFailedApiRequest_returnsFailedTask() throws InterruptedException {
+            final GoogleFitProfileSyncOptions options =
+                new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.WEIGHT).build();
+            when(mockedGFClientWrapper.getLastKnownWeight()).thenReturn(Tasks.forResult(testWeightDataPoint));
+            when(mockedGFSyncMetadataStore.isNeededToSyncWeight(testWeightDataPoint)).thenReturn(true);
+
+            final ApiCall<Void> mockedApiCall = mock(ApiCall.class);
+            final ApiExceptions.BadRequestException apiCallException =
+                new ApiExceptions.BadRequestException("Bad request");
+            doAnswer(invocation -> {
+                final ApiCallCallback<Void> callback = invocation.getArgument(0, ApiCallCallback.class);
+                callback.onResult(null, ApiCallResult.error(apiCallException));
+                return null;
+            }).when(mockedApiCall).enqueue(any());
+            when(mockedActivitySourcesService.updateProfileOnBehalfOfGoogleFit(any())).thenReturn(mockedApiCall);
+
+            Task<Boolean> result = subject.syncProfile(options);
+            try {
+                testExecutor.submit(() -> Tasks.await(result)).get();
+            } catch (ExecutionException exception) { /* expected exception */ }
+
+            assertFalse("should return failed task", result.isSuccessful());
+            assertThat(result.getException(), instanceOf(CommonException.class));
+            CommonException exception = (CommonException) result.getException();
+            assertEquals("should have exception message", "Failed to send data to the server", exception.getMessage());
+            assertEquals("should have exception cause", apiCallException, exception.getCause());
+            // should ask client-wrapper for data for the specified time interval in the local timezone
+            verify(mockedGFClientWrapper).getLastKnownWeight();
+            // shouldn't request the last known height
+            verify(mockedGFClientWrapper, never()).getLastKnownHeight();
+            // should ask the activity sources service
+            verify(mockedActivitySourcesService).updateProfileOnBehalfOfGoogleFit(any());
+            // should ask the metadata store about the weight
+            verify(mockedGFSyncMetadataStore).isNeededToSyncWeight(testWeightDataPoint);
+            verifyNoMoreInteractions(mockedGFSyncMetadataStore);
+
+            assertEquals("logger should have entries", 3, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals(
+                "[activitysources] GFDataManager: sending the updated profile parameters: GFSynchronizableProfileParams{weight=\"75.33\"}",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: failed to send the profile data: Bad request",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+        }
+
+        @Test
+        public void syncProfile_notSyncedWeightWithSuccessfulApiRequest_returnsFailedTask()
+            throws InterruptedException {
+            final GoogleFitProfileSyncOptions options =
+                new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.WEIGHT).build();
+            when(mockedGFClientWrapper.getLastKnownWeight()).thenReturn(Tasks.forResult(testWeightDataPoint));
+            when(mockedGFSyncMetadataStore.isNeededToSyncWeight(testWeightDataPoint)).thenReturn(true);
+
+            final ApiCall<Void> mockedApiCall = mock(ApiCall.class);
+            doAnswer(invocation -> {
+                final ApiCallCallback<Void> callback = invocation.getArgument(0, ApiCallCallback.class);
+                callback.onResult(null, ApiCallResult.value(null));
+                return null;
+            }).when(mockedApiCall).enqueue(any());
+            when(mockedActivitySourcesService.updateProfileOnBehalfOfGoogleFit(any())).thenReturn(mockedApiCall);
+
+            Task<Boolean> result = subject.syncProfile(options);
+            try {
+                testExecutor.submit(() -> Tasks.await(result)).get();
+            } catch (ExecutionException exception) { /* expected exception */ }
+
+            assertTrue("should return successful task", result.isSuccessful());
+            assertTrue("task should have true value", result.getResult());
+            // should ask client-wrapper for data for the specified time interval in the local timezone
+            verify(mockedGFClientWrapper).getLastKnownWeight();
+            // shouldn't request the last known height
+            verify(mockedGFClientWrapper, never()).getLastKnownHeight();
+            // should ask the activity sources service
+            verify(mockedActivitySourcesService).updateProfileOnBehalfOfGoogleFit(any());
+            // should ask the metadata store about the weight
+            verify(mockedGFSyncMetadataStore).isNeededToSyncWeight(testWeightDataPoint);
+            // should ask the metadata store to save metadata of the weight
+            verify(mockedGFSyncMetadataStore).saveSyncMetadataOfWeight(testWeightDataPoint);
+            verifyNoMoreInteractions(mockedGFSyncMetadataStore);
+
+            assertEquals("logger should have entries", 3, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals(
+                "[activitysources] GFDataManager: sending the updated profile parameters: GFSynchronizableProfileParams{weight=\"75.33\"}",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: succeeded to send the profile data", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+        }
+
+        @Test
+        public void syncProfile_notSyncedProfileFieldsWithSuccessfulApiRequest_returnsFailedTask()
+            throws InterruptedException {
+            final GoogleFitProfileSyncOptions options =
+                new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.WEIGHT)
+                    .include(FitnessMetricsType.HEIGHT)
+                    .build();
+            when(mockedGFClientWrapper.getLastKnownWeight()).thenReturn(Tasks.forResult(testWeightDataPoint));
+            when(mockedGFClientWrapper.getLastKnownHeight()).thenReturn(Tasks.forResult(testHeightDataPoint));
+            when(mockedGFSyncMetadataStore.isNeededToSyncWeight(testWeightDataPoint)).thenReturn(true);
+            when(mockedGFSyncMetadataStore.isNeededToSyncHeight(testHeightDataPoint)).thenReturn(true);
+
+            final ApiCall<Void> mockedApiCall = mock(ApiCall.class);
+            doAnswer(invocation -> {
+                final ApiCallCallback<Void> callback = invocation.getArgument(0, ApiCallCallback.class);
+                callback.onResult(null, ApiCallResult.value(null));
+                return null;
+            }).when(mockedApiCall).enqueue(any());
+            when(mockedActivitySourcesService.updateProfileOnBehalfOfGoogleFit(any())).thenReturn(mockedApiCall);
+
+            Task<Boolean> result = subject.syncProfile(options);
+            try {
+                testExecutor.submit(() -> Tasks.await(result)).get();
+            } catch (ExecutionException exception) { /* expected exception */ }
+
+            assertTrue("should return successful task", result.isSuccessful());
+            assertTrue("task should have true value", result.getResult());
+            // should ask client-wrapper for data for the specified time interval in the local timezone
+            verify(mockedGFClientWrapper).getLastKnownWeight();
+            // shouldn't request the last known height
+            verify(mockedGFClientWrapper).getLastKnownHeight();
+            // should ask the activity sources service
+            verify(mockedActivitySourcesService).updateProfileOnBehalfOfGoogleFit(any());
+            // should ask the metadata store about the weight and height
+            verify(mockedGFSyncMetadataStore).isNeededToSyncWeight(testWeightDataPoint);
+            verify(mockedGFSyncMetadataStore).isNeededToSyncHeight(testHeightDataPoint);
+            // should ask the metadata store to save metadata of the weight and height
+            verify(mockedGFSyncMetadataStore).saveSyncMetadataOfWeight(testWeightDataPoint);
+            verify(mockedGFSyncMetadataStore).saveSyncMetadataOfHeight(testHeightDataPoint);
+            verifyNoMoreInteractions(mockedGFSyncMetadataStore);
+
+            assertEquals("logger should have entries", 3, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertThat(logEntry.getMessage(),
+                containsString("[activitysources] GFDataManager: start syncing GF profile metrics"));
+            assertThat(logEntry.getMessage(), containsString("HEIGHT"));
+            assertThat(logEntry.getMessage(), containsString("WEIGHT"));
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals(
+                "[activitysources] GFDataManager: sending the updated profile parameters: GFSynchronizableProfileParams{height=\"182.9\", weight=\"75.33\"}",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: succeeded to send the profile data", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
     }

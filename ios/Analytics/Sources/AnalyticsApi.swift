@@ -30,7 +30,13 @@ public class AnalyticsApi {
             return completion(.failure(FjuulError.invalidConfig))
         }
         apiClient.signedSession.request(url, method: .get).apiResponse { response in
-            let decodedResponse = response.tryMap { try Decoders.yyyyMMddLocale.decode(DailyStats.self, from: $0) }
+            let decodedResponse = response
+                .tryMap { try Decoders.yyyyMMddLocale.decode(DailyStats.self, from: $0) }
+                .mapAPIError { _, jsonError in
+                    guard let jsonError = jsonError else { return nil }
+
+                    return .analyticsFailure(reason: .generic(message: jsonError.message))
+                }
             completion(decodedResponse.result)
         }
     }
@@ -51,7 +57,13 @@ public class AnalyticsApi {
             "to": DateFormatters.yyyyMMddLocale.string(from: to),
         ]
         apiClient.signedSession.request(url, method: .get, parameters: parameters).apiResponse { response in
-            let decodedResponse = response.tryMap { try Decoders.yyyyMMddLocale.decode([DailyStats].self, from: $0) }
+            let decodedResponse = response
+                .tryMap { try Decoders.yyyyMMddLocale.decode([DailyStats].self, from: $0) }
+                .mapAPIError { _, jsonError in
+                    guard let jsonError = jsonError else { return nil }
+
+                    return .analyticsFailure(reason: .generic(message: jsonError.message))
+                }
             completion(decodedResponse.result)
         }
     }

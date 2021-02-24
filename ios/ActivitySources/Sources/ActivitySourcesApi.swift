@@ -45,20 +45,23 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
                     case 200:
                         let json = try JSONSerialization.jsonObject(with: result, options: []) as? [String: Any]
                         guard let authenticationUrl = json?["url"] as? String else {
-                            throw FjuulError.activitySourceConnectionFailure(reason: .generic)
+                            throw FjuulError.activitySourceConnectionFailure(reason: .generic(message: nil))
                         }
                         return .externalAuthenticationFlowRequired(authenticationUrl: authenticationUrl)
                     case 201:
                         let trackerConnection = try Decoders.iso8601Full.decode(TrackerConnection.self, from: result)
                         return .connected(trackerConnection: trackerConnection)
-                    default: throw FjuulError.activitySourceConnectionFailure(reason: .generic)
+                    default: throw FjuulError.activitySourceConnectionFailure(reason: .generic(message: nil))
                     }
                 }
-                .mapError { err -> Error in
-                    if response.response?.statusCode == 409 {
-                        return FjuulError.activitySourceConnectionFailure(reason: .sourceAlreadyConnected)
+                .mapAPIError { resp, jsonError in
+                    guard let jsonError = jsonError else { return nil }
+
+                    if resp.response?.statusCode == 409 {
+                        return .activitySourceConnectionFailure(reason: .sourceAlreadyConnected(message: jsonError.message))
                     }
-                    return err
+
+                    return .activitySourceConnectionFailure(reason: .generic(message: jsonError.message))
                 }
             completion(mappedResponse.result)
         }
@@ -70,7 +73,13 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
             return completion(.failure(FjuulError.invalidConfig))
         }
         apiClient.signedSession.request(url, method: .delete).apiResponse { response in
-            let decodedResponse = response.map { _ -> Void in () }
+            let decodedResponse = response
+                .map { _ -> Void in () }
+                .mapAPIError { _, jsonError in
+                    guard let jsonError = jsonError else { return nil }
+
+                    return .activitySourceConnectionFailure(reason: .generic(message: jsonError.message))
+                }
             completion(decodedResponse.result)
         }
     }
@@ -82,7 +91,13 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
         }
         let parameters = ["show": "current"]
         apiClient.signedSession.request(url, method: .get, parameters: parameters).apiResponse { response in
-            let decodedResponse = response.tryMap { try Decoders.iso8601Full.decode([TrackerConnection].self, from: $0) }
+            let decodedResponse = response
+                .tryMap { try Decoders.iso8601Full.decode([TrackerConnection].self, from: $0) }
+                .mapAPIError { _, jsonError in
+                    guard let jsonError = jsonError else { return nil }
+
+                    return .activitySourceConnectionFailure(reason: .generic(message: jsonError.message))
+                }
             completion(decodedResponse.result)
         }
     }

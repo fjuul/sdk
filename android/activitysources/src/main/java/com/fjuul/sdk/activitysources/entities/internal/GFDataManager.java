@@ -82,17 +82,15 @@ public class GFDataManager {
     @NonNull
     public Task<Void> syncIntradayMetrics(@NonNull GoogleFitIntradaySyncOptions options) {
         // todo: consider returning metadata of the sent data
-        final LocalDate inputStartDate = options.getStartDate();
-        final LocalDate inputEndDate = options.getEndDate();
-        final Pair<Date, Date> gfInputDates = gfUtils.adjustInputDatesForGFRequest(inputStartDate, inputEndDate);
-        final Date startDate = correctDateByLowerBoundary(gfInputDates.first);
-        final Date endDate = correctDateByLowerBoundary(gfInputDates.second);
+        final Pair<Date, Date> queryDates = transformInputDates(options.getStartDate(), options.getEndDate());
+        final Date startDate = queryDates.first;
+        final Date endDate = queryDates.second;
         if (startDate.equals(endDate)) {
             // in other words, if the duration gap between two input dates is zero then no make sense to sync any data
             Logger.get().d("skip syncing GF intraday metrics (%s) with input dates [%s, %s]",
                 options.getMetrics().stream().map(metric -> metric.toString()).collect(Collectors.joining(", ")),
-                inputStartDate.toString(),
-                inputEndDate.toString());
+                options.getStartDate().toString(),
+                options.getEndDate().toString());
             return Tasks.forResult(null);
         }
         Logger.get().d("start syncing GF intraday metrics (%s) with date range [%s, %s]",
@@ -397,5 +395,12 @@ public class GFDataManager {
             return date;
         }
         return date.before(lowerDateBoundary) ? lowerDateBoundary : date;
+    }
+
+    private Pair<Date, Date> transformInputDates(@NonNull LocalDate start, @NonNull LocalDate end) {
+        final Pair<Date, Date> gfInputDates = gfUtils.adjustInputDatesForGFRequest(start, end);
+        final Date startDate = correctDateByLowerBoundary(gfInputDates.first);
+        final Date endDate = correctDateByLowerBoundary(gfInputDates.second);
+        return new Pair<>(startDate, endDate);
     }
 }

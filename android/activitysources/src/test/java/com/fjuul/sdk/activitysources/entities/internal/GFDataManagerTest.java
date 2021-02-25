@@ -689,6 +689,7 @@ public class GFDataManagerTest {
         final TimeZone testTimeZone = TimeZone.getTimeZone("Europe/Zurich");
         final ZoneId testZoneId = testTimeZone.toZoneId();
         final Clock fixedClock = Clock.fixed(Instant.parse(currentInstant), testZoneId);
+        final Date lowerDateBoundary = Date.from(LocalDateTime.parse("2020-09-28T15:40:00").atZone(testZoneId).toInstant());
 
         GFDataManager subject;
         GFClientWrapper mockedGFClientWrapper;
@@ -707,7 +708,75 @@ public class GFDataManagerTest {
                 gfDataUtilsSpy,
                 mockedGFSyncMetadataStore,
                 mockedActivitySourcesService,
-                null);
+                lowerDateBoundary);
+        }
+
+        @Test
+        public void syncSessions_startDateAndEndDateCrossTheLowerDateBoundary_returnsSuccessfulTask()
+            throws ExecutionException, InterruptedException {
+            final LocalDate startDate = LocalDate.parse("2020-09-20");
+            final LocalDate endDate = LocalDate.parse("2020-09-25");
+            final Duration minDuration = Duration.ofMinutes(5);
+            final GoogleFitSessionSyncOptions options =
+                new GoogleFitSessionSyncOptions.Builder(fixedClock).setMinimumSessionDuration(minDuration)
+                    .setDateRange(startDate, endDate)
+                    .build();
+
+            Task<Void> result = subject.syncSessions(options);
+            testExecutor.submit(() -> Tasks.await(result)).get();
+
+            assertTrue("should return successful task", result.isSuccessful());
+            // shouldn't ask the client-wrapper
+            verifyNoInteractions(mockedGFClientWrapper);
+            // shouldn't interact with the activity sources service
+            verifyNoInteractions(mockedActivitySourcesService);
+            // should even not interact with the sync metadata store
+            verifyNoInteractions(mockedGFSyncMetadataStore);
+
+            assertEquals("logger should have entry", 1, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: skip syncing GF sessions with input dates [2020-09-20, 2020-09-25]",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+        }
+
+        @Test
+        public void syncSessions_startDateCrossesTheLowerDateBoundary_returnsSuccessfulTask()
+            throws ExecutionException, InterruptedException {
+            final LocalDate startDate = LocalDate.parse("2020-09-20");
+            final LocalDate endDate = LocalDate.parse("2020-10-02");
+            final Duration minDuration = Duration.ofMinutes(5);
+            final GoogleFitSessionSyncOptions options =
+                new GoogleFitSessionSyncOptions.Builder(fixedClock).setMinimumSessionDuration(minDuration)
+                    .setDateRange(startDate, endDate)
+                    .build();
+
+            final Date startRequestDate = lowerDateBoundary;
+            final Date endRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant());
+
+            when(mockedGFClientWrapper.getSessions(startRequestDate, endRequestDate, minDuration))
+                .thenReturn(Tasks.forResult(Collections.emptyList()));
+
+            Task<Void> result = subject.syncSessions(options);
+            testExecutor.submit(() -> Tasks.await(result)).get();
+
+            assertTrue("should return successful task", result.isSuccessful());
+            // should ask client-wrapper for data for the specified time interval in the local timezone
+            verify(mockedGFClientWrapper).getSessions(startRequestDate, endRequestDate, minDuration);
+            // shouldn't interact with the activity sources service
+            verifyNoInteractions(mockedActivitySourcesService);
+            // should even not interact with the sync metadata store
+            verifyNoInteractions(mockedGFSyncMetadataStore);
+
+            assertEquals("logger should have entries", 2, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: start syncing GF sessions with date range [2020-09-28T13:40:00.000Z, 2020-10-02T21:59:59.999Z]",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: no new data to send", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
         @Test
@@ -742,7 +811,7 @@ public class GFDataManagerTest {
 
             assertEquals("logger should have entries", 2, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
-            assertEquals("[activitysources] GFDataManager: start syncing GF sessions for 2020-10-01 - 2020-10-02",
+            assertEquals("[activitysources] GFDataManager: start syncing GF sessions with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
@@ -786,7 +855,7 @@ public class GFDataManagerTest {
 
             assertEquals("logger should have entries", 2, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
-            assertEquals("[activitysources] GFDataManager: start syncing GF sessions for 2020-10-01 - 2020-10-02",
+            assertEquals("[activitysources] GFDataManager: start syncing GF sessions with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
@@ -796,7 +865,7 @@ public class GFDataManagerTest {
 
         @Test
         public void syncSessions_whenNotSyncedSessionWithFailedApiRequest_returnsSuccessfulTask()
-            throws ExecutionException, InterruptedException {
+            throws InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");
             final LocalDate endDate = LocalDate.parse("2020-10-02");
             final Duration minDuration = Duration.ofMinutes(5);
@@ -852,7 +921,7 @@ public class GFDataManagerTest {
 
             assertEquals("logger should have entries", 3, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
-            assertEquals("[activitysources] GFDataManager: start syncing GF sessions for 2020-10-01 - 2020-10-02",
+            assertEquals("[activitysources] GFDataManager: start syncing GF sessions with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
@@ -914,7 +983,7 @@ public class GFDataManagerTest {
 
             assertEquals("logger should have entries", 3, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
-            assertEquals("[activitysources] GFDataManager: start syncing GF sessions for 2020-10-01 - 2020-10-02",
+            assertEquals("[activitysources] GFDataManager: start syncing GF sessions with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();

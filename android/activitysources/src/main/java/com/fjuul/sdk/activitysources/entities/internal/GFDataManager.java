@@ -177,14 +177,22 @@ public class GFDataManager {
     @SuppressLint("NewApi")
     @NonNull
     public Task<Void> syncSessions(@NonNull GoogleFitSessionSyncOptions options) {
-        Logger.get()
-            .d("start syncing GF sessions for %s - %s",
+        final Pair<Date, Date> queryDates = transformInputDates(options.getStartDate(), options.getEndDate());
+        final Date startDate = queryDates.first;
+        final Date endDate = queryDates.second;
+        if (startDate.equals(endDate)) {
+            // in other words, if the duration gap between two input dates is zero then no make sense to sync any data
+            Logger.get().d("skip syncing GF sessions with input dates [%s, %s]",
                 options.getStartDate().toString(),
                 options.getEndDate().toString());
-        final Pair<Date, Date> gfQueryDates =
-            gfUtils.adjustInputDatesForGFRequest(options.getStartDate(), options.getEndDate());
+            return Tasks.forResult(null);
+        }
+
+        Logger.get().d("start syncing GF sessions with date range [%s, %s]",
+                dateFormatter.get().format(startDate),
+                dateFormatter.get().format(endDate));
         final Task<List<GFSessionBundle>> getNotSyncedSessionsTask =
-            client.getSessions(gfQueryDates.first, gfQueryDates.second, options.getMinimumSessionDuration())
+            client.getSessions(startDate, endDate, options.getMinimumSessionDuration())
                 .onSuccessTask(localBackgroundExecutor, sessions -> {
                     final List<GFSessionBundle> notSyncedSessions = sessions.stream()
                         .filter(gfSyncMetadataStore::isNeededToSyncSessionBundle)

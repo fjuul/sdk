@@ -112,6 +112,95 @@ public class GFDataManagerTest {
         }
 
         @Test
+        public void syncIntradayMetrics_StartDateAndEndDateCrossTheLowerDateBoundary_returnsSuccessfulTask()
+            throws ExecutionException, InterruptedException {
+            final LocalDate startDate = LocalDate.parse("2020-09-20");
+            final LocalDate endDate = LocalDate.parse("2020-09-25");
+            final GoogleFitIntradaySyncOptions options =
+                new GoogleFitIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_CALORIES)
+                    .setDateRange(startDate, endDate)
+                    .build();
+
+            Task<Void> result = subject.syncIntradayMetrics(options);
+            testExecutor.submit(() -> Tasks.await(result)).get();
+
+            assertTrue("should return successful task", result.isSuccessful());
+            // shouldn't interact with client-wrapper
+            verifyNoInteractions(mockedGFClientWrapper);
+            // shouldn't interact with the activity sources service
+            verifyNoInteractions(mockedActivitySourcesService);
+            // should even not interact with the sync metadata store
+            verifyNoInteractions(mockedGFSyncMetadataStore);
+
+            assertEquals("logger should have entry", 1, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals(
+                "[activitysources] GFDataManager: skip syncing GF intraday metrics (INTRADAY_CALORIES) with input dates [2020-09-20, 2020-09-25]",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+        }
+
+        @Test
+        public void syncIntradayMetrics_whenStartDateCrossesTheLowerDateBoundary_returnsSuccessfulTask()
+            throws ExecutionException, InterruptedException {
+            final LocalDate startDate = LocalDate.parse("2020-09-20");
+            final LocalDate endDate = LocalDate.parse("2020-10-02");
+            final GoogleFitIntradaySyncOptions options =
+                new GoogleFitIntradaySyncOptions.Builder(fixedClock).include(FitnessMetricsType.INTRADAY_CALORIES)
+                    .setDateRange(startDate, endDate)
+                    .build();
+
+            final Date startRequestDate = lowerDateBoundary;
+            final Date endRequestDate =
+                Date.from(LocalDateTime.parse("2020-10-02T23:59:59.999").atZone(testZoneId).toInstant());
+
+            List<GFCalorieDataPoint> calories = Stream.of(new GFCalorieDataPoint(10f,
+                Date.from(Instant.parse("2020-10-01T09:01:00Z")),
+                "derived:com.google.calories.expended:Brand:tracker")).collect(Collectors.toList());
+            when(mockedGFClientWrapper.getCalories(startRequestDate, endRequestDate))
+                .thenReturn(Tasks.forResult(calories));
+            when(mockedGFSyncMetadataStore.isNeededToSyncCaloriesBatch(any())).thenReturn(false);
+
+            Task<Void> result = subject.syncIntradayMetrics(options);
+            testExecutor.submit(() -> Tasks.await(result)).get();
+
+            assertTrue("should return successful task", result.isSuccessful());
+            // should adjust input dates for the batching
+            verify(gfDataUtilsSpy).roundDatesByIntradayBatchDuration(startRequestDate, endRequestDate, Duration.ofMinutes(30));
+            // should split the gf response into 30-minutes batches taking into account the local timezone
+            verify(gfDataUtilsSpy).groupPointsIntoBatchesByDuration(
+                Date.from(LocalDateTime.parse("2020-09-28T15:30:00").atZone(testZoneId).toInstant()),
+                Date.from(LocalDateTime.parse("2020-10-03T00:00:00").atZone(testZoneId).toInstant()),
+                calories,
+                Duration.ofMinutes(30));
+            // should ask client-wrapper for data for the specified time interval in the local timezone
+            verify(mockedGFClientWrapper).getCalories(startRequestDate, endRequestDate);
+            // should ask the metadata store about the calories batch
+            verify(mockedGFSyncMetadataStore).isNeededToSyncCaloriesBatch(argThat(caloriesBatch -> {
+                assertEquals("calories batch should have data points", calories, caloriesBatch.getPoints());
+                assertEquals("calories batch should have right start time",
+                    Date.from(Instant.parse("2020-10-01T09:00:00Z")),
+                    caloriesBatch.getStartTime());
+                assertEquals("calories batch should have right end time",
+                    Date.from(Instant.parse("2020-10-01T09:30:00Z")),
+                    caloriesBatch.getEndTime());
+                return true;
+            }));
+            // shouldn't interact with the activity sources service
+            verifyNoInteractions(mockedActivitySourcesService);
+
+            assertEquals("logger should have entries", 2, LOGGER.size());
+            TimberLogEntry logEntry = LOGGER.removeFirst();
+            assertEquals(
+                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_CALORIES) with date range [2020-09-28T13:40:00.000Z, 2020-10-02T21:59:59.999Z]",
+                logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+            logEntry = LOGGER.removeFirst();
+            assertEquals("[activitysources] GFDataManager: no new data to send", logEntry.getMessage());
+            assertEquals(Log.DEBUG, logEntry.getPriority());
+        }
+
+        @Test
         public void syncIntradayMetrics_emptyGFDataResponseForCalories_returnsSuccessfulTask()
             throws ExecutionException, InterruptedException {
             final LocalDate startDate = LocalDate.parse("2020-10-01");

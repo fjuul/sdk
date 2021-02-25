@@ -89,6 +89,7 @@ public class GFDataManagerTest {
         final TimeZone testTimeZone = TimeZone.getTimeZone("Europe/Zurich");
         final ZoneId testZoneId = testTimeZone.toZoneId();
         final Clock fixedClock = Clock.fixed(Instant.parse(currentInstant), testZoneId);
+        final Date lowerDateBoundary = Date.from(LocalDateTime.parse("2020-09-28T15:40:00").atZone(testZoneId).toInstant());
 
         GFDataManager subject;
         GFClientWrapper mockedGFClientWrapper;
@@ -106,7 +107,8 @@ public class GFDataManagerTest {
             subject = new GFDataManager(mockedGFClientWrapper,
                 gfDataUtilsSpy,
                 mockedGFSyncMetadataStore,
-                mockedActivitySourcesService);
+                mockedActivitySourcesService,
+                lowerDateBoundary);
         }
 
         @Test
@@ -132,7 +134,7 @@ public class GFDataManagerTest {
 
             assertTrue("should return successful task", result.isSuccessful());
             // should adjust input dates for the batching
-            verify(gfDataUtilsSpy).adjustInputDatesForBatches(startDate, endDate, Duration.ofMinutes(30));
+            verify(gfDataUtilsSpy).roundDatesByIntradayBatchDuration(startRequestDate, endRequestDate, Duration.ofMinutes(30));
             // should split the gf response into 30-minutes batches taking into account the local timezone
             verify(gfDataUtilsSpy).groupPointsIntoBatchesByDuration(
                 Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()),
@@ -149,7 +151,7 @@ public class GFDataManagerTest {
             assertEquals("logger should have entries", 2, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
             assertEquals(
-                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_CALORIES) for 2020-10-01 - 2020-10-02",
+                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_CALORIES) with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
@@ -198,7 +200,7 @@ public class GFDataManagerTest {
             assertEquals("logger should have entry", 1, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
             assertEquals(
-                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_STEPS) for 2020-10-01 - 2020-10-02",
+                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_STEPS) with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
@@ -230,7 +232,7 @@ public class GFDataManagerTest {
 
             assertTrue("should return successful task", result.isSuccessful());
             // should adjust input dates for the batching
-            verify(gfDataUtilsSpy).adjustInputDatesForBatches(startDate, endDate, Duration.ofMinutes(30));
+            verify(gfDataUtilsSpy).roundDatesByIntradayBatchDuration(startRequestDate, endRequestDate, Duration.ofMinutes(30));
             // should split the gf response into 30-minutes batches taking into account the local timezone
             verify(gfDataUtilsSpy).groupPointsIntoBatchesByDuration(
                 Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()),
@@ -256,7 +258,7 @@ public class GFDataManagerTest {
             assertEquals("logger should have entries", 2, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
             assertEquals(
-                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_CALORIES) for 2020-10-01 - 2020-10-02",
+                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_CALORIES) with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
@@ -309,7 +311,7 @@ public class GFDataManagerTest {
             assertEquals("should have exception message", "Failed to send data to the server", exception.getMessage());
             assertEquals("should have exception cause", apiCallException, exception.getCause());
             // should adjust input dates for the batching
-            verify(gfDataUtilsSpy).adjustInputDatesForBatches(startDate, endDate, Duration.ofMinutes(30));
+            verify(gfDataUtilsSpy).roundDatesByIntradayBatchDuration(startRequestDate, endRequestDate, Duration.ofMinutes(30));
             // should split the gf response into 30-minutes batches taking into account the local timezone
             verify(gfDataUtilsSpy).groupPointsIntoBatchesByDuration(
                 Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()),
@@ -340,7 +342,7 @@ public class GFDataManagerTest {
             assertEquals("logger should have entries", 3, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
             assertEquals(
-                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_CALORIES) for 2020-10-01 - 2020-10-02",
+                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_CALORIES) with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
@@ -392,7 +394,7 @@ public class GFDataManagerTest {
 
             assertTrue("should return successful task", result.isSuccessful());
             // should adjust input dates for the batching
-            verify(gfDataUtilsSpy).adjustInputDatesForBatches(startDate, endDate, Duration.ofMinutes(30));
+            verify(gfDataUtilsSpy).roundDatesByIntradayBatchDuration(startRequestDate, endRequestDate, Duration.ofMinutes(30));
             // should split the gf response into 30-minutes batches taking into account the local timezone
             verify(gfDataUtilsSpy).groupPointsIntoBatchesByDuration(
                 Date.from(LocalDateTime.parse("2020-10-01T00:00:00").atZone(testZoneId).toInstant()),
@@ -425,7 +427,7 @@ public class GFDataManagerTest {
             assertEquals("logger should have entries", 3, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
             assertEquals(
-                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_CALORIES) for 2020-10-01 - 2020-10-02",
+                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_CALORIES) with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
@@ -491,9 +493,9 @@ public class GFDataManagerTest {
             assertTrue("should return successful task", result.isSuccessful());
 
             // should adjust input dates for calories and hr batching
-            verify(gfDataUtilsSpy, times(2)).adjustInputDatesForBatches(startDate, endDate, Duration.ofMinutes(30));
+            verify(gfDataUtilsSpy, times(2)).roundDatesByIntradayBatchDuration(startRequestDate, endRequestDate, Duration.ofMinutes(30));
             // should adjust input dates for the steps batching
-            verify(gfDataUtilsSpy).adjustInputDatesForBatches(startDate, endDate, Duration.ofHours(6));
+            verify(gfDataUtilsSpy).roundDatesByIntradayBatchDuration(startRequestDate, endRequestDate, Duration.ofHours(6));
 
             // should split the gf calories into 30-minutes batches taking into account the local timezone
             verify(gfDataUtilsSpy).groupPointsIntoBatchesByDuration(
@@ -580,7 +582,7 @@ public class GFDataManagerTest {
             assertThat(logEntry.getMessage(), containsString("INTRADAY_STEPS"));
             assertThat(logEntry.getMessage(), containsString("INTRADAY_HEART_RATE"));
             assertThat(logEntry.getMessage(), containsString("INTRADAY_CALORIES"));
-            assertThat(logEntry.getMessage(), containsString("for 2020-10-01 - 2020-10-02"));
+            assertThat(logEntry.getMessage(), containsString("with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]"));
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
             assertEquals(
@@ -615,7 +617,8 @@ public class GFDataManagerTest {
             subject = new GFDataManager(mockedGFClientWrapper,
                 gfDataUtilsSpy,
                 mockedGFSyncMetadataStore,
-                mockedActivitySourcesService);
+                mockedActivitySourcesService,
+                null);
         }
 
         @Test
@@ -862,7 +865,8 @@ public class GFDataManagerTest {
             subject = new GFDataManager(mockedGFClientWrapper,
                 gfDataUtilsSpy,
                 mockedGFSyncMetadataStore,
-                mockedActivitySourcesService);
+                mockedActivitySourcesService,
+                null);
         }
 
         @Test

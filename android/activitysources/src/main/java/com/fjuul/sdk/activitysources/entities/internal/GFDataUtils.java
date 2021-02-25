@@ -130,6 +130,35 @@ public class GFDataUtils {
     }
 
     @SuppressLint("NewApi")
+    public Pair<Date, Date> roundDatesByIntradayBatchDuration(@NonNull Date start,
+                                                              @NonNull Date end,
+                                                              @NonNull Duration batchDuration) {
+        if (Duration.ofDays(1).toMillis() % batchDuration.toMillis() != 0) {
+            throw new IllegalArgumentException("The batch duration must fit into the duration of the day without any remainder");
+        }
+        final Date beginningOfStartDate = Date.from(start.toInstant().atZone(zoneId).toLocalDate().atStartOfDay(zoneId).toInstant());
+        final long intradayMillisSpentInStartDate = start.getTime() - beginningOfStartDate.getTime();
+        Date roundedStartDate;
+        final long startDateRemainderMillis = intradayMillisSpentInStartDate % batchDuration.toMillis();
+        if (startDateRemainderMillis == 0) {
+            roundedStartDate = start;
+        } else {
+            roundedStartDate = Date.from(start.toInstant().minusMillis(startDateRemainderMillis));
+        }
+
+        final Date beginningOfEndDate = Date.from(end.toInstant().atZone(zoneId).toLocalDate().atStartOfDay(zoneId).toInstant());
+        final long intradayMillisSpentInEndDate = end.getTime() - beginningOfEndDate.getTime();
+        Date roundedEndDate;
+        final long endDateRemainderMillis = intradayMillisSpentInEndDate % batchDuration.toMillis();
+        if (endDateRemainderMillis == 0) {
+            roundedEndDate = end;
+        } else {
+            roundedEndDate = Date.from(end.toInstant().minusMillis(endDateRemainderMillis).plusMillis(batchDuration.toMillis()));
+        }
+        return new Pair(roundedStartDate, roundedEndDate);
+    }
+
+    @SuppressLint("NewApi")
     @NonNull
     public List<Pair<Date, Date>> splitDateRangeIntoChunks(@NonNull Date start,
         @NonNull Date end,

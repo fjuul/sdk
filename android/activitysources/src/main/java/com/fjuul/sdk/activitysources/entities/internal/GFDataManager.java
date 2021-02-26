@@ -5,6 +5,7 @@ import static com.fjuul.sdk.activitysources.utils.GoogleTaskUtils.runAndAwaitTas
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -402,11 +403,14 @@ public class GFDataManager {
         return sendDataTaskCompletionSource.getTask();
     }
 
+    @SuppressLint("NewApi")
     private Date correctDateByLowerBoundary(@NonNull Date date) {
         if (lowerDateBoundary == null) {
             return date;
         }
-        return date.before(lowerDateBoundary) ? lowerDateBoundary : date;
+        // NOTE: date need to be truncated to minutes since it affects the start time of every aggregated data point from Google Fit
+        final Date roundedLowerDateBoundary = Date.from(lowerDateBoundary.toInstant().truncatedTo(ChronoUnit.MINUTES));
+        return date.before(roundedLowerDateBoundary) ? roundedLowerDateBoundary : date;
     }
 
     private Pair<Date, Date> transformInputDates(@NonNull LocalDate start, @NonNull LocalDate end) {

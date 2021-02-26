@@ -408,7 +408,8 @@ public class GFDataManager {
         if (lowerDateBoundary == null) {
             return date;
         }
-        // NOTE: date need to be truncated to minutes since it affects the start time of every aggregated data point from Google Fit
+        // NOTE: date need to be truncated to minutes since it affects the start time of every aggregated data point
+        // from Google Fit
         final Date roundedLowerDateBoundary = Date.from(lowerDateBoundary.toInstant().truncatedTo(ChronoUnit.MINUTES));
         return date.before(roundedLowerDateBoundary) ? roundedLowerDateBoundary : date;
     }

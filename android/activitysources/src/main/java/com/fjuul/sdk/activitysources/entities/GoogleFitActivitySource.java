@@ -1,6 +1,7 @@
 package com.fjuul.sdk.activitysources.entities;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -72,6 +73,7 @@ public class GoogleFitActivitySource extends ActivitySource {
     private final @NonNull Context context;
     private final @NonNull GFDataManagerBuilder gfDataManagerBuilder;
     private final @NonNull ExecutorService localSequentialBackgroundExecutor;
+    private volatile @Nullable Date lowerDateBoundary;
 
     static synchronized void initialize(@NonNull ApiClient client,
         @NonNull ActivitySourcesManagerConfig sourcesManagerConfig) {
@@ -288,7 +290,7 @@ public class GoogleFitActivitySource extends ActivitySource {
             }
             return;
         }
-        final GFDataManager GFDataManager = gfDataManagerBuilder.build(account);
+        final GFDataManager GFDataManager = gfDataManagerBuilder.build(account, lowerDateBoundary);
         performTaskAlongWithCallback(() -> GFDataManager.syncIntradayMetrics(options), callback);
     }
 
@@ -327,7 +329,7 @@ public class GoogleFitActivitySource extends ActivitySource {
             }
             return;
         }
-        final GFDataManager GFDataManager = gfDataManagerBuilder.build(account);
+        final GFDataManager GFDataManager = gfDataManagerBuilder.build(account, lowerDateBoundary);
         performTaskAlongWithCallback(() -> GFDataManager.syncSessions(options), callback);
     }
 
@@ -362,7 +364,7 @@ public class GoogleFitActivitySource extends ActivitySource {
             }
             return;
         }
-        final GFDataManager GFDataManager = gfDataManagerBuilder.build(account);
+        final GFDataManager GFDataManager = gfDataManagerBuilder.build(account, lowerDateBoundary);
         performTaskAlongWithCallback(() -> GFDataManager.syncProfile(options), callback);
     }
 
@@ -437,6 +439,10 @@ public class GoogleFitActivitySource extends ActivitySource {
         return GoogleSignIn.getClient(context, signInOptions)
             .revokeAccess()
             .continueWithTask((revokeAccessTask) -> Tasks.forResult(null));
+    }
+
+    void setLowerDateBoundary(@Nullable Date lowerDateBoundary) {
+        this.lowerDateBoundary = lowerDateBoundary;
     }
 
     private boolean areFitnessPermissionsGranted(@Nullable GoogleSignInAccount account) {

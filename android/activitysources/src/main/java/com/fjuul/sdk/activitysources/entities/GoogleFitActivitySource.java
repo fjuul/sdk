@@ -268,6 +268,9 @@ public class GoogleFitActivitySource extends ActivitySource {
      * callback.<br>
      * The task is atomic, so it will either succeed for all the specified types of metrics, or it will not succeed at
      * all.<br>
+     * Note: date range of the synchronization is adjusted not only by the input options but the creation date of the
+     * connection to Google Fit. So, any input dates that point to a date before the connection will be shifted to
+     * conform to the allowed range.<br>
      * Dedicated result errors:
      * <ul>
      * <li>{@link com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.FitnessPermissionsNotGrantedException};</li>
@@ -298,6 +301,9 @@ public class GoogleFitActivitySource extends ActivitySource {
      * Puts the task of synchronizing sessions in a sequential execution queue (i.e., only one sync task can be executed
      * at a time) and will execute it when it comes to its turn. The synchronization result is available in the
      * callback.<br>
+     * Note: date range of the synchronization is adjusted not only by the input options but the creation date of the
+     * connection to Google Fit. So, any input dates that point to a date before the connection will be shifted to
+     * conform to the allowed range.<br>
      * Dedicated result errors:
      * <ul>
      * <li>{@link com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.FitnessPermissionsNotGrantedException};</li>

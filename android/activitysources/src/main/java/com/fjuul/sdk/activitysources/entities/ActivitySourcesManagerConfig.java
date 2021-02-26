@@ -279,6 +279,7 @@ public class ActivitySourcesManagerConfig {
          * Sets the forced lower date boundary from which syncing will work from. It overrides the default limit which
          * is dictated by the creation date of the connection to Google Fit.<br>
          * This method was added only for internal purposes. Do not use it!
+         *
          * @param lowerDateBoundary - lower date boundary to sync from
          * @return configured builder
          */

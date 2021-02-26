@@ -362,8 +362,8 @@ public final class ActivitySourcesManager {
         final TrackerConnection gfTrackerConnection = Optional.ofNullable(trackerConnections)
             .flatMap(connections -> connections.stream()
                 .filter(c -> c.getTracker().equals(TrackerValue.GOOGLE_FIT.getValue()))
-                .findFirst()
-            ).orElse(null);
+                .findFirst())
+            .orElse(null);
         // TODO: move out the line with configuring the profile sync work when there will be other local activity
         if (gfTrackerConnection != null) {
             backgroundWorkManager.configureProfileSyncWork();
@@ -373,8 +373,8 @@ public final class ActivitySourcesManager {
             backgroundWorkManager.cancelProfileSyncWork();
         }
 
-        final GoogleFitActivitySource googleFit =
-            (GoogleFitActivitySource) activitySourceResolver.getInstanceByTrackerValue(TrackerValue.GOOGLE_FIT.getValue());
+        final GoogleFitActivitySource googleFit = (GoogleFitActivitySource) activitySourceResolver
+            .getInstanceByTrackerValue(TrackerValue.GOOGLE_FIT.getValue());
         if (config.getForcedLowerDateBoundaryForGoogleFit() != null) {
             googleFit.setLowerDateBoundary(config.getForcedLowerDateBoundaryForGoogleFit());
         } else if (gfTrackerConnection != null) {

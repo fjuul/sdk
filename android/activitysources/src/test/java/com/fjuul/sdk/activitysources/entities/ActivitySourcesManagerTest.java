@@ -90,7 +90,8 @@ public class ActivitySourcesManagerTest {
             @Test
             public void initialize_whenConfigCarriesTheLowerDateBoundary_configuresGFActivitySource() {
                 try (final MockedStatic<WorkManager> staticWorkManager = mockStatic(WorkManager.class);
-                     final MockedStatic<GoogleFitActivitySource> staticMockedGoogleFit = mockStatic(GoogleFitActivitySource.class)) {
+                    final MockedStatic<GoogleFitActivitySource> staticMockedGoogleFit =
+                        mockStatic(GoogleFitActivitySource.class)) {
                     final Context testContext = ApplicationProvider.getApplicationContext();
                     final WorkManager mockedWorkManager = mock(WorkManager.class);
                     staticWorkManager.when(() -> WorkManager.getInstance(testContext)).thenReturn(mockedWorkManager);
@@ -101,7 +102,8 @@ public class ActivitySourcesManagerTest {
                         .build();
                     final Date lowerDateBoundary = Date.from(Instant.parse("2020-09-10T10:05:00Z"));
                     final ActivitySourcesManagerConfig config = new ActivitySourcesManagerConfig.Builder()
-                        .setCollectableFitnessMetrics(Stream.of(FitnessMetricsType.INTRADAY_CALORIES).collect(Collectors.toSet()))
+                        .setCollectableFitnessMetrics(
+                            Stream.of(FitnessMetricsType.INTRADAY_CALORIES).collect(Collectors.toSet()))
                         .setForcedLowerDateBoundaryForGoogleFit(lowerDateBoundary)
                         .disableBackgroundSync()
                         .build();
@@ -463,10 +465,8 @@ public class ActivitySourcesManagerTest {
                     null);
 
                 final Date connectionCreatedAt = Date.from(Instant.parse("2020-09-10T10:05:00Z"));
-                final TrackerConnection gfTrackerConnection = new TrackerConnection("gf_c_id",
-                    TrackerValue.GOOGLE_FIT.getValue(),
-                    connectionCreatedAt,
-                    null);
+                final TrackerConnection gfTrackerConnection =
+                    new TrackerConnection("gf_c_id", TrackerValue.GOOGLE_FIT.getValue(), connectionCreatedAt, null);
 
                 final TrackerConnection[] newConnections = new TrackerConnection[] {gfTrackerConnection};
                 final ApiCall<TrackerConnection[]> mockedGetConnectionsApiCall = mock(ApiCall.class);

@@ -573,7 +573,8 @@ public class GoogleFitActivitySourceTest {
                     final MaxTriesCountExceededException gfException =
                         new MaxTriesCountExceededException("Possible tries count (3) exceeded");
                     when(mockedGfDataManager.syncIntradayMetrics(options)).thenReturn(Tasks.forException(gfException));
-                    when(mockedGfDataManagerBuilder.build(mockedGoogleSignInAccount, lowerDateBoundary)).thenReturn(mockedGfDataManager);
+                    when(mockedGfDataManagerBuilder.build(mockedGoogleSignInAccount, lowerDateBoundary))
+                        .thenReturn(mockedGfDataManager);
 
                     subject.syncIntradayMetrics(options, mockedCallback);
 
@@ -618,7 +619,8 @@ public class GoogleFitActivitySourceTest {
                             .build();
                     final GFDataManager mockedGfDataManager = mock(GFDataManager.class);
                     when(mockedGfDataManager.syncIntradayMetrics(options)).thenReturn(Tasks.forResult(null));
-                    when(mockedGfDataManagerBuilder.build(mockedGoogleSignInAccount, lowerDateBoundary)).thenReturn(mockedGfDataManager);
+                    when(mockedGfDataManagerBuilder.build(mockedGoogleSignInAccount, lowerDateBoundary))
+                        .thenReturn(mockedGfDataManager);
 
                     subject.syncIntradayMetrics(options, mockedCallback);
 
@@ -771,7 +773,8 @@ public class GoogleFitActivitySourceTest {
                     final MaxTriesCountExceededException gfException =
                         new MaxTriesCountExceededException("Possible tries count (3) exceeded");
                     when(mockedGfDataManager.syncSessions(options)).thenReturn(Tasks.forException(gfException));
-                    when(mockedGfDataManagerBuilder.build(mockedGoogleSignInAccount, lowerDateBoundary)).thenReturn(mockedGfDataManager);
+                    when(mockedGfDataManagerBuilder.build(mockedGoogleSignInAccount, lowerDateBoundary))
+                        .thenReturn(mockedGfDataManager);
 
                     subject.syncSessions(options, mockedCallback);
 
@@ -820,7 +823,8 @@ public class GoogleFitActivitySourceTest {
                         .build();
                     final GFDataManager mockedGfDataManager = mock(GFDataManager.class);
                     when(mockedGfDataManager.syncSessions(options)).thenReturn(Tasks.forResult(null));
-                    when(mockedGfDataManagerBuilder.build(mockedGoogleSignInAccount, lowerDateBoundary)).thenReturn(mockedGfDataManager);
+                    when(mockedGfDataManagerBuilder.build(mockedGoogleSignInAccount, lowerDateBoundary))
+                        .thenReturn(mockedGfDataManager);
 
                     subject.syncSessions(options, mockedCallback);
 
@@ -913,7 +917,8 @@ public class GoogleFitActivitySourceTest {
                     final MaxTriesCountExceededException gfException =
                         new MaxTriesCountExceededException("Possible tries count (3) exceeded");
                     when(mockedGfDataManager.syncProfile(options)).thenReturn(Tasks.forException(gfException));
-                    when(mockedGfDataManagerBuilder.build(mockedGoogleSignInAccount, lowerDateBoundary)).thenReturn(mockedGfDataManager);
+                    when(mockedGfDataManagerBuilder.build(mockedGoogleSignInAccount, lowerDateBoundary))
+                        .thenReturn(mockedGfDataManager);
 
                     subject.syncProfile(options, mockedCallback);
 
@@ -957,7 +962,8 @@ public class GoogleFitActivitySourceTest {
                             .build();
                     final GFDataManager mockedGfDataManager = mock(GFDataManager.class);
                     when(mockedGfDataManager.syncProfile(options)).thenReturn(Tasks.forResult(true));
-                    when(mockedGfDataManagerBuilder.build(mockedGoogleSignInAccount, lowerDateBoundary)).thenReturn(mockedGfDataManager);
+                    when(mockedGfDataManagerBuilder.build(mockedGoogleSignInAccount, lowerDateBoundary))
+                        .thenReturn(mockedGfDataManager);
 
                     subject.syncProfile(options, mockedCallback);
 

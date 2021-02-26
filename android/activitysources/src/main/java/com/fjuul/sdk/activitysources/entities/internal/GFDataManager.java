@@ -70,7 +70,7 @@ public class GFDataManager {
         @NonNull GFDataUtils gfUtils,
         @NonNull GFSyncMetadataStore gfSyncMetadataStore,
         @NonNull ActivitySourcesService activitySourcesService,
-                  @Nullable Date lowerDateBoundary) {
+        @Nullable Date lowerDateBoundary) {
         this.client = client;
         this.gfUtils = gfUtils;
         this.gfSyncMetadataStore = gfSyncMetadataStore;
@@ -87,16 +87,18 @@ public class GFDataManager {
         final Date endDate = queryDates.second;
         if (startDate.equals(endDate)) {
             // in other words, if the duration gap between two input dates is zero then no make sense to sync any data
-            Logger.get().d("skip syncing GF intraday metrics (%s) with input dates [%s, %s]",
-                options.getMetrics().stream().map(metric -> metric.toString()).collect(Collectors.joining(", ")),
-                options.getStartDate().toString(),
-                options.getEndDate().toString());
+            Logger.get()
+                .d("skip syncing GF intraday metrics (%s) with input dates [%s, %s]",
+                    options.getMetrics().stream().map(metric -> metric.toString()).collect(Collectors.joining(", ")),
+                    options.getStartDate().toString(),
+                    options.getEndDate().toString());
             return Tasks.forResult(null);
         }
-        Logger.get().d("start syncing GF intraday metrics (%s) with date range [%s, %s]",
-            options.getMetrics().stream().map(metric -> metric.toString()).collect(Collectors.joining(", ")),
-            dateFormatter.get().format(startDate),
-            dateFormatter.get().format(endDate));
+        Logger.get()
+            .d("start syncing GF intraday metrics (%s) with date range [%s, %s]",
+                options.getMetrics().stream().map(metric -> metric.toString()).collect(Collectors.joining(", ")),
+                dateFormatter.get().format(startDate),
+                dateFormatter.get().format(endDate));
         final ExecutorService sequentialExecutorService = Executors.newSingleThreadExecutor();
         Task<List<GFDataPointsBatch<GFCalorieDataPoint>>> getCaloriesTask = Tasks.forResult(Collections.emptyList());
         Task<List<GFDataPointsBatch<GFStepsDataPoint>>> getStepsTask = Tasks.forResult(Collections.emptyList());
@@ -182,13 +184,15 @@ public class GFDataManager {
         final Date endDate = queryDates.second;
         if (startDate.equals(endDate)) {
             // in other words, if the duration gap between two input dates is zero then no make sense to sync any data
-            Logger.get().d("skip syncing GF sessions with input dates [%s, %s]",
-                options.getStartDate().toString(),
-                options.getEndDate().toString());
+            Logger.get()
+                .d("skip syncing GF sessions with input dates [%s, %s]",
+                    options.getStartDate().toString(),
+                    options.getEndDate().toString());
             return Tasks.forResult(null);
         }
 
-        Logger.get().d("start syncing GF sessions with date range [%s, %s]",
+        Logger.get()
+            .d("start syncing GF sessions with date range [%s, %s]",
                 dateFormatter.get().format(startDate),
                 dateFormatter.get().format(endDate));
         final Task<List<GFSessionBundle>> getNotSyncedSessionsTask =

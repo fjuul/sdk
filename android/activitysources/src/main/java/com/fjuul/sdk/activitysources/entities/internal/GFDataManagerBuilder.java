@@ -9,6 +9,9 @@ import com.google.android.gms.fitness.SessionsClient;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import java.util.Date;
 
 public class GFDataManagerBuilder {
     @NonNull
@@ -31,10 +34,10 @@ public class GFDataManagerBuilder {
     }
 
     @NonNull
-    public GFDataManager build(@NonNull GoogleSignInAccount account) {
+    public GFDataManager build(@NonNull GoogleSignInAccount account, @Nullable Date lowerDateBoundary) {
         final HistoryClient historyClient = Fitness.getHistoryClient(context, account);
         final SessionsClient sessionsClient = Fitness.getSessionsClient(context, account);
         final GFClientWrapper clientWrapper = new GFClientWrapper(historyClient, sessionsClient, gfDataUtils);
-        return new GFDataManager(clientWrapper, gfDataUtils, syncMetadataStore, sourcesService);
+        return new GFDataManager(clientWrapper, gfDataUtils, syncMetadataStore, sourcesService, lowerDateBoundary);
     }
 }

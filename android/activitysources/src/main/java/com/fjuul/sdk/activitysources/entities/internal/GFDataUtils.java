@@ -130,6 +130,7 @@ public class GFDataUtils {
     }
 
     @SuppressLint("NewApi")
+    @NonNull
     public Pair<Date, Date> roundDatesByIntradayBatchDuration(@NonNull Date start,
         @NonNull Date end,
         @NonNull Duration batchDuration) {

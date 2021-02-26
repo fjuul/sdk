@@ -284,6 +284,7 @@ public class ActivitySourcesManagerConfig {
          * @return configured builder
          */
         @Deprecated
+        @NonNull
         public Builder setForcedLowerDateBoundaryForGoogleFit(@Nullable Date lowerDateBoundary) {
             config.forcedLowerDateBoundaryForGoogleFit = lowerDateBoundary;
             return this;

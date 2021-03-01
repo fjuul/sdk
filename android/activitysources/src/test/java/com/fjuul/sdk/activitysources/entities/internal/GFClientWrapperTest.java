@@ -417,8 +417,7 @@ public class GFClientWrapperTest {
         }
 
         @Test
-        public void getSteps_requestFewDaysButFirstDayCantBeDelivered_returnsFailedTask()
-            throws InterruptedException {
+        public void getSteps_requestFewDaysButFirstDayCantBeDelivered_returnsFailedTask() throws InterruptedException {
             Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
             Date end = Date.from(Instant.parse("2020-10-02T23:59:59.999Z"));
             when(mockedHistoryClient.readData(Mockito.any()))

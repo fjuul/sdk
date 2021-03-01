@@ -124,7 +124,7 @@ class GFClientWrapper {
     @SuppressLint("NewApi")
     public Task<List<GFCalorieDataPoint>> getCalories(Date start, Date end) {
         ExecutorService gfTaskWatcherExecutor = createGfTaskWatcherExecutor();
-        List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+        List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoDays(start, end);
 
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         SupervisedExecutor gfTaskWatcher = new SupervisedExecutor(gfTaskWatcherExecutor, cancellationTokenSource);
@@ -139,7 +139,7 @@ class GFClientWrapper {
     @SuppressLint("NewApi")
     public Task<List<GFStepsDataPoint>> getSteps(Date start, Date end) {
         ExecutorService gfTaskWatcherExecutor = createGfTaskWatcherExecutor();
-        List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofDays(7));
+        List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoDays(start, end);
 
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         SupervisedExecutor gfTaskWatcher = new SupervisedExecutor(gfTaskWatcherExecutor, cancellationTokenSource);
@@ -154,7 +154,7 @@ class GFClientWrapper {
     @SuppressLint("NewApi")
     public Task<List<GFHRSummaryDataPoint>> getHRSummaries(Date start, Date end) {
         ExecutorService gfTaskWatcherExecutor = createGfTaskWatcherExecutor();
-        List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+        List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoDays(start, end);
 
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         SupervisedExecutor gfTaskWatcherDetails =
@@ -174,6 +174,8 @@ class GFClientWrapper {
         CancellationToken cancellationToken = cancellationTokenSource.getToken();
         SupervisedExecutor gfReadSessionsWatcher =
             new SupervisedExecutor(gfTaskWatcherExecutor, cancellationTokenSource, cancellationToken);
+        // NOTE: here we don't split the input date range into days because workouts that start before midnight and
+        // finish after midnight wouldn't be found in this case
         List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofDays(5));
 
         List<Task<List<Session>>> readSessionListTasks = dateChunks.stream().map(dateRange -> {

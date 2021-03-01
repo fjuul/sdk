@@ -14,8 +14,10 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -115,7 +117,7 @@ public class GFClientWrapperTest {
         public void beforeTests() {
             mockedHistoryClient = mock(HistoryClient.class);
             mockedSessionsClient = mock(SessionsClient.class);
-            GFDataUtils gfDataUtils = new GFDataUtils();
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("UTC"), Clock.systemUTC());
             gfDataUtilsSpy = spy(gfDataUtils);
             subject = new GFClientWrapper(TEST_CONFIG, mockedHistoryClient, mockedSessionsClient, gfDataUtilsSpy);
         }
@@ -156,7 +158,7 @@ public class GFClientWrapperTest {
             }));
 
             // should split input date ranges into 24-hour chunks
-            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+            verify(gfDataUtilsSpy).splitDateRangeIntoDays(start, end);
         }
 
         @Test
@@ -199,7 +201,7 @@ public class GFClientWrapperTest {
             inOrder.verify(mockedHistoryClient).readData(argThat((arg) -> {
                 boolean correctDataType = arg.getAggregatedDataTypes().size() == 1
                     && arg.getAggregatedDataTypes().contains(DataType.TYPE_CALORIES_EXPENDED);
-                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z")))
+                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-01T23:59:59.9999999Z")))
                     && isXMinutesBucketRequest(arg, 1)
                     && correctDataType;
             }));
@@ -213,7 +215,7 @@ public class GFClientWrapperTest {
             }));
 
             // should split input date ranges into 24-hour chunks
-            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+            verify(gfDataUtilsSpy).splitDateRangeIntoDays(start, end);
         }
 
         @Test
@@ -242,14 +244,14 @@ public class GFClientWrapperTest {
                 boolean correctDataType = arg.getAggregatedDataTypes().size() == 1
                     && arg.getAggregatedDataTypes().contains(DataType.TYPE_CALORIES_EXPENDED);
 
-                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z")))
+                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-01T23:59:59.9999999Z")))
                     && isXMinutesBucketRequest(arg, 1)
                     && correctDataType;
             }));
             inOrder.verifyNoMoreInteractions();
 
             // should split input date ranges into 24-hour chunks
-            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+            verify(gfDataUtilsSpy).splitDateRangeIntoDays(start, end);
         }
 
         @Test
@@ -284,13 +286,13 @@ public class GFClientWrapperTest {
             inOrder.verify(mockedHistoryClient).readData(argThat(arg -> {
                 boolean correctDataType = arg.getAggregatedDataTypes().size() == 1
                     && arg.getAggregatedDataTypes().contains(DataType.TYPE_CALORIES_EXPENDED);
-                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z")))
+                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-01T23:59:59.9999999Z")))
                     && isXMinutesBucketRequest(arg, 1)
                     && correctDataType;
             }));
             inOrder.verifyNoMoreInteractions();
             // should split input date ranges into 24-hour chunks
-            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+            verify(gfDataUtilsSpy).splitDateRangeIntoDays(start, end);
         }
     }
 
@@ -317,7 +319,7 @@ public class GFClientWrapperTest {
         public void beforeTests() {
             mockedHistoryClient = mock(HistoryClient.class);
             mockedSessionsClient = mock(SessionsClient.class);
-            GFDataUtils gfDataUtils = new GFDataUtils();
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("UTC"), Clock.systemUTC());
             gfDataUtilsSpy = spy(gfDataUtils);
             subject = new GFClientWrapper(TEST_CONFIG, mockedHistoryClient, mockedSessionsClient, gfDataUtilsSpy);
         }
@@ -358,29 +360,29 @@ public class GFClientWrapperTest {
             }));
 
             // should split input date ranges into 7-day chunks
-            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofDays(7));
+            verify(gfDataUtilsSpy).splitDateRangeIntoDays(start, end);
         }
 
         @Test
-        public void getSteps_fewWeeks_returnsTaskWithSteps() throws ExecutionException, InterruptedException {
+        public void getSteps_fewDays_returnsTaskWithSteps() throws ExecutionException, InterruptedException {
             Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
-            Date end = Date.from(Instant.parse("2020-10-13T23:59:59.999Z"));
+            Date end = Date.from(Instant.parse("2020-10-02T23:59:59.999Z"));
             DataPoint rawStepsWeek1 = createRawDataPoint(stepsDataSource,
                 Date.from(Instant.parse("2020-10-01T10:00:05Z")),
                 Date.from(Instant.parse("2020-10-01T10:09:21Z")),
                 Field.FIELD_STEPS,
                 218);
             DataPoint rawStepsWeek2 = createRawDataPoint(stepsDataSource,
-                Date.from(Instant.parse("2020-10-08T12:00:05Z")),
-                Date.from(Instant.parse("2020-10-08T12:13:44Z")),
+                Date.from(Instant.parse("2020-10-02T12:00:05Z")),
+                Date.from(Instant.parse("2020-10-02T12:13:44Z")),
                 Field.FIELD_STEPS,
                 740);
             Bucket mockedBucket1 = createMockedSoleBucket(Date.from(Instant.parse("2020-10-01T10:00:00Z")),
                 Date.from(Instant.parse("2020-10-01T10:15:00Z")),
                 stepsDataSource,
                 rawStepsWeek1);
-            Bucket mockedBucket2 = createMockedSoleBucket(Date.from(Instant.parse("2020-10-08T12:00:00Z")),
-                Date.from(Instant.parse("2020-10-08T12:15:00Z")),
+            Bucket mockedBucket2 = createMockedSoleBucket(Date.from(Instant.parse("2020-10-02T12:00:00Z")),
+                Date.from(Instant.parse("2020-10-02T12:15:00Z")),
                 stepsDataSource,
                 rawStepsWeek2);
             DataReadResponse week1Response = createTestDataReadResponse(mockedBucket1);
@@ -399,26 +401,26 @@ public class GFClientWrapperTest {
             assertEquals("should return steps in the order of responses", (Integer) 740, week2Steps.getValue());
             InOrder inOrder = inOrder(mockedHistoryClient);
             inOrder.verify(mockedHistoryClient).readData(argThat((arg) -> {
-                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-08T00:00:00Z")))
+                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-01T23:59:59.9999999Z")))
                     && isXMinutesBucketRequest(arg, 15)
                     && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verify(mockedHistoryClient).readData(argThat((arg) -> {
-                return isTimeIntervalOfRequest(arg, Date.from(Instant.parse("2020-10-08T00:00:00Z")), end)
+                return isTimeIntervalOfRequest(arg, Date.from(Instant.parse("2020-10-02T00:00:00Z")), end)
                     && isXMinutesBucketRequest(arg, 15)
                     && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verifyNoMoreInteractions();
 
             // should split input date ranges into 7-day chunks
-            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofDays(7));
+            verify(gfDataUtilsSpy).splitDateRangeIntoDays(start, end);
         }
 
         @Test
-        public void getSteps_requestFewWeeksButFirstWeekCantBeDelivered_returnsFailedTask()
+        public void getSteps_requestFewDaysButFirstDayCantBeDelivered_returnsFailedTask()
             throws InterruptedException {
             Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
-            Date end = Date.from(Instant.parse("2020-10-13T23:59:59.999Z"));
+            Date end = Date.from(Instant.parse("2020-10-02T23:59:59.999Z"));
             when(mockedHistoryClient.readData(Mockito.any()))
                 .thenReturn(Tasks.forException(new Exception("Application needs OAuth consent from the user")));
             Task<List<GFStepsDataPoint>> result = subject.getSteps(start, end);
@@ -437,21 +439,21 @@ public class GFClientWrapperTest {
             // should request data only for the first week due to the serial execution
             InOrder inOrder = inOrder(mockedHistoryClient);
             inOrder.verify(mockedHistoryClient).readData(argThat(arg -> {
-                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-08T00:00:00Z")))
+                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-01T23:59:59.999999Z")))
                     && isXMinutesBucketRequest(arg, 15)
                     && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verifyNoMoreInteractions();
 
             // should split input date ranges into 7-day chunks
-            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofDays(7));
+            verify(gfDataUtilsSpy).splitDateRangeIntoDays(start, end);
         }
 
         @Test
-        public void getSteps_requestFewWeeksButFirstWeekExceedTimeoutWithRetries_returnsFailedTask()
+        public void getSteps_requestFewDaysButFirstDayExceedTimeoutWithRetries_returnsFailedTask()
             throws InterruptedException {
             Date start = Date.from(Instant.parse("2020-10-01T00:00:00Z"));
-            Date end = Date.from(Instant.parse("2020-10-13T23:59:59.999Z"));
+            Date end = Date.from(Instant.parse("2020-10-02T23:59:59.999Z"));
 
             when(mockedHistoryClient.readData(Mockito.any())).thenAnswer(invocation -> {
                 // NOTE: here we're simulating the dead request to GF
@@ -477,13 +479,13 @@ public class GFClientWrapperTest {
             // should request data only for the first week due to the serial execution
             InOrder inOrder = inOrder(mockedHistoryClient);
             inOrder.verify(mockedHistoryClient).readData(argThat(arg -> {
-                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-08T00:00:00Z")))
+                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-01T23:59:59.999999Z")))
                     && isXMinutesBucketRequest(arg, 15)
                     && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verifyNoMoreInteractions();
             // should split input date ranges into 7-day chunks
-            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofDays(7));
+            verify(gfDataUtilsSpy).splitDateRangeIntoDays(start, end);
         }
     }
 
@@ -505,7 +507,7 @@ public class GFClientWrapperTest {
         public void beforeTests() {
             mockedHistoryClient = mock(HistoryClient.class);
             mockedSessionsClient = mock(SessionsClient.class);
-            GFDataUtils gfDataUtils = new GFDataUtils();
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("UTC"), Clock.systemUTC());
             gfDataUtilsSpy = spy(gfDataUtils);
             subject = new GFClientWrapper(TEST_CONFIG, mockedHistoryClient, mockedSessionsClient, gfDataUtilsSpy);
         }
@@ -549,7 +551,7 @@ public class GFClientWrapperTest {
             }));
 
             // should split input date ranges into 24-hour chunks
-            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+            verify(gfDataUtilsSpy).splitDateRangeIntoDays(start, end);
         }
 
         @Test
@@ -592,7 +594,7 @@ public class GFClientWrapperTest {
             assertEquals("should return HR in the order of responses", 61, day2HRSummary.getAvg(), 0.00001);
             InOrder inOrder = inOrder(mockedHistoryClient);
             inOrder.verify(mockedHistoryClient).readData(argThat((arg) -> {
-                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z")))
+                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-01T23:59:59.9999999Z")))
                     && isXMinutesBucketRequest(arg, 1)
                     && isRequestedCorrectDataSource(arg);
             }));
@@ -604,7 +606,7 @@ public class GFClientWrapperTest {
             inOrder.verifyNoMoreInteractions();
 
             // should split input date ranges into 24-hour chunks
-            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+            verify(gfDataUtilsSpy).splitDateRangeIntoDays(start, end);
         }
 
         @Test
@@ -630,14 +632,14 @@ public class GFClientWrapperTest {
             // should request data only for the first day due to the serial execution
             InOrder inOrder = inOrder(mockedHistoryClient);
             inOrder.verify(mockedHistoryClient).readData(argThat(arg -> {
-                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z")))
+                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-01T23:59:59.9999999Z")))
                     && isXMinutesBucketRequest(arg, 1)
                     && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verifyNoMoreInteractions();
 
             // should split input date ranges into 24-hour chunks
-            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+            verify(gfDataUtilsSpy).splitDateRangeIntoDays(start, end);
         }
 
         @Test
@@ -670,13 +672,13 @@ public class GFClientWrapperTest {
             // should request data only for the first week due to the serial execution
             InOrder inOrder = inOrder(mockedHistoryClient);
             inOrder.verify(mockedHistoryClient).readData(argThat(arg -> {
-                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-02T00:00:00Z")))
+                return isTimeIntervalOfRequest(arg, start, Date.from(Instant.parse("2020-10-01T23:59:59.9999999Z")))
                     && isXMinutesBucketRequest(arg, 1)
                     && isRequestedCorrectDataSource(arg);
             }));
             inOrder.verifyNoMoreInteractions();
             // should split input date ranges into 24-hour chunks
-            verify(gfDataUtilsSpy).splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+            verify(gfDataUtilsSpy).splitDateRangeIntoDays(start, end);
         }
     }
 

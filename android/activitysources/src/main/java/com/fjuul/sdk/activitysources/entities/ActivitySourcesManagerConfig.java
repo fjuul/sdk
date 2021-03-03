@@ -2,6 +2,7 @@ package com.fjuul.sdk.activitysources.entities;
 
 import java.time.Duration;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,6 +39,10 @@ public class ActivitySourcesManagerConfig {
 
     @NonNull
     private Set<FitnessMetricsType> collectableFitnessMetrics;
+
+    @Deprecated
+    @Nullable
+    private Date forcedLowerDateBoundaryForGoogleFit;
 
     /**
      * Returns the mode that indicates whether intraday data of Google Fit should be synced in the background.
@@ -88,6 +93,12 @@ public class ActivitySourcesManagerConfig {
     @NonNull
     public Set<FitnessMetricsType> getCollectableFitnessMetrics() {
         return collectableFitnessMetrics;
+    }
+
+    @Deprecated
+    @Nullable
+    public Date getForcedLowerDateBoundaryForGoogleFit() {
+        return forcedLowerDateBoundaryForGoogleFit;
     }
 
     public static class Builder {
@@ -261,6 +272,21 @@ public class ActivitySourcesManagerConfig {
             final Set<FitnessMetricsType> fitnessMetricsReadOnlyCopy =
                 Collections.unmodifiableSet(fitnessMetrics.stream().collect(Collectors.toSet()));
             config.collectableFitnessMetrics = fitnessMetricsReadOnlyCopy;
+            return this;
+        }
+
+        /**
+         * Sets the forced lower date boundary from which syncing will work from. It overrides the default limit which
+         * is dictated by the creation date of the connection to Google Fit.<br>
+         * This method was added only for internal purposes. Do not use it!
+         *
+         * @param lowerDateBoundary - lower date boundary to sync from
+         * @return configured builder
+         */
+        @Deprecated
+        @NonNull
+        public Builder setForcedLowerDateBoundaryForGoogleFit(@Nullable Date lowerDateBoundary) {
+            config.forcedLowerDateBoundaryForGoogleFit = lowerDateBoundary;
             return this;
         }
 

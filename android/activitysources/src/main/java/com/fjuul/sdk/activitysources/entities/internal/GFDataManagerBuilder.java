@@ -1,5 +1,7 @@
 package com.fjuul.sdk.activitysources.entities.internal;
 
+import java.util.Date;
+
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.sync_metadata.GFSyncMetadataStore;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -9,6 +11,7 @@ import com.google.android.gms.fitness.SessionsClient;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class GFDataManagerBuilder {
     @NonNull
@@ -31,10 +34,10 @@ public class GFDataManagerBuilder {
     }
 
     @NonNull
-    public GFDataManager build(@NonNull GoogleSignInAccount account) {
+    public GFDataManager build(@NonNull GoogleSignInAccount account, @Nullable Date lowerDateBoundary) {
         final HistoryClient historyClient = Fitness.getHistoryClient(context, account);
         final SessionsClient sessionsClient = Fitness.getSessionsClient(context, account);
         final GFClientWrapper clientWrapper = new GFClientWrapper(historyClient, sessionsClient, gfDataUtils);
-        return new GFDataManager(clientWrapper, gfDataUtils, syncMetadataStore, sourcesService);
+        return new GFDataManager(clientWrapper, gfDataUtils, syncMetadataStore, sourcesService, lowerDateBoundary);
     }
 }

@@ -86,6 +86,38 @@ public class ActivitySourcesManagerTest {
                     assertEquals(Log.DEBUG, logEntry.getPriority());
                 }
             }
+
+            @Test
+            public void initialize_whenConfigCarriesTheLowerDateBoundary_configuresGFActivitySource() {
+                try (final MockedStatic<WorkManager> staticWorkManager = mockStatic(WorkManager.class);
+                    final MockedStatic<GoogleFitActivitySource> staticMockedGoogleFit =
+                        mockStatic(GoogleFitActivitySource.class)) {
+                    final Context testContext = ApplicationProvider.getApplicationContext();
+                    final WorkManager mockedWorkManager = mock(WorkManager.class);
+                    staticWorkManager.when(() -> WorkManager.getInstance(testContext)).thenReturn(mockedWorkManager);
+                    final GoogleFitActivitySource mockedGoogleFit = mock(GoogleFitActivitySource.class);
+                    staticMockedGoogleFit.when(() -> GoogleFitActivitySource.getInstance()).thenReturn(mockedGoogleFit);
+                    final ApiClient client = new ApiClient.Builder(testContext, "https://fjuul.com/", "1234")
+                        .setUserCredentials(new UserCredentials("token", "secret"))
+                        .build();
+                    final Date lowerDateBoundary = Date.from(Instant.parse("2020-09-10T10:05:00Z"));
+                    final ActivitySourcesManagerConfig config = new ActivitySourcesManagerConfig.Builder()
+                        .setCollectableFitnessMetrics(
+                            Stream.of(FitnessMetricsType.INTRADAY_CALORIES).collect(Collectors.toSet()))
+                        .setForcedLowerDateBoundaryForGoogleFit(lowerDateBoundary)
+                        .disableBackgroundSync()
+                        .build();
+                    ActivitySourcesManager.initialize(client, config);
+                    // should pass the forced lower date boundary to GoogleFitActivitySource
+                    verify(mockedGoogleFit).setLowerDateBoundary(lowerDateBoundary);
+                    assertEquals("should log only one message", 1, LOGGER.size());
+                    final TimberLogEntry logEntry = LOGGER.getLogEntries().get(0);
+                    assertEquals(
+                        "[activitysources] ActivitySourcesManager: initialized successfully (the previous one could be overridden)",
+                        logEntry.getMessage());
+                    assertEquals(Log.DEBUG, logEntry.getPriority());
+                }
+            }
         }
     }
 
@@ -204,6 +236,7 @@ public class ActivitySourcesManagerTest {
             ActivitySourcesService mockedSourcesService;
             ActivitySourcesStateStore mockedStateStore;
             ActivitySourceResolver activitySourceResolver;
+            GoogleFitActivitySource mockedGoogleFit;
 
             @Before
             public void beforeTest() {
@@ -211,7 +244,9 @@ public class ActivitySourcesManagerTest {
                 mockedBackgroundWorkManager = mock(BackgroundWorkManager.class);
                 mockedSourcesService = mock(ActivitySourcesService.class);
                 mockedStateStore = mock(ActivitySourcesStateStore.class);
-                activitySourceResolver = new ActivitySourceResolver();
+                mockedGoogleFit = mock(GoogleFitActivitySource.class);
+                activitySourceResolver = mock(ActivitySourceResolver.class);
+                when(activitySourceResolver.getInstanceByTrackerValue("googlefit")).thenReturn(mockedGoogleFit);
             }
 
             @Test
@@ -429,10 +464,9 @@ public class ActivitySourcesManagerTest {
                     mockedActivitySourceResolver,
                     null);
 
-                final TrackerConnection gfTrackerConnection = new TrackerConnection("gf_c_id",
-                    TrackerValue.GOOGLE_FIT.getValue(),
-                    Date.from(Instant.parse("2020-09-10T10:05:00Z")),
-                    null);
+                final Date connectionCreatedAt = Date.from(Instant.parse("2020-09-10T10:05:00Z"));
+                final TrackerConnection gfTrackerConnection =
+                    new TrackerConnection("gf_c_id", TrackerValue.GOOGLE_FIT.getValue(), connectionCreatedAt, null);
 
                 final TrackerConnection[] newConnections = new TrackerConnection[] {gfTrackerConnection};
                 final ApiCall<TrackerConnection[]> mockedGetConnectionsApiCall = mock(ApiCall.class);
@@ -444,7 +478,7 @@ public class ActivitySourcesManagerTest {
                 }).when(mockedGetConnectionsApiCall).enqueue(any());
                 when(mockedSourcesService.getCurrentConnections()).thenReturn(mockedGetConnectionsApiCall);
                 GoogleFitActivitySource googleFitStub = mock(GoogleFitActivitySource.class);
-                when(mockedActivitySourceResolver.getInstanceByTrackerValue(any())).thenReturn(googleFitStub);
+                when(mockedActivitySourceResolver.getInstanceByTrackerValue("googlefit")).thenReturn(googleFitStub);
 
                 subject.refreshCurrent(null);
 
@@ -468,6 +502,8 @@ public class ActivitySourcesManagerTest {
                 // should configure background works because of the presence of the google-fit tracker
                 verify(mockedBackgroundWorkManager).configureGFSyncWorks();
                 verify(mockedBackgroundWorkManager).configureProfileSyncWork();
+                // should set the lower date bound from the connection
+                verify(googleFitStub).setLowerDateBoundary(connectionCreatedAt);
             }
 
             @Test
@@ -494,7 +530,9 @@ public class ActivitySourcesManagerTest {
                 }).when(mockedGetConnectionsApiCall).enqueue(any());
                 when(mockedSourcesService.getCurrentConnections()).thenReturn(mockedGetConnectionsApiCall);
                 final PolarActivitySource polarStub = mock(PolarActivitySource.class);
-                when(mockedActivitySourceResolver.getInstanceByTrackerValue(any())).thenReturn(polarStub);
+                final GoogleFitActivitySource googleFitStub = mock(GoogleFitActivitySource.class);
+                when(mockedActivitySourceResolver.getInstanceByTrackerValue("polar")).thenReturn(polarStub);
+                when(mockedActivitySourceResolver.getInstanceByTrackerValue("googlefit")).thenReturn(googleFitStub);
                 final Callback<List<ActivitySourceConnection>> mockedCallback = mock(Callback.class);
 
                 subject.refreshCurrent(mockedCallback);
@@ -519,6 +557,8 @@ public class ActivitySourcesManagerTest {
                 // should cancel background works because of the absence of the google-fit tracker
                 verify(mockedBackgroundWorkManager).cancelGFSyncWorks();
                 verify(mockedBackgroundWorkManager).cancelProfileSyncWork();
+                // should disable the lower date bound
+                verify(googleFitStub).setLowerDateBoundary(null);
                 final ArgumentCaptor<Result<List<ActivitySourceConnection>>> callbackResultArgumentCaptor =
                     ArgumentCaptor.forClass(Result.class);
                 // should pass new connections to the callback

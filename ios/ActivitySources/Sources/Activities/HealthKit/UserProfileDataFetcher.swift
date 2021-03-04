@@ -6,7 +6,7 @@ import FjuulCore
 class UserProfileDataFetcher {
     /// Fetch latest know value from HealthKit. If no anchor use HKSampleQuery for fetch only 1 last value, otherwise use HKAnchoredObjectQuery
     /// - Parameters:
-    ///   - type: sample type (bodyData or heaight)
+    ///   - type: sample type (bodyMass or height)
     ///   - anchor: HKQueryAnchor
     ///   - completion: HKUserProfileData and new anchor
     static func fetch(type: HKQuantityType, anchor: HKQueryAnchor?, completion: @escaping (HKUserProfileData?, HKQueryAnchor?) -> Void) {

@@ -80,7 +80,9 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
     ///   - requestData: instance of HKBatchData
     ///   - completion: void or error
     private func dataHandler(_ requestData: HKRequestData?, completion: @escaping (Result<Void, Error>) -> Void) {
-        guard let apiClient = self.apiClient else { return  completion(.failure(FjuulError.invalidConfig))}
+        guard let apiClient = self.apiClient else { completion(.failure(FjuulError.invalidConfig))
+            return
+        }
         guard let requestData = requestData else {
             completion(.success(()))
             return

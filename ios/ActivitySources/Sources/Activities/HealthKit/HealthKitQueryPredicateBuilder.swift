@@ -4,13 +4,17 @@ import HealthKit
 /// Class for build Healthkit query predicates base on HealthKitActivitySourceConfig and dirty batches.
 class HealthKitQueryPredicateBuilder {
     let healthKitConfig: HealthKitActivitySourceConfig
+    let startDate: Date?
+    let endDate: Date?
 
     var wasUserEnteredPredicate: NSPredicate {
         NSPredicate(format: "metadata.%K != YES", HKMetadataKeyWasUserEntered)
     }
 
-    init(healthKitConfig: HealthKitActivitySourceConfig) {
+    init(healthKitConfig: HealthKitActivitySourceConfig, startDate: Date? = nil, endDate: Date? = nil) {
         self.healthKitConfig = healthKitConfig
+        self.startDate = startDate
+        self.endDate = endDate
     }
 
     func samplePredicate() -> NSCompoundPredicate {

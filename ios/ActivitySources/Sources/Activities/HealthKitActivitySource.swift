@@ -37,7 +37,51 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
             return
         }
 
-        healthKitManager.sync { result in
+        healthKitManager.sync(startDate: Date(), endDate: Date(), configTypes: []) { result in
+            completion(result)
+        }
+    }
+
+    public func syncIntradayMetrics(startDate: Date, endDate: Date, configTypes: [HealthKitConfigType] = HealthKitConfigType.intradayTypes,
+                                    completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let healthKitManager = self.healthKitManager else {
+            completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
+            return
+        }
+
+        guard configTypes.allSatisfy(HealthKitConfigType.intradayTypes.contains) else {
+            completion(.failure(FjuulError.activitySourceFailure(reason: .illegalHealthKitConfigType)))
+            return
+        }
+
+        healthKitManager.sync(startDate: startDate, endDate: endDate, configTypes: configTypes) { result in
+            completion(result)
+        }
+    }
+
+    public func syncWorkouts(startDate: Date, endDate: Date, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let healthKitManager = self.healthKitManager else {
+            completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
+            return
+        }
+
+        healthKitManager.sync(startDate: startDate, endDate: endDate, configTypes: [.workout]) { result in
+            completion(result)
+        }
+    }
+
+    public func syncProfile(startDate: Date, endDate: Date, configTypes: [HealthKitConfigType] = HealthKitConfigType.userProfileTypes, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let healthKitManager = self.healthKitManager else {
+            completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
+            return
+        }
+        
+        guard configTypes.allSatisfy(HealthKitConfigType.intradayTypes.contains) else {
+            completion(.failure(FjuulError.activitySourceFailure(reason: .illegalHealthKitConfigType)))
+            return
+        }
+
+        healthKitManager.sync(startDate: startDate, endDate: endDate, configTypes: [.weight, .height]) { result in
             completion(result)
         }
     }

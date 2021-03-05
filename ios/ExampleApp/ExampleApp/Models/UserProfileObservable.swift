@@ -11,8 +11,8 @@ class UserProfileObservable: ObservableObject {
 
     @Published var token = ""
     @Published var birthDate = Date(timeIntervalSince1970: 0)
-    @Published var height = 170
-    @Published var weight = 80
+    @Published var height: Float = 170
+    @Published var weight: Float = 80
     @Published var gender: Gender = .other
     @Published var timezone = ""
     @Published var locale = ""

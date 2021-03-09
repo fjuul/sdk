@@ -64,14 +64,14 @@ class UserProfileObservable: ObservableObject {
     }
 
     func createNewUser(baseUrl: String, apiKey: String, completion: @escaping (Result<UserCreationResult, Error>) -> Void) {
-        let profileData = PartialUserProfile([
-            \UserProfile.birthDate: self.birthDate,
-            \UserProfile.gender: self.gender,
-            \UserProfile.height: self.height,
-            \UserProfile.weight: self.weight,
-            \UserProfile.timezone: self.timezone,
-            \UserProfile.locale: self.locale,
-        ])
+        let profileData = PartialUserProfile { profile in
+            profile[\.birthDate] = self.birthDate
+            profile[\.gender] = self.gender
+            profile[\.height] = self.height
+            profile[\.weight] = self.weight
+            profile[\.timezone] = TimeZone(identifier: self.timezone)
+            profile[\.locale] = self.locale
+        }
         return ApiClient.createUser(baseUrl: baseUrl, apiKey: apiKey, profile: profileData) { result in
             switch result {
             case .success(let creationResult): self.hydrateFromUserProfile(creationResult.user)

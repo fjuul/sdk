@@ -24,7 +24,7 @@ jobs:
         set -o pipefail && xcodebuild \
           -scheme "Fjuul SDK-Package" \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=14.3' \
+          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=14.4' \
           test | xcpretty
     - name: xcode test ExampleApp
       run: |
@@ -32,5 +32,5 @@ jobs:
           -workspace ios/SDK.xcworkspace \
           -scheme ExampleApp \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=14.3' \
+          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=14.4' \
           test | xcpretty

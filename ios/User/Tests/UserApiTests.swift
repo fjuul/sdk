@@ -20,7 +20,7 @@ final class UserApiTests: XCTestCase {
     let profileResponse = """
         {
             \"token\":\"e15480c7-ec04-4436-be1e-39cbef384967\",
-            \"gender\":\"female\",\"height\":175,\"weight\":60,
+            \"gender\":\"female\",\"height\":175.5,\"weight\":60.6,
             \"timezone\":\"Europe/Berlin\",\"locale\":\"en\",
             \"birthDate\":\"1990-12-04\"
         }
@@ -46,20 +46,20 @@ final class UserApiTests: XCTestCase {
 
     func testCreateUserWithDefaults() {
         let e = expectation(description: "Alamofire")
-        let profile = PartialUserProfile([
-            \UserProfile.birthDate: DateFormatters.yyyyMMddLocale.date(from: "1989-11-03"),
-            \UserProfile.gender: Gender.other,
-            \UserProfile.height: 170,
-            \UserProfile.weight: 60,
-        ])
+        let profile = PartialUserProfile { partial in
+            partial[\.birthDate] = DateFormatters.yyyyMMddLocale.date(from: "1989-11-03")
+            partial[\.gender] = Gender.other
+            partial[\.height] = 170.2
+            partial[\.weight] = 60.6
+        }
         let createStub = stub(condition: isHost("apibase") && isPath("/sdk/users/v1")) { request in
             XCTAssertEqual(request.httpMethod, "POST")
             do {
                 let profileData: [String: Any] = try JSONSerialization.jsonObject(with: request.ohhttpStubs_httpBody!) as! [String: Any]
                 XCTAssertEqual(profileData["birthDate"] as? String, "1989-11-03")
                 XCTAssertEqual(profileData["gender"] as? String, "other")
-                XCTAssertEqual(profileData["height"] as? Int, profile[\.height])
-                XCTAssertEqual(profileData["weight"] as? Int, profile[\.weight])
+                XCTAssertEqual(profileData["height"] as? Float, profile[\.height])
+                XCTAssertEqual(profileData["weight"] as? Float, profile[\.weight])
                 XCTAssertEqual(profileData["timezone"] as? String, TimeZone.current.identifier)
                 XCTAssertEqual(profileData["locale"] as? String, Bundle.main.preferredLocalizations.first)
                 XCTAssertEqual(profileData.count, 6)
@@ -77,22 +77,22 @@ final class UserApiTests: XCTestCase {
 
     func testCreateUser() {
         let e = expectation(description: "Alamofire")
-        let profile = PartialUserProfile([
-            \UserProfile.birthDate: DateFormatters.yyyyMMddLocale.date(from: "1989-11-03"),
-            \UserProfile.gender: Gender.other,
-            \UserProfile.height: 170,
-            \UserProfile.weight: 60,
-            \UserProfile.timezone: TimeZone(identifier: "Europe/Paris"),
-            \UserProfile.locale: "fi",
-        ])
+        let profile = PartialUserProfile { partial in
+            partial[\.birthDate] = DateFormatters.yyyyMMddLocale.date(from: "1989-11-03")
+            partial[\.gender] = Gender.other
+            partial[\.height] = 170.2
+            partial[\.weight] = 60.6
+            partial[\.timezone] = TimeZone(identifier: "Europe/Paris")
+            partial[\.locale] = "fi"
+        }
         let createStub = stub(condition: isHost("apibase") && isPath("/sdk/users/v1")) { request in
             XCTAssertEqual(request.httpMethod, "POST")
             do {
                 let profileData: [String: Any] = try JSONSerialization.jsonObject(with: request.ohhttpStubs_httpBody!) as! [String: Any]
                 XCTAssertEqual(profileData["birthDate"] as? String, "1989-11-03")
                 XCTAssertEqual(profileData["gender"] as? String, "other")
-                XCTAssertEqual(profileData["height"] as? Int, profile[\.height])
-                XCTAssertEqual(profileData["weight"] as? Int, profile[\.weight])
+                XCTAssertEqual(profileData["height"] as? Float, profile[\.height])
+                XCTAssertEqual(profileData["weight"] as? Float, profile[\.weight])
                 XCTAssertEqual(profileData["timezone"] as? String, "Europe/Paris")
                 XCTAssertEqual(profileData["locale"] as? String, "fi")
                 XCTAssertEqual(profileData.count, 6)
@@ -111,14 +111,14 @@ final class UserApiTests: XCTestCase {
     // swiftlint:disable function_body_length
     func testCreateUserWithValidationError() {
         let e = expectation(description: "Alamofire")
-        let profile = PartialUserProfile([
-            \UserProfile.birthDate: DateFormatters.yyyyMMddLocale.date(from: "1989-11-03"),
-            \UserProfile.gender: Gender.other,
-            \UserProfile.height: -170,
-            \UserProfile.weight: -67.4,
-            \UserProfile.timezone: TimeZone(identifier: "Europe/Paris"),
-            \UserProfile.locale: "fi",
-        ])
+        let profile = PartialUserProfile { partial in
+            partial[\.birthDate] = DateFormatters.yyyyMMddLocale.date(from: "1989-11-03")
+            partial[\.gender] = Gender.other
+            partial[\.height] = -170
+            partial[\.weight] = -67.4
+            partial[\.timezone] = TimeZone(identifier: "Europe/Paris")
+            partial[\.locale] = "fi"
+        }
         let createStub = stub(condition: isHost("apibase") && isPath("/sdk/users/v1")) { request in
             XCTAssertEqual(request.httpMethod, "POST")
             let json = """
@@ -194,11 +194,11 @@ final class UserApiTests: XCTestCase {
             case .success(let profile):
                 XCTAssertEqual(profile.birthDate, DateFormatters.yyyyMMddLocale.date(from: "1990-12-04"))
                 XCTAssertEqual(profile.gender, Gender.female)
-                XCTAssertEqual(profile.height, 175)
+                XCTAssertEqual(profile.height, 175.5)
                 XCTAssertEqual(profile.locale, "en")
                 XCTAssertEqual(profile.timezone, TimeZone(identifier: "Europe/Berlin"))
                 XCTAssertEqual(profile.token, "e15480c7-ec04-4436-be1e-39cbef384967")
-                XCTAssertEqual(profile.weight, 60)
+                XCTAssertEqual(profile.weight, 60.6)
             }
             e.fulfill()
         }
@@ -208,14 +208,14 @@ final class UserApiTests: XCTestCase {
     func testUpdateProfile() {
         let e = expectation(description: "Alamofire")
         let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: InMemoryPersistor())
-        let update = PartialUserProfile([
-            \UserProfile.weight: 85,
-        ])
+        let update = PartialUserProfile { profile in
+            profile[\.weight] = 85
+        }
         let updateStub = stub(condition: isHost("apibase") && pathMatches("^/sdk/users/v1/*")) { request in
             XCTAssertEqual(request.httpMethod, "PUT")
             do {
                 let bodyData: [String: Any] = try JSONSerialization.jsonObject(with: request.ohhttpStubs_httpBody!) as! [String: Any]
-                XCTAssertEqual(bodyData["weight"] as? Int, update[\.weight])
+                XCTAssertEqual(bodyData["weight"] as? Float, update[\.weight])
                 XCTAssertEqual(bodyData.count, 1)
             } catch {
                 XCTFail("body deserialization failed")

@@ -4,8 +4,13 @@ public struct Partial<Wrapped: PartiallyEncodable> {
 
     private var values: [PartialKeyPath<Wrapped>: Encodable]
 
-    public init(_ initialValues: [PartialKeyPath<Wrapped>: Encodable] = [:]) {
-        self.values = initialValues
+    public init() {
+        self.values = [:]
+    }
+
+    public init(block: (inout Self) -> Void) {
+        self.init()
+        block(&self)
     }
 
     public subscript<ValueType: Encodable>(key: KeyPath<Wrapped, ValueType>) -> ValueType? {

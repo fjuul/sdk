@@ -447,4 +447,71 @@ public class GFDataUtilsTest {
             }
         }
     }
+
+    public static class SplitDateRangeIntoDaysTest extends GivenRobolectricContext {
+        Clock fixedClock;
+
+        @Before
+        public void beforeTests() {
+            final String instantExpected = "2020-09-15T21:17:00Z";
+            fixedClock = Clock.fixed(Instant.parse(instantExpected), ZoneId.of("UTC"));
+        }
+
+        @Test
+        public void splitDateRangeIntoDays_whenStartAndEndIsTheSameTime_returnsPairOfTheDate() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Europe/Berlin"), fixedClock);
+            final Date date = Date.from(Instant.parse("2020-08-31T14:00:00Z"));
+            List<Pair<Date, Date>> chunks = gfDataUtils.splitDateRangeIntoDays(date, date);
+            assertEquals("should return only one pair", 1, chunks.size());
+            assertThat("first entry should be the time", chunks.get(0).first, equalTo(date));
+            assertThat("second entry should be the time", chunks.get(0).second, equalTo(date));
+        }
+
+        @Test
+        public void splitDateRangeIntoDays_whenStartAndEndAreWithinOneDay_returnsPairOfStartAndEnd() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Europe/Berlin"), fixedClock);
+            final Date start = Date.from(Instant.parse("2020-08-31T14:00:00Z"));
+            final Date end = Date.from(Instant.parse("2020-08-31T17:00:00Z"));
+            List<Pair<Date, Date>> chunks = gfDataUtils.splitDateRangeIntoDays(start, end);
+            assertEquals("should return only one pair", 1, chunks.size());
+            assertThat("first entry should be the start", chunks.get(0).first, equalTo(start));
+            assertThat("second entry should be the end", chunks.get(0).second, equalTo(end));
+        }
+
+        @Test
+        public void splitDateRangeIntoDays_whenStartAndEndAreBordersOfTheSameDay_returnsPairOfStartAndEnd() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Europe/Berlin"), fixedClock);
+            final Date start = Date.from(Instant.parse("2020-08-31T22:00:00Z"));
+            final Date end = Date.from(Instant.parse("2020-09-01T21:59:59.9999999Z"));
+            List<Pair<Date, Date>> chunks = gfDataUtils.splitDateRangeIntoDays(start, end);
+            assertEquals("should return only one pair", 1, chunks.size());
+            assertThat("first entry should be the start", chunks.get(0).first, equalTo(start));
+            assertThat("second entry should be the end", chunks.get(0).second, equalTo(end));
+        }
+
+        @Test
+        public void splitDateRangeIntoDays_whenStartAndEndPointToDifferentDates_returnsPairs() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Europe/Berlin"), fixedClock);
+            final Date start = Date.from(Instant.parse("2020-08-31T14:00:00Z"));
+            final Date end = Date.from(Instant.parse("2020-09-02T09:00:00Z"));
+            List<Pair<Date, Date>> chunks = gfDataUtils.splitDateRangeIntoDays(start, end);
+            assertEquals("should return 3 pairs", 3, chunks.size());
+            assertThat("first entry should be the start", chunks.get(0).first, equalTo(start));
+            assertThat("second entry should be the end of day",
+                chunks.get(0).second,
+                equalTo(Date.from(Instant.parse("2020-08-31T21:59:59.9999999Z"))));
+
+            assertThat("first entry of the next pair should be the beginning of the next day",
+                chunks.get(1).first,
+                equalTo(Date.from(Instant.parse("2020-08-31T22:00:00Z"))));
+            assertThat("second entry of the next pair should be the end of the next day",
+                chunks.get(1).second,
+                equalTo(Date.from(Instant.parse("2020-09-01T21:59:59.9999999Z"))));
+
+            assertThat("first entry of the the last pair should be the beginning of the last day",
+                chunks.get(2).first,
+                equalTo(Date.from(Instant.parse("2020-09-01T22:00:00Z"))));
+            assertThat("second entry of the next pair should be the end", chunks.get(2).second, equalTo(end));
+        }
+    }
 }

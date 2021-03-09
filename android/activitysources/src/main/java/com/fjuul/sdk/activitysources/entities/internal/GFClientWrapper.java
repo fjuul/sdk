@@ -61,18 +61,23 @@ import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.core.util.Supplier;
 
-// NOTE: the package com.google.android.gms.internal.fitness.zzko it's not supposed to be used as public api but I
+// NOTE#1: the package com.google.android.gms.internal.fitness.zzko it's not supposed to be used as public api but I
 // didn't find another way to get the integer based constant of ActivityType by the string presentation which is
 // returned by default along with a session.
 // Don't worry if it wasn't discovered after the upgrade of `play-services-fitness`, it may be placed under a different
 // name.
 
-// NOTE: GF can silently fail on a request if response data is too large, more details at
+// NOTE#2: GF can silently fail on a request if response data is too large, more details at
 // https://stackoverflow.com/a/55806509/6685359.
 // Also there may be a case when GoogleFit service can't response to the requester on the first attempts due to failed
 // delivery.
 // Therefore the wrapper divide one big request into smaller ones and use a fixed thread pool to watch for the fired
 // requests with a timeout and retries.
+
+// NOTE#3: requesting intraday data from Google Fit, we split the input date range into days in the local timezone,
+// since a day is a minimum, atomic unit in terms of the syncing interval. Even if it's more effective to query data by
+// a bigger date range in some cases (for example, steps), do not change the size of the splitting while GF
+// synchronization interval remains input for SDK consumers.
 
 class GFClientWrapper {
     private static final String TAG = "GFClientWrapper";
@@ -124,7 +129,8 @@ class GFClientWrapper {
     @SuppressLint("NewApi")
     public Task<List<GFCalorieDataPoint>> getCalories(Date start, Date end) {
         ExecutorService gfTaskWatcherExecutor = createGfTaskWatcherExecutor();
-        List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+        // see NOTE#3 at the top
+        List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoDays(start, end);
 
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         SupervisedExecutor gfTaskWatcher = new SupervisedExecutor(gfTaskWatcherExecutor, cancellationTokenSource);
@@ -139,7 +145,8 @@ class GFClientWrapper {
     @SuppressLint("NewApi")
     public Task<List<GFStepsDataPoint>> getSteps(Date start, Date end) {
         ExecutorService gfTaskWatcherExecutor = createGfTaskWatcherExecutor();
-        List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofDays(7));
+        // see NOTE#3 at the top
+        List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoDays(start, end);
 
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         SupervisedExecutor gfTaskWatcher = new SupervisedExecutor(gfTaskWatcherExecutor, cancellationTokenSource);
@@ -154,7 +161,8 @@ class GFClientWrapper {
     @SuppressLint("NewApi")
     public Task<List<GFHRSummaryDataPoint>> getHRSummaries(Date start, Date end) {
         ExecutorService gfTaskWatcherExecutor = createGfTaskWatcherExecutor();
-        List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofHours(24));
+        // see NOTE#3 at the top
+        List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoDays(start, end);
 
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         SupervisedExecutor gfTaskWatcherDetails =
@@ -174,6 +182,8 @@ class GFClientWrapper {
         CancellationToken cancellationToken = cancellationTokenSource.getToken();
         SupervisedExecutor gfReadSessionsWatcher =
             new SupervisedExecutor(gfTaskWatcherExecutor, cancellationTokenSource, cancellationToken);
+        // NOTE: here we don't split the input date range into days because workouts that start before midnight and
+        // finish after midnight wouldn't be found in this case
         List<Pair<Date, Date>> dateChunks = gfUtils.splitDateRangeIntoChunks(start, end, Duration.ofDays(5));
 
         List<Task<List<Session>>> readSessionListTasks = dateChunks.stream().map(dateRange -> {

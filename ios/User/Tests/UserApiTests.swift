@@ -46,12 +46,12 @@ final class UserApiTests: XCTestCase {
 
     func testCreateUserWithDefaults() {
         let e = expectation(description: "Alamofire")
-        let profile = PartialUserProfile([
-            \UserProfile.birthDate: DateFormatters.yyyyMMddLocale.date(from: "1989-11-03"),
-            \UserProfile.gender: Gender.other,
-            \UserProfile.height: Float(170.2),
-            \UserProfile.weight: Float(60.6),
-        ])
+        let profile = PartialUserProfile { partial in
+            partial[\.birthDate] = DateFormatters.yyyyMMddLocale.date(from: "1989-11-03")
+            partial[\.gender] = Gender.other
+            partial[\.height] = 170.2
+            partial[\.weight] = 60.6
+        }
         let createStub = stub(condition: isHost("apibase") && isPath("/sdk/users/v1")) { request in
             XCTAssertEqual(request.httpMethod, "POST")
             do {
@@ -77,14 +77,14 @@ final class UserApiTests: XCTestCase {
 
     func testCreateUser() {
         let e = expectation(description: "Alamofire")
-        let profile = PartialUserProfile([
-            \UserProfile.birthDate: DateFormatters.yyyyMMddLocale.date(from: "1989-11-03"),
-            \UserProfile.gender: Gender.other,
-            \UserProfile.height: Float(170.2),
-            \UserProfile.weight: Float(60.6),
-            \UserProfile.timezone: TimeZone(identifier: "Europe/Paris"),
-            \UserProfile.locale: "fi",
-        ])
+        let profile = PartialUserProfile { partial in
+            partial[\.birthDate] = DateFormatters.yyyyMMddLocale.date(from: "1989-11-03")
+            partial[\.gender] = Gender.other
+            partial[\.height] = 170.2
+            partial[\.weight] = 60.6
+            partial[\.timezone] = TimeZone(identifier: "Europe/Paris")
+            partial[\.locale] = "fi"
+        }
         let createStub = stub(condition: isHost("apibase") && isPath("/sdk/users/v1")) { request in
             XCTAssertEqual(request.httpMethod, "POST")
             do {
@@ -111,14 +111,14 @@ final class UserApiTests: XCTestCase {
     // swiftlint:disable function_body_length
     func testCreateUserWithValidationError() {
         let e = expectation(description: "Alamofire")
-        let profile = PartialUserProfile([
-            \UserProfile.birthDate: DateFormatters.yyyyMMddLocale.date(from: "1989-11-03"),
-            \UserProfile.gender: Gender.other,
-            \UserProfile.height: -170,
-            \UserProfile.weight: -67.4,
-            \UserProfile.timezone: TimeZone(identifier: "Europe/Paris"),
-            \UserProfile.locale: "fi",
-        ])
+        let profile = PartialUserProfile { partial in
+            partial[\.birthDate] = DateFormatters.yyyyMMddLocale.date(from: "1989-11-03")
+            partial[\.gender] = Gender.other
+            partial[\.height] = -170
+            partial[\.weight] = -67.4
+            partial[\.timezone] = TimeZone(identifier: "Europe/Paris")
+            partial[\.locale] = "fi"
+        }
         let createStub = stub(condition: isHost("apibase") && isPath("/sdk/users/v1")) { request in
             XCTAssertEqual(request.httpMethod, "POST")
             let json = """
@@ -208,9 +208,9 @@ final class UserApiTests: XCTestCase {
     func testUpdateProfile() {
         let e = expectation(description: "Alamofire")
         let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: InMemoryPersistor())
-        let update = PartialUserProfile([
-            \UserProfile.weight: Float(85),
-        ])
+        let update = PartialUserProfile { profile in
+            profile[\.weight] = 85
+        }
         let updateStub = stub(condition: isHost("apibase") && pathMatches("^/sdk/users/v1/*")) { request in
             XCTAssertEqual(request.httpMethod, "PUT")
             do {

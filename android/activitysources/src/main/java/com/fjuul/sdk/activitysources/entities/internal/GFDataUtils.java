@@ -181,4 +181,26 @@ public class GFDataUtils {
         }
         return dateRanges;
     }
+
+    @SuppressLint("NewApi")
+    @NonNull
+    public List<Pair<Date, Date>> splitDateRangeIntoDays(@NonNull Date start, @NonNull Date end) {
+        if (start.equals(end)) {
+            return Arrays.asList(new Pair<>(start, end));
+        }
+        final List<Pair<Date, Date>> dateRanges = new ArrayList<>();
+        Date iterDate = start;
+        while (iterDate.before(end)) {
+            final Date startOfDay =
+                Date.from(iterDate.toInstant().atZone(zoneId).toLocalDate().atStartOfDay(zoneId).toInstant());
+            final Date endOfDay = Date.from(
+                iterDate.toInstant().atZone(zoneId).toLocalDate().atTime(LocalTime.MAX).atZone(zoneId).toInstant());
+            final Date leftBorder = Collections.max(Arrays.asList(iterDate, startOfDay));
+            final Date rightBorder = Collections.min(Arrays.asList(end, endOfDay));
+            dateRanges.add(new Pair<>(leftBorder, rightBorder));
+            iterDate = Date
+                .from(iterDate.toInstant().atZone(zoneId).toLocalDate().plusDays(1).atStartOfDay(zoneId).toInstant());
+        }
+        return dateRanges;
+    }
 }

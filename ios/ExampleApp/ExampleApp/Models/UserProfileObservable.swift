@@ -11,8 +11,8 @@ class UserProfileObservable: ObservableObject {
 
     @Published var token = ""
     @Published var birthDate = Date(timeIntervalSince1970: 0)
-    @Published var height = 170
-    @Published var weight = 80
+    @Published var height: Float = 170
+    @Published var weight: Float = 80
     @Published var gender: Gender = .other
     @Published var timezone = ""
     @Published var locale = ""
@@ -64,14 +64,14 @@ class UserProfileObservable: ObservableObject {
     }
 
     func createNewUser(baseUrl: String, apiKey: String, completion: @escaping (Result<UserCreationResult, Error>) -> Void) {
-        let profileData = PartialUserProfile([
-            \UserProfile.birthDate: self.birthDate,
-            \UserProfile.gender: self.gender,
-            \UserProfile.height: self.height,
-            \UserProfile.weight: self.weight,
-            \UserProfile.timezone: self.timezone,
-            \UserProfile.locale: self.locale,
-        ])
+        let profileData = PartialUserProfile { profile in
+            profile[\.birthDate] = self.birthDate
+            profile[\.gender] = self.gender
+            profile[\.height] = self.height
+            profile[\.weight] = self.weight
+            profile[\.timezone] = TimeZone(identifier: self.timezone)
+            profile[\.locale] = self.locale
+        }
         return ApiClient.createUser(baseUrl: baseUrl, apiKey: apiKey, profile: profileData) { result in
             switch result {
             case .success(let creationResult): self.hydrateFromUserProfile(creationResult.user)

@@ -12,8 +12,8 @@ public struct UserProfile: Codable {
     public let token: String
     public let birthDate: Date
     public let gender: Gender
-    public let height: Int
-    public let weight: Int
+    public let height: Float
+    public let weight: Float
     public var timezone: TimeZone { return TimeZone(identifier: _timezone)! }
     public let locale: String
 

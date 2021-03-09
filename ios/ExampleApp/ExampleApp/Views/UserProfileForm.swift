@@ -10,11 +10,11 @@ struct UserProfileForm: View {
     var body: some View {
         Section {
             DatePicker(selection: $userProfile.birthDate, displayedComponents: .date, label: { Text("Birthdate") })
-            Stepper(value: $userProfile.height, in: 100...250, step: 5) {
-                Text("Height: \(userProfile.height)cm")
+            Stepper(value: $userProfile.height, in: 100...250, step: 0.5) {
+                Text(String(format: "Height: %.1fcm", userProfile.height))
             }
-            Stepper(value: $userProfile.weight, in: 35...250, step: 5) {
-                Text("Weight: \(userProfile.weight)kg")
+            Stepper(value: $userProfile.weight, in: 35...250, step: 0.5) {
+                Text(String(format: "Weight: %.1fkg", userProfile.weight))
             }
             Picker(selection: $userProfile.gender, label: Text("Gender"), content: {
                 Text("male").tag(Gender.male)

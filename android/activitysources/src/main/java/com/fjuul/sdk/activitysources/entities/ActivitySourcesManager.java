@@ -131,14 +131,15 @@ public final class ActivitySourcesManager {
         GoogleFitActivitySource.initialize(client, config);
 
         final BackgroundWorkManager backgroundWorkManager = new BackgroundWorkManager(config, scheduler);
-        setupBackgroundWorksByConnections(storedConnections, backgroundWorkManager);
         final ActivitySourceResolver activitySourceResolver = new ActivitySourceResolver();
-        instance = new ActivitySourcesManager(config,
+        final ActivitySourcesManager newInstance = new ActivitySourcesManager(config,
             backgroundWorkManager,
             sourcesService,
             stateStore,
             activitySourceResolver,
             storedConnections);
+        newInstance.configureExternalStateByConnections(storedConnections);
+        instance = newInstance;
         Logger.get().d("initialized successfully (the previous one could be overridden)");
     }
 
@@ -321,7 +322,7 @@ public final class ActivitySourcesManager {
                 return;
             }
             final List<TrackerConnection> freshTrackerConnections = Arrays.asList(apiCallResult.getValue());
-            setupBackgroundWorksByConnections(freshTrackerConnections, backgroundWorkManager);
+            configureExternalStateByConnections(freshTrackerConnections);
             stateStore.setConnections(freshTrackerConnections);
             this.currentConnections = freshTrackerConnections;
             if (callback != null) {
@@ -356,25 +357,30 @@ public final class ActivitySourcesManager {
         return sourceConnectionsStream.collect(Collectors.toList());
     }
 
-    private static void setupBackgroundWorksByConnections(@Nullable List<TrackerConnection> trackerConnections,
-        @NonNull BackgroundWorkManager backgroundWorkManager) {
+    @SuppressLint("NewApi")
+    private void configureExternalStateByConnections(@Nullable List<TrackerConnection> trackerConnections) {
+        final TrackerConnection gfTrackerConnection = Optional.ofNullable(trackerConnections)
+            .flatMap(connections -> connections.stream()
+                .filter(c -> c.getTracker().equals(TrackerValue.GOOGLE_FIT.getValue()))
+                .findFirst())
+            .orElse(null);
         // TODO: move out the line with configuring the profile sync work when there will be other local activity
-        // sources
-        if (checkIfHasGoogleFitConnection(trackerConnections)) {
+        if (gfTrackerConnection != null) {
             backgroundWorkManager.configureProfileSyncWork();
             backgroundWorkManager.configureGFSyncWorks();
         } else {
             backgroundWorkManager.cancelGFSyncWorks();
             backgroundWorkManager.cancelProfileSyncWork();
         }
-    }
 
-    @SuppressLint("NewApi")
-    private static boolean checkIfHasGoogleFitConnection(@Nullable List<TrackerConnection> trackerConnections) {
-        return Optional.ofNullable(trackerConnections).flatMap(connections -> {
-            return connections.stream()
-                .filter(c -> c.getTracker().equals(TrackerValue.GOOGLE_FIT.getValue()))
-                .findFirst();
-        }).isPresent();
+        final GoogleFitActivitySource googleFit = (GoogleFitActivitySource) activitySourceResolver
+            .getInstanceByTrackerValue(TrackerValue.GOOGLE_FIT.getValue());
+        if (config.getForcedLowerDateBoundaryForGoogleFit() != null) {
+            googleFit.setLowerDateBoundary(config.getForcedLowerDateBoundaryForGoogleFit());
+        } else if (gfTrackerConnection != null) {
+            googleFit.setLowerDateBoundary(gfTrackerConnection.getCreatedAt());
+        } else {
+            googleFit.setLowerDateBoundary(null);
+        }
     }
 }

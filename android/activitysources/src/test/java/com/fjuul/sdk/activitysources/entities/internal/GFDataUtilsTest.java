@@ -353,4 +353,165 @@ public class GFDataUtilsTest {
         }
     }
 
+    public static class RoundDatesByIntradayBatchDurationTest extends GivenRobolectricContext {
+        Clock fixedClock;
+
+        @Before
+        public void beforeTests() {
+            String instantExpected = "2020-09-15T21:17:00Z";
+            fixedClock = Clock.fixed(Instant.parse(instantExpected), ZoneId.of("UTC"));
+        }
+
+        @Test
+        public void roundDatesByIntradayBatchDuration_whenStartAndEndDontFitBatchDuration_returnsPairOfRoundedDates() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Australia/Sydney"), fixedClock);
+            final Date start = Date.from(Instant.parse("2020-09-01T14:15:27Z"));
+            final Date end = Date.from(Instant.parse("2020-09-01T15:29:59Z"));
+            Pair<Date, Date> pair = gfDataUtils.roundDatesByIntradayBatchDuration(start, end, Duration.ofMinutes(30));
+            assertThat("start should be a start of the related batch",
+                pair.first,
+                equalTo(Date.from(Instant.parse("2020-09-01T14:00:00Z"))));
+            assertThat("end should be an end of the related batch",
+                pair.second,
+                equalTo(Date.from(Instant.parse("2020-09-01T15:30:00Z"))));
+        }
+
+        @Test
+        public void roundDatesByIntradayBatchDuration_whenStartAndEndInOneBatchDuration_returnsPairOfRoundedDates() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Australia/Sydney"), fixedClock);
+            final Date start = Date.from(Instant.parse("2020-09-01T14:15:27Z"));
+            final Date end = Date.from(Instant.parse("2020-09-01T14:29:59Z"));
+            Pair<Date, Date> pair = gfDataUtils.roundDatesByIntradayBatchDuration(start, end, Duration.ofMinutes(30));
+            assertThat("start should be a start of the related batch",
+                pair.first,
+                equalTo(Date.from(Instant.parse("2020-09-01T14:00:00Z"))));
+            assertThat("end should be an end of the related batch",
+                pair.second,
+                equalTo(Date.from(Instant.parse("2020-09-01T14:30:00Z"))));
+        }
+
+        @Test
+        public void roundDatesByIntradayBatchDuration_whenStartAndEndFitBatchDuration_returnsPairOfDates() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Australia/Sydney"), fixedClock);
+            final Date start = Date.from(Instant.parse("2020-09-01T14:00:00Z"));
+            final Date end = Date.from(Instant.parse("2020-09-01T14:30:00Z"));
+            Pair<Date, Date> pair = gfDataUtils.roundDatesByIntradayBatchDuration(start, end, Duration.ofMinutes(30));
+            assertThat("start should be a start of the related batch", pair.first, equalTo(start));
+            assertThat("end should be an end of the related batch", pair.second, equalTo(end));
+        }
+
+        @Test
+        public void roundDatesByIntradayBatchDuration_shouldRoundUpByDurationAccordingToTheLocalTimezone() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Europe/Moscow"), fixedClock);
+            // NOTE: Europe/Moscow timezone has the offset UTC+3, so beginning of the day is 2020-08-31T21:00:00
+            // => let batch duration is 6 hours, then all divisions in UTC are 21:00 - 3:00, 3:00 - 9:00, 9:00 - 15:00,
+            // 15:00 - 21:00.
+            final Date start = Date.from(Instant.parse("2020-09-01T12:00:00Z"));
+            final Date end = Date.from(Instant.parse("2020-09-02T18:00:00Z"));
+            System.out.println();
+            Pair<Date, Date> pair = gfDataUtils.roundDatesByIntradayBatchDuration(start, end, Duration.ofHours(6));
+            assertThat("start should be a start of the related batch in the local time",
+                pair.first,
+                equalTo(Date.from(Instant.parse("2020-09-01T09:00:00Z"))));
+            assertThat("end should be an end of the related batch in the local time",
+                pair.second,
+                equalTo(Date.from(Instant.parse("2020-09-02T21:00:00Z"))));
+        }
+
+        @Test
+        public void roundDatesByIntradayBatchDuration_whenBatchDurationIsFullDay_returnsPairOfRoundedDates() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Europe/Berlin"), fixedClock);
+            final Date start = Date.from(Instant.parse("2020-09-01T14:00:00Z"));
+            final Date end = Date.from(Instant.parse("2020-09-01T14:30:00Z"));
+            Pair<Date, Date> pair = gfDataUtils.roundDatesByIntradayBatchDuration(start, end, Duration.ofDays(1));
+            assertThat("start should be a start of the day in the local time",
+                pair.first,
+                equalTo(Date.from(Instant.parse("2020-08-31T22:00:00Z"))));
+            assertThat("end should be a start of the next day in the local time",
+                pair.second,
+                equalTo(Date.from(Instant.parse("2020-09-01T22:00:00Z"))));;
+        }
+
+        @Test
+        public void roundDatesByIntradayBatchDuration_whenBatchDurationIsNotIntraday_returnsPairOfRoundedDates() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Europe/Berlin"), fixedClock);
+            final Date start = Date.from(Instant.parse("2020-09-01T14:00:00Z"));
+            final Date end = Date.from(Instant.parse("2020-09-01T14:30:00Z"));
+            try {
+                gfDataUtils.roundDatesByIntradayBatchDuration(start, end, Duration.ofHours(10));
+                assertTrue(false);
+            } catch (IllegalArgumentException exception) {
+                assertEquals("exception should have the message",
+                    "The batch duration must fit into the duration of the day without any remainder",
+                    exception.getMessage());
+            }
+        }
+    }
+
+    public static class SplitDateRangeIntoDaysTest extends GivenRobolectricContext {
+        Clock fixedClock;
+
+        @Before
+        public void beforeTests() {
+            final String instantExpected = "2020-09-15T21:17:00Z";
+            fixedClock = Clock.fixed(Instant.parse(instantExpected), ZoneId.of("UTC"));
+        }
+
+        @Test
+        public void splitDateRangeIntoDays_whenStartAndEndIsTheSameTime_returnsPairOfTheDate() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Europe/Berlin"), fixedClock);
+            final Date date = Date.from(Instant.parse("2020-08-31T14:00:00Z"));
+            List<Pair<Date, Date>> chunks = gfDataUtils.splitDateRangeIntoDays(date, date);
+            assertEquals("should return only one pair", 1, chunks.size());
+            assertThat("first entry should be the time", chunks.get(0).first, equalTo(date));
+            assertThat("second entry should be the time", chunks.get(0).second, equalTo(date));
+        }
+
+        @Test
+        public void splitDateRangeIntoDays_whenStartAndEndAreWithinOneDay_returnsPairOfStartAndEnd() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Europe/Berlin"), fixedClock);
+            final Date start = Date.from(Instant.parse("2020-08-31T14:00:00Z"));
+            final Date end = Date.from(Instant.parse("2020-08-31T17:00:00Z"));
+            List<Pair<Date, Date>> chunks = gfDataUtils.splitDateRangeIntoDays(start, end);
+            assertEquals("should return only one pair", 1, chunks.size());
+            assertThat("first entry should be the start", chunks.get(0).first, equalTo(start));
+            assertThat("second entry should be the end", chunks.get(0).second, equalTo(end));
+        }
+
+        @Test
+        public void splitDateRangeIntoDays_whenStartAndEndAreBordersOfTheSameDay_returnsPairOfStartAndEnd() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Europe/Berlin"), fixedClock);
+            final Date start = Date.from(Instant.parse("2020-08-31T22:00:00Z"));
+            final Date end = Date.from(Instant.parse("2020-09-01T21:59:59.9999999Z"));
+            List<Pair<Date, Date>> chunks = gfDataUtils.splitDateRangeIntoDays(start, end);
+            assertEquals("should return only one pair", 1, chunks.size());
+            assertThat("first entry should be the start", chunks.get(0).first, equalTo(start));
+            assertThat("second entry should be the end", chunks.get(0).second, equalTo(end));
+        }
+
+        @Test
+        public void splitDateRangeIntoDays_whenStartAndEndPointToDifferentDates_returnsPairs() {
+            GFDataUtils gfDataUtils = new GFDataUtils(ZoneId.of("Europe/Berlin"), fixedClock);
+            final Date start = Date.from(Instant.parse("2020-08-31T14:00:00Z"));
+            final Date end = Date.from(Instant.parse("2020-09-02T09:00:00Z"));
+            List<Pair<Date, Date>> chunks = gfDataUtils.splitDateRangeIntoDays(start, end);
+            assertEquals("should return 3 pairs", 3, chunks.size());
+            assertThat("first entry should be the start", chunks.get(0).first, equalTo(start));
+            assertThat("second entry should be the end of day",
+                chunks.get(0).second,
+                equalTo(Date.from(Instant.parse("2020-08-31T21:59:59.9999999Z"))));
+
+            assertThat("first entry of the next pair should be the beginning of the next day",
+                chunks.get(1).first,
+                equalTo(Date.from(Instant.parse("2020-08-31T22:00:00Z"))));
+            assertThat("second entry of the next pair should be the end of the next day",
+                chunks.get(1).second,
+                equalTo(Date.from(Instant.parse("2020-09-01T21:59:59.9999999Z"))));
+
+            assertThat("first entry of the the last pair should be the beginning of the last day",
+                chunks.get(2).first,
+                equalTo(Date.from(Instant.parse("2020-09-01T22:00:00Z"))));
+            assertThat("second entry of the next pair should be the end", chunks.get(2).second, equalTo(end));
+        }
+    }
 }

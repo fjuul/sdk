@@ -1,6 +1,7 @@
 package com.fjuul.sdk.activitysources.entities;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -72,6 +73,7 @@ public class GoogleFitActivitySource extends ActivitySource {
     private final @NonNull Context context;
     private final @NonNull GFDataManagerBuilder gfDataManagerBuilder;
     private final @NonNull ExecutorService localSequentialBackgroundExecutor;
+    private volatile @Nullable Date lowerDateBoundary;
 
     static synchronized void initialize(@NonNull ApiClient client,
         @NonNull ActivitySourcesManagerConfig sourcesManagerConfig) {
@@ -266,6 +268,9 @@ public class GoogleFitActivitySource extends ActivitySource {
      * callback.<br>
      * The task is atomic, so it will either succeed for all the specified types of metrics, or it will not succeed at
      * all.<br>
+     * Note: date range of the synchronization is adjusted not only by the input options but the creation date of the
+     * connection to Google Fit. So, any input dates that point to a date before the connection will be shifted to
+     * conform to the allowed range.<br>
      * Dedicated result errors:
      * <ul>
      * <li>{@link com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.FitnessPermissionsNotGrantedException};</li>
@@ -288,7 +293,7 @@ public class GoogleFitActivitySource extends ActivitySource {
             }
             return;
         }
-        final GFDataManager GFDataManager = gfDataManagerBuilder.build(account);
+        final GFDataManager GFDataManager = gfDataManagerBuilder.build(account, lowerDateBoundary);
         performTaskAlongWithCallback(() -> GFDataManager.syncIntradayMetrics(options), callback);
     }
 
@@ -296,6 +301,9 @@ public class GoogleFitActivitySource extends ActivitySource {
      * Puts the task of synchronizing sessions in a sequential execution queue (i.e., only one sync task can be executed
      * at a time) and will execute it when it comes to its turn. The synchronization result is available in the
      * callback.<br>
+     * Note: date range of the synchronization is adjusted not only by the input options but the creation date of the
+     * connection to Google Fit. So, any input dates that point to a date before the connection will be shifted to
+     * conform to the allowed range.<br>
      * Dedicated result errors:
      * <ul>
      * <li>{@link com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.FitnessPermissionsNotGrantedException};</li>
@@ -327,7 +335,7 @@ public class GoogleFitActivitySource extends ActivitySource {
             }
             return;
         }
-        final GFDataManager GFDataManager = gfDataManagerBuilder.build(account);
+        final GFDataManager GFDataManager = gfDataManagerBuilder.build(account, lowerDateBoundary);
         performTaskAlongWithCallback(() -> GFDataManager.syncSessions(options), callback);
     }
 
@@ -362,7 +370,7 @@ public class GoogleFitActivitySource extends ActivitySource {
             }
             return;
         }
-        final GFDataManager GFDataManager = gfDataManagerBuilder.build(account);
+        final GFDataManager GFDataManager = gfDataManagerBuilder.build(account, lowerDateBoundary);
         performTaskAlongWithCallback(() -> GFDataManager.syncProfile(options), callback);
     }
 
@@ -437,6 +445,10 @@ public class GoogleFitActivitySource extends ActivitySource {
         return GoogleSignIn.getClient(context, signInOptions)
             .revokeAccess()
             .continueWithTask((revokeAccessTask) -> Tasks.forResult(null));
+    }
+
+    void setLowerDateBoundary(@Nullable Date lowerDateBoundary) {
+        this.lowerDateBoundary = lowerDateBoundary;
     }
 
     private boolean areFitnessPermissionsGranted(@Nullable GoogleSignInAccount account) {

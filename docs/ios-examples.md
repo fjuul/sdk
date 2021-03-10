@@ -9,12 +9,12 @@ import FjuulUser
 
 let baseUrl = "https://[env].api.fjuul.com"
 
-let profileData = PartialUserProfile([
-    UserProfile.birthDate: birthDate,
-    UserProfile.gender: gender,
-    UserProfile.height: height,
-    UserProfile.weight: weight,
-])
+let profileData = PartialUserProfile { profile in
+    profile[\.birthDate] = DateFormatters.yyyyMMddLocale.date(from: "1989-11-03")
+    profile[\.gender] = Gender.other
+    profile[\.height] = 170
+    profile[\.weight] = 60.6
+}
 
 ApiClient.createUser(baseUrl: baseUrl, apiKey: "YOUR_API_KEY", profile: profileData) { result in
     switch result {

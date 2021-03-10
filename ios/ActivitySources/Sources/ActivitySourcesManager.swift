@@ -14,7 +14,7 @@ final public class ActivitySourcesManager {
     let apiClient: ActivitySourcesApiClient
     let config: ActivitySourceConfigBuilder
 
-    var mountedActivitySourceConnections: [ActivitySourceConnection] = []
+    public var mountedActivitySourceConnections: [ActivitySourceConnection] = []
 
     private let persistor: Persistor
     private let connectionsLocalStore: ActivitySourcesStateStore

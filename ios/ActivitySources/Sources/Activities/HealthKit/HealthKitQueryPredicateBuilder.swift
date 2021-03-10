@@ -18,7 +18,7 @@ class HealthKitQueryPredicateBuilder {
     }
 
     func samplePredicate() -> NSCompoundPredicate {
-        let startDatePredicate = HKQuery.predicateForSamples(withStart: self.dataСollectionStartAt(), end: Date(), options: .strictStartDate)
+        let startDatePredicate = HKQuery.predicateForSamples(withStart: self.dataСollectionStartAt(), end: self.dataСollectionEndAt(), options: .strictStartDate)
 
         var predicates = [startDatePredicate]
 
@@ -58,11 +58,29 @@ class HealthKitQueryPredicateBuilder {
     /// - Returns: Date
     private func dataСollectionStartAt() -> Date {
         let calendar = Calendar.current
-        // Default date for prevent sync more than 30 days back
-        let defaultDate = calendar.startOfDay(for: calendar.date(byAdding: .day, value: -30, to: Date())!)
+        var dates = [
+            // Default date for prevent sync more than 30 days back
+            calendar.startOfDay(for: calendar.date(byAdding: .day, value: -30, to: Date())!),
+        ]
 
-        guard let syncDataFrom = self.healthKitConfig.syncDataFrom else { return defaultDate }
+        if let syncDataFrom = self.healthKitConfig.syncDataFrom {
+            dates.append(syncDataFrom)
+        }
 
-        return syncDataFrom > defaultDate ? syncDataFrom : defaultDate
+        if let startDate = self.startDate {
+            dates.append(startDate)
+        }
+
+        return dates.max()!
+    }
+
+    /// End date of data collection.
+    /// - Returns: Date
+    private func dataСollectionEndAt() -> Date {
+        if let endDate = self.endDate {
+            return endDate
+        } else {
+            return Date()
+        }
     }
 }

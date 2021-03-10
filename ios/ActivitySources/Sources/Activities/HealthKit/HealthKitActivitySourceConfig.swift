@@ -2,7 +2,7 @@ import Foundation
 import HealthKit
 
 /// Data types that availbale configure for HealthKitActivitySourceConfig
-public enum HealthKitConfigType {
+public enum HealthKitConfigType: Int, CaseIterable {
     case activeEnergyBurned, stepCount, distanceCycling, distanceWalkingRunning, heartRate, workout, weight, height
 
     var sampleType: HKSampleType? {

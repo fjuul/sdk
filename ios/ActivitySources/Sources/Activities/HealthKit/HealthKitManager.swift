@@ -61,7 +61,7 @@ class HealthKitManager: HealthKitManaging {
         HealthKitManager.requestAccess(config: self.config) { result in
             switch result {
             case .success:
-                self.setUpBackgroundDeliveryForDataTypes()
+//                self.setUpBackgroundDeliveryForDataTypes()
                 completion(.success(()))
             case .failure(let err):
                 completion(.failure(err))
@@ -98,7 +98,9 @@ class HealthKitManager: HealthKitManaging {
             self.serialQueue.async {
                 let semaphore = DispatchSemaphore(value: 0)
 
+                print("Sync startDate: \(startDate), endDate: \(endDate), sampleType: \(sampleType)")
                 self.queryForUpdates(sampleType: sampleType, startDate: startDate, endDate: endDate) { data, newAnchor in
+                    print("new Data: sampleType: \(sampleType), \(data)")
                     self.dataHandler(data) { result in
                         switch result {
                         case .success:

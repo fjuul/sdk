@@ -54,6 +54,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
             return
         }
 
+        print("syncIntradayMetrics --> startDate: \(startDate), endDate: \(endDate)")
         healthKitManager.sync(startDate: startDate, endDate: endDate, configTypes: configTypes) { result in
             completion(result)
         }
@@ -70,18 +71,19 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
         }
     }
 
-    public func syncProfile(startDate: Date, endDate: Date, configTypes: [HealthKitConfigType] = HealthKitConfigType.userProfileTypes, completion: @escaping (Result<Void, Error>) -> Void) {
+    public func syncProfile(startDate: Date, endDate: Date, configTypes: [HealthKitConfigType] = HealthKitConfigType.userProfileTypes,
+                            completion: @escaping (Result<Void, Error>) -> Void) {
         guard let healthKitManager = self.healthKitManager else {
             completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
             return
         }
-        
-        guard configTypes.allSatisfy(HealthKitConfigType.intradayTypes.contains) else {
+
+        guard configTypes.allSatisfy(HealthKitConfigType.userProfileTypes.contains) else {
             completion(.failure(FjuulError.activitySourceFailure(reason: .illegalHealthKitConfigType)))
             return
         }
 
-        healthKitManager.sync(startDate: startDate, endDate: endDate, configTypes: [.weight, .height]) { result in
+        healthKitManager.sync(startDate: startDate, endDate: endDate, configTypes: configTypes) { result in
             completion(result)
         }
     }

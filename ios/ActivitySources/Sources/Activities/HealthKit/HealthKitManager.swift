@@ -10,7 +10,7 @@ protocol HealthKitManaging: AutoMockable {
     static func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Void, Error>) -> Void)
     func mount(completion: @escaping (Result<Void, Error>) -> Void)
     func disableAllBackgroundDelivery(completion: @escaping (Result<Void, Error>) -> Void)
-    func sync(startDate: Date, endDate: Date, configTypes: [HealthKitConfigType], completion: @escaping (Result<Void, Error>) -> Void)
+    func sync(startDate: Date?, endDate: Date?, configTypes: [HealthKitConfigType], completion: @escaping (Result<Void, Error>) -> Void)
 }
 
 /// Manager for work with Healthkit permissions and data.
@@ -61,7 +61,7 @@ class HealthKitManager: HealthKitManaging {
         HealthKitManager.requestAccess(config: self.config) { result in
             switch result {
             case .success:
-//                self.setUpBackgroundDeliveryForDataTypes()
+                self.setUpBackgroundDeliveryForDataTypes()
                 completion(.success(()))
             case .failure(let err):
                 completion(.failure(err))
@@ -83,9 +83,13 @@ class HealthKitManager: HealthKitManaging {
         }
     }
 
-    /// Force start sync
-    /// - Parameter completion: void or error
-    func sync(startDate: Date, endDate: Date, configTypes: [HealthKitConfigType], completion: @escaping (Result<Void, Error>) -> Void) {
+    /// Sync HealthKit data based on types and dates.
+    /// - Parameters:
+    ///   - startDate: Start date
+    ///   - endDate: End date
+    ///   - configTypes: list of HealthKitConfigType
+    ///   - completion: void or error
+    func sync(startDate: Date?, endDate: Date?, configTypes: [HealthKitConfigType], completion: @escaping (Result<Void, Error>) -> Void) {
         let group = DispatchGroup()
         var error: Error?
 
@@ -98,9 +102,7 @@ class HealthKitManager: HealthKitManaging {
             self.serialQueue.async {
                 let semaphore = DispatchSemaphore(value: 0)
 
-                print("Sync startDate: \(startDate), endDate: \(endDate), sampleType: \(sampleType)")
                 self.queryForUpdates(sampleType: sampleType, startDate: startDate, endDate: endDate) { data, newAnchor in
-                    print("new Data: sampleType: \(sampleType), \(data)")
                     self.dataHandler(data) { result in
                         switch result {
                         case .success:

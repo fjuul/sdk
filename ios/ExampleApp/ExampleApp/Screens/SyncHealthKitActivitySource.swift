@@ -109,7 +109,7 @@ struct SyncHealthKitActivitySource: View {
         .alert(item: $healthKitSyncObservable.error) { holder in
             Alert(title: Text(holder.error.localizedDescription))
         }
-        .navigationBarTitle("Manual sync data")
+        .navigationBarTitle("HealthKit sync")
     }
 }
 

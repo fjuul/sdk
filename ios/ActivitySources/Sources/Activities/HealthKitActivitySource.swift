@@ -41,7 +41,13 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
             completion(result)
         }
     }
-
+    
+    /// Sync HealthKit intraday data based on types and dates.
+    /// - Parameters:
+    ///   - startDate: Start date
+    ///   - endDate: End date
+    ///   - configTypes: list of HealthKitConfigType
+    ///   - completion: void or error
     public func syncIntradayMetrics(startDate: Date, endDate: Date, configTypes: [HealthKitConfigType] = HealthKitConfigType.intradayTypes,
                                     completion: @escaping (Result<Void, Error>) -> Void) {
         guard let healthKitManager = self.healthKitManager else {
@@ -54,12 +60,16 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
             return
         }
 
-        print("syncIntradayMetrics --> startDate: \(startDate), endDate: \(endDate)")
         healthKitManager.sync(startDate: startDate, endDate: endDate, configTypes: configTypes) { result in
             completion(result)
         }
     }
-
+    
+    /// Sync HealthKit workouts data based on specific dates.
+    /// - Parameters:
+    ///   - startDate: Start date
+    ///   - endDate: End date
+    ///   - completion: void or error
     public func syncWorkouts(startDate: Date, endDate: Date, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let healthKitManager = self.healthKitManager else {
             completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
@@ -71,7 +81,11 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
         }
     }
 
-    public func syncProfile(startDate: Date, endDate: Date, configTypes: [HealthKitConfigType] = HealthKitConfigType.userProfileTypes,
+    /// Sync latest known user metrics (weight or height)
+    /// - Parameters:
+    ///   - configTypes: List of HealthKit types
+    ///   - completion: void or error
+    public func syncProfile(configTypes: [HealthKitConfigType] = HealthKitConfigType.userProfileTypes,
                             completion: @escaping (Result<Void, Error>) -> Void) {
         guard let healthKitManager = self.healthKitManager else {
             completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
@@ -83,7 +97,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
             return
         }
 
-        healthKitManager.sync(startDate: startDate, endDate: endDate, configTypes: configTypes) { result in
+        healthKitManager.sync(startDate: nil, endDate: nil, configTypes: configTypes) { result in
             completion(result)
         }
     }

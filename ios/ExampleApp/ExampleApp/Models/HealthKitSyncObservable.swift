@@ -32,7 +32,7 @@ class HealthKitSyncObservable: ObservableObject {
         HealthKitActivitySource.shared.syncIntradayMetrics(startDate: self.fromDate, endDate: self.toDate, configTypes: configTypes) { result in
             switch result {
             case .success:
-                print("Success")
+                print("Success sync \(configTypes)")
             case .failure(let err): self.error = ErrorHolder(error: err)
             }
 
@@ -50,10 +50,10 @@ class HealthKitSyncObservable: ObservableObject {
 
         let configTypes = HealthKitConfigType.userProfileTypes.filter { item in enabledConfigTypes.contains(item) }
 
-        HealthKitActivitySource.shared.syncProfile(startDate: self.fromDate, endDate: self.toDate, configTypes: configTypes) { result in
+        HealthKitActivitySource.shared.syncProfile(configTypes: configTypes) { result in
             switch result {
             case .success:
-                print("Success")
+                print("Success sync \(configTypes)")
             case .failure(let err): self.error = ErrorHolder(error: err)
             }
 
@@ -72,7 +72,7 @@ class HealthKitSyncObservable: ObservableObject {
         HealthKitActivitySource.shared.syncWorkouts(startDate: self.fromDate, endDate: self.toDate) { result in
             switch result {
             case .success:
-                print("Success")
+                print("Success sync workouts")
             case .failure(let err): self.error = ErrorHolder(error: err)
             }
 
@@ -88,7 +88,5 @@ class HealthKitSyncObservable: ObservableObject {
                 enabledConfigTypes.remove(configType)
             }
         }
-
-        print("\(id) is marked: \(isMarked), enabledConfigTypes: \(enabledConfigTypes)")
     }
 }

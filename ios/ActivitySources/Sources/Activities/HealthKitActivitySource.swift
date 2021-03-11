@@ -1,6 +1,5 @@
 import Foundation
 import FjuulCore
-import Alamofire
 
 //sourcery: AutoMockable
 protocol MountableHealthKitActivitySource: MountableActivitySource {

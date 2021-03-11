@@ -20,8 +20,12 @@ class HealthKitSyncObservable: ObservableObject {
     var enabledConfigTypes: Set<HealthKitConfigType> = Set(HealthKitConfigType.allCases)
 
     func syncIntradayMetrics() {
-        guard ApiClientHolder.default.apiClient?.activitySourcesManager?
-                .mountedActivitySourceConnections.first(where: { item in item.activitySource is HealthKitActivitySource }) != nil else {
+        guard let activitySourceConnection = ApiClientHolder.default.apiClient?.activitySourcesManager?
+                .mountedActivitySourceConnections.first(where: { item in item.activitySource is HealthKitActivitySource }) else {
+            return
+        }
+
+        guard let activitySource = activitySourceConnection.activitySource as? HealthKitActivitySource else {
             return
         }
 
@@ -29,7 +33,7 @@ class HealthKitSyncObservable: ObservableObject {
 
         let configTypes = HealthKitConfigType.intradayTypes.filter { item in enabledConfigTypes.contains(item) }
 
-        HealthKitActivitySource.shared.syncIntradayMetrics(startDate: self.fromDate, endDate: self.toDate, configTypes: configTypes) { result in
+        activitySource.syncIntradayMetrics(startDate: self.fromDate, endDate: self.toDate, configTypes: configTypes) { result in
             switch result {
             case .success:
                 print("Success sync \(configTypes)")
@@ -41,8 +45,12 @@ class HealthKitSyncObservable: ObservableObject {
     }
 
     func syncProfile() {
-        guard ApiClientHolder.default.apiClient?.activitySourcesManager?
-                .mountedActivitySourceConnections.first(where: { item in item.activitySource is HealthKitActivitySource }) != nil else {
+        guard let activitySourceConnection = ApiClientHolder.default.apiClient?.activitySourcesManager?
+                .mountedActivitySourceConnections.first(where: { item in item.activitySource is HealthKitActivitySource }) else {
+            return
+        }
+
+        guard let activitySource = activitySourceConnection.activitySource as? HealthKitActivitySource else {
             return
         }
 
@@ -50,7 +58,7 @@ class HealthKitSyncObservable: ObservableObject {
 
         let configTypes = HealthKitConfigType.userProfileTypes.filter { item in enabledConfigTypes.contains(item) }
 
-        HealthKitActivitySource.shared.syncProfile(configTypes: configTypes) { result in
+        activitySource.syncProfile(configTypes: configTypes) { result in
             switch result {
             case .success:
                 print("Success sync \(configTypes)")
@@ -62,14 +70,18 @@ class HealthKitSyncObservable: ObservableObject {
     }
 
     func syncWorkouts() {
-        guard ApiClientHolder.default.apiClient?.activitySourcesManager?
-                .mountedActivitySourceConnections.first(where: { item in item.activitySource is HealthKitActivitySource }) != nil else {
+        guard let activitySourceConnection = ApiClientHolder.default.apiClient?.activitySourcesManager?
+                .mountedActivitySourceConnections.first(where: { item in item.activitySource is HealthKitActivitySource }) else {
+            return
+        }
+
+        guard let activitySource = activitySourceConnection.activitySource as? HealthKitActivitySource else {
             return
         }
 
         self.isLoadingWorkouts = true
 
-        HealthKitActivitySource.shared.syncWorkouts(startDate: self.fromDate, endDate: self.toDate) { result in
+        activitySource.syncWorkouts(startDate: self.fromDate, endDate: self.toDate) { result in
             switch result {
             case .success:
                 print("Success sync workouts")

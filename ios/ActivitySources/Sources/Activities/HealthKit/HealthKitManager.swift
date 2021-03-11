@@ -249,7 +249,6 @@ class HealthKitManager: HealthKitManaging {
         do {
             let anchor = try self.anchorStore.get(type: sampleType)
             AggregatedDataFetcher.fetch(type: sampleType, anchor: anchor, predicateBuilder: predicateBuilder) { hkBatchData, newAnchor in
-
                 completion(hkBatchData, newAnchor)
             }
         } catch {

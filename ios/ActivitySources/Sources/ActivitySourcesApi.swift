@@ -130,13 +130,17 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
             return completion(.failure(FjuulError.invalidConfig))
         }
 
-        apiClient.signedSession.request(url, method: .put, parameters: data, encoder: JSONParameterEncoder()).response { response in
-            switch response.result {
-            case .success:
-                return completion(.success(()))
-            case .failure(let err):
-                return completion(.failure(err))
-            }
+        apiClient.signedSession.request(url, method: .put, parameters: data.asJsonEncodableDictionary(), encoding: JSONEncoding.default)
+            .apiResponse(emptyResponseCodes: [200]) { response in
+
+            let decodedResponse = response
+                .map { _ -> Void in () }
+                .mapAPIError { _, jsonError in
+                    guard let jsonError = jsonError else { return nil }
+
+                    return .activitySourceConnectionFailure(reason: .generic(message: jsonError.message))
+                }
+            completion(decodedResponse.result)
         }
     }
 }

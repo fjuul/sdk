@@ -215,7 +215,7 @@ public class GoogleFitActivitySource extends ActivitySource {
             final GoogleSignInAccount account = task.getResult(ApiException.class);
             final boolean permissionsGranted = areFitnessPermissionsGranted(account);
             if (!permissionsGranted) {
-                Result<Void> result = Result.error(
+                final Result<Void> result = Result.error(
                     new FitnessPermissionsNotGrantedException("Not all required GoogleFit permissions were granted"));
                 callback.onResult(result);
                 return;
@@ -223,7 +223,7 @@ public class GoogleFitActivitySource extends ActivitySource {
             final Map<String, String> queryParams = new HashMap<>();
             final String authCode = account.getServerAuthCode();
             if (isOfflineAccessRequired() && authCode == null) {
-                Result<Void> result =
+                final Result<Void> result =
                     Result.error(new CommonException("No server auth code for the requested offline access"));
                 callback.onResult(result);
                 return;
@@ -233,21 +233,22 @@ public class GoogleFitActivitySource extends ActivitySource {
             sourcesService.connect(getTrackerValue().getValue(), queryParams).enqueue((call, result) -> {
                 if (result.isError()) {
                     callback.onResult(Result.error(result.getError()));
+                    return;
                 }
-                ConnectionResult connectionResult = result.getValue();
+                final ConnectionResult connectionResult = result.getValue();
                 // NOTE: android-sdk shouldn't support an external connection to google-fit
                 if (connectionResult instanceof ConnectionResult.Connected) {
-                    Result<Void> success = Result.value(null);
+                    final Result<Void> success = Result.value(null);
                     callback.onResult(success);
                 } else {
-                    FjuulException exception =
+                    final FjuulException exception =
                         new FjuulException("Something wrong with the google fit connection: still not established");
-                    Result<Void> error = Result.error(exception);
+                    final Result<Void> error = Result.error(exception);
                     callback.onResult(error);
                 }
             });
         } catch (ApiException exc) {
-            Result<Void> error = Result.error(new CommonException("ApiException: " + exc.getMessage()));
+            final Result<Void> error = Result.error(new CommonException("ApiException: " + exc.getMessage()));
             callback.onResult(error);
         }
     }

@@ -45,6 +45,7 @@ import org.robolectric.shadows.ShadowPackageManager;
 
 import com.fjuul.sdk.activitysources.entities.internal.GFDataManager;
 import com.fjuul.sdk.activitysources.entities.internal.GFDataManagerBuilder;
+import com.fjuul.sdk.activitysources.exceptions.ActivitySourcesApiExceptions.SourceAlreadyConnectedException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.ActivityRecognitionPermissionNotGrantedException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.FitnessPermissionsNotGrantedException;
@@ -367,6 +368,63 @@ public class GoogleFitActivitySourceTest {
                         exception.getMessage());
                     // should not interact with activity sources service
                     verifyNoInteractions(mockedActivitySourcesService);
+                }
+            }
+
+            @Test
+            public void handleGoogleSignInResult_whenOfflineAccessNotRequiredAndApiCallContainsError_bringsResultToCallback() {
+                try (MockedStatic<GoogleSignIn> mockGoogleSignIn = mockStatic(GoogleSignIn.class)) {
+                    context = ApplicationProvider.getApplicationContext();
+                    subject = new GoogleFitActivitySource(false,
+                        DUMMY_SERVER_CLIENT_ID,
+                        collectableFitnessMetrics,
+                        mockedActivitySourcesService,
+                        context,
+                        mockedGfDataManagerBuilder,
+                        testInlineExecutor);
+
+                    final Intent testIntent = new Intent();
+                    final Callback<Void> mockedCallback = mock(Callback.class);
+                    final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
+                    final Set<Scope> grantedScopes =
+                        Stream
+                            .concat(
+                                Stream.of(new Scope(Scopes.FITNESS_ACTIVITY_READ),
+                                    new Scope(Scopes.FITNESS_LOCATION_READ),
+                                    new Scope(Scopes.FITNESS_BODY_READ)),
+                                FitnessOptions.builder()
+                                    .addDataType(DataType.TYPE_HEART_RATE_BPM)
+                                    .build()
+                                    .getImpliedScopes()
+                                    .stream())
+                            .collect(Collectors.toSet());
+                    when(mockedGoogleSignInAccount.getGrantedScopes()).thenReturn(grantedScopes);
+                    when(mockedGoogleSignInAccount.getServerAuthCode()).thenReturn(null);
+                    mockGoogleSignIn.when(() -> GoogleSignIn.getSignedInAccountFromIntent(testIntent))
+                        .thenReturn(Tasks.forResult(mockedGoogleSignInAccount));
+
+                    final SourceAlreadyConnectedException apiCallError =
+                        new SourceAlreadyConnectedException("Conflict: tracker \"googlefit\" already connected");
+                    final ApiCall<ConnectionResult> mockedApiCall = mock(ApiCall.class);
+                    doAnswer(invocation -> {
+                        final ApiCallCallback<ConnectionResult> callback =
+                            invocation.getArgument(0, ApiCallCallback.class);
+                        callback.onResult(null, ApiCallResult.error(apiCallError));
+                        return null;
+                    }).when(mockedApiCall).enqueue(any());
+                    when(mockedActivitySourcesService.connect("googlefit", new HashMap<>())).thenReturn(mockedApiCall);
+
+                    subject.handleGoogleSignInResult(testIntent, mockedCallback);
+
+                    final ArgumentCaptor<Result<Void>> callbackResultCaptor = ArgumentCaptor.forClass(Result.class);
+                    verify(mockedCallback).onResult(callbackResultCaptor.capture());
+                    final Result<Void> callbackResult = callbackResultCaptor.getValue();
+                    assertTrue("callback should have unsuccessful result", callbackResult.isError());
+                    assertEquals("callback result should have the api call error",
+                        apiCallError,
+                        callbackResult.getError());
+                    // should ask the activity sources service to connect to google fit
+                    verify(mockedActivitySourcesService).connect("googlefit", new HashMap<>());
                 }
             }
 

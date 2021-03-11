@@ -69,7 +69,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             builder.healthKitConfig = HealthKitActivitySourceConfig(dataTypesToRead: [
                 .activeEnergyBurned, .heartRate,
                 .distanceCycling, .distanceWalkingRunning,
-                .stepCount, .workout,
+                .stepCount, .workout, .height, .weight
             ])
         }
 

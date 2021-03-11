@@ -3,7 +3,7 @@ import HealthKit
 
 /// Data types that availbale configure for HealthKitActivitySourceConfig
 public enum HealthKitConfigType {
-    case activeEnergyBurned, stepCount, distanceCycling, distanceWalkingRunning, heartRate, workout
+    case activeEnergyBurned, stepCount, distanceCycling, distanceWalkingRunning, heartRate, workout, weight, height
 }
 
 /// Config for the HealthKit ActivitySource. SDK consumers can configure which data types SDK will collect.
@@ -12,7 +12,7 @@ public struct HealthKitActivitySourceConfig {
     let syncUserEnteredData: Bool
     internal var syncDataFrom: Date?
 
-    public init(dataTypesToRead: [HealthKitConfigType] = [.activeEnergyBurned, .stepCount, .distanceCycling, .distanceWalkingRunning, .heartRate, .workout],
+    public init(dataTypesToRead: [HealthKitConfigType] = [.activeEnergyBurned, .stepCount, .distanceCycling, .distanceWalkingRunning, .heartRate, .workout, .weight, .height],
                 syncUserEnteredData: Bool = true) {
 
         self.dataTypesToRead = dataTypesToRead
@@ -46,6 +46,14 @@ public struct HealthKitActivitySourceConfig {
 
         if dataTypesToRead.contains(.workout) {
             dataTypes.insert(HKObjectType.workoutType())
+        }
+
+        if dataTypesToRead.contains(.weight), let bodyMass = HKObjectType.quantityType(forIdentifier: .bodyMass) {
+            dataTypes.insert(bodyMass)
+        }
+
+        if dataTypesToRead.contains(.height), let height = HKObjectType.quantityType(forIdentifier: .height) {
+            dataTypes.insert(height)
         }
 
         return dataTypes

@@ -8,6 +8,8 @@ enum HKAnchorKey {
     case distanceWalkingRunning
     case heartRate
     case workout
+    case bodyMass
+    case height
 }
 
 /// DataStructure for save and retrieve in persisted store HealthKit anchors
@@ -18,7 +20,10 @@ public struct HKAnchorData: Codable, Equatable {
     private var distanceWalkingRunningRaw: Data?
     private var heartRateRaw: Data?
     private var workoutRaw: Data?
+    private var bodyMassRaw: Data?
+    private var heightRaw: Data?
 
+    // swiftlint:disable function_body_length
     subscript(key: HKAnchorKey) -> HKQueryAnchor? {
         get {
             var valueRaw: Data?
@@ -36,6 +41,10 @@ public struct HKAnchorData: Codable, Equatable {
                 valueRaw = heartRateRaw
             case .workout:
                 valueRaw = workoutRaw
+            case .bodyMass:
+                valueRaw = bodyMassRaw
+            case .height:
+                valueRaw = heightRaw
             }
 
             if let value = valueRaw {
@@ -60,6 +69,10 @@ public struct HKAnchorData: Codable, Equatable {
                 heartRateRaw = newValueRaw
             case .workout:
                 workoutRaw = newValueRaw
+            case .bodyMass:
+                bodyMassRaw = newValueRaw
+            case .height:
+                heightRaw = newValueRaw
             }
         }
     }

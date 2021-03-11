@@ -14,6 +14,8 @@ protocol ActivitySourcesApiClient: AutoMockable {
     func connect(trackerValue: TrackerValue, completion: @escaping (Result<ConnectionResult, Error>) -> Void)
     func disconnect(activitySourceConnection: ActivitySourceConnection, completion: @escaping (Result<Void, Error>) -> Void)
     func getCurrentConnections(completion: @escaping (Result<[TrackerConnection], Error>) -> Void)
+    func sendHealthKitUserProfileData(data: HKUserProfileData, completion: @escaping (Result<Void, Error>) -> Void)
+    func sendHealthKitBatchData(data: HKBatchData, completion: @escaping (Result<Void, Error>) -> Void)
 }
 
 /// The `ActivitySourcesApi` encapsulates the management of a users activity sources.
@@ -93,6 +95,46 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
         apiClient.signedSession.request(url, method: .get, parameters: parameters).apiResponse { response in
             let decodedResponse = response
                 .tryMap { try Decoders.iso8601Full.decode([TrackerConnection].self, from: $0) }
+                .mapAPIError { _, jsonError in
+                    guard let jsonError = jsonError else { return nil }
+
+                    return .activitySourceConnectionFailure(reason: .generic(message: jsonError.message))
+                }
+            completion(decodedResponse.result)
+        }
+    }
+
+    internal func sendHealthKitBatchData(data: HKBatchData, completion: @escaping (Result<Void, Error>) -> Void) {
+        let path = "/\(apiClient.userToken)/healthkit"
+        guard let url = baseUrl?.appendingPathComponent(path) else {
+            return completion(.failure(FjuulError.invalidConfig))
+        }
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .formatted(DateFormatters.iso8601Full)
+        let parameterEncoder = JSONParameterEncoder(encoder: encoder)
+
+        apiClient.signedSession.request(url, method: .post, parameters: data, encoder: parameterEncoder).response { response in
+            switch response.result {
+            case .success:
+                return completion(.success(()))
+            case .failure(let err):
+                return completion(.failure(err))
+            }
+        }
+    }
+
+    internal func sendHealthKitUserProfileData(data: HKUserProfileData, completion: @escaping (Result<Void, Error>) -> Void) {
+        let path = "/\(apiClient.userToken)/healthkit/profile"
+        guard let url = baseUrl?.appendingPathComponent(path) else {
+            return completion(.failure(FjuulError.invalidConfig))
+        }
+
+        apiClient.signedSession.request(url, method: .put, parameters: data.asJsonEncodableDictionary(), encoding: JSONEncoding.default)
+            .apiResponse(emptyResponseCodes: [200]) { response in
+
+            let decodedResponse = response
+                .map { _ -> Void in () }
                 .mapAPIError { _, jsonError in
                     guard let jsonError = jsonError else { return nil }
 

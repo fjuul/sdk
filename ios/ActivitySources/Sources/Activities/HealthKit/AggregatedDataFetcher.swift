@@ -10,14 +10,14 @@ class AggregatedDataFetcher {
         return interval
     }
 
-    /// Fetch HKRequestData from HK by QuantityType
+    /// Fetch HKBatchData from HK by QuantityType
     /// - Parameters:
     ///   - type: healthkit QuantityType
     ///   - anchor: healthkit anchor
     ///   - predicateBuilder: instance of predicateBuilder
-    ///   - completion: HKRequestData and new healthkit anchor
-    static func fetch(type: HKQuantityType, anchor: HKQueryAnchor,
-                      predicateBuilder: HealthKitQueryPredicateBuilder, completion: @escaping (HKRequestData?, HKQueryAnchor?) -> Void) {
+    ///   - completion: HKBatchData and new healthkit anchor
+    static func fetch(type: HKQuantityType, anchor: HKQueryAnchor?,
+                      predicateBuilder: HealthKitQueryPredicateBuilder, completion: @escaping (HKBatchData?, HKQueryAnchor?) -> Void) {
 
         self.dirtyBatches(sampleType: type, anchor: anchor, predicate: predicateBuilder.samplePredicate()) { batchDates, newAnchor in
 
@@ -26,16 +26,16 @@ class AggregatedDataFetcher {
             if type == HKObjectType.quantityType(forIdentifier: .heartRate) {
                 self.fetchHrData(predicate: predicate, batchDates: batchDates) { results in
 
-                    let hkRequestData = HKRequestData.build(batches: results)
+                    let hkBatchData = HKBatchData.build(batches: results)
 
-                    completion(hkRequestData, newAnchor)
+                    completion(hkBatchData, newAnchor)
                 }
             } else {
                 self.fetchIntradayData(sampleType: type, predicate: predicate, batchDates: batchDates) { results in
 
-                    let hkRequestData = HKRequestData.build(quantityType: type, batches: results)
+                    let hkBatchData = HKBatchData.build(quantityType: type, batches: results)
 
-                    completion(hkRequestData, newAnchor)
+                    completion(hkBatchData, newAnchor)
                 }
             }
         }
@@ -47,7 +47,7 @@ class AggregatedDataFetcher {
     ///   - anchor: instance of HK anchor
     ///   - predicate: base predicate based on SDK config
     ///   - completion: Set of dirtyBacthes startDates and new HK anchor
-    private static func dirtyBatches(sampleType: HKSampleType, anchor: HKQueryAnchor, predicate: NSCompoundPredicate, completion: @escaping (Set<Date>, HKQueryAnchor?) -> Void) {
+    private static func dirtyBatches(sampleType: HKSampleType, anchor: HKQueryAnchor?, predicate: NSCompoundPredicate, completion: @escaping (Set<Date>, HKQueryAnchor?) -> Void) {
         var batchStartDates: Set<Date> = []
 
         let query = HKAnchoredObjectQuery(type: sampleType,

@@ -6,6 +6,7 @@ import OHHTTPStubsSwift
 import FjuulCore
 @testable import FjuulActivitySources
 
+// swiftlint:disable type_body_length
 final class ActivitySourcesApiTests: XCTestCase {
     var sut: ActivitySourcesApi!
     var apiClient: ApiClient!
@@ -218,5 +219,87 @@ final class ActivitySourcesApiTests: XCTestCase {
 
         //Then
         XCTAssertNotNil(apiClient.activitySourcesManager)
+    }
+
+    func testSendHealthKitBatchData() {
+        let e = expectation(description: "Request on send bacth data")
+
+        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/healthkit")) { request in
+            XCTAssertEqual(request.httpMethod, "POST")
+            let stubData = "".data(using: String.Encoding.utf8)
+            return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
+        }
+
+        let entries = [AggregatedDataPoint(value: 3.141592, start: Date())]
+        let batches = [BatchDataPoint(sourceBundleIdentifiers: ["com.apple.health.ADBA62D3-FDA1-413C-AA68-874E1D1A9DF1"], entries: entries)]
+        let batchData = HKBatchData(caloriesData: batches)
+
+        sut.sendHealthKitBatchData(data: batchData) { result in
+            switch result {
+            case .success:
+                e.fulfill()
+            case .failure:
+                XCTFail("Network level failure")
+            }
+        }
+        waitForExpectations(timeout: 5.0, handler: nil)
+    }
+
+    func testSendHealthKitUserProfileData() {
+        let e = expectation(description: "Request on send user profile data")
+
+        let createStub = stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/healthkit/profile")) { request in
+            XCTAssertEqual(request.httpMethod, "PUT")
+            let stubData = "".data(using: String.Encoding.utf8)
+            return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
+        }
+
+        let userProfileData = HKUserProfileData(height: 167.5, weight: 67)
+
+        sut.sendHealthKitUserProfileData(data: userProfileData) { result in
+            switch result {
+            case .success:
+                e.fulfill()
+            case .failure:
+                XCTFail("Network level failure")
+            }
+
+            HTTPStubs.removeStub(createStub)
+        }
+        waitForExpectations(timeout: 5.0, handler: nil)
+    }
+
+    func testSendHealthKitUserProfileDataWithValidationError() {
+        let e = expectation(description: "Request on send user profile data")
+
+        let createStub = stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/healthkit/profile")) { request in
+            XCTAssertEqual(request.httpMethod, "PUT")
+            let json = """
+            {
+                \"message\": \"Bad Request: Validation error\",
+                \"errors\": [
+                    {\"property\":\"weight\",\"constraints\": {\"isPositive\": \"weight must be a positive number\"}, \"value\":0},
+                    {\"property\":\"height\",\"constraints\": {\"isPositive\": \"height must be a positive number\"}, \"value\":0},
+                ]
+            }
+            """
+            let stubData = json.data(using: String.Encoding.utf8)
+            return HTTPStubsResponse(data: stubData!, statusCode: 400, headers: nil)
+        }
+
+        let userProfileData = HKUserProfileData(height: 0, weight: 0)
+
+        sut.sendHealthKitUserProfileData(data: userProfileData) { result in
+            switch result {
+            case .success:
+                XCTFail("Should be failed request")
+            case .failure(let fjuulError):
+                XCTAssertEqual(fjuulError.localizedDescription, "Bad Request: Validation error")
+                e.fulfill()
+            }
+
+            HTTPStubs.removeStub(createStub)
+        }
+        waitForExpectations(timeout: 5.0, handler: nil)
     }
 }

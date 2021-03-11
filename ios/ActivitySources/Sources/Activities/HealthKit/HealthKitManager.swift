@@ -89,7 +89,7 @@ class HealthKitManager: HealthKitManaging {
     ///   - endDate: End date
     ///   - configTypes: list of HealthKitConfigType
     ///   - completion: void or error
-    func sync(startDate: Date?, endDate: Date?, configTypes: [HealthKitConfigType], completion: @escaping (Result<Void, Error>) -> Void) {
+    func sync(startDate: Date? = nil, endDate: Date? = nil, configTypes: [HealthKitConfigType], completion: @escaping (Result<Void, Error>) -> Void) {
         let group = DispatchGroup()
         var error: Error?
 

@@ -11,6 +11,8 @@ extension HealthKitActivitySource {
     }
 }
 
+// swiftlint:disable file_length
+// swiftlint:disable type_body_length
 final class ActivitySourceHKTests: XCTestCase {
     var sut: HealthKitActivitySource!
     var activitySourcesApiClientMock: ActivitySourcesApiClientMock!
@@ -184,9 +186,9 @@ final class ActivitySourceHKTests: XCTestCase {
         wait(for: [promise], timeout: 5)
     }
 
-    func testSuccessSync() {
+    func testSuccessSyncIntradayMetrics() {
         // Given
-        let promise = expectation(description: "Success sync")
+        let promise = expectation(description: "Success sync intradayMetrics")
 
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
 
@@ -203,12 +205,16 @@ final class ActivitySourceHKTests: XCTestCase {
             }
         }
 
-        Perform(healthKitManagingMock, .sync(completion: .any, perform: { (completion) in
+        let startDate = Calendar.current.startOfDay(for: Date())
+        let endDate = Date()
+
+        Perform(healthKitManagingMock, .sync(startDate: .value(startDate), endDate: .value(endDate), configTypes: .value(HealthKitConfigType.intradayTypes),
+                                             completion: .any, perform: { (_, _, _, completion) in
             completion(.success(()))
         }))
 
         //When
-        sut.sync { result in
+        sut.syncIntradayMetrics(startDate: startDate, endDate: endDate) { result in
             switch result {
             case .success:
                 promise.fulfill()
@@ -219,9 +225,9 @@ final class ActivitySourceHKTests: XCTestCase {
         wait(for: [promise], timeout: 5)
     }
 
-    func testFailureSync() {
+    func testFailureSyncIntradayMetrics() {
         // Given
-        let promise = expectation(description: "Failure sync")
+        let promise = expectation(description: "Failure sync intradayMetrics")
 
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
 
@@ -238,16 +244,237 @@ final class ActivitySourceHKTests: XCTestCase {
             }
         }
 
-        Perform(healthKitManagingMock, .sync(completion: .any, perform: { (completion) in
+        let startDate = Calendar.current.startOfDay(for: Date())
+        let endDate = Date()
+
+        Perform(healthKitManagingMock, .sync(startDate: .value(startDate), endDate: .value(endDate), configTypes: .value(HealthKitConfigType.intradayTypes),
+                                             completion: .any, perform: { (_, _, _, completion) in
             completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
         }))
 
         //When
-        sut.sync { result in
+        sut.syncIntradayMetrics(startDate: startDate, endDate: endDate) { result in
             switch result {
             case .success:
                 XCTFail("Error: should not successfully sync")
             case .failure:
+                promise.fulfill()
+            }
+        }
+        wait(for: [promise], timeout: 5)
+    }
+
+    func testFailureSyncIntradayMetricsWithWrongType() {
+        // Given
+        let promise = expectation(description: "Failure sync intradayMetrics")
+
+        Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
+
+        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
+            completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
+        }))
+
+        sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
+            switch result {
+            case .success:
+                XCTFail("Error: should mount activitySource")
+            case .failure:
+                XCTAssert(true)
+            }
+        }
+
+        let startDate = Calendar.current.startOfDay(for: Date())
+        let endDate = Date()
+
+        //When
+        sut.syncIntradayMetrics(startDate: startDate, endDate: endDate, configTypes: [.workout]) { result in
+            switch result {
+            case .success:
+                XCTFail("Error: should not successfully sync")
+            case .failure(let error):
+                XCTAssertEqual(error.localizedDescription, FjuulError.activitySourceFailure(reason: .illegalHealthKitConfigType).localizedDescription)
+                promise.fulfill()
+            }
+        }
+        wait(for: [promise], timeout: 5)
+    }
+
+    func testSuccessSyncWorkouts() {
+        // Given
+        let promise = expectation(description: "Success sync workouts")
+
+        Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
+
+        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
+            completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
+        }))
+
+        sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
+            switch result {
+            case .success:
+                XCTFail("Error: should mount activitySource")
+            case .failure:
+                XCTAssert(true)
+            }
+        }
+
+        let startDate = Calendar.current.startOfDay(for: Date())
+        let endDate = Date()
+
+        Perform(healthKitManagingMock, .sync(startDate: .value(startDate), endDate: .value(endDate), configTypes: .value([.workout]),
+                                             completion: .any, perform: { (_, _, _, completion) in
+            completion(.success(()))
+        }))
+
+        //When
+        sut.syncWorkouts(startDate: startDate, endDate: endDate) { result in
+            switch result {
+            case .success:
+                promise.fulfill()
+            case .failure:
+                XCTFail("Error: should not fails")
+            }
+        }
+        wait(for: [promise], timeout: 5)
+    }
+
+    func testFailureSyncWorkouts() {
+        // Given
+        let promise = expectation(description: "Failure sync workouts")
+
+        Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
+
+        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
+            completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
+        }))
+
+        sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
+            switch result {
+            case .success:
+                XCTFail("Error: should mount activitySource")
+            case .failure:
+                XCTAssert(true)
+            }
+        }
+
+        let startDate = Calendar.current.startOfDay(for: Date())
+        let endDate = Date()
+
+        Perform(healthKitManagingMock, .sync(startDate: .value(startDate), endDate: .value(endDate), configTypes: .value([.workout]),
+                                             completion: .any, perform: { (_, _, _, completion) in
+            completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
+        }))
+
+        //When
+        sut.syncWorkouts(startDate: startDate, endDate: endDate) { result in
+            switch result {
+            case .success:
+                XCTFail("Error: should not successfully sync")
+            case .failure:
+                promise.fulfill()
+            }
+        }
+        wait(for: [promise], timeout: 5)
+    }
+
+    func testSuccessSyncProfile() {
+        // Given
+        let promise = expectation(description: "Success sync profile")
+
+        Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
+
+        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
+            completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
+        }))
+
+        sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
+            switch result {
+            case .success:
+                XCTFail("Error: should mount activitySource")
+            case .failure:
+                XCTAssert(true)
+            }
+        }
+
+        Perform(healthKitManagingMock, .sync(startDate: .value(nil), endDate: .value(nil), configTypes: .value(HealthKitConfigType.userProfileTypes),
+                                             completion: .any, perform: { (_, _, _, completion) in
+            completion(.success(()))
+        }))
+
+        //When
+        sut.syncProfile { result in
+            switch result {
+            case .success:
+                promise.fulfill()
+            case .failure:
+                XCTFail("Error: should not fails")
+            }
+        }
+        wait(for: [promise], timeout: 5)
+    }
+
+    func testFailureSyncProfile() {
+        // Given
+        let promise = expectation(description: "Failure sync profile")
+
+        Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
+
+        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
+            completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
+        }))
+
+        sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
+            switch result {
+            case .success:
+                XCTFail("Error: should mount activitySource")
+            case .failure:
+                XCTAssert(true)
+            }
+        }
+
+        Perform(healthKitManagingMock, .sync(startDate: .value(nil), endDate: .value(nil), configTypes: .value(HealthKitConfigType.userProfileTypes),
+                                             completion: .any, perform: { (_, _, _, completion) in
+            completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
+        }))
+
+        //When
+        sut.syncProfile { result in
+            switch result {
+            case .success:
+                XCTFail("Error: should not successfully sync")
+            case .failure:
+                promise.fulfill()
+            }
+        }
+        wait(for: [promise], timeout: 5)
+    }
+
+    func testFailureSyncProfileWithWrongType() {
+        // Given
+        let promise = expectation(description: "Failure sync profile")
+
+        Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
+
+        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
+            completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
+        }))
+
+        sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
+            switch result {
+            case .success:
+                XCTFail("Error: should mount activitySource")
+            case .failure:
+                XCTAssert(true)
+            }
+        }
+
+        //When
+        sut.syncProfile(configTypes: [.workout]) { result in
+            switch result {
+            case .success:
+                XCTFail("Error: should not successfully sync")
+            case .failure(let error):
+                XCTAssertEqual(error.localizedDescription, FjuulError.activitySourceFailure(reason: .illegalHealthKitConfigType).localizedDescription)
                 promise.fulfill()
             }
         }

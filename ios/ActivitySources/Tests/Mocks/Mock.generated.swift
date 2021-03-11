@@ -550,10 +550,10 @@ open class HealthKitManagingMock: HealthKitManaging, Mock, StaticMock {
 		perform?(`completion`)
     }
 
-    open func sync(completion: @escaping (Result<Void, Error>) -> Void) {
-        addInvocation(.m_sync__completion_completion(Parameter<(Result<Void, Error>) -> Void>.value(`completion`)))
-		let perform = methodPerformValue(.m_sync__completion_completion(Parameter<(Result<Void, Error>) -> Void>.value(`completion`))) as? (@escaping (Result<Void, Error>) -> Void) -> Void
-		perform?(`completion`)
+    open func sync(startDate: Date?, endDate: Date?, configTypes: [HealthKitConfigType], completion: @escaping (Result<Void, Error>) -> Void) {
+        addInvocation(.m_sync__startDate_startDateendDate_endDateconfigTypes_configTypescompletion_completion(Parameter<Date?>.value(`startDate`), Parameter<Date?>.value(`endDate`), Parameter<[HealthKitConfigType]>.value(`configTypes`), Parameter<(Result<Void, Error>) -> Void>.value(`completion`)))
+		let perform = methodPerformValue(.m_sync__startDate_startDateendDate_endDateconfigTypes_configTypescompletion_completion(Parameter<Date?>.value(`startDate`), Parameter<Date?>.value(`endDate`), Parameter<[HealthKitConfigType]>.value(`configTypes`), Parameter<(Result<Void, Error>) -> Void>.value(`completion`))) as? (Date?, Date?, [HealthKitConfigType], @escaping (Result<Void, Error>) -> Void) -> Void
+		perform?(`startDate`, `endDate`, `configTypes`, `completion`)
     }
 
     fileprivate enum StaticMethodType {
@@ -621,7 +621,7 @@ open class HealthKitManagingMock: HealthKitManaging, Mock, StaticMock {
     fileprivate enum MethodType {
         case m_mount__completion_completion(Parameter<(Result<Void, Error>) -> Void>)
         case m_disableAllBackgroundDelivery__completion_completion(Parameter<(Result<Void, Error>) -> Void>)
-        case m_sync__completion_completion(Parameter<(Result<Void, Error>) -> Void>)
+        case m_sync__startDate_startDateendDate_endDateconfigTypes_configTypescompletion_completion(Parameter<Date?>, Parameter<Date?>, Parameter<[HealthKitConfigType]>, Parameter<(Result<Void, Error>) -> Void>)
 
         static func compareParameters(lhs: MethodType, rhs: MethodType, matcher: Matcher) -> Matcher.ComparisonResult {
             switch (lhs, rhs) {
@@ -635,8 +635,11 @@ open class HealthKitManagingMock: HealthKitManaging, Mock, StaticMock {
 				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsCompletion, rhs: rhsCompletion, with: matcher), lhsCompletion, rhsCompletion, "completion"))
 				return Matcher.ComparisonResult(results)
 
-            case (.m_sync__completion_completion(let lhsCompletion), .m_sync__completion_completion(let rhsCompletion)):
+            case (.m_sync__startDate_startDateendDate_endDateconfigTypes_configTypescompletion_completion(let lhsStartdate, let lhsEnddate, let lhsConfigtypes, let lhsCompletion), .m_sync__startDate_startDateendDate_endDateconfigTypes_configTypescompletion_completion(let rhsStartdate, let rhsEnddate, let rhsConfigtypes, let rhsCompletion)):
 				var results: [Matcher.ParameterComparisonResult] = []
+				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsStartdate, rhs: rhsStartdate, with: matcher), lhsStartdate, rhsStartdate, "startDate"))
+				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsEnddate, rhs: rhsEnddate, with: matcher), lhsEnddate, rhsEnddate, "endDate"))
+				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsConfigtypes, rhs: rhsConfigtypes, with: matcher), lhsConfigtypes, rhsConfigtypes, "configTypes"))
 				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsCompletion, rhs: rhsCompletion, with: matcher), lhsCompletion, rhsCompletion, "completion"))
 				return Matcher.ComparisonResult(results)
             default: return .none
@@ -647,14 +650,14 @@ open class HealthKitManagingMock: HealthKitManaging, Mock, StaticMock {
             switch self {
             case let .m_mount__completion_completion(p0): return p0.intValue
             case let .m_disableAllBackgroundDelivery__completion_completion(p0): return p0.intValue
-            case let .m_sync__completion_completion(p0): return p0.intValue
+            case let .m_sync__startDate_startDateendDate_endDateconfigTypes_configTypescompletion_completion(p0, p1, p2, p3): return p0.intValue + p1.intValue + p2.intValue + p3.intValue
             }
         }
         func assertionName() -> String {
             switch self {
             case .m_mount__completion_completion: return ".mount(completion:)"
             case .m_disableAllBackgroundDelivery__completion_completion: return ".disableAllBackgroundDelivery(completion:)"
-            case .m_sync__completion_completion: return ".sync(completion:)"
+            case .m_sync__startDate_startDateendDate_endDateconfigTypes_configTypescompletion_completion: return ".sync(startDate:endDate:configTypes:completion:)"
             }
         }
     }
@@ -675,7 +678,7 @@ open class HealthKitManagingMock: HealthKitManaging, Mock, StaticMock {
 
         public static func mount(completion: Parameter<(Result<Void, Error>) -> Void>) -> Verify { return Verify(method: .m_mount__completion_completion(`completion`))}
         public static func disableAllBackgroundDelivery(completion: Parameter<(Result<Void, Error>) -> Void>) -> Verify { return Verify(method: .m_disableAllBackgroundDelivery__completion_completion(`completion`))}
-        public static func sync(completion: Parameter<(Result<Void, Error>) -> Void>) -> Verify { return Verify(method: .m_sync__completion_completion(`completion`))}
+        public static func sync(startDate: Parameter<Date?>, endDate: Parameter<Date?>, configTypes: Parameter<[HealthKitConfigType]>, completion: Parameter<(Result<Void, Error>) -> Void>) -> Verify { return Verify(method: .m_sync__startDate_startDateendDate_endDateconfigTypes_configTypescompletion_completion(`startDate`, `endDate`, `configTypes`, `completion`))}
     }
 
     public struct Perform {
@@ -688,8 +691,8 @@ open class HealthKitManagingMock: HealthKitManaging, Mock, StaticMock {
         public static func disableAllBackgroundDelivery(completion: Parameter<(Result<Void, Error>) -> Void>, perform: @escaping (@escaping (Result<Void, Error>) -> Void) -> Void) -> Perform {
             return Perform(method: .m_disableAllBackgroundDelivery__completion_completion(`completion`), performs: perform)
         }
-        public static func sync(completion: Parameter<(Result<Void, Error>) -> Void>, perform: @escaping (@escaping (Result<Void, Error>) -> Void) -> Void) -> Perform {
-            return Perform(method: .m_sync__completion_completion(`completion`), performs: perform)
+        public static func sync(startDate: Parameter<Date?>, endDate: Parameter<Date?>, configTypes: Parameter<[HealthKitConfigType]>, completion: Parameter<(Result<Void, Error>) -> Void>, perform: @escaping (Date?, Date?, [HealthKitConfigType], @escaping (Result<Void, Error>) -> Void) -> Void) -> Perform {
+            return Perform(method: .m_sync__startDate_startDateendDate_endDateconfigTypes_configTypescompletion_completion(`startDate`, `endDate`, `configTypes`, `completion`), performs: perform)
         }
     }
 

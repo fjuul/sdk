@@ -29,19 +29,6 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
         }
     }
 
-    /// Force initiate sync data
-    /// - Parameter completion: void or error
-    public func sync(completion: @escaping (Result<Void, Error>) -> Void) {
-        guard let healthKitManager = self.healthKitManager else {
-            completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
-            return
-        }
-
-        healthKitManager.sync(startDate: Date(), endDate: Date(), configTypes: []) { result in
-            completion(result)
-        }
-    }
-    
     /// Sync HealthKit intraday data based on types and dates.
     /// - Parameters:
     ///   - startDate: Start date
@@ -64,7 +51,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
             completion(result)
         }
     }
-    
+
     /// Sync HealthKit workouts data based on specific dates.
     /// - Parameters:
     ///   - startDate: Start date

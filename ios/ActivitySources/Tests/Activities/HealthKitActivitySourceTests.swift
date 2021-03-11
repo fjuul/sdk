@@ -192,10 +192,6 @@ final class ActivitySourceHKTests: XCTestCase {
 
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
 
-        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
-            completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
-        }))
-
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
@@ -225,15 +221,11 @@ final class ActivitySourceHKTests: XCTestCase {
         wait(for: [promise], timeout: 5)
     }
 
-    func testFailureSyncIntradayMetrics() {
+    func testFailureSyncIntradayMetricsWhenActivitySourceNotMounted() {
         // Given
         let promise = expectation(description: "Failure sync intradayMetrics")
 
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
-
-        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
-            completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
-        }))
 
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
@@ -264,15 +256,11 @@ final class ActivitySourceHKTests: XCTestCase {
         wait(for: [promise], timeout: 5)
     }
 
-    func testFailureSyncIntradayMetricsWithWrongType() {
+    func testFailureSyncIntradayMetricsWhenWrongType() {
         // Given
         let promise = expectation(description: "Failure sync intradayMetrics")
 
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
-
-        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
-            completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
-        }))
 
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
@@ -305,10 +293,6 @@ final class ActivitySourceHKTests: XCTestCase {
 
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
 
-        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
-            completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
-        }))
-
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
@@ -338,15 +322,11 @@ final class ActivitySourceHKTests: XCTestCase {
         wait(for: [promise], timeout: 5)
     }
 
-    func testFailureSyncWorkouts() {
+    func testFailureSyncWorkoutsWhenActivitySourceNotMounted() {
         // Given
         let promise = expectation(description: "Failure sync workouts")
 
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
-
-        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
-            completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
-        }))
 
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
@@ -383,10 +363,6 @@ final class ActivitySourceHKTests: XCTestCase {
 
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
 
-        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
-            completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
-        }))
-
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
@@ -413,15 +389,11 @@ final class ActivitySourceHKTests: XCTestCase {
         wait(for: [promise], timeout: 5)
     }
 
-    func testFailureSyncProfile() {
+    func testFailureSyncProfileWhenActivitySourceNotMounted() {
         // Given
         let promise = expectation(description: "Failure sync profile")
 
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
-
-        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
-            completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
-        }))
 
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
@@ -449,15 +421,11 @@ final class ActivitySourceHKTests: XCTestCase {
         wait(for: [promise], timeout: 5)
     }
 
-    func testFailureSyncProfileWithWrongType() {
+    func testFailureSyncProfileWhenhWrongType() {
         // Given
         let promise = expectation(description: "Failure sync profile")
 
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
-
-        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
-            completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
-        }))
 
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {

@@ -6,6 +6,7 @@ import OHHTTPStubsSwift
 import FjuulCore
 @testable import FjuulActivitySources
 
+// swiftlint:disable type_body_length
 final class ActivitySourcesApiTests: XCTestCase {
     var sut: ActivitySourcesApi!
     var apiClient: ApiClient!
@@ -247,7 +248,7 @@ final class ActivitySourcesApiTests: XCTestCase {
     func testSendHealthKitUserProfileData() {
         let e = expectation(description: "Request on send user profile data")
 
-        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/healthkit/profile")) { request in
+        let createStub = stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/healthkit/profile")) { request in
             XCTAssertEqual(request.httpMethod, "PUT")
             let stubData = "".data(using: String.Encoding.utf8)
             return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
@@ -262,6 +263,42 @@ final class ActivitySourcesApiTests: XCTestCase {
             case .failure:
                 XCTFail("Network level failure")
             }
+
+            HTTPStubs.removeStub(createStub)
+        }
+        waitForExpectations(timeout: 5.0, handler: nil)
+    }
+
+    func testSendHealthKitUserProfileDataWithValidationError() {
+        let e = expectation(description: "Request on send user profile data")
+
+        let createStub = stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/healthkit/profile")) { request in
+            XCTAssertEqual(request.httpMethod, "PUT")
+            let json = """
+            {
+                \"message\": \"Bad Request: Validation error\",
+                \"errors\": [
+                    {\"property\":\"weight\",\"constraints\": {\"isPositive\": \"weight must be a positive number\"}, \"value\":0},
+                    {\"property\":\"height\",\"constraints\": {\"isPositive\": \"height must be a positive number\"}, \"value\":0},
+                ]
+            }
+            """
+            let stubData = json.data(using: String.Encoding.utf8)
+            return HTTPStubsResponse(data: stubData!, statusCode: 400, headers: nil)
+        }
+
+        let userProfileData = HKUserProfileData(height: 0, weight: 0)
+
+        sut.sendHealthKitUserProfileData(data: userProfileData) { result in
+            switch result {
+            case .success:
+                XCTFail("Should be failed request")
+            case .failure(let fjuulError):
+                XCTAssertEqual(fjuulError.localizedDescription, "Bad Request: Validation error")
+                e.fulfill()
+            }
+
+            HTTPStubs.removeStub(createStub)
         }
         waitForExpectations(timeout: 5.0, handler: nil)
     }

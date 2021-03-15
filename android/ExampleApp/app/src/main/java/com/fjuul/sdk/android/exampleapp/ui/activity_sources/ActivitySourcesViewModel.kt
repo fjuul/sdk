@@ -58,7 +58,7 @@ class ActivitySourcesViewModel() : ViewModel() {
                 _errorMessage.postValue(result.error?.message)
                 return@disconnect
             }
-            _currentConnections.postValue(result.value)
+            _currentConnections.postValue(manager.current)
         }
     }
 
@@ -74,7 +74,7 @@ class ActivitySourcesViewModel() : ViewModel() {
                 _errorMessage.postValue(result.error?.message)
                 return@disconnect
             }
-            _currentConnections.postValue(result.value)
+            _currentConnections.postValue(manager.current)
         }
     }
 

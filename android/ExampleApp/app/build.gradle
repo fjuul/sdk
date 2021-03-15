@@ -14,7 +14,6 @@ android {
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
-        multiDexEnabled true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -83,10 +82,6 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
 
-    // Mutlidex
-    def multidex_version = "2.0.1"
-    implementation "androidx.multidex:multidex:$multidex_version"
-
     // Testing Navigation
     androidTestImplementation "androidx.navigation:navigation-testing:$nav_version"
 
@@ -94,7 +89,7 @@ dependencies {
     implementation 'com.fjuul.sdk:user:+'
     implementation 'com.fjuul.sdk:activitysources:+'
 
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.0.9'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
 
     testImplementation 'junit:junit:4.12'
     // Espresso

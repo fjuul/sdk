@@ -1,8 +1,8 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -70,7 +70,7 @@ public final class ActivitySourcesManager {
     @NonNull
     private final ActivitySourceResolver activitySourceResolver;
     @Nullable
-    private volatile List<TrackerConnection> currentConnections;
+    private volatile CopyOnWriteArrayList<TrackerConnection> currentConnections;
 
     @Nullable
     private volatile static ActivitySourcesManager instance;
@@ -80,7 +80,7 @@ public final class ActivitySourcesManager {
         @NonNull ActivitySourcesService sourcesService,
         @NonNull ActivitySourcesStateStore stateStore,
         @NonNull ActivitySourceResolver activitySourceResolver,
-        @Nullable List<TrackerConnection> connections) {
+        @Nullable CopyOnWriteArrayList<TrackerConnection> connections) {
         this.config = config;
         this.backgroundWorkManager = backgroundWorkManager;
         this.sourcesService = sourcesService;
@@ -121,6 +121,8 @@ public final class ActivitySourcesManager {
         @NonNull ActivitySourcesManagerConfig config) {
         final ActivitySourcesStateStore stateStore = new ActivitySourcesStateStore(client.getStorage());
         final List<TrackerConnection> storedConnections = stateStore.getConnections();
+        final CopyOnWriteArrayList<TrackerConnection> currentConnections =
+            storedConnections != null ? new CopyOnWriteArrayList<>(storedConnections) : null;
         final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
         final WorkManager workManager = WorkManager.getInstance(client.getAppContext());
         final ActivitySourceWorkScheduler scheduler = new ActivitySourceWorkScheduler(workManager,
@@ -137,8 +139,8 @@ public final class ActivitySourcesManager {
             sourcesService,
             stateStore,
             activitySourceResolver,
-            storedConnections);
-        newInstance.configureExternalStateByConnections(storedConnections);
+            currentConnections);
+        newInstance.configureExternalStateByConnections(currentConnections);
         instance = newInstance;
         Logger.get().d("initialized successfully (the previous one could be overridden)");
     }
@@ -249,14 +251,15 @@ public final class ActivitySourcesManager {
 
 
     /**
-     * Disconnects the activity source connection and refreshes current connection list. In the case of
+     * Disconnects the activity source connection and removes the connection from the current list. In the case of
      * GoogleFitActivitySource, this will revoke GoogleFit OAuth permissions.
      *
      * @param sourceConnection current connection to disconnect
-     * @param callback callback bringing the updated connection list
+     * @param callback callback bringing the operation result
      */
+    @SuppressLint("NewApi")
     public void disconnect(@NonNull final ActivitySourceConnection sourceConnection,
-        @NonNull final Callback<List<ActivitySourceConnection>> callback) {
+        @NonNull final Callback<Void> callback) {
         // TODO: validate if sourceConnection was already ended ?
         final Runnable runnableDisconnect = () -> {
             sourcesService.disconnect(sourceConnection).enqueue((call, apiCallResult) -> {
@@ -266,7 +269,14 @@ public final class ActivitySourcesManager {
                     }
                     return;
                 }
-                refreshCurrent(callback);
+                final TrackerConnection connectionToRemove = this.currentConnections.stream()
+                    .filter(connection -> connection.getId().equals(sourceConnection.getId()))
+                    .findFirst()
+                    .orElse(null);
+                this.currentConnections.remove(connectionToRemove);
+                this.stateStore.setConnections(this.currentConnections);
+                this.configureExternalStateByConnections(currentConnections);
+                callback.onResult(Result.value(null));
             });
         };
         final ActivitySource activitySource = sourceConnection.getActivitySource();
@@ -321,7 +331,8 @@ public final class ActivitySourcesManager {
                 }
                 return;
             }
-            final List<TrackerConnection> freshTrackerConnections = Arrays.asList(apiCallResult.getValue());
+            final CopyOnWriteArrayList<TrackerConnection> freshTrackerConnections =
+                new CopyOnWriteArrayList(apiCallResult.getValue());
             configureExternalStateByConnections(freshTrackerConnections);
             stateStore.setConnections(freshTrackerConnections);
             this.currentConnections = freshTrackerConnections;

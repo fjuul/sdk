@@ -1,7 +1,5 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -333,7 +331,8 @@ public final class ActivitySourcesManager {
                 }
                 return;
             }
-            final CopyOnWriteArrayList<TrackerConnection> freshTrackerConnections = new CopyOnWriteArrayList(apiCallResult.getValue());
+            final CopyOnWriteArrayList<TrackerConnection> freshTrackerConnections =
+                new CopyOnWriteArrayList(apiCallResult.getValue());
             configureExternalStateByConnections(freshTrackerConnections);
             stateStore.setConnections(freshTrackerConnections);
             this.currentConnections = freshTrackerConnections;

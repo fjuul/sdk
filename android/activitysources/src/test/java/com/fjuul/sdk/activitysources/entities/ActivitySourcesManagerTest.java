@@ -8,7 +8,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -297,8 +296,7 @@ public class ActivitySourcesManagerTest {
                 assertEquals("should set new connections in the subject",
                     Collections.emptyList(),
                     subject.getCurrent());
-                final ArgumentCaptor<Result<Void>> callbackResultCaptor =
-                    ArgumentCaptor.forClass(Result.class);
+                final ArgumentCaptor<Result<Void>> callbackResultCaptor = ArgumentCaptor.forClass(Result.class);
                 verify(mockedCallback).onResult(callbackResultCaptor.capture());
                 final Result<Void> callbackResult = callbackResultCaptor.getValue();
                 assertFalse("callback should have successful result", callbackResult.isError());
@@ -341,8 +339,7 @@ public class ActivitySourcesManagerTest {
                 assertEquals("should set new connections in the subject",
                     Collections.emptyList(),
                     subject.getCurrent());
-                final ArgumentCaptor<Result<Void>> callbackResultCaptor =
-                    ArgumentCaptor.forClass(Result.class);
+                final ArgumentCaptor<Result<Void>> callbackResultCaptor = ArgumentCaptor.forClass(Result.class);
                 verify(mockedCallback).onResult(callbackResultCaptor.capture());
                 final Result<Void> callbackResult = callbackResultCaptor.getValue();
                 assertFalse("callback should have successful result", callbackResult.isError());
@@ -388,7 +385,8 @@ public class ActivitySourcesManagerTest {
                     Date.from(Instant.parse("2020-09-10T10:20:00Z")),
                     null);
                 final CopyOnWriteArrayList<TrackerConnection> trackerConnections =
-                    Stream.of(fitbitTrackerConnection, healthkitTrackerConnection).collect(Collectors.toCollection(CopyOnWriteArrayList::new));
+                    Stream.of(fitbitTrackerConnection, healthkitTrackerConnection)
+                        .collect(Collectors.toCollection(CopyOnWriteArrayList::new));
                 subject = new ActivitySourcesManager(mockedConfig,
                     mockedBackgroundWorkManager,
                     mockedSourcesService,

@@ -333,10 +333,10 @@ public final class ActivitySourcesManager {
                 }
                 return;
             }
-            final List<TrackerConnection> freshTrackerConnections = Arrays.asList(apiCallResult.getValue());
+            final CopyOnWriteArrayList<TrackerConnection> freshTrackerConnections = new CopyOnWriteArrayList(apiCallResult.getValue());
             configureExternalStateByConnections(freshTrackerConnections);
             stateStore.setConnections(freshTrackerConnections);
-            this.currentConnections = new CopyOnWriteArrayList<>(freshTrackerConnections);
+            this.currentConnections = freshTrackerConnections;
             if (callback != null) {
                 final List<ActivitySourceConnection> sourceConnections =
                     convertTrackerConnectionsToActivitySourcesConnections(activitySourceResolver,

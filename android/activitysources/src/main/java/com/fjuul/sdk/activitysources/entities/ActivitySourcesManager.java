@@ -69,7 +69,7 @@ public final class ActivitySourcesManager {
     private final ActivitySourcesStateStore stateStore;
     @NonNull
     private final ActivitySourceResolver activitySourceResolver;
-    @Nullable
+    @NonNull
     private volatile CopyOnWriteArrayList<TrackerConnection> currentConnections;
 
     @Nullable
@@ -80,7 +80,7 @@ public final class ActivitySourcesManager {
         @NonNull ActivitySourcesService sourcesService,
         @NonNull ActivitySourcesStateStore stateStore,
         @NonNull ActivitySourceResolver activitySourceResolver,
-        @Nullable CopyOnWriteArrayList<TrackerConnection> connections) {
+        @NonNull CopyOnWriteArrayList<TrackerConnection> connections) {
         this.config = config;
         this.backgroundWorkManager = backgroundWorkManager;
         this.sourcesService = sourcesService;
@@ -121,8 +121,9 @@ public final class ActivitySourcesManager {
         @NonNull ActivitySourcesManagerConfig config) {
         final ActivitySourcesStateStore stateStore = new ActivitySourcesStateStore(client.getStorage());
         final List<TrackerConnection> storedConnections = stateStore.getConnections();
-        final CopyOnWriteArrayList<TrackerConnection> currentConnections =
-            storedConnections != null ? new CopyOnWriteArrayList<>(storedConnections) : null;
+        final CopyOnWriteArrayList<TrackerConnection> currentConnections = Optional.ofNullable(storedConnections)
+            .map(CopyOnWriteArrayList::new)
+            .orElse(new CopyOnWriteArrayList<>());
         final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
         final WorkManager workManager = WorkManager.getInstance(client.getAppContext());
         final ActivitySourceWorkScheduler scheduler = new ActivitySourceWorkScheduler(workManager,
@@ -299,22 +300,19 @@ public final class ActivitySourcesManager {
 
     /**
      * Returns a list of current connections of the user. The list with current user connections is automatically saved
-     * in the persistent storage. This method returns null only if there are not stored connections for the user yet.
-     * After the successful call of {@link #refreshCurrent} here will be at least an empty list.<br>
+     * in the persistent storage. If there isn't yet the persisted state of the current connections of the user then
+     * this method returns an empty list.<br>
      * NOTE: Although you can use singleton instances of the ActivitySource classes directly, it is recommended that you
      * should use this method to work with their instances (for example, GoogleFitActivitySource) by getting them with
      * the {@link ActivitySourceConnection#getActivitySource()} method.
      *
+     * @see #refreshCurrent(Callback)
      * @return list of activity source connections
      */
     @SuppressLint("NewApi")
-    @Nullable
+    @NonNull
     public List<ActivitySourceConnection> getCurrent() {
-        final List<TrackerConnection> currentConnections = this.currentConnections;
-        if (currentConnections == null) {
-            return null;
-        }
-        return convertTrackerConnectionsToActivitySourcesConnections(activitySourceResolver, currentConnections);
+        return convertTrackerConnectionsToActivitySourcesConnections(activitySourceResolver, this.currentConnections);
     }
 
     /**

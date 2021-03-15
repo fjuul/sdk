@@ -364,14 +364,14 @@ public class ActivitySourcesManagerTest {
             }
 
             @Test
-            public void getCurrent_whenNoCurrentConnections_returnsNull() {
+            public void getCurrent_whenNoCurrentConnections_returnsEmptyList() {
                 subject = new ActivitySourcesManager(mockedConfig,
                     mockedBackgroundWorkManager,
                     mockedSourcesService,
                     mockedStateStore,
                     activitySourceResolver,
-                    null);
-                assertNull(subject.getCurrent());
+                    new CopyOnWriteArrayList<>());
+                assertEquals(Collections.emptyList(), subject.getCurrent());
             }
 
             @Test
@@ -436,7 +436,7 @@ public class ActivitySourcesManagerTest {
                     mockedSourcesService,
                     mockedStateStore,
                     mockedActivitySourceResolver,
-                    null);
+                    new CopyOnWriteArrayList<>());
 
                 final Date connectionCreatedAt = Date.from(Instant.parse("2020-09-10T10:05:00Z"));
                 final TrackerConnection gfTrackerConnection =
@@ -487,7 +487,7 @@ public class ActivitySourcesManagerTest {
                     mockedSourcesService,
                     mockedStateStore,
                     mockedActivitySourceResolver,
-                    null);
+                    new CopyOnWriteArrayList<>());
 
                 final TrackerConnection polarTrackerConnection = new TrackerConnection("polar_c_id",
                     TrackerValue.POLAR.getValue(),
@@ -551,7 +551,7 @@ public class ActivitySourcesManagerTest {
                     mockedSourcesService,
                     mockedStateStore,
                     mockedActivitySourceResolver,
-                    null);
+                    new CopyOnWriteArrayList<>());
 
                 final ApiExceptions.BadRequestException apiCallException =
                     new ApiExceptions.BadRequestException("Bad request");

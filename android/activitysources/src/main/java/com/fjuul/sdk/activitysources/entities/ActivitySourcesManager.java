@@ -121,9 +121,8 @@ public final class ActivitySourcesManager {
         @NonNull ActivitySourcesManagerConfig config) {
         final ActivitySourcesStateStore stateStore = new ActivitySourcesStateStore(client.getStorage());
         final List<TrackerConnection> storedConnections = stateStore.getConnections();
-        final CopyOnWriteArrayList<TrackerConnection> currentConnections = Optional.ofNullable(storedConnections)
-            .map(CopyOnWriteArrayList::new)
-            .orElse(new CopyOnWriteArrayList<>());
+        final CopyOnWriteArrayList<TrackerConnection> currentConnections =
+            Optional.ofNullable(storedConnections).map(CopyOnWriteArrayList::new).orElse(new CopyOnWriteArrayList<>());
         final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
         final WorkManager workManager = WorkManager.getInstance(client.getAppContext());
         final ActivitySourceWorkScheduler scheduler = new ActivitySourceWorkScheduler(workManager,

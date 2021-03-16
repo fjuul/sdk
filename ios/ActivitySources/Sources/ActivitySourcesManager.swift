@@ -25,13 +25,14 @@ final public class ActivitySourcesManager {
     ///   - persistor: for persisted data like HealthKit anchors
     ///   - apiClient: configured client of ActivitySourcesApiClient
     ///   - config: Activity source config
-    internal init(userToken: String, persistor: Persistor, apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder) {
+    internal init(userToken: String, persistor: Persistor, apiClient: ActivitySourcesApiClient,
+                  config: ActivitySourceConfigBuilder) {
         self.apiClient = apiClient
         self.persistor = persistor
         self.config = config
         self.connectionsLocalStore = ActivitySourcesStateStore(userToken: userToken, persistor: persistor)
 
-        self.restoreState { _ in
+        self.restoreState { result in
             self.refreshCurrent { _ in
                 DataLogger.shared.info("Initial sync current connections")
             }

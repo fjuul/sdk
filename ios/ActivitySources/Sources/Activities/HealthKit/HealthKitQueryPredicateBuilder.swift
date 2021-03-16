@@ -63,12 +63,19 @@ class HealthKitQueryPredicateBuilder {
             calendar.startOfDay(for: calendar.date(byAdding: .day, value: -30, to: Date())!),
         ]
 
-        if let syncDataFrom = self.healthKitConfig.syncDataFrom {
-            dates.append(syncDataFrom)
-        }
-
         if let startDate = self.startDate {
             dates.append(startDate)
+        }
+        
+        if let forcedLowerDateBoundary = self.healthKitConfig.forcedLowerDateBoundaryForHealthKit {
+            dates.append(forcedLowerDateBoundary)
+
+            // Default (30 days) or forcedLowerDateBoundary
+            return dates.max()!
+        }
+
+        if let syncDataFrom = self.healthKitConfig.syncDataFrom {
+            dates.append(syncDataFrom)
         }
 
         return dates.max()!
@@ -77,10 +84,8 @@ class HealthKitQueryPredicateBuilder {
     /// End date of data collection.
     /// - Returns: Date
     private func dataСollectionEndAt() -> Date {
-        if let endDate = self.endDate {
-            return endDate
-        } else {
-            return Date()
-        }
+        guard let endDate = self.endDate else { return Date() }
+
+        return [self.dataСollectionStartAt(), endDate].max()!
     }
 }

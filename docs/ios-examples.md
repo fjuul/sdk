@@ -73,7 +73,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             ])
         }
 
-        apiClient.initActivitySourcesManager(config: config)
+        apiClient.initActivitySourcesManager(config: config) { result in
+            switch result {
+            case .success:
+                print("Successfully restored local state.")
+            case .failure(let err):
+                print("Error: \(err)")
+            }
+        }
     }
 }
 ```

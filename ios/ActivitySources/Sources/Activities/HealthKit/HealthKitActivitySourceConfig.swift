@@ -10,13 +10,16 @@ public enum HealthKitConfigType {
 public struct HealthKitActivitySourceConfig {
     private let dataTypesToRead: [HealthKitConfigType]
     let syncUserEnteredData: Bool
+    let forcedLowerDateBoundaryForHealthKit: Date?
     internal var syncDataFrom: Date?
 
+    // TODO: Update code after accept https://github.com/fjuul/sdk/pull/49, to use HealthKitConfigType.allCases
     public init(dataTypesToRead: [HealthKitConfigType] = [.activeEnergyBurned, .stepCount, .distanceCycling, .distanceWalkingRunning, .heartRate, .workout, .weight, .height],
-                syncUserEnteredData: Bool = true) {
+                syncUserEnteredData: Bool = true, forcedLowerDateBoundaryForHealthKit: Date? = nil) {
 
         self.dataTypesToRead = dataTypesToRead
         self.syncUserEnteredData = syncUserEnteredData
+        self.forcedLowerDateBoundaryForHealthKit = forcedLowerDateBoundaryForHealthKit
     }
 
     /// Types of HealthKit data that Fjull SDK consumer wishes to read from HealthKit based on SDK config.

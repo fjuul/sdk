@@ -421,7 +421,7 @@ final class ActivitySourceHKTests: XCTestCase {
         wait(for: [promise], timeout: 5)
     }
 
-    func testFailureSyncProfileWhenhWrongType() {
+    func testFailureSyncProfileWhenWrongType() {
         // Given
         let promise = expectation(description: "Failure sync profile")
 

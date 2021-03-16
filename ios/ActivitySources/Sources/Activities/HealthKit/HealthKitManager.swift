@@ -98,10 +98,7 @@ class HealthKitManager: HealthKitManaging {
         for sampleType in sampleTypes {
             group.enter()
 
-            // Semaphore need for wait async task and correct notice queue about finish async task
             self.serialQueue.async {
-                let semaphore = DispatchSemaphore(value: 0)
-
                 self.queryForUpdates(sampleType: sampleType, startDate: startDate, endDate: endDate) { data, newAnchor in
                     self.dataHandler(data) { result in
                         switch result {
@@ -115,13 +112,12 @@ class HealthKitManager: HealthKitManaging {
                             error = err
                         }
 
-                        semaphore.signal()
                         group.leave()
                     }
                 }
-
-                _ = semaphore.wait(timeout: .now() + 120)
             }
+
+           _ = group.wait(timeout: .now() + 120)
         }
 
         group.notify(queue: DispatchQueue.global()) {

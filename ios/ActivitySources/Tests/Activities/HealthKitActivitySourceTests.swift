@@ -243,7 +243,6 @@ final class ActivitySourceHKTests: XCTestCase {
             }
         }
 
-
         let startDate = Calendar.current.startOfDay(for: Date())
         let endDate = Date()
 
@@ -281,7 +280,6 @@ final class ActivitySourceHKTests: XCTestCase {
                 XCTFail("Error: should mount activitySource")
             }
         }
-
 
         let startDate = Calendar.current.startOfDay(for: Date())
         let endDate = Date()
@@ -386,7 +384,7 @@ final class ActivitySourceHKTests: XCTestCase {
         Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
             completion(.success(()))
         }))
-        
+
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:

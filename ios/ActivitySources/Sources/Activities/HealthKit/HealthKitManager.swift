@@ -10,7 +10,7 @@ protocol HealthKitManaging: AutoMockable {
     static func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Void, Error>) -> Void)
     func mount(completion: @escaping (Result<Void, Error>) -> Void)
     func disableAllBackgroundDelivery(completion: @escaping (Result<Void, Error>) -> Void)
-    func sync(completion: @escaping (Result<Void, Error>) -> Void)
+    func sync(startDate: Date?, endDate: Date?, configTypes: [HealthKitConfigType], completion: @escaping (Result<Void, Error>) -> Void)
 }
 
 /// Manager for work with Healthkit permissions and data.
@@ -57,7 +57,6 @@ class HealthKitManager: HealthKitManaging {
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
             return
         }
-
         HealthKitManager.requestAccess(config: self.config) { result in
             switch result {
             case .success:
@@ -83,31 +82,41 @@ class HealthKitManager: HealthKitManaging {
         }
     }
 
-    /// Force start sync
-    /// - Parameter completion: void or error
-    func sync(completion: @escaping (Result<Void, Error>) -> Void) {
+    /// Sync HealthKit data based on types and dates.
+    /// - Parameters:
+    ///   - startDate: Start date
+    ///   - endDate: End date
+    ///   - configTypes: list of HealthKitConfigType
+    ///   - completion: void or error
+    func sync(startDate: Date? = nil, endDate: Date? = nil, configTypes: [HealthKitConfigType], completion: @escaping (Result<Void, Error>) -> Void) {
         let group = DispatchGroup()
         var error: Error?
 
-        for sampleType in self.config.healthKitConfig.typesToRead {
+        let sampleTypes = configTypes.compactMap { configType in configType.sampleType }
+
+        for sampleType in sampleTypes {
             group.enter()
 
-            self.queryForUpdates(sampleType: sampleType) { data, newAnchor in
-                self.dataHandler(data) { result in
-                    switch result {
-                    case .success:
-                        do {
-                            try self.anchorStore.save(type: sampleType, newAnchor: newAnchor)
-                        } catch {
-                            DataLogger.shared.error("Unexpected error: \(error).")
+            self.serialQueue.async {
+                self.queryForUpdates(sampleType: sampleType, startDate: startDate, endDate: endDate) { data, newAnchor in
+                    self.dataHandler(data) { result in
+                        switch result {
+                        case .success:
+                            do {
+                                try self.anchorStore.save(type: sampleType, newAnchor: newAnchor)
+                            } catch {
+                                DataLogger.shared.error("Unexpected error: \(error).")
+                            }
+                        case .failure(let err):
+                            error = err
                         }
-                    case .failure(let err):
-                        error = err
-                    }
 
-                    group.leave()
+                        group.leave()
+                    }
                 }
             }
+
+           _ = group.wait(timeout: .now() + 120)
         }
 
         group.notify(queue: DispatchQueue.global()) {
@@ -171,14 +180,18 @@ class HealthKitManager: HealthKitManaging {
     ///
     /// - parameter sampleType: `HKObjectType` which has new data avilable.
     /// - parameter completion: HKBatchData? and the new anchore
-    private func queryForUpdates(sampleType: HKSampleType, completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
+    private func queryForUpdates(sampleType: HKSampleType, startDate: Date? = nil, endDate: Date? = nil,
+                                 completion: @escaping (_ data: HKRequestData?, _ newAnchor: HKQueryAnchor?) -> Void) {
         switch sampleType {
         case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned),
              HKObjectType.quantityType(forIdentifier: .distanceCycling),
              HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning),
              HKObjectType.quantityType(forIdentifier: .heartRate),
              HKObjectType.quantityType(forIdentifier: .stepCount):
-            self.fetchIntradayUpdates(sampleType: (sampleType as? HKQuantityType)!) { (data, newAnchor) in
+
+            let predicateBuilder = HealthKitQueryPredicateBuilder(healthKitConfig: self.config.healthKitConfig, startDate: startDate, endDate: endDate)
+
+            self.fetchIntradayUpdates(sampleType: (sampleType as? HKQuantityType)!, predicateBuilder: predicateBuilder) { (data, newAnchor) in
                 guard let data = data else {
                     completion(nil, newAnchor)
                     return
@@ -187,7 +200,9 @@ class HealthKitManager: HealthKitManaging {
                 completion(HKRequestData.batchData(data), newAnchor)
             }
         case HKObjectType.workoutType():
-            self.fetchWorkoutsUpdates { (data, newAnchor) in
+            let predicateBuilder = HealthKitQueryPredicateBuilder(healthKitConfig: self.config.healthKitConfig, startDate: startDate, endDate: endDate)
+
+            self.fetchWorkoutsUpdates(predicateBuilder: predicateBuilder) { (data, newAnchor) in
                 guard let data = data else {
                     completion(nil, newAnchor)
                     return
@@ -209,10 +224,9 @@ class HealthKitManager: HealthKitManaging {
         }
     }
 
-    private func fetchWorkoutsUpdates(completion: @escaping (_ data: HKBatchData?, _ newAnchor: HKQueryAnchor?) -> Void) {
+    private func fetchWorkoutsUpdates(predicateBuilder: HealthKitQueryPredicateBuilder, completion: @escaping (_ data: HKBatchData?, _ newAnchor: HKQueryAnchor?) -> Void) {
         do {
             let anchor = try self.anchorStore.get(type: HKObjectType.workoutType())
-            let predicateBuilder = HealthKitQueryPredicateBuilder(healthKitConfig: self.config.healthKitConfig)
 
             WorkoutFetcher.fetch(anchor: anchor, predicateBuilder: predicateBuilder) { requestData, newAnchor in
 
@@ -225,13 +239,11 @@ class HealthKitManager: HealthKitManaging {
         }
     }
 
-    private func fetchIntradayUpdates(sampleType: HKQuantityType, completion: @escaping (_ data: HKBatchData?, _ newAnchor: HKQueryAnchor?) -> Void) {
+    private func fetchIntradayUpdates(sampleType: HKQuantityType, predicateBuilder: HealthKitQueryPredicateBuilder,
+                                      completion: @escaping (_ data: HKBatchData?, _ newAnchor: HKQueryAnchor?) -> Void) {
         do {
             let anchor = try self.anchorStore.get(type: sampleType)
-            let predicateBuilder = HealthKitQueryPredicateBuilder(healthKitConfig: self.config.healthKitConfig)
-
             AggregatedDataFetcher.fetch(type: sampleType, anchor: anchor, predicateBuilder: predicateBuilder) { hkBatchData, newAnchor in
-
                 completion(hkBatchData, newAnchor)
             }
         } catch {

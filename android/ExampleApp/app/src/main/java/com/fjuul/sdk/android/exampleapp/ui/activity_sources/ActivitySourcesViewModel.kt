@@ -41,7 +41,7 @@ class ActivitySourcesViewModel() : ViewModel() {
 
     fun isConnected(activitySource: ActivitySource): Boolean {
         val manager = ActivitySourcesManager.getInstance()
-        return manager.current?.find { isMatchedConnectionWithActivitySource(it, activitySource) } != null
+        return manager.current.find { isMatchedConnectionWithActivitySource(it, activitySource) } != null
     }
 
     fun disconnect() {
@@ -64,7 +64,7 @@ class ActivitySourcesViewModel() : ViewModel() {
 
     fun disconnect(activitySource: ActivitySource) {
         val manager = ActivitySourcesManager.getInstance()
-        val sourceConnection = manager.current?.find { isMatchedConnectionWithActivitySource(it, activitySource) }
+        val sourceConnection = manager.current.find { isMatchedConnectionWithActivitySource(it, activitySource) }
         if (sourceConnection == null) {
             _errorMessage.value = "No appropriate source connection to disconnect"
             return

@@ -4,7 +4,6 @@ import static android.os.Looper.getMainLooper;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -364,14 +363,14 @@ public class ActivitySourcesManagerTest {
             }
 
             @Test
-            public void getCurrent_whenNoCurrentConnections_returnsNull() {
+            public void getCurrent_whenNoCurrentConnections_returnsEmptyList() {
                 subject = new ActivitySourcesManager(mockedConfig,
                     mockedBackgroundWorkManager,
                     mockedSourcesService,
                     mockedStateStore,
                     activitySourceResolver,
-                    null);
-                assertNull(subject.getCurrent());
+                    new CopyOnWriteArrayList<>());
+                assertEquals(Collections.emptyList(), subject.getCurrent());
             }
 
             @Test
@@ -436,7 +435,7 @@ public class ActivitySourcesManagerTest {
                     mockedSourcesService,
                     mockedStateStore,
                     mockedActivitySourceResolver,
-                    null);
+                    new CopyOnWriteArrayList<>());
 
                 final Date connectionCreatedAt = Date.from(Instant.parse("2020-09-10T10:05:00Z"));
                 final TrackerConnection gfTrackerConnection =
@@ -487,7 +486,7 @@ public class ActivitySourcesManagerTest {
                     mockedSourcesService,
                     mockedStateStore,
                     mockedActivitySourceResolver,
-                    null);
+                    new CopyOnWriteArrayList<>());
 
                 final TrackerConnection polarTrackerConnection = new TrackerConnection("polar_c_id",
                     TrackerValue.POLAR.getValue(),
@@ -551,7 +550,7 @@ public class ActivitySourcesManagerTest {
                     mockedSourcesService,
                     mockedStateStore,
                     mockedActivitySourceResolver,
-                    null);
+                    new CopyOnWriteArrayList<>());
 
                 final ApiExceptions.BadRequestException apiCallException =
                     new ApiExceptions.BadRequestException("Bad request");

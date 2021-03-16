@@ -43,7 +43,7 @@ class GFSyncViewModel : ViewModel() {
 
     fun runIntradaySync(calories: Boolean, hr: Boolean, steps: Boolean) {
         val manager = ActivitySourcesManager.getInstance()
-        val gfConnectionSource = manager.current?.find { connection -> connection.activitySource is GoogleFitActivitySource }
+        val gfConnectionSource = manager.current.find { connection -> connection.activitySource is GoogleFitActivitySource }
         if (gfConnectionSource == null) {
             _errorMessage.value = "No active Google Fit connection"
             return
@@ -73,7 +73,7 @@ class GFSyncViewModel : ViewModel() {
 
     fun runSessionsSync(minSessionDuration: Duration) {
         val manager = ActivitySourcesManager.getInstance()
-        val gfConnectionSource = manager.current?.find { connection -> connection.activitySource is GoogleFitActivitySource }
+        val gfConnectionSource = manager.current.find { connection -> connection.activitySource is GoogleFitActivitySource }
         if (gfConnectionSource == null) {
             _errorMessage.value = "No active Google Fit connection"
             return
@@ -101,7 +101,7 @@ class GFSyncViewModel : ViewModel() {
 
     fun runProfileSync(height: Boolean, weight: Boolean) {
         val manager = ActivitySourcesManager.getInstance()
-        val gfConnectionSource = manager.current?.find { connection -> connection.activitySource is GoogleFitActivitySource }
+        val gfConnectionSource = manager.current.find { connection -> connection.activitySource is GoogleFitActivitySource }
         if (gfConnectionSource == null) {
             _errorMessage.value = "No active Google Fit connection"
             return

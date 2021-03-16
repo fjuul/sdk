@@ -57,7 +57,6 @@ class HealthKitManager: HealthKitManaging {
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
             return
         }
-
         HealthKitManager.requestAccess(config: self.config) { result in
             switch result {
             case .success:

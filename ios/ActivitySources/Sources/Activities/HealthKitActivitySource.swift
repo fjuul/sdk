@@ -10,7 +10,7 @@ protocol MountableHealthKitActivitySource: MountableActivitySource {
 public final class HealthKitActivitySource: MountableHealthKitActivitySource {
     static public let shared = HealthKitActivitySource()
 
-    var apiClient: ActivitySourcesApiClient?
+    internal var apiClient: ActivitySourcesApiClient?
 
     public var trackerValue = TrackerValue.HEALTHKIT
 

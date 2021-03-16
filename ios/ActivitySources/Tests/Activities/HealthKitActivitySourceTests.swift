@@ -192,12 +192,16 @@ final class ActivitySourceHKTests: XCTestCase {
 
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
 
+        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
+            completion(.success(()))
+        }))
+
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
-                XCTFail("Error: should mount activitySource")
-            case .failure:
                 XCTAssert(true)
+            case .failure:
+                XCTFail("Error: should mount activitySource")
             }
         }
 
@@ -227,14 +231,18 @@ final class ActivitySourceHKTests: XCTestCase {
 
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
 
+        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
+            completion(.success(()))
+        }))
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
-                XCTFail("Error: should mount activitySource")
-            case .failure:
                 XCTAssert(true)
+            case .failure:
+                XCTFail("Error: should mount activitySource")
             }
         }
+
 
         let startDate = Calendar.current.startOfDay(for: Date())
         let endDate = Date()
@@ -262,14 +270,18 @@ final class ActivitySourceHKTests: XCTestCase {
 
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
 
+        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
+            completion(.success(()))
+        }))
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
-                XCTFail("Error: should mount activitySource")
-            case .failure:
                 XCTAssert(true)
+            case .failure:
+                XCTFail("Error: should mount activitySource")
             }
         }
+
 
         let startDate = Calendar.current.startOfDay(for: Date())
         let endDate = Date()
@@ -293,12 +305,16 @@ final class ActivitySourceHKTests: XCTestCase {
 
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
 
+        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
+            completion(.success(()))
+        }))
+
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
-                XCTFail("Error: should mount activitySource")
-            case .failure:
                 XCTAssert(true)
+            case .failure:
+                XCTFail("Error: should mount activitySource")
             }
         }
 
@@ -328,12 +344,16 @@ final class ActivitySourceHKTests: XCTestCase {
 
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
 
+        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
+            completion(.success(()))
+        }))
+
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
-                XCTFail("Error: should mount activitySource")
-            case .failure:
                 XCTAssert(true)
+            case .failure:
+                XCTFail("Error: should mount activitySource")
             }
         }
 
@@ -363,12 +383,16 @@ final class ActivitySourceHKTests: XCTestCase {
 
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
 
+        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
+            completion(.success(()))
+        }))
+        
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
-                XCTFail("Error: should mount activitySource")
-            case .failure:
                 XCTAssert(true)
+            case .failure:
+                XCTFail("Error: should mount activitySource")
             }
         }
 
@@ -395,12 +419,16 @@ final class ActivitySourceHKTests: XCTestCase {
 
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
 
+        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
+            completion(.success(()))
+        }))
+
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
-                XCTFail("Error: should mount activitySource")
-            case .failure:
                 XCTAssert(true)
+            case .failure:
+                XCTFail("Error: should mount activitySource")
             }
         }
 
@@ -427,12 +455,16 @@ final class ActivitySourceHKTests: XCTestCase {
 
         Given(healthKitManagerBuilderMock, .create(dataHandler: .any, willReturn: healthKitManagingMock))
 
+        Perform(healthKitManagingMock, .mount(completion: .any, perform: { (completion) in
+            completion(.success(()))
+        }))
+
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
-                XCTFail("Error: should mount activitySource")
-            case .failure:
                 XCTAssert(true)
+            case .failure:
+                XCTFail("Error: should mount activitySource")
             }
         }
 

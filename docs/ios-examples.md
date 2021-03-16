@@ -134,6 +134,58 @@ if connectionStatus.status {
 }
 ```
 
+Sync the user profile from HealthKit:
+```swift
+import FjuulActivitySources
+
+guard let activitySource = activitySourceConnection.activitySource as? HealthKitActivitySource else {
+    return
+}
+
+activitySource.syncProfile(configTypes: HealthKitConfigType.userProfileTypes) { result in
+    switch result {
+    case .success:
+        print("Success sync")
+    case .failure(let err): self.error = err
+    }
+}
+```
+
+Sync intraday data from HealthKit:
+``` swift
+import FjuulActivitySources
+
+guard let activitySource = activitySourceConnection.activitySource as? HealthKitActivitySource else {
+    return
+}
+
+activitySource.syncIntradayMetrics(startDate: self.fromDate, endDate: self.toDate, configTypes: HealthKitConfigType.intradayTypes) { result in
+    switch result {
+    case .success:
+        print("Success sync")
+    case .failure(let err): self.error = err
+    }
+}
+```
+
+
+Sync workouts data from HealthKit:
+``` swift
+import FjuulActivitySources
+
+guard let activitySource = activitySourceConnection.activitySource as? HealthKitActivitySource else {
+    return
+}
+
+activitySource.syncWorkouts(startDate: self.fromDate, endDate: self.toDate) { result in
+    switch result {
+    case .success:
+        print("Success sync")
+    case .failure(let err): self.error = err
+    }
+}
+```
+
 ## Analytics Module
 ### Get DailyStats
 

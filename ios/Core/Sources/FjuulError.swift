@@ -22,6 +22,7 @@ public enum FjuulError: Error {
         case wrongHealthKitObjectType
         case healthkitAuthorizationMissing
         case backgroundDeliveryNotDisabled
+        case illegalHealthKitConfigType
     }
 
     public enum AnalyticsFailureReason {

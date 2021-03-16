@@ -8,10 +8,29 @@ struct ActivitySourcesScreen: View {
         Form {
             Text("Current sources: \(activitySourceObserver.currentConnectionsLabels())")
             ForEach(self.activitySourceObserver.currentConnections, id: \.self.id) { activitySourceConnection in
-                Button(action: {
-                    self.activitySourceObserver.disconnect(activitySourceConnection: activitySourceConnection)
-                }) {
-                    Text("Disconnect \(activitySourceConnection.tracker.value)")
+                HStack {
+                    Button(action: {
+                        self.activitySourceObserver.disconnect(activitySourceConnection: activitySourceConnection)
+                    }) {
+                        Text("Disconnect \(activitySourceConnection.tracker.value)")
+                    }.buttonStyle(BorderlessButtonStyle())
+
+                    if activitySourceConnection.tracker == TrackerValue.HEALTHKIT {
+                        Spacer()
+
+                        ZStack {
+                            NavigationLink(destination: LazyView(SyncHealthKitActivitySource())) {
+                                EmptyView()
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .opacity(0.0)
+
+                            HStack {
+                                Spacer()
+                                Text("Sync")
+                            }
+                        }
+                    }
                 }
             }
 

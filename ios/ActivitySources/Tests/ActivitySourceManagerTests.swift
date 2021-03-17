@@ -42,6 +42,8 @@ final class ActivitySourcesManagerTests: XCTestCase {
 
     func testInitializeWithExistsStoredActyvityConnections() {
         // Given
+        let promise = expectation(description: "Init ActivitySourcesManager")
+
         let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
 
         let trackerConnections = [
@@ -53,9 +55,19 @@ final class ActivitySourcesManagerTests: XCTestCase {
         connectionsLocalStore.connections = trackerConnections
 
         // When
-        let sut = ActivitySourcesManager(userToken: client.userToken, persistor: persistor, apiClient: apiClientMock, config: config)
+        let sut = ActivitySourcesManager(userToken: client.userToken, persistor: persistor, apiClient: apiClientMock, config: config) { result in
+
+            switch result {
+            case .success:
+                promise.fulfill()
+            case .failure(let err):
+                XCTFail("Error on init ActivitySourcesManager \(err)")
+            }
+        }
 
         // Then
+        wait(for: [promise], timeout: 5)
+
         XCTAssertNotNil(sut.apiClient)
         XCTAssertNotNil(sut.config)
         XCTAssert(!sut.mountedActivitySourceConnections.isEmpty, "Should mount ActivitySourceConnections stored in local store")

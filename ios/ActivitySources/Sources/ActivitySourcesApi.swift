@@ -165,12 +165,14 @@ public extension ApiClient {
     /// Should be Initialize once as soon as possible after up app, for setup backgroundDelivery for the HealthKit to fetch intraday data,
     /// for example in AppDelegate (didFinishLaunchingWithOptions)
     /// - Parameter config: ActivitySourceConfigBuilder config with desire config for list of Data types for sync.
-    func initActivitySourcesManager(config: ActivitySourceConfigBuilder) {
+    /// - Parameter completion: Optional completion block will be called when the local state is restored
+    func initActivitySourcesManager(config: ActivitySourceConfigBuilder, completion: ((Result<Void, Error>) -> Void)? = nil) {
         self.activitySourcesManager = ActivitySourcesManager(
             userToken: self.userToken,
             persistor: self.persistor,
             apiClient: ActivitySourcesApi(apiClient: self),
-            config: config
+            config: config,
+            completion: completion
         )
     }
 

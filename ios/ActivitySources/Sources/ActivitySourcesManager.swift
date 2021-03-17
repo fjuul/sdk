@@ -25,16 +25,31 @@ final public class ActivitySourcesManager {
     ///   - persistor: for persisted data like HealthKit anchors
     ///   - apiClient: configured client of ActivitySourcesApiClient
     ///   - config: Activity source config
+<<<<<<< HEAD
     internal init(userToken: String, persistor: Persistor, apiClient: ActivitySourcesApiClient,
                   config: ActivitySourceConfigBuilder) {
+=======
+    ///   - completion: Optional completion block will be called when the local state is restored
+    internal init(userToken: String,
+                  persistor: Persistor,
+                  apiClient: ActivitySourcesApiClient,
+                  config: ActivitySourceConfigBuilder,
+                  completion: ((Result<Void, Error>) -> Void)? = nil) {
+
+>>>>>>> master
         self.apiClient = apiClient
         self.persistor = persistor
         self.config = config
         self.connectionsLocalStore = ActivitySourcesStateStore(userToken: userToken, persistor: persistor)
 
         self.restoreState { result in
+<<<<<<< HEAD
             self.refreshCurrent { _ in
                 DataLogger.shared.info("Initial sync current connections")
+=======
+            if let completion = completion {
+                completion(result)
+>>>>>>> master
             }
         }
     }

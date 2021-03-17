@@ -221,6 +221,28 @@ final class ActivitySourcesApiTests: XCTestCase {
         XCTAssertNotNil(apiClient.activitySourcesManager)
     }
 
+    func testInitActivitySourcesManagerWithCompletion() {
+        // Given
+        let config = ActivitySourceConfigBuilder { builder in
+            builder.healthKitConfig = HealthKitActivitySourceConfig(dataTypesToRead: [.stepCount, .workout])
+        }
+        // Check that it's nil before initialize
+        XCTAssertNil(apiClient.activitySourcesManager)
+
+        // When
+        apiClient.initActivitySourcesManager(config: config) { result in
+            switch result {
+            case .success:
+                XCTAssert(true)
+            case .failure(let err):
+                XCTFail("Error on init ActivitySourcesManager \(err)")
+            }
+        }
+
+        //Then
+        XCTAssertNotNil(apiClient.activitySourcesManager)
+    }
+
     func testSendHealthKitBatchData() {
         let e = expectation(description: "Request on send bacth data")
 

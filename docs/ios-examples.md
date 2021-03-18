@@ -128,7 +128,7 @@ For external trackers like Polar, Garmin, Suunto, the ConnectionResult will expo
 import FjuulActivitySources
 
 let connectionStatus = ExternalAuthenticationFlowHandler.handle(url: url)
-if connectionStatus.status {
+if connectionStatus.success {
     // Update activitySource list
     apiClient.activitySourcesManager?.refreshCurrent { result in
         switch result {

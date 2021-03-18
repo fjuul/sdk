@@ -70,7 +70,6 @@ class HealthKitQueryPredicateBuilder {
         if let forcedLowerDateBoundary = self.healthKitConfig.forcedLowerDateBoundaryForHealthKit {
             dates.append(forcedLowerDateBoundary)
 
-            // Default (30 days) or forcedLowerDateBoundary
             return dates.max()!
         }
 

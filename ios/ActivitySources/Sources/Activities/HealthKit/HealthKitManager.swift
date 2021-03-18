@@ -60,7 +60,9 @@ class HealthKitManager: HealthKitManaging {
         HealthKitManager.requestAccess(config: self.config) { result in
             switch result {
             case .success:
-                self.setUpBackgroundDeliveryForDataTypes()
+                if self.config.healthKitConfig.disableBackgroundDelivery == false {
+                    self.setUpBackgroundDeliveryForDataTypes()
+                }
                 completion(.success(()))
             case .failure(let err):
                 completion(.failure(err))

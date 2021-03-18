@@ -29,15 +29,18 @@ public struct HealthKitActivitySourceConfig {
     private let dataTypesToRead: [HealthKitConfigType]
     let syncUserEnteredData: Bool
     let forcedLowerDateBoundaryForHealthKit: Date?
+    let disableBackgroundDelivery: Bool
     internal var syncDataFrom: Date?
 
     public init(dataTypesToRead: [HealthKitConfigType] = HealthKitConfigType.allCases,
                 syncUserEnteredData: Bool = true,
-                forcedLowerDateBoundaryForHealthKit: Date? = nil) {
+                forcedLowerDateBoundaryForHealthKit: Date? = nil,
+                disableBackgroundDelivery: Bool = false) {
 
         self.dataTypesToRead = dataTypesToRead
         self.syncUserEnteredData = syncUserEnteredData
         self.forcedLowerDateBoundaryForHealthKit = forcedLowerDateBoundaryForHealthKit
+        self.disableBackgroundDelivery = disableBackgroundDelivery
     }
 
     /// Types of HealthKit data that Fjull SDK consumer wishes to read from HealthKit based on SDK config.

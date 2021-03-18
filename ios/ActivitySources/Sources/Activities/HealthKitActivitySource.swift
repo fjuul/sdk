@@ -67,7 +67,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
         }
     }
 
-    /// Sync latest known user metrics (weight or height)
+    /// Sync latest known user metrics (weight or height).
     /// - Parameters:
     ///   - configTypes: List of HealthKit types
     ///   - completion: void or error
@@ -88,7 +88,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
         }
     }
 
-    /// Setup Healthkit backgroundDelivery for fetch desired data types based on ActivitySourceConfig
+    /// Setup Healthkit backgroundDelivery for fetch desired data types based on ActivitySourceConfig.
     /// - Parameters:
     ///   - apiClient: instance of ActivitySourcesApiClient
     ///   - config: instance of ActivitySourceConfigBuilder
@@ -121,7 +121,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
         }
     }
 
-    /// Handler for new data from backgroundDelivery or manual sync
+    /// Handler for new data from backgroundDelivery or manual sync.
     /// - Parameters:
     ///   - requestData: instance of HKBatchData
     ///   - completion: void or error

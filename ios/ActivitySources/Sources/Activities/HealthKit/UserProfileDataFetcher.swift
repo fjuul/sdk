@@ -4,7 +4,7 @@ import FjuulCore
 
 /// Fetch height and weight data from HK
 class UserProfileDataFetcher {
-    /// Fetch latest know value from HealthKit. If no anchor use HKSampleQuery for fetch only 1 last value, otherwise use HKAnchoredObjectQuery
+    /// Fetch latest know value from HealthKit. If no anchor use HKSampleQuery for fetch only 1 last value, otherwise use HKAnchoredObjectQuery.
     /// - Parameters:
     ///   - type: sample type (bodyMass or height)
     ///   - anchor: HKQueryAnchor
@@ -32,7 +32,7 @@ class UserProfileDataFetcher {
         }
     }
 
-    /// Fetch latest Sample from HealthKit by query with anchor
+    /// Fetch latest Sample from HealthKit by query with anchor.
     /// - Parameters:
     ///   - type: HKSampleType
     ///   - anchor: anchor
@@ -64,7 +64,7 @@ class UserProfileDataFetcher {
         HealthKitManager.healthStore.execute(query)
     }
 
-    /// Fetch latest Sample from HealthKit
+    /// Fetch latest Sample from HealthKit.
     /// - Parameters:
     ///   - type: HKSampleType
     ///   - completion: optional HKQuantitySample

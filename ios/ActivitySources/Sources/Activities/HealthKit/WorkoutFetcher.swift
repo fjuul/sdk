@@ -3,7 +3,7 @@ import HealthKit
 
 /// Fetch workouts and related samples from HK
 class WorkoutFetcher {
-    /// Fetch new HK workouts
+    /// Fetch new HK workouts.
     /// - Parameters:
     ///   - anchor: healthkit anchor
     ///   - predicateBuilder: instance of predicateBuilder
@@ -63,7 +63,7 @@ class WorkoutFetcher {
 
     // swiftlint:disable cyclomatic_complexity
     // swiftlint:disable function_body_length
-    /// Assign related samples to the workout
+    /// Assign related samples to the workout.
     /// - Parameters:
     ///   - item: instance of HKWorkout
     ///   - workout: instance of WorkoutDataPoint

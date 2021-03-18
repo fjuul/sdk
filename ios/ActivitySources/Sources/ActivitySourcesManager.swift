@@ -19,7 +19,8 @@ final public class ActivitySourcesManager {
     private let persistor: Persistor
     private let connectionsLocalStore: ActivitySourcesStateStore
 
-    /// Internal initializer
+    /// Internal initializer.
+    ///
     /// - Parameters:
     ///   - userToken: User token
     ///   - persistor: for persisted data like HealthKit anchors
@@ -45,7 +46,8 @@ final public class ActivitySourcesManager {
     }
 
     /// Connect specified ActivitySource.
-    /// ConnectionResult can have 2 states:
+    /// 
+    /// # ConnectionResult can have 2 states:
     /// 1) connected: it will contain TrackerConnection data
     /// 2) authenticationUrl: it will contain authenticationUrl, the SDK consumer needs to open that URL in the browser to allow the user to finish
     /// authentication (Garmin, Polar, etc...)
@@ -76,7 +78,7 @@ final public class ActivitySourcesManager {
     }
 
     /// Disconnects the activity source connection and refreshes current connection list.
-    /// In the case of HealthKitActivitySource it will disable backgroundDelivery
+    /// In the case of HealthKitActivitySource it will disable backgroundDelivery.
     /// - Parameters:
     ///   - activitySourceConnection: instance of ActivitySourceConnection
     ///   - completion: with void or error

@@ -12,7 +12,7 @@ struct HKBatchData: Encodable {
 }
 
 extension HKBatchData {
-    /// Builds HKBatchData from list of BatchDataPoint
+    /// Builds HKBatchData from list of BatchDataPoint.
     /// - Parameters:
     ///   - quantityType: Healthkit HKQuantityType
     ///   - batches: collections of BatchDataPoint's
@@ -36,7 +36,7 @@ extension HKBatchData {
         }
     }
 
-    /// Builds HKBatchData from list of HrBatchDataPoint
+    /// Builds HKBatchData from list of HrBatchDataPoint.
     /// - Parameters:
     ///   - batches: collections of HrBatchDataPoint's
     /// - Returns: instance of HKBatchData or nil

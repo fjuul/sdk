@@ -10,7 +10,7 @@ class AggregatedDataFetcher {
         return interval
     }
 
-    /// Fetch HKBatchData from HK by QuantityType
+    /// Fetch HKBatchData from HK by QuantityType.
     /// - Parameters:
     ///   - type: healthkit QuantityType
     ///   - anchor: healthkit anchor
@@ -41,7 +41,7 @@ class AggregatedDataFetcher {
         }
     }
 
-    /// Detect dirty batches by make query to the HKAnchoredObjectQuery and fetch Date from the new entries in HK
+    /// Detect dirty batches by make query to the HKAnchoredObjectQuery and fetch Date from the new entries in HK.
     /// - Parameters:
     ///   - sampleType: HK sample type
     ///   - anchor: instance of HK anchor

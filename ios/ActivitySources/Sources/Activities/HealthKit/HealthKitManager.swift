@@ -60,6 +60,7 @@ class HealthKitManager: HealthKitManaging {
 
         guard self.config.healthKitConfig.enableBackgroundDelivery else {
             completion(.success(()))
+            return
         }
 
         HealthKitManager.requestAccess(config: self.config) { result in

@@ -5,8 +5,6 @@ import FjuulCore
 @testable import FjuulActivitySources
 
 final class HealthKitQueryPredicateBuilderTests: XCTestCase {
-    var sut: HealthKitQueryPredicateBuilder!
-
     var healthKitActivitySourceConfig = HealthKitActivitySourceConfig(dataTypesToRead: [
         .heartRate, .activeEnergyBurned, .distanceCycling,
         .distanceWalkingRunning, .stepCount, .workout,

@@ -36,10 +36,10 @@ public struct HealthKitActivitySourceConfig {
     /// Config for HealthKit data sync.
     /// - Parameters:
     ///   - dataTypesToRead: List of data types for read from HealthKit.
-    ///   - syncUserEnteredData: Enable/Disable sync from HealthKit user manual intered data.
+    ///   - syncUserEnteredData: Enable/Disable sync from HealthKit user manual intered data (default: true).
     ///   - forcedLowerDateBoundaryForHealthKit: Sets the forced lower date boundary from which syncing will work from. It overrides the default limit which is dictated by the
     ///   creation date of the connection to HealthKit. This method was added only for internal purposes. Do not use it!
-    ///   - enableBackgroundDelivery: Enable/Disable backgroundDelivery. By default it's enabled.
+    ///   - enableBackgroundDelivery: Enable/Disable backgroundDelivery (default: true).
     public init(dataTypesToRead: [HealthKitConfigType] = HealthKitConfigType.allCases,
                 syncUserEnteredData: Bool = true,
                 forcedLowerDateBoundaryForHealthKit: Date? = nil,

@@ -60,7 +60,7 @@ class HealthKitManager: HealthKitManaging {
         HealthKitManager.requestAccess(config: self.config) { result in
             switch result {
             case .success:
-                if self.config.healthKitConfig.disableBackgroundDelivery == false {
+                if self.config.healthKitConfig.enableBackgroundDelivery {
                     self.setUpBackgroundDeliveryForDataTypes()
                 }
                 completion(.success(()))

@@ -56,19 +56,25 @@ class HealthKitQueryPredicateBuilder {
 
     /// Start date of data collection. Maximum is 30 days back.
     /// - Returns: Date
-    private func dataСollectionStartAt() -> Date {
+    internal func dataСollectionStartAt() -> Date {
         let calendar = Calendar.current
         var dates = [
             // Default date for prevent sync more than 30 days back
             calendar.startOfDay(for: calendar.date(byAdding: .day, value: -30, to: Date())!),
         ]
 
-        if let syncDataFrom = self.healthKitConfig.syncDataFrom {
-            dates.append(syncDataFrom)
-        }
-
         if let startDate = self.startDate {
             dates.append(startDate)
+        }
+
+        if let forcedLowerDateBoundary = self.healthKitConfig.forcedLowerDateBoundaryForHealthKit {
+            dates.append(forcedLowerDateBoundary)
+
+            return dates.max()!
+        }
+
+        if let syncDataFrom = self.healthKitConfig.syncDataFrom {
+            dates.append(syncDataFrom)
         }
 
         return dates.max()!
@@ -76,11 +82,9 @@ class HealthKitQueryPredicateBuilder {
 
     /// End date of data collection.
     /// - Returns: Date
-    private func dataСollectionEndAt() -> Date {
-        if let endDate = self.endDate {
-            return endDate
-        } else {
-            return Date()
-        }
+    internal func dataСollectionEndAt() -> Date {
+        guard let endDate = self.endDate else { return Date() }
+
+        return [self.dataСollectionStartAt(), endDate].max()!
     }
 }

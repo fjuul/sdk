@@ -33,7 +33,7 @@ public class ApiClient {
     }
 
     /// Deletes the stored user file of the shared preferences created internally for persisting the state of Fjuul SDK.
-    /// Ideally, you should not use this method until you actually decide to clear all user data, as the repeated storage clearance will lead to data
+    /// Ideally, you should not use this method until you actually decide to clear all user data, as the repeated storage clearance will lead to data.
     /// being unnecessarily uploaded/downloaded multiple times.
     /// - Parameters:
     ///   - persistor: instance of Persistor

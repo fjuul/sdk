@@ -34,7 +34,7 @@ public class DateUtils {
         return Calendar.current.date(byAdding: .second, value: -1, to: newDate)
     }
 
-    /// Prepare Set with hours starts from beginning of hour
+    /// Prepare Set with hours starts from beginning of hour.
     /// - Parameters:
     ///   - startDate: start Date
     ///   - endDate: end Date

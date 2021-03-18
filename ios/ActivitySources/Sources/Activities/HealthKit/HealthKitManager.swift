@@ -57,12 +57,15 @@ class HealthKitManager: HealthKitManaging {
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
             return
         }
+
+        guard self.config.healthKitConfig.enableBackgroundDelivery else {
+            completion(.success(()))
+        }
+
         HealthKitManager.requestAccess(config: self.config) { result in
             switch result {
             case .success:
-                if self.config.healthKitConfig.enableBackgroundDelivery {
-                    self.setUpBackgroundDeliveryForDataTypes()
-                }
+                self.setUpBackgroundDeliveryForDataTypes()
                 completion(.success(()))
             case .failure(let err):
                 completion(.failure(err))

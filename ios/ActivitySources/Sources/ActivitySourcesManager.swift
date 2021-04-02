@@ -112,8 +112,14 @@ final public class ActivitySourcesManager {
                 let activitySourceConnections = connections.compactMap { connection in
                     return ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: connection)
                 }
-                self.refreshCurrentConnections(connections: connections)
-                completion(.success(activitySourceConnections))
+                self.refreshCurrentConnections(connections: connections) { result in
+                    switch result {
+                    case .success:
+                        completion(.success(activitySourceConnections))
+                    case .failure(let err):
+                        completion(.failure(err))
+                    }
+                }
             case .failure(let err):
                 completion(.failure(err))
             }
@@ -151,21 +157,55 @@ final public class ActivitySourcesManager {
         }
     }
 
-    private func refreshCurrentConnections(connections: [TrackerConnection]) {
+    private func refreshCurrentConnections(connections: [TrackerConnection], completion: @escaping (Result<Void, Error>) -> Void) {
+        let group = DispatchGroup()
+        var error: Error?
+
         // Mount new trackers
-        self.mountByConnections(connections: connections)
+        group.enter()
+        self.mountByConnections(connections: connections) { result in
+            switch result {
+            case .success: break
+            case .failure(let err):
+                error = err
+            }
+
+            group.leave()
+        }
 
         // Unmount not relevant Trackers
-        self.unmountByConnections(connections: connections)
+        group.enter()
+        self.unmountByConnections(connections: connections) { result in
+            switch result {
+            case .success: break
+            case .failure(let err):
+                error = err
+            }
+
+            group.leave()
+        }
 
         self.connectionsLocalStore.connections = connections
+
+        group.notify(queue: DispatchQueue.global()) {
+            if let err = error {
+                completion(.failure(err))
+            } else {
+                completion(.success(()))
+            }
+        }
     }
 
-    private func mountByConnections(connections: [TrackerConnection]) {
+    private func mountByConnections(connections: [TrackerConnection], completion: @escaping (Result<Void, Error>) -> Void) {
+        let group = DispatchGroup()
+        var error: Error?
+
         connections.forEach { connection in
             if self.mountedActivitySourceConnections.contains(where: { element in element.tracker.value == connection.tracker }) {
               return
             }
+
+            group.enter()
 
             let activitySourceConnection = ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: connection)
             activitySourceConnection.mount(apiClient: apiClient, config: config, persistor: persistor) { result in
@@ -173,23 +213,49 @@ final public class ActivitySourcesManager {
                 case .success:
                     self.mountedActivitySourceConnections.append(activitySourceConnection)
                 case .failure(let err):
+                    error = err
                     DataLogger.shared.error("Error on mountByConnections \(err)")
                 }
+                group.leave()
+            }
+        }
+
+        group.notify(queue: DispatchQueue.global()) {
+            if let err = error {
+                completion(.failure(err))
+            } else {
+                completion(.success(()))
             }
         }
     }
 
-    private func unmountByConnections(connections: [TrackerConnection]) {
+    private func unmountByConnections(connections: [TrackerConnection], completion: @escaping (Result<Void, Error>) -> Void) {
+        let group = DispatchGroup()
+        var error: Error?
+
         self.mountedActivitySourceConnections.forEach { activitySourceConnection in
             if !connections.contains(where: { element in element.tracker == activitySourceConnection.tracker.value }) {
+                group.enter()
+
                 activitySourceConnection.unmount { result in
                     switch result {
                     case .success:
                         self.mountedActivitySourceConnections.removeAll { value in value.id == activitySourceConnection.id }
                     case .failure(let err):
+                        error = err
                         DataLogger.shared.error("Error on unmount \(err)")
                     }
+
+                    group.leave()
                 }
+            }
+        }
+
+        group.notify(queue: DispatchQueue.global()) {
+            if let err = error {
+                completion(.failure(err))
+            } else {
+                completion(.success(()))
             }
         }
     }

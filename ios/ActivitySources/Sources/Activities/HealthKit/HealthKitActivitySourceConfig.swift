@@ -4,7 +4,7 @@ import HealthKit
 /// Data types that availbale configure for HealthKitActivitySourceConfig
 public enum HealthKitConfigType: Int, CaseIterable {
     case activeEnergyBurned, stepCount, distanceCycling, distanceWalkingRunning, heartRate, workout, weight, height
-    
+
     /// Appropriate type of HKSampleType
     public var sampleType: HKSampleType? {
         switch self {

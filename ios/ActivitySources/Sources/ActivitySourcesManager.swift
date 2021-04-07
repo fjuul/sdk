@@ -260,19 +260,30 @@ final public class ActivitySourcesManager {
         }
     }
 
-    private func restoreState(completion: (Result<Void, Error>) -> Void) {
+    private func restoreState(completion: @escaping (Result<Void, Error>) -> Void) {
+        let group = DispatchGroup()
+        var error: Error?
         connectionsLocalStore.connections?.forEach { connection in
+            group.enter()
             let activitySourceConnection = ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: connection)
             activitySourceConnection.mount(apiClient: apiClient, config: config, persistor: persistor) { result in
                 switch result {
                 case .success:
                     self.mountedActivitySourceConnections.append(activitySourceConnection)
                 case .failure(let err):
+                    error = err
                     DataLogger.shared.error("Error: on restore connectionsLocalStore state \(err)")
                 }
+                group.leave()
             }
         }
 
-        completion(.success(()))
+        group.notify(queue: .global()) {
+            if let err = error {
+                completion(.failure(err))
+            } else {
+                completion(.success(()))
+            }
+        }
     }
 }

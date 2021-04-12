@@ -23,6 +23,7 @@ class HealthKitManager: HealthKitManaging {
     private var dataHandler: ((_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void)
     private let serialQueue = DispatchQueue(label: "com.fjuul.sdk.queues.backgroundDelivery", qos: .userInitiated)
     private let config: ActivitySourceConfigBuilder
+    private var healthKitObservers: [HKObserverQuery] = []
 
     required init(anchorStore: HKAnchorStore, config: ActivitySourceConfigBuilder,
                   dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void)) {
@@ -83,6 +84,11 @@ class HealthKitManager: HealthKitManaging {
             } else if !success {
                 completion(.failure(FjuulError.activitySourceFailure(reason: .backgroundDeliveryNotDisabled)))
             } else {
+                self.healthKitObservers.forEach { observerQuery in
+                    HealthKitManager.healthStore.stop(observerQuery)
+                }
+                self.healthKitObservers = []
+
                 completion(.success(()))
             }
         }
@@ -179,6 +185,7 @@ class HealthKitManager: HealthKitManaging {
                     DataLogger.shared.error("Was not able register backgroundDelivery for type \(sampleType), with error \(String(describing: error))")
                 }
             }
+            self.healthKitObservers.append(query)
         }
     }
 

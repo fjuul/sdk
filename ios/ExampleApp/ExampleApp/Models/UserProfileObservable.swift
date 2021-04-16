@@ -27,8 +27,8 @@ class UserProfileObservable: ObservableObject {
         self.originalProfile = profile
         self.token = profile.token
         self.birthDate = profile.birthDate
-        self.height = profile.height
-        self.weight = profile.weight
+        self.height = (profile.height as NSDecimalNumber).floatValue
+        self.weight = (profile.weight as NSDecimalNumber).floatValue
         self.gender = profile.gender
         self.timezone = profile.timezone.identifier
         self.locale = profile.locale
@@ -39,11 +39,11 @@ class UserProfileObservable: ObservableObject {
         if self.birthDate != originalProfile?.birthDate {
             result[\UserProfile.birthDate] = self.birthDate
         }
-        if self.height != originalProfile?.height {
-            result[\UserProfile.height] = self.height
+        if self.height != (originalProfile?.height as NSDecimalNumber?)?.floatValue {
+            result[\UserProfile.height] = Decimal(string: String(describing: self.height))
         }
-        if self.weight != originalProfile?.weight {
-            result[\UserProfile.weight] = self.weight
+        if self.weight != (originalProfile?.weight as NSDecimalNumber?)?.floatValue {
+            result[\UserProfile.weight] = Decimal(string: String(describing: self.weight))
         }
         if self.gender != originalProfile?.gender {
             result[\UserProfile.gender] = self.gender
@@ -67,8 +67,8 @@ class UserProfileObservable: ObservableObject {
         let profileData = PartialUserProfile { profile in
             profile[\.birthDate] = self.birthDate
             profile[\.gender] = self.gender
-            profile[\.height] = self.height
-            profile[\.weight] = self.weight
+            profile[\.height] = Decimal(string: String(describing: self.height))
+            profile[\.weight] = Decimal(string: String(describing: self.weight))
             profile[\.timezone] = TimeZone(identifier: self.timezone)
             profile[\.locale] = self.locale
         }

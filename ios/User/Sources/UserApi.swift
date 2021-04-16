@@ -22,8 +22,13 @@ public class UserApi {
         ApiClient.requestUnauthenticated(url, apiKey: apiKey, method: .post,
                                          parameters: profileData.asJsonEncodableDictionary(), encoding: JSONEncoding.default).apiResponse { response in
             let decodedResponse = response
-                .tryMap { try Decoders.yyyyMMddLocale.decode(UserCreationResult.self, from: $0) }
-                .mapError { err -> Error in
+                .tryMap { data -> UserCreationResult in
+                    let decoder = Decoders.yyyyMMddLocale
+                    let creationResultJson = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+                    let userProfileJson = creationResultJson?["user"] as? [String: Any]
+                    decoder.userInfo = [UserProfileCodingOptions.key: UserProfileCodingOptions(json: userProfileJson)]
+                    return try Decoders.yyyyMMddLocale.decode(UserCreationResult.self, from: data)
+                }.mapError { err -> Error in
                     guard let responseData = response.data else { return err }
                     guard let errorResponse = try? Decoders.iso8601Full.decode(ValidationErrorJSONBodyResponse.self, from: responseData) else { return err }
 

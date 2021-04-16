@@ -20,7 +20,7 @@ final class UserApiTests: XCTestCase {
     let profileResponse = """
         {
             \"token\":\"e15480c7-ec04-4436-be1e-39cbef384967\",
-            \"gender\":\"female\",\"height\":175.5,\"weight\":60.6,
+            \"gender\":\"female\",\"height\":170.2689,\"weight\":60.6481,
             \"timezone\":\"Europe/Berlin\",\"locale\":\"en\",
             \"birthDate\":\"1990-12-04\"
         }
@@ -49,8 +49,11 @@ final class UserApiTests: XCTestCase {
         let profile = PartialUserProfile { partial in
             partial[\.birthDate] = DateFormatters.yyyyMMddLocale.date(from: "1989-11-03")
             partial[\.gender] = Gender.other
-            partial[\.height] = 170.2
-            partial[\.weight] = 60.6
+            // NOTE: uncomment the lines below to check the deserialization of decimals initialized in a regular way.
+//            partial[\.height] = 170.2689
+//            partial[\.weight] = 60.6481
+            partial[\.height] = Decimal(string: "170.2689")!
+            partial[\.weight] = Decimal(string: "60.6481")!
         }
         let createStub = stub(condition: isHost("apibase") && isPath("/sdk/users/v1")) { request in
             XCTAssertEqual(request.httpMethod, "POST")
@@ -58,8 +61,8 @@ final class UserApiTests: XCTestCase {
                 let profileData: [String: Any] = try JSONSerialization.jsonObject(with: request.ohhttpStubs_httpBody!) as! [String: Any]
                 XCTAssertEqual(profileData["birthDate"] as? String, "1989-11-03")
                 XCTAssertEqual(profileData["gender"] as? String, "other")
-                XCTAssertEqual(profileData["height"] as? Float, profile[\.height])
-                XCTAssertEqual(profileData["weight"] as? Float, profile[\.weight])
+                XCTAssertEqual(String(describing: profileData["height"]!), "170.2689")
+                XCTAssertEqual(String(describing: profileData["weight"]!), "60.6481")
                 XCTAssertEqual(profileData["timezone"] as? String, TimeZone.current.identifier)
                 XCTAssertEqual(profileData["locale"] as? String, Bundle.main.preferredLocalizations.first)
                 XCTAssertEqual(profileData.count, 6)
@@ -80,8 +83,8 @@ final class UserApiTests: XCTestCase {
         let profile = PartialUserProfile { partial in
             partial[\.birthDate] = DateFormatters.yyyyMMddLocale.date(from: "1989-11-03")
             partial[\.gender] = Gender.other
-            partial[\.height] = 170.2
-            partial[\.weight] = 60.6
+            partial[\.height] = Decimal(string: "170.2")
+            partial[\.weight] = Decimal(string: "60.6")
             partial[\.timezone] = TimeZone(identifier: "Europe/Paris")
             partial[\.locale] = "fi"
         }
@@ -91,8 +94,8 @@ final class UserApiTests: XCTestCase {
                 let profileData: [String: Any] = try JSONSerialization.jsonObject(with: request.ohhttpStubs_httpBody!) as! [String: Any]
                 XCTAssertEqual(profileData["birthDate"] as? String, "1989-11-03")
                 XCTAssertEqual(profileData["gender"] as? String, "other")
-                XCTAssertEqual(profileData["height"] as? Float, profile[\.height])
-                XCTAssertEqual(profileData["weight"] as? Float, profile[\.weight])
+                XCTAssertEqual(String(describing: profileData["height"]!), "170.2")
+                XCTAssertEqual(String(describing: profileData["weight"]!), "60.6")
                 XCTAssertEqual(profileData["timezone"] as? String, "Europe/Paris")
                 XCTAssertEqual(profileData["locale"] as? String, "fi")
                 XCTAssertEqual(profileData.count, 6)
@@ -194,11 +197,11 @@ final class UserApiTests: XCTestCase {
             case .success(let profile):
                 XCTAssertEqual(profile.birthDate, DateFormatters.yyyyMMddLocale.date(from: "1990-12-04"))
                 XCTAssertEqual(profile.gender, Gender.female)
-                XCTAssertEqual(profile.height, 175.5)
+                XCTAssertEqual(profile.height, Decimal(string: "170.2689"))
                 XCTAssertEqual(profile.locale, "en")
                 XCTAssertEqual(profile.timezone, TimeZone(identifier: "Europe/Berlin"))
                 XCTAssertEqual(profile.token, "e15480c7-ec04-4436-be1e-39cbef384967")
-                XCTAssertEqual(profile.weight, 60.6)
+                XCTAssertEqual(profile.weight, Decimal(string: "60.6481"))
             }
             e.fulfill()
         }
@@ -215,7 +218,7 @@ final class UserApiTests: XCTestCase {
             XCTAssertEqual(request.httpMethod, "PUT")
             do {
                 let bodyData: [String: Any] = try JSONSerialization.jsonObject(with: request.ohhttpStubs_httpBody!) as! [String: Any]
-                XCTAssertEqual(bodyData["weight"] as? Float, update[\.weight])
+                XCTAssertEqual(bodyData["weight"] as? Decimal, update[\.weight])
                 XCTAssertEqual(bodyData.count, 1)
             } catch {
                 XCTFail("body deserialization failed")

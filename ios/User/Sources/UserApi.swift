@@ -54,8 +54,12 @@ public class UserApi {
         }
         apiClient.signedSession.request(url, method: .get).apiResponse { response in
             let decodedResponse = response
-                .tryMap { try Decoders.yyyyMMddLocale.decode(UserProfile.self, from: $0) }
-                .mapAPIError { _, jsonError in
+                .tryMap { data -> UserProfile  in
+                    let decoder = Decoders.yyyyMMddLocale
+                    let json = try JSONSerialization.jsonObject(with: data)
+                    decoder.userInfo = [UserProfileCodingOptions.key: UserProfileCodingOptions(json: json as? [String : Any])]
+                    return try Decoders.yyyyMMddLocale.decode(UserProfile.self, from: data)
+                }.mapAPIError { _, jsonError in
                     guard let jsonError = jsonError else { return nil }
 
                     return .userFailure(reason: .generic(message: jsonError.message))

@@ -58,11 +58,12 @@ final class UserApiTests: XCTestCase {
         let createStub = stub(condition: isHost("apibase") && isPath("/sdk/users/v1")) { request in
             XCTAssertEqual(request.httpMethod, "POST")
             do {
+                let rawJsonBody = String(decoding: request.ohhttpStubs_httpBody!, as: UTF8.self)
                 let profileData: [String: Any] = try JSONSerialization.jsonObject(with: request.ohhttpStubs_httpBody!) as! [String: Any]
                 XCTAssertEqual(profileData["birthDate"] as? String, "1989-11-03")
                 XCTAssertEqual(profileData["gender"] as? String, "other")
-                XCTAssertEqual(String(describing: profileData["height"]!), "170.2689")
-                XCTAssertEqual(String(describing: profileData["weight"]!), "60.6481")
+                XCTAssertTrue(rawJsonBody.contains("\"height\":170.2689"), "body should contain the exact weight value")
+                XCTAssertTrue(rawJsonBody.contains("\"weight\":60.6481"), "body should contain the exact height value")
                 XCTAssertEqual(profileData["timezone"] as? String, TimeZone.current.identifier)
                 XCTAssertEqual(profileData["locale"] as? String, Bundle.main.preferredLocalizations.first)
                 XCTAssertEqual(profileData.count, 6)
@@ -91,11 +92,12 @@ final class UserApiTests: XCTestCase {
         let createStub = stub(condition: isHost("apibase") && isPath("/sdk/users/v1")) { request in
             XCTAssertEqual(request.httpMethod, "POST")
             do {
+                let rawJsonBody = String(decoding: request.ohhttpStubs_httpBody!, as: UTF8.self)
                 let profileData: [String: Any] = try JSONSerialization.jsonObject(with: request.ohhttpStubs_httpBody!) as! [String: Any]
                 XCTAssertEqual(profileData["birthDate"] as? String, "1989-11-03")
                 XCTAssertEqual(profileData["gender"] as? String, "other")
-                XCTAssertEqual(String(describing: profileData["height"]!), "170.2")
-                XCTAssertEqual(String(describing: profileData["weight"]!), "60.6")
+                XCTAssertTrue(rawJsonBody.contains("\"height\":170.2"), "body should contain the exact weight value")
+                XCTAssertTrue(rawJsonBody.contains("\"weight\":60.6"), "body should contain the exact height value")
                 XCTAssertEqual(profileData["timezone"] as? String, "Europe/Paris")
                 XCTAssertEqual(profileData["locale"] as? String, "fi")
                 XCTAssertEqual(profileData.count, 6)
@@ -212,13 +214,14 @@ final class UserApiTests: XCTestCase {
         let e = expectation(description: "Alamofire")
         let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: InMemoryPersistor())
         let update = PartialUserProfile { profile in
-            profile[\.weight] = 85
+            profile[\.weight] = Decimal(string: "78.6479")
         }
         let updateStub = stub(condition: isHost("apibase") && pathMatches("^/sdk/users/v1/*")) { request in
             XCTAssertEqual(request.httpMethod, "PUT")
             do {
+                let rawJsonBodyData = String(decoding: request.ohhttpStubs_httpBody!, as: UTF8.self)
                 let bodyData: [String: Any] = try JSONSerialization.jsonObject(with: request.ohhttpStubs_httpBody!) as! [String: Any]
-                XCTAssertEqual(bodyData["weight"] as? Decimal, update[\.weight])
+                XCTAssertTrue(rawJsonBodyData.contains("\"weight\":78.6479"), "body should contain the exact weight value")
                 XCTAssertEqual(bodyData.count, 1)
             } catch {
                 XCTFail("body deserialization failed")

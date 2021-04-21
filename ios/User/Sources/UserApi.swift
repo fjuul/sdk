@@ -2,6 +2,20 @@ import Foundation
 import Alamofire
 import FjuulCore
 
+/**
+ `PartialUserProfile` is a structure in which only a part of the fields of the original UserProfile structure can be filled.
+
+ If you create a new user, you need to fill in all the necessary fields.
+ In the case of updating the existing profile, it is enough to fill in only the fields that need to be updated.
+
+ Please keep in mind, that if you want to not lose precision in Decimal numbers with the floating-point (e.g. weight,
+ height), then you should initialize such values by a string literal:
+ ~~~
+ let profile = PartialUserProfile { partial in
+    partial[\.height] = Decimal(string: "170.2689")!
+    partial[\.weight] = Decimal(string: "60.6481")!
+ }
+ */
 public typealias PartialUserProfile = Partial<UserProfile>
 
 /// The `UserApi` encapsulates access to a users profile data.

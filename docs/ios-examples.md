@@ -13,7 +13,7 @@ let profileData = PartialUserProfile { profile in
     profile[\.birthDate] = DateFormatters.yyyyMMddLocale.date(from: "1989-11-03")
     profile[\.gender] = Gender.other
     profile[\.height] = 170
-    profile[\.weight] = 60.6
+    profile[\.weight] = Decimal(string: "60.6")
 }
 
 ApiClient.createUser(baseUrl: baseUrl, apiKey: "YOUR_API_KEY", profile: profileData) { result in

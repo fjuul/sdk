@@ -2,10 +2,29 @@ import Foundation
 import Alamofire
 import FjuulCore
 
+/**
+ `PartialUserProfile` is a structure in which only a part of the fields of the original UserProfile structure can be filled.
+
+ If you create a new user, you need to fill in all the necessary fields.
+ In the case of updating the existing profile, it is enough to fill in only the fields that need to be updated.
+
+ Please keep in mind, that if you want to not lose precision in Decimal numbers with the floating-point (e.g. weight,
+ height), then you should initialize such values by a string literal:
+ ~~~
+ let profile = PartialUserProfile { partial in
+    partial[\.height] = Decimal(string: "170.2689")!
+    partial[\.weight] = Decimal(string: "60.6481")!
+ }
+ */
 public typealias PartialUserProfile = Partial<UserProfile>
 
 /// The `UserApi` encapsulates access to a users profile data.
 public class UserApi {
+    private static var userProfileJSONDecoder: JSONDecoder {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .formatted(DateFormatters.yyyyMMddLocale)
+        return decoder
+    }
 
     static public func create(baseUrl: String, apiKey: String, profile: PartialUserProfile, completion: @escaping (Result<UserCreationResult, Error>) -> Void) {
         let maybeUrl = URL(string: baseUrl)?.appendingPathComponent("sdk/users/v1/")
@@ -22,8 +41,13 @@ public class UserApi {
         ApiClient.requestUnauthenticated(url, apiKey: apiKey, method: .post,
                                          parameters: profileData.asJsonEncodableDictionary(), encoding: JSONEncoding.default).apiResponse { response in
             let decodedResponse = response
-                .tryMap { try Decoders.yyyyMMddLocale.decode(UserCreationResult.self, from: $0) }
-                .mapError { err -> Error in
+                .tryMap { data -> UserCreationResult in
+                    let decoder = self.userProfileJSONDecoder
+                    let creationResultJson = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+                    let userProfileJson = creationResultJson?["user"] as? [String: Any]
+                    decoder.userInfo = [UserProfileCodingOptions.key: UserProfileCodingOptions(json: userProfileJson)]
+                    return try decoder.decode(UserCreationResult.self, from: data)
+                }.mapError { err -> Error in
                     guard let responseData = response.data else { return err }
                     guard let errorResponse = try? Decoders.iso8601Full.decode(ValidationErrorJSONBodyResponse.self, from: responseData) else { return err }
 
@@ -54,8 +78,12 @@ public class UserApi {
         }
         apiClient.signedSession.request(url, method: .get).apiResponse { response in
             let decodedResponse = response
-                .tryMap { try Decoders.yyyyMMddLocale.decode(UserProfile.self, from: $0) }
-                .mapAPIError { _, jsonError in
+                .tryMap { data -> UserProfile  in
+                    let decoder = UserApi.userProfileJSONDecoder
+                    let json = try JSONSerialization.jsonObject(with: data)
+                    decoder.userInfo = [UserProfileCodingOptions.key: UserProfileCodingOptions(json: json as? [String : Any])]
+                    return try decoder.decode(UserProfile.self, from: data)
+                }.mapAPIError { _, jsonError in
                     guard let jsonError = jsonError else { return nil }
 
                     return .userFailure(reason: .generic(message: jsonError.message))
@@ -71,7 +99,12 @@ public class UserApi {
         }
         apiClient.signedSession.request(url, method: .put, parameters: profile.asJsonEncodableDictionary(), encoding: JSONEncoding.default).apiResponse { response in
             let decodedResponse = response
-                .tryMap { try Decoders.yyyyMMddLocale.decode(UserProfile.self, from: $0) }
+                .tryMap { data -> UserProfile in
+                    let decoder = UserApi.userProfileJSONDecoder
+                    let json = try JSONSerialization.jsonObject(with: data)
+                    decoder.userInfo = [UserProfileCodingOptions.key: UserProfileCodingOptions(json: json as? [String : Any])]
+                    return try decoder.decode(UserProfile.self, from: data)
+                }
                 .mapError { err -> Error in
                     guard let responseData = response.data else { return err }
                     guard let errorResponse = try? Decoders.iso8601Full.decode(ValidationErrorJSONBodyResponse.self, from: responseData) else { return err }

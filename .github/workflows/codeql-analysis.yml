@@ -2,10 +2,7 @@ name: "CodeQL Analysis"
 
 on:
   push:
-    branches: [ master ]
-    paths:
-      - android/**
-      - .github/workflows/**    
+    branches: [ master ]   
   pull_request:
     branches: [ master ]
     paths:

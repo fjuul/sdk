@@ -18,7 +18,7 @@ val signedClient = ApiClient.Builder(appContext, "YOUR_BASE_URL", "YOUR_API_KEY"
             .setUserCredentials(UserCredentials("USER_TOKEN", "USER_SECRET"))
             .build()
 ```
-Refer to the "[Create a User](#create-a-user)" section on insturctions how to obtain user credentials.
+Refer to the "[Create a User](#create-a-user)" section on instructions how to obtain user credentials.
 
 ### Keeping the same reference of ApiClient
 It's highly recommended to initialize an `ApiClient` once and reuse the same instance throughout your codebase. For that, you can implement a static singleton that will store the reference to the last initialized `ApiClient`. When you need to change something in the setup (for example, `UserCredentials`), just re-create the global instance of `ApiClient`.

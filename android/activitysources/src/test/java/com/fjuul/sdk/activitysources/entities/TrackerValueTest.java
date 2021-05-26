@@ -27,6 +27,7 @@ public class TrackerValueTest {
                         TrackerValue.POLAR,
                         TrackerValue.GARMIN,
                         TrackerValue.SUUNTO,
+                        TrackerValue.WITHINGS,
                         TrackerValue.GOOGLE_FIT));
             }
         }

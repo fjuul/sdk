@@ -72,6 +72,8 @@ enum ActivitySourceConnectionFactory {
             return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: SuuntoActivitySource.shared)
         } else if TrackerValue.FITBIT == trackerValue {
             return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: FitbitActivitySource.shared)
+        } else if TrackerValue.WITHINGS == trackerValue {
+            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: WithingsActivitySource.shared)
         } else {
             return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: UnknownActivitySource(tracker: trackerConnection.tracker))
         }

@@ -6,9 +6,9 @@ import com.fjuul.sdk.activitysources.entities.GarminActivitySource;
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
 import com.fjuul.sdk.activitysources.entities.PolarActivitySource;
 import com.fjuul.sdk.activitysources.entities.SuuntoActivitySource;
-import com.fjuul.sdk.activitysources.entities.WithingsActivitySource;
 import com.fjuul.sdk.activitysources.entities.TrackerValue;
 import com.fjuul.sdk.activitysources.entities.UnknownActivitySource;
+import com.fjuul.sdk.activitysources.entities.WithingsActivitySource;
 
 import androidx.annotation.NonNull;
 

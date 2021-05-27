@@ -26,6 +26,7 @@ public class TrackerValueTest {
                     containsInAnyOrder(TrackerValue.FITBIT,
                         TrackerValue.POLAR,
                         TrackerValue.GARMIN,
+                        TrackerValue.STRAVA,
                         TrackerValue.SUUNTO,
                         TrackerValue.WITHINGS,
                         TrackerValue.GOOGLE_FIT));

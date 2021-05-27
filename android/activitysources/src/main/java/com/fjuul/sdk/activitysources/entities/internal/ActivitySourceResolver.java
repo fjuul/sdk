@@ -8,6 +8,7 @@ import com.fjuul.sdk.activitysources.entities.PolarActivitySource;
 import com.fjuul.sdk.activitysources.entities.SuuntoActivitySource;
 import com.fjuul.sdk.activitysources.entities.TrackerValue;
 import com.fjuul.sdk.activitysources.entities.UnknownActivitySource;
+import com.fjuul.sdk.activitysources.entities.WithingsActivitySource;
 
 import androidx.annotation.NonNull;
 
@@ -23,6 +24,8 @@ public class ActivitySourceResolver {
             return GarminActivitySource.getInstance();
         } else if (TrackerValue.SUUNTO.equals(tracker)) {
             return SuuntoActivitySource.getInstance();
+        } else if (TrackerValue.WITHINGS.equals(tracker)) {
+            return WithingsActivitySource.getInstance();
         } else if (TrackerValue.GOOGLE_FIT.equals(tracker)) {
             return GoogleFitActivitySource.getInstance();
         }

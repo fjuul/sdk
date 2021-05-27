@@ -20,6 +20,7 @@ import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
 import com.fjuul.sdk.activitysources.entities.PolarActivitySource;
 import com.fjuul.sdk.activitysources.entities.SuuntoActivitySource;
 import com.fjuul.sdk.activitysources.entities.UnknownActivitySource;
+import com.fjuul.sdk.activitysources.entities.WithingsActivitySource;
 
 import android.os.Build;
 
@@ -64,6 +65,15 @@ public class ActivitySourceResolverTest {
                 staticMockGF.when(() -> GoogleFitActivitySource.getInstance()).thenReturn(mockedGF);
                 final ActivitySource result = subject.getInstanceByTrackerValue("suunto");
                 assertThat(result, instanceOf(SuuntoActivitySource.class));
+            }
+        }
+
+        @Test
+        public void getInstanceByTrackerValue_whenInputValueIsWithings_returnsWithingsActivitySource() {
+            try (final MockedStatic<GoogleFitActivitySource> staticMockGF = mockStatic(GoogleFitActivitySource.class)) {
+                staticMockGF.when(() -> GoogleFitActivitySource.getInstance()).thenReturn(mockedGF);
+                final ActivitySource result = subject.getInstanceByTrackerValue("withings");
+                assertThat(result, instanceOf(WithingsActivitySource.class));
             }
         }
 

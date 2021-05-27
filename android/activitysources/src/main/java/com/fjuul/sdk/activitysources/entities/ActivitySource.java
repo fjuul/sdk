@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
  * @see GoogleFitActivitySource
  * @see PolarActivitySource
  * @see SuuntoActivitySource
+ * @see WithingsActivitySource
  */
 public abstract class ActivitySource {
     /**

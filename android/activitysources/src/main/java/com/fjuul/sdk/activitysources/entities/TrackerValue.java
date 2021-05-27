@@ -24,6 +24,7 @@ public class TrackerValue {
     public static final TrackerValue POLAR = new TrackerValue("polar");
     public static final TrackerValue GOOGLE_FIT = new TrackerValue("googlefit");
     public static final TrackerValue SUUNTO = new TrackerValue("suunto");
+    public static final TrackerValue WITHINGS = new TrackerValue("withings");
 
     static final List<TrackerValue> constants;
 

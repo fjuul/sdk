@@ -62,6 +62,40 @@ A collection of examples showcasing the usage of the SDK is available [here](doc
 
 You can also refer to the [ExampleApp](android/ExampleApp) which demonstrates the integration and usage of the SDK.
 
+### Development and Contribution
+#### Code style
+The code style of the android project (java/kotlin) is checked by spotless plugin according to the [eclipse config](android/eclipse-java-google-style.xml).<br/>
+If you want to adjust the config, please refer to the [guide](https://github.com/diffplug/spotless/blob/0842bfa67ff0a6b289fc8a924a314d194e0d50d5/ECLIPSE_SCREENSHOTS.md) at spotless GitHub repo.
+
+Check the code style:
+```
+cd android/
+./gradlew spotlessCheck
+```
+
+Auto-Fix all found issues with the code style:
+```
+cd android/
+./gradlew spotlessApply
+```
+
+#### Tests
+The android project uses `junit4` with `androidx`/`robolectric` test utils.<br/>
+Run all unit tests from the scratch:
+```
+cd android/
+./gradlew clean testRelease
+```
+
+#### Android Linter
+In spite of the project is written in Java, it is developed taking into account the possibility of invocation from Kotlin too.<br/>
+Java/Kotlin interoperability can be checked by the android linter:
+```
+cd android/
+./gradlew lint
+```
+
+Check the root `build.gradle` to see all code restrictions for interoperability between Java and Kotlin.
 
 ## iOS
 Fjuul SDK for iOS is written in Swift, and published as an SPM package.

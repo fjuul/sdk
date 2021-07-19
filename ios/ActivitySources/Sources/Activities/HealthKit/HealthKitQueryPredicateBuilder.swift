@@ -67,12 +67,6 @@ class HealthKitQueryPredicateBuilder {
             dates.append(startDate)
         }
 
-        if let forcedLowerDateBoundary = self.healthKitConfig.forcedLowerDateBoundaryForHealthKit {
-            dates.append(forcedLowerDateBoundary)
-
-            return dates.max()!
-        }
-
         if let syncDataFrom = self.healthKitConfig.syncDataFrom {
             dates.append(syncDataFrom)
         }

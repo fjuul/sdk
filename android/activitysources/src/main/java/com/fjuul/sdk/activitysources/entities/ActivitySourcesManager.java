@@ -383,9 +383,7 @@ public final class ActivitySourcesManager {
 
         final GoogleFitActivitySource googleFit = (GoogleFitActivitySource) activitySourceResolver
             .getInstanceByTrackerValue(TrackerValue.GOOGLE_FIT.getValue());
-        if (config.getForcedLowerDateBoundaryForGoogleFit() != null) {
-            googleFit.setLowerDateBoundary(config.getForcedLowerDateBoundaryForGoogleFit());
-        } else if (gfTrackerConnection != null) {
+        if (gfTrackerConnection != null) {
             googleFit.setLowerDateBoundary(gfTrackerConnection.getCreatedAt());
         } else {
             googleFit.setLowerDateBoundary(null);

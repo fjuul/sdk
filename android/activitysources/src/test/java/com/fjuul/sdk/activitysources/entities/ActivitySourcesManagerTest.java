@@ -86,38 +86,6 @@ public class ActivitySourcesManagerTest {
                     assertEquals(Log.DEBUG, logEntry.getPriority());
                 }
             }
-
-            @Test
-            public void initialize_whenConfigCarriesTheLowerDateBoundary_configuresGFActivitySource() {
-                try (final MockedStatic<WorkManager> staticWorkManager = mockStatic(WorkManager.class);
-                    final MockedStatic<GoogleFitActivitySource> staticMockedGoogleFit =
-                        mockStatic(GoogleFitActivitySource.class)) {
-                    final Context testContext = ApplicationProvider.getApplicationContext();
-                    final WorkManager mockedWorkManager = mock(WorkManager.class);
-                    staticWorkManager.when(() -> WorkManager.getInstance(testContext)).thenReturn(mockedWorkManager);
-                    final GoogleFitActivitySource mockedGoogleFit = mock(GoogleFitActivitySource.class);
-                    staticMockedGoogleFit.when(() -> GoogleFitActivitySource.getInstance()).thenReturn(mockedGoogleFit);
-                    final ApiClient client = new ApiClient.Builder(testContext, "https://fjuul.com/", "1234")
-                        .setUserCredentials(new UserCredentials("token", "secret"))
-                        .build();
-                    final Date lowerDateBoundary = Date.from(Instant.parse("2020-09-10T10:05:00Z"));
-                    final ActivitySourcesManagerConfig config = new ActivitySourcesManagerConfig.Builder()
-                        .setCollectableFitnessMetrics(
-                            Stream.of(FitnessMetricsType.INTRADAY_CALORIES).collect(Collectors.toSet()))
-                        .setForcedLowerDateBoundaryForGoogleFit(lowerDateBoundary)
-                        .disableBackgroundSync()
-                        .build();
-                    ActivitySourcesManager.initialize(client, config);
-                    // should pass the forced lower date boundary to GoogleFitActivitySource
-                    verify(mockedGoogleFit).setLowerDateBoundary(lowerDateBoundary);
-                    assertEquals("should log only one message", 1, LOGGER.size());
-                    final TimberLogEntry logEntry = LOGGER.getLogEntries().get(0);
-                    assertEquals(
-                        "[activitysources] ActivitySourcesManager: initialized successfully (the previous one could be overridden)",
-                        logEntry.getMessage());
-                    assertEquals(Log.DEBUG, logEntry.getPriority());
-                }
-            }
         }
     }
 

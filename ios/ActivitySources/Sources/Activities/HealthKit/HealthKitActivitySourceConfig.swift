@@ -29,25 +29,20 @@ extension HealthKitConfigType {
 public struct HealthKitActivitySourceConfig {
     private let dataTypesToRead: [HealthKitConfigType]
     let syncUserEnteredData: Bool
-    let forcedLowerDateBoundaryForHealthKit: Date?
     let enableBackgroundDelivery: Bool
     internal var syncDataFrom: Date?
 
     /// Config for HealthKit data sync.
     /// - Parameters:
     ///   - dataTypesToRead: List of data types for read from HealthKit.
-    ///   - syncUserEnteredData: Enable/Disable sync from HealthKit user manual intered data (default: true).
-    ///   - forcedLowerDateBoundaryForHealthKit: Sets the forced lower date boundary from which syncing will work from. It overrides the default limit which is dictated by the
-    ///   creation date of the connection to HealthKit. This method was added only for internal purposes. Do not use it!
+    ///   - syncUserEnteredData: Enable/Disable sync from HealthKit user manually entered data (default: true).
     ///   - enableBackgroundDelivery: Enable/Disable backgroundDelivery (default: true).
     public init(dataTypesToRead: [HealthKitConfigType] = HealthKitConfigType.allCases,
                 syncUserEnteredData: Bool = true,
-                forcedLowerDateBoundaryForHealthKit: Date? = nil,
                 enableBackgroundDelivery: Bool = true) {
 
         self.dataTypesToRead = dataTypesToRead
         self.syncUserEnteredData = syncUserEnteredData
-        self.forcedLowerDateBoundaryForHealthKit = forcedLowerDateBoundaryForHealthKit
         self.enableBackgroundDelivery = enableBackgroundDelivery
     }
 

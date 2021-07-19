@@ -63,26 +63,6 @@ final class HealthKitQueryPredicateBuilderTests: XCTestCase {
         XCTAssertEqual(sut.dataСollectionStartAt(), syncDataFrom)
     }
 
-    func testDataСollectionStartAtWhenStartDateLaterThanForcedLowerDateBoundary() {
-        let syncDataFrom = Calendar.current.date(byAdding: .day, value: -15, to: Date())!
-        let forcedLowerDateBoundary = Calendar.current.date(byAdding: .day, value: -20, to: Date())!
-
-        var healthKitActivitySourceConfig = HealthKitActivitySourceConfig(dataTypesToRead: [
-            .heartRate, .activeEnergyBurned, .distanceCycling,
-            .distanceWalkingRunning, .stepCount, .workout,
-        ], forcedLowerDateBoundaryForHealthKit: forcedLowerDateBoundary)
-
-        // Usefull for setup TrackerConnection.createAt, for not sync data before Date of create connection
-        healthKitActivitySourceConfig.syncDataFrom = syncDataFrom
-
-        let sut = HealthKitQueryPredicateBuilder(
-            healthKitConfig: healthKitActivitySourceConfig
-        )
-
-        // Ignore syncDataFrom and use forcedLowerDateBoundary
-        XCTAssertEqual(sut.dataСollectionStartAt(), forcedLowerDateBoundary)
-    }
-
     func testDataСollectionEndAtWhenEndDateNotPresent() {
         let sut = HealthKitQueryPredicateBuilder(
             healthKitConfig: healthKitActivitySourceConfig

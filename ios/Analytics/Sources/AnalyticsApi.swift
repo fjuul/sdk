@@ -68,6 +68,35 @@ public class AnalyticsApi {
         }
     }
 
+    /// Retrieves the sums or averages of daily activity statistics for a given date range.
+    ///
+    /// - Parameters:
+    ///   - from: The start of the day interval to requests daily stats for (inclusive).
+    ///   - to: The end of the day interval to request daily stats for (inclusive).
+    ///   - aggregation: The aggregate type: sum or avg.
+    ///   - completion: The code to be executed once the request has finished.
+    public func dailyStatsAggregate(from: Date, to: Date, aggregation: AggregationType, completion: @escaping (Result<AggregatedDailyStats, Error>) -> Void) {
+        let path = "/daily-stats/\(apiClient.userToken)/aggregated"
+        guard let url = baseUrl?.appendingPathComponent(path) else {
+            return completion(.failure(FjuulError.invalidConfig))
+        }
+        let parameters = [
+            "from": DateFormatters.yyyyMMddLocale.string(from: from),
+            "to": DateFormatters.yyyyMMddLocale.string(from: to),
+            "aggregation": aggregation,
+        ]
+        apiClient.signedSession.request(url, method: .get, parameters: parameters).apiResponse { response in
+            let decodedResponse = response
+                .tryMap { try Decoders.yyyyMMddLocale.decode(AggregatedDailyStats.self, from: $0) }
+                .mapAPIError { _, jsonError in
+                    guard let jsonError = jsonError else { return nil }
+
+                    return .analyticsFailure(reason: .generic(message: jsonError.message))
+                }
+            completion(decodedResponse.result)
+        }
+    }
+
 }
 
 private var AssociatedObjectHandle: UInt8 = 0
@@ -84,4 +113,9 @@ public extension ApiClient {
         }
     }
 
+}
+
+public enum AggregationType: String {
+    sum,
+    avg
 }

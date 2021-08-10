@@ -83,7 +83,7 @@ public class AnalyticsApi {
         let parameters = [
             "from": DateFormatters.yyyyMMddLocale.string(from: from),
             "to": DateFormatters.yyyyMMddLocale.string(from: to),
-            "aggregation": aggregation,
+            "aggregation": aggregation.rawValue,
         ]
         apiClient.signedSession.request(url, method: .get, parameters: parameters).apiResponse { response in
             let decodedResponse = response
@@ -116,6 +116,5 @@ public extension ApiClient {
 }
 
 public enum AggregationType: String {
-    sum,
-    avg
+    case sum, avg
 }

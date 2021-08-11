@@ -1,6 +1,7 @@
 package com.fjuul.sdk.analytics.http.apis;
 
 import com.fjuul.sdk.analytics.entities.DailyStats;
+import com.fjuul.sdk.analytics.entities.AggregatedDailyStats;
 import com.fjuul.sdk.core.http.utils.ApiCall;
 
 import androidx.annotation.NonNull;
@@ -18,4 +19,11 @@ public interface AnalyticsApi {
     ApiCall<DailyStats[]> getDailyStats(@Path("userToken") @NonNull String userToken,
         @Query("from") @NonNull String startDate,
         @Query("to") @NonNull String endDate);
+
+    @GET("/sdk/analytics/v1/daily-stats/{userToken}/aggregated")
+    @NonNull
+    ApiCall<AggregatedDailyStats> getAggregatedDailyStats(@Path("userToken") @NonNull String userToken,
+        @Query("from") @NonNull String startDate,
+        @Query("to") @NonNull String endDate,
+        @Query("aggregation") @NonNull String aggregation);
 }

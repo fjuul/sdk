@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.Date;
 
 import com.fjuul.sdk.analytics.entities.DailyStats;
+import com.fjuul.sdk.analytics.entities.AggregatedDailyStats;
 import com.fjuul.sdk.analytics.http.apis.AnalyticsApi;
 import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.http.utils.ApiCall;
@@ -62,4 +63,23 @@ public class AnalyticsService {
     public @NonNull ApiCall<DailyStats[]> getDailyStats(@NonNull LocalDate startDate, @NonNull LocalDate endDate) {
         return analyticsApiClient.getDailyStats(clientBuilder.getUserToken(), startDate.toString(), endDate.toString());
     }
+
+    /**
+     * Builds a call to get sums or averages of the daily activity statistics within a given date range.
+     *
+     * @param startDate the start of the interval to request daily stats aggregate for (inclusive); this is the date in the
+     *        users local timezone.
+     * @param endDate the end of the interval to request daily stats aggregate for (inclusive); this is the date in the users
+     *        local timezone.
+     * @param aggregation aggregation type; sum or avg.
+     * @return ApiCall for the user activity statistics for the given day interval.
+     */
+    public @NonNull ApiCall<AggregatedDailyStats> getAggregatedDailyStats(@NonNull LocalDate startDate, @NonNull LocalDate endDate, @NonNull AggregationType aggregation) {
+        return analyticsApiClient.getAggregatedDailyStats(clientBuilder.getUserToken(), startDate.toString(), endDate.toString(), aggregation.toString());
+    }
+}
+
+enum AggregationType {
+    sum,
+    avg
 }

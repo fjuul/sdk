@@ -17,6 +17,9 @@ struct ModuleSelectionScreens: View {
                 NavigationLink(destination: LazyView(DailyStatsScreen())) {
                     Text("Daily Statistics")
                 }
+                NavigationLink(destination: LazyView(AggregatedDailyStatsScreen())) {
+                    Text("Aggregated Daily Statistics")
+                }
             }
         }
         .navigationBarTitle("Modules", displayMode: .inline)

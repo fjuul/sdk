@@ -21,41 +21,40 @@ struct AggregatedDailyStatsScreen: View {
                 if aggregatedStats.isLoading {
                     Text("Loading")
                 } else {
-                    List(aggregatedStats.value, id: \.date) { each in
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Image(systemName: "bolt")
-                                    .frame(width: 30, height: 10, alignment: .leading)
-                                Text("low \(each.low.metMinutes, specifier: "%.1f")")
-                                Spacer()
-                                Text("\(self.formatTime(time: each.low.seconds))")
-                            }
-                            HStack {
-                                Image(systemName: "bolt")
-                                    .frame(width: 30, height: 10, alignment: .leading)
-                                Text("mod \(each.moderate.metMinutes, specifier: "%.1f")")
-                                Spacer()
-                                Text("\(self.formatTime(time: each.moderate.seconds))")
-                            }
-                            HStack {
-                                Image(systemName: "bolt")
-                                    .frame(width: 30, height: 10, alignment: .leading)
-                                Text("high \(each.high.metMinutes, specifier: "%.1f")")
-                                Spacer()
-                                Text("\(self.formatTime(time: each.high.seconds))")
-                            }
-                            HStack {
-                                Image(systemName: "flame")
-                                    .frame(width: 30, height: 10, alignment: .leading)
-                                Text("activeKcal \(each.activeKcal, specifier: "%.1f")")
-                            }
-                            HStack {
-                                Image(systemName: "bolt.heart")
-                                    .frame(width: 30, height: 10, alignment: .leading)
-                                Text("bmr \(each.bmr, specifier: "%.1f")")
-                            }
-                        }.padding(.top, 5)
-                    }
+                    let stats = aggregatedStats.value!
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Image(systemName: "bolt")
+                                .frame(width: 30, height: 10, alignment: .leading)
+                            Text("low \(stats.low.metMinutes, specifier: "%.1f")")
+                            Spacer()
+                            Text("\(self.formatTime(time: stats.low.seconds))")
+                        }
+                        HStack {
+                            Image(systemName: "bolt")
+                                .frame(width: 30, height: 10, alignment: .leading)
+                            Text("mod \(stats.moderate.metMinutes, specifier: "%.1f")")
+                            Spacer()
+                            Text("\(self.formatTime(time: stats.moderate.seconds))")
+                        }
+                        HStack {
+                            Image(systemName: "bolt")
+                                .frame(width: 30, height: 10, alignment: .leading)
+                            Text("high \(stats.high.metMinutes, specifier: "%.1f")")
+                            Spacer()
+                            Text("\(self.formatTime(time: stats.high.seconds))")
+                        }
+                        HStack {
+                            Image(systemName: "flame")
+                                .frame(width: 30, height: 10, alignment: .leading)
+                            Text("activeKcal \(stats.activeKcal, specifier: "%.1f")")
+                        }
+                        HStack {
+                            Image(systemName: "bolt.heart")
+                                .frame(width: 30, height: 10, alignment: .leading)
+                            Text("bmr \(stats.bmr, specifier: "%.1f")")
+                        }
+                    }.padding(.top, 5)
                 }
             }
         }

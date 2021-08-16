@@ -115,6 +115,6 @@ public extension ApiClient {
 
 }
 
-public enum AggregationType: String {
+public enum AggregationType: String, CaseIterable {
     case sum, avg
 }

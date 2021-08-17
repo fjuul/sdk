@@ -11,14 +11,12 @@ struct AggregatedDailyStatsScreen: View {
         return formatter
     }()
     
-    @State var selection: AggregationType = .sum
-    
     var body: some View {
         Form {
             Section {
                 DatePicker(selection: $aggregatedStats.fromDate, displayedComponents: .date, label: { Text("From") })
                 DatePicker(selection: $aggregatedStats.toDate, displayedComponents: .date, label: { Text("To") })
-                Picker("Aggregate", selection: $selection) {
+                Picker("Aggregate", selection: $aggregatedStats.aggregation) {
                     ForEach(AggregationType.allCases, id: \.rawValue) { type in
                         Text(type.rawValue).tag(type)
                     }

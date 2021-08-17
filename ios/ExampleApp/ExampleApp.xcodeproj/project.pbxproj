@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		44F8883726C533FE005B0BBD /* AggregatedDailyStatsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44F8883626C533FE005B0BBD /* AggregatedDailyStatsScreen.swift */; };
+		44F8883926C53474005B0BBD /* AggregatedDailyStatsObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44F8883826C53474005B0BBD /* AggregatedDailyStatsObservable.swift */; };
 		4C3D6A8D25BACB0000729276 /* FjuulApiBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3D6A8C25BACB0000729276 /* FjuulApiBuilder.swift */; };
 		4C4A4DEE25F79C4300A944C2 /* SyncHealthKitActivitySource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C4A4DED25F79C4300A944C2 /* SyncHealthKitActivitySource.swift */; };
 		4C4A4DF225F7BFB400A944C2 /* CheckboxField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C4A4DF125F7BFB400A944C2 /* CheckboxField.swift */; };
@@ -51,6 +53,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		44F8883626C533FE005B0BBD /* AggregatedDailyStatsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AggregatedDailyStatsScreen.swift; sourceTree = "<group>"; };
+		44F8883826C53474005B0BBD /* AggregatedDailyStatsObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AggregatedDailyStatsObservable.swift; sourceTree = "<group>"; };
 		4C3D6A8C25BACB0000729276 /* FjuulApiBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FjuulApiBuilder.swift; sourceTree = "<group>"; };
 		4C4A4DED25F79C4300A944C2 /* SyncHealthKitActivitySource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncHealthKitActivitySource.swift; sourceTree = "<group>"; };
 		4C4A4DF125F7BFB400A944C2 /* CheckboxField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckboxField.swift; sourceTree = "<group>"; };
@@ -124,6 +128,7 @@
 			isa = PBXGroup;
 			children = (
 				B348CE8924D85711001DCE14 /* ActivitySourceObservable.swift */,
+				44F8883826C53474005B0BBD /* AggregatedDailyStatsObservable.swift */,
 				B3548D6D24CF1FC4002F26B9 /* DailyStatsObservable.swift */,
 				B3548D6B24CF1E25002F26B9 /* UserProfileObservable.swift */,
 				4C4A4DF525F7C94700A944C2 /* HealthKitSyncObservable.swift */,
@@ -211,6 +216,7 @@
 				B348CE8724D85551001DCE14 /* ActivitySourcesScreen.swift */,
 				B3548D6024CF0F62002F26B9 /* CreateUserScreen.swift */,
 				B3548D6124CF0F62002F26B9 /* DailyStatsScreen.swift */,
+				44F8883626C533FE005B0BBD /* AggregatedDailyStatsScreen.swift */,
 				B3548D6424CF0F7B002F26B9 /* ModuleSelectionScreens.swift */,
 				B3548D6624CF0F91002F26B9 /* OnboardingScreen.swift */,
 				B3548D6824CF0FA8002F26B9 /* UserProfileScreen.swift */,
@@ -347,6 +353,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				44F8883926C53474005B0BBD /* AggregatedDailyStatsObservable.swift in Sources */,
+				44F8883726C533FE005B0BBD /* AggregatedDailyStatsScreen.swift in Sources */,
 				B3548D6924CF0FA8002F26B9 /* UserProfileScreen.swift in Sources */,
 				4C4A4DEE25F79C4300A944C2 /* SyncHealthKitActivitySource.swift in Sources */,
 				B3FBCDBA24B8D5A400184A88 /* LazyView.swift in Sources */,

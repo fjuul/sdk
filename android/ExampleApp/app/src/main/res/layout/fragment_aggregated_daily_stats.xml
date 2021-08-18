@@ -58,7 +58,7 @@
             <View
                 android:id="@+id/divider_from"
                 android:layout_width="match_parent"
-                android:layout_height="2dp"
+                android:layout_height="1dp"
                 android:layout_marginTop="5dp"
                 android:background="?android:attr/listDivider"
                 app:layout_constraintTop_toBottomOf="@id/from_text_inputs" />
@@ -113,9 +113,19 @@
                 android:layout_height="1dp"
                 android:background="?android:attr/listDivider"
                 app:layout_constraintTop_toBottomOf="@id/to_text_inputs" />
-            
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/aggregate_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/to_input_layout">
+
             <LinearLayout
-                android:id="@+id/to_text_inputs"
+                android:id="@+id/aggregate_inputs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -161,7 +171,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="sdasd"
-            app:layout_constraintTop_toBottomOf="@id/to_input_layout" />
+            app:layout_constraintTop_toBottomOf="@id/aggregate_layout" />
 
         <TextView
             android:id="@+id/aggregated_stats"

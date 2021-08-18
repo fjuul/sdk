@@ -125,7 +125,6 @@
             app:layout_constraintTop_toBottomOf="@id/to_input_layout">
 
             <LinearLayout
-                android:id="@+id/aggregate_inputs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -145,6 +144,7 @@
                     android:textAppearance="?android:attr/textAppearanceListItemSmall" />
             
                 <RadioGroup
+                    android:id="@+id/aggregate_radio_group"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
@@ -154,13 +154,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="sum"
-                        android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
-                        android:onClick="onRadioButtonClicked"/>
+                        android:layout_weight="1"/>
                     <RadioButton android:id="@+id/radio_avg"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="avg"
-                        android:onClick="onRadioButtonClicked"/>
+                        android:layout_weight="1"/>
                 </RadioGroup>
             </LinearLayout>
         </LinearLayout>

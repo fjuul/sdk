@@ -5,6 +5,7 @@ import java.util.Date;
 
 import com.fjuul.sdk.analytics.entities.DailyStats;
 import com.fjuul.sdk.analytics.entities.AggregatedDailyStats;
+import com.fjuul.sdk.analytics.entities.AggregationType;
 import com.fjuul.sdk.analytics.http.apis.AnalyticsApi;
 import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.http.utils.ApiCall;
@@ -77,9 +78,4 @@ public class AnalyticsService {
     public @NonNull ApiCall<AggregatedDailyStats> getAggregatedDailyStats(@NonNull LocalDate startDate, @NonNull LocalDate endDate, @NonNull AggregationType aggregation) {
         return analyticsApiClient.getAggregatedDailyStats(clientBuilder.getUserToken(), startDate.toString(), endDate.toString(), aggregation.toString());
     }
-}
-
-enum AggregationType {
-    sum,
-    avg
 }

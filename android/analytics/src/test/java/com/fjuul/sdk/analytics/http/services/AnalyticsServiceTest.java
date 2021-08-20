@@ -30,7 +30,6 @@ import com.fjuul.sdk.core.http.utils.ApiCallResult;
 import com.fjuul.sdk.test.http.TestApiClient;
 
 import android.os.Build;
-
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -164,10 +163,9 @@ public class AnalyticsServiceTest {
                 + "\"high\": { \"seconds\": 600, \"metMinutes\": 9 }\n" + "}");
         mockWebServer.enqueue(mockResponse);
 
-        ApiCallResult<AggregatedDailyStats> result =
-            analyticsService.getAggregatedDailyStats(LocalDate.parse("2020-03-10"),
-                LocalDate.parse("2020-03-11"),
-                AggregationType.sum).execute();
+        ApiCallResult<AggregatedDailyStats> result = analyticsService
+            .getAggregatedDailyStats(LocalDate.parse("2020-03-10"), LocalDate.parse("2020-03-11"), AggregationType.sum)
+            .execute();
 
         RecordedRequest request = mockWebServer.takeRequest();
         assertThat("should transform local date to string",

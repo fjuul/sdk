@@ -1,5 +1,5 @@
 package com.fjuul.sdk.android.exampleapp.ui.aggregated_daily_stats
-import android.util.Log
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -25,10 +25,8 @@ class AggregatedDailyStatsViewModel() : ViewModel() {
     val errorMessage: LiveData<String> = _errorMessage
 
     fun requestData() {
-        Log.d("xz", (_aggregation.value).toString())
         analyticsService.getAggregatedDailyStats(_startDate.value!!, _endDate.value!!, _aggregation.value!!)
             .enqueue { _, result ->
-                Log.d("rezzzzzzzult", result.toString())
                 if (result.isError) {
                     _errorMessage.postValue(result.error?.message)
                 } else {

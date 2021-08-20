@@ -25,6 +25,9 @@
             android:id="@+id/action_modulesFragment_to_dailyStatsFragment"
             app:destination="@id/dailyStatsFragment" />
         <action
+            android:id="@+id/action_modulesFragment_to_aggregatedDailyStatsFragment"
+            app:destination="@id/aggregatedDailyStatsFragment" />
+        <action
             android:id="@+id/action_modulesFragment_to_userProfileFragment"
             app:destination="@id/userProfileFragment" />
         <action
@@ -39,6 +42,11 @@
         android:name="com.fjuul.sdk.android.exampleapp.ui.daily_stats.DailyStatsFragment"
         android:label="Daily Stats"
         tools:layout="@layout/fragment_daily_stats" />
+    <fragment
+        android:id="@+id/aggregatedDailyStatsFragment"
+        android:name="com.fjuul.sdk.android.exampleapp.ui.aggregated_daily_stats.AggregatedDailyStatsFragment"
+        android:label="Aggregated Daily Stats"
+        tools:layout="@layout/fragment_aggregated_daily_stats" />
     <fragment
         android:id="@+id/userProfileFragment"
         android:name="com.fjuul.sdk.android.exampleapp.ui.user_profile.UserProfileFragment"

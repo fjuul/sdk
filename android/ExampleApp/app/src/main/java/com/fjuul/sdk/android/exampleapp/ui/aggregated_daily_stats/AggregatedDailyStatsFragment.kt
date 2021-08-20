@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.fjuul.sdk.android.exampleapp.R
+import com.fjuul.sdk.analytics.entities.AggregationType
 import java.time.LocalDate
 
 class AggregatedDailyStatsFragment : Fragment() {
@@ -62,13 +63,20 @@ class AggregatedDailyStatsFragment : Fragment() {
             }
         )
 
-        val adapter = AggregatedDailyStatsAdapter(requireContext())
-        aggregatedStats.adapter = adapter
         model.data.observe(
             viewLifecycleOwner,
-            Observer {
-                adapter.dataSource = it
-                adapter.notifyDataSetChanged()
+            Observer { it ->
+                aggregatedStats.text = """
+ low: ${it.low.metMinutes} metMinutes;
+ moderate: ${it.moderate.metMinutes} metMinutes;
+ high: ${it.high.metMinutes} metMinutes"""
+            }
+        )
+
+        model.errorMessage.observe(
+            viewLifecycleOwner,
+            Observer { it ->
+                aggregatedStats.text = it.toString()
             }
         )
 

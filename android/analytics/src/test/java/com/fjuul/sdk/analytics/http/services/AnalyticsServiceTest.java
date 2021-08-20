@@ -17,6 +17,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import com.fjuul.sdk.analytics.entities.AggregatedDailyStats;
+import com.fjuul.sdk.analytics.entities.AggregationType;
 import com.fjuul.sdk.analytics.entities.DailyStats;
 import com.fjuul.sdk.core.entities.InMemoryStorage;
 import com.fjuul.sdk.core.entities.Keystore;
@@ -29,6 +30,7 @@ import com.fjuul.sdk.core.http.utils.ApiCallResult;
 import com.fjuul.sdk.test.http.TestApiClient;
 
 import android.os.Build;
+
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -156,14 +158,16 @@ public class AnalyticsServiceTest {
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK)
             .setHeader("Content-Type", "application/json")
-            .setBody("{\n" + "" + "\"activeKcal\": 170.14,\n" + "\"bmr\": 860.16,\n"
+            .setBody("{\n" + "\"activeKcal\": 170.14,\n" + "\"bmr\": 860.16,\n"
                 + "\"low\": { \"seconds\": 2222, \"metMinutes\": 32 },\n"
                 + "\"moderate\": { \"seconds\": 1980, \"metMinutes\": 44 },\n"
                 + "\"high\": { \"seconds\": 600, \"metMinutes\": 9 }\n" + "}");
         mockWebServer.enqueue(mockResponse);
 
         ApiCallResult<AggregatedDailyStats> result =
-            analyticsService.getAggregatedDailyStats(LocalDate.parse("2020-03-10"), LocalDate.parse("2020-03-11"), AggregationType.sum).execute();
+            analyticsService.getAggregatedDailyStats(LocalDate.parse("2020-03-10"),
+                LocalDate.parse("2020-03-11"),
+                AggregationType.sum).execute();
 
         RecordedRequest request = mockWebServer.takeRequest();
         assertThat("should transform local date to string",

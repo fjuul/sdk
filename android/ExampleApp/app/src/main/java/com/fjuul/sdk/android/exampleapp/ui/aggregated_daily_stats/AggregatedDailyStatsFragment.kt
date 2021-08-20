@@ -66,7 +66,8 @@ class AggregatedDailyStatsFragment : Fragment() {
         model.data.observe(
             viewLifecycleOwner,
             Observer { it ->
-                aggregatedStats.text = """
+                aggregatedStats.text =
+                    """
  low: ${it.low.metMinutes} metMinutes;
  moderate: ${it.moderate.metMinutes} metMinutes;
  high: ${it.high.metMinutes} metMinutes"""

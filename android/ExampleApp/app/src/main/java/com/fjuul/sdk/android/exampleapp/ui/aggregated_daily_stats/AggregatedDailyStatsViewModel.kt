@@ -31,7 +31,6 @@ class AggregatedDailyStatsViewModel() : ViewModel() {
                     _errorMessage.postValue(result.error?.message)
                 } else {
                     _data.postValue(result.value!!)
-
                 }
             }
     }

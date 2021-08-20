@@ -12,8 +12,8 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import com.fjuul.sdk.android.exampleapp.R
 import com.fjuul.sdk.analytics.entities.AggregationType
+import com.fjuul.sdk.android.exampleapp.R
 import java.time.LocalDate
 
 class AggregatedDailyStatsFragment : Fragment() {

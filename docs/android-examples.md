@@ -229,6 +229,26 @@ dailyStats.forEach { item ->
 }
 ```
 
+### Getting sum or average aggregates of DailyStats per time interval
+```kotlin
+import com.fjuul.sdk.analytics.http.services.AnalyticsService
+...
+val analyticsService = AnalyticsService(signedClient)
+val getAggregatedDailyStatsApiCall = analyticsService.getAggregatedDailyStats("2020-10-03", "2020-10-20", "sum")
+val getAggregatedDailyStatsApiResult = getAggregatedDailyStatsApiCall.execute()
+if (getAggregatedDailyStatsApiResult.isError) {
+    // handle error
+}
+val statsSums = getDailyStatsApiResult.value!!
+statsSums.forEach { item ->
+    val formattedItem = """
+        |low: ${item.low.metMinutes} metMinutes;
+        |moderate: ${item.moderate.metMinutes} metMinutes;
+        |high: ${item.high.metMinutes} metMinutes""".trimMargin()
+        println(formattedItem)
+}
+```
+
 ## Logging
 Fjuul SDK uses [Timber](https://github.com/JakeWharton/timber) for logging internal events and exposes this dependency to consumers.<br/>
 For ordinary debugging, you can use `DebugTimberTree` that writes everything from Fjuul SDK to the standard android's Log:

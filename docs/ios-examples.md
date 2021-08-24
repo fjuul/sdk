@@ -212,3 +212,28 @@ apiClient.analytics.dailyStats(from: fromDate, to: toDate) { result in
     }
 }
 ```
+
+### Get sum or average aggregates of DailyStats per time interval
+
+``` swift
+import FjuulAnalytics
+
+let fromDate = Calendar.current.date(byAdding: .day, value: -7, to: Date())
+let toDate = Date()
+
+apiClient.analytics.dailyStatsAggregate(from: fromDate, to: toDate, aggregation: "avg") { result in
+    switch result {
+    case .success(let statsAvgs):
+        // returns an object of daily stats' averages for requested period
+        //{
+        //    "activeKcal": 300,
+        //    "bmr": 1700,
+        //    "low": { "seconds": 1800, "metMinutes": 20 },
+        //    "moderate": { "seconds": 1200, "metMinutes": 10 },
+        //    "high": { "seconds": 180, "metMinutes": 15 },
+        //}
+    case .failure(let err):
+        // handle error
+    }
+}
+```

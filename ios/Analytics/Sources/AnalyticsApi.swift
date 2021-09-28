@@ -73,7 +73,7 @@ public class AnalyticsApi {
     /// - Parameters:
     ///   - from: The start of the day interval to requests daily stats for (inclusive).
     ///   - to: The end of the day interval to request daily stats for (inclusive).
-    ///   - aggregation: The aggregate type: sum or avg.
+    ///   - aggregation: The aggregate type: sum or average.
     ///   - completion: The code to be executed once the request has finished.
     public func dailyStatsAggregate(from: Date, to: Date, aggregation: AggregationType, completion: @escaping (Result<AggregatedDailyStats, Error>) -> Void) {
         let path = "/daily-stats/\(apiClient.userToken)/aggregated"
@@ -116,5 +116,5 @@ public extension ApiClient {
 }
 
 public enum AggregationType: String, CaseIterable {
-    case sum, avg
+    case sum, average
 }

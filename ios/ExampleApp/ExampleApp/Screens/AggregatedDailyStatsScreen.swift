@@ -10,7 +10,7 @@ struct AggregatedDailyStatsScreen: View {
         formatter.dateStyle = .long
         return formatter
     }()
-    
+
     var body: some View {
         Form {
             Section {

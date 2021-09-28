@@ -25,7 +25,7 @@ final class AnalyticsApiTests: XCTestCase {
             \"bmr\":1755.64,\"activeKcal\":755.64,\"steps\":10000
         }
     """
-    
+
     let aggregatedDailyStatsResponse = """
         {
             \"low\":{\"seconds\":80,\"metMinutes\":4.44},
@@ -97,7 +97,7 @@ final class AnalyticsApiTests: XCTestCase {
         }
         waitForExpectations(timeout: 5.0, handler: nil)
     }
-    
+
     func testGetAggregatedDailyStats() {
         let e = expectation(description: "Alamofire")
         let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: InMemoryPersistor())

@@ -81,7 +81,7 @@ public class UserApi {
                 .tryMap { data -> UserProfile  in
                     let decoder = UserApi.userProfileJSONDecoder
                     let json = try JSONSerialization.jsonObject(with: data)
-                    decoder.userInfo = [UserProfileCodingOptions.key: UserProfileCodingOptions(json: json as? [String : Any])]
+                    decoder.userInfo = [UserProfileCodingOptions.key: UserProfileCodingOptions(json: json as? [String: Any])]
                     return try decoder.decode(UserProfile.self, from: data)
                 }.mapAPIError { _, jsonError in
                     guard let jsonError = jsonError else { return nil }
@@ -102,7 +102,7 @@ public class UserApi {
                 .tryMap { data -> UserProfile in
                     let decoder = UserApi.userProfileJSONDecoder
                     let json = try JSONSerialization.jsonObject(with: data)
-                    decoder.userInfo = [UserProfileCodingOptions.key: UserProfileCodingOptions(json: json as? [String : Any])]
+                    decoder.userInfo = [UserProfileCodingOptions.key: UserProfileCodingOptions(json: json as? [String: Any])]
                     return try decoder.decode(UserProfile.self, from: data)
                 }
                 .mapError { err -> Error in

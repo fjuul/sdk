@@ -46,7 +46,7 @@ class AggregatedDailyStatsFragment : Fragment() {
 
         when (model.aggregation.value) {
             AggregationType.sum -> view.findViewById<RadioButton>(R.id.radio_sum).isChecked = true
-            AggregationType.avg -> view.findViewById<RadioButton>(R.id.radio_avg).isChecked = true
+            AggregationType.average -> view.findViewById<RadioButton>(R.id.radio_avg).isChecked = true
         }
 
         model.requestData()
@@ -110,7 +110,7 @@ class AggregatedDailyStatsFragment : Fragment() {
         radioGroup.setOnCheckedChangeListener { group, checkedId ->
             when (checkedId) {
                 R.id.radio_sum -> model.setAggregation(AggregationType.sum)
-                R.id.radio_avg -> model.setAggregation(AggregationType.avg)
+                R.id.radio_avg -> model.setAggregation(AggregationType.average)
             }
         }
     }

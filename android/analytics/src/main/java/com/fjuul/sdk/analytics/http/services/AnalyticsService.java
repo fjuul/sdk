@@ -72,7 +72,7 @@ public class AnalyticsService {
      *        the users local timezone.
      * @param endDate the end of the interval to request daily stats aggregate for (inclusive); this is the date in the
      *        users local timezone.
-     * @param aggregation aggregation type; sum or avg.
+     * @param aggregation aggregation type; sum or average.
      * @return ApiCall for the user activity statistics for the given day interval.
      */
     public @NonNull ApiCall<AggregatedDailyStats> getAggregatedDailyStats(@NonNull LocalDate startDate,

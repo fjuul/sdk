@@ -234,7 +234,7 @@ dailyStats.forEach { item ->
 import com.fjuul.sdk.analytics.http.services.AnalyticsService
 ...
 val analyticsService = AnalyticsService(signedClient)
-val getAggregatedDailyStatsApiCall = analyticsService.getAggregatedDailyStats("2020-10-03", "2020-10-20", "sum")
+val getAggregatedDailyStatsApiCall = analyticsService.getAggregatedDailyStats("2020-10-03", "2020-10-20", AggregationType.sum)
 val getAggregatedDailyStatsApiResult = getAggregatedDailyStatsApiCall.execute()
 if (getAggregatedDailyStatsApiResult.isError) {
     // handle error

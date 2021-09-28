@@ -75,7 +75,7 @@ public class AnalyticsApi {
     ///   - to: The end of the day interval to request daily stats for (inclusive).
     ///   - aggregation: The aggregate type: sum or average.
     ///   - completion: The code to be executed once the request has finished.
-    public func dailyStatsAggregate(from: Date, to: Date, aggregation: AggregationType, completion: @escaping (Result<AggregatedDailyStats, Error>) -> Void) {
+    public func aggregatedDailyStats(from: Date, to: Date, aggregation: AggregationType, completion: @escaping (Result<AggregatedDailyStats, Error>) -> Void) {
         let path = "/daily-stats/\(apiClient.userToken)/aggregated"
         guard let url = baseUrl?.appendingPathComponent(path) else {
             return completion(.failure(FjuulError.invalidConfig))

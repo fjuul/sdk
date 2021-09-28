@@ -22,7 +22,7 @@ class AggregatedDailyStatsObservable: ObservableObject {
 
     func fetch(_ fromDate: Date, _ toDate: Date, _ aggregation: AggregationType) {
         self.isLoading = true
-        ApiClientHolder.default.apiClient?.analytics.dailyStatsAggregate(from: fromDate, to: toDate, aggregation: aggregation) { result in
+        ApiClientHolder.default.apiClient?.analytics.aggregatedDailyStats(from: fromDate, to: toDate, aggregation: aggregation) { result in
             self.isLoading = false
             switch result {
             case .success(let aggregatedDailyStats): self.value = aggregatedDailyStats

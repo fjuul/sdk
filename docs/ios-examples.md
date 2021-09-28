@@ -221,7 +221,7 @@ import FjuulAnalytics
 let fromDate = Calendar.current.date(byAdding: .day, value: -7, to: Date())
 let toDate = Date()
 
-apiClient.analytics.dailyStatsAggregate(from: fromDate, to: toDate, aggregation: AggregationType.average) { result in
+apiClient.analytics.aggregatedDailyStats(from: fromDate, to: toDate, aggregation: AggregationType.average) { result in
     switch result {
     case .success(let statsAvgs):
         // returns an object of daily stats' averages for requested period

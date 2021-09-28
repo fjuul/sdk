@@ -213,7 +213,7 @@ ActivitySourcesManager.initialize(client, config)
 import com.fjuul.sdk.analytics.http.services.AnalyticsService
 ...
 val analyticsService = AnalyticsService(signedClient)
-val getDailyStatsApiCall = analyticsService.getDailyStats("2020-10-03", "2020-10-20")
+val getDailyStatsApiCall = analyticsService.getDailyStats(LocalDate.parse("2020-10-03"), LocalDate.parse("2020-10-20"))
 val getDailyStatsApiResult = getDailyStatsApiCall.execute()
 if (getDailyStatsApiResult.isError) {
     // handle error
@@ -234,7 +234,7 @@ dailyStats.forEach { item ->
 import com.fjuul.sdk.analytics.http.services.AnalyticsService
 ...
 val analyticsService = AnalyticsService(signedClient)
-val getAggregatedDailyStatsApiCall = analyticsService.getAggregatedDailyStats("2020-10-03", "2020-10-20", AggregationType.sum)
+val getAggregatedDailyStatsApiCall = analyticsService.getAggregatedDailyStats(LocalDate.parse("2020-10-03"), LocalDate.parse.("2020-10-20"), AggregationType.sum)
 val getAggregatedDailyStatsApiResult = getAggregatedDailyStatsApiCall.execute()
 if (getAggregatedDailyStatsApiResult.isError) {
     // handle error

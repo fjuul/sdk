@@ -101,7 +101,7 @@ final class AnalyticsApiTests: XCTestCase {
     func testGetAggregatedDailyStats() {
         let e = expectation(description: "Alamofire")
         let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: InMemoryPersistor())
-        client.analytics.dailyStatsAggregate(from: Date.distantPast, to: Date.distantFuture, aggregation: AggregationType.sum) { result in
+        client.analytics.aggregatedDailyStats(from: Date.distantPast, to: Date.distantFuture, aggregation: AggregationType.sum) { result in
             switch result {
             case .success(let stat):
                 XCTAssertEqual(stat.moderate.seconds, 160)

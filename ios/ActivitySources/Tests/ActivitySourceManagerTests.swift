@@ -88,12 +88,12 @@ final class ActivitySourcesManagerTests: XCTestCase {
         let healthKitMock = MountableHealthKitActivitySourceMock()
         Given(healthKitMock, .trackerValue(getter: TrackerValue.HEALTHKIT))
 
-        Perform(apiClientMock, .connect(trackerValue: .value(TrackerValue.HEALTHKIT), completion: .any, perform: { (item, completion) in
+        Perform(apiClientMock, .connect(trackerValue: .value(TrackerValue.HEALTHKIT), completion: .any, perform: { (_, completion) in
             let trackerConnection = TrackerConnection(id: "0ca60422-3626-4b50-aa70-43c91d8da731", tracker: "healthkit", createdAt: Date(), endedAt: nil)
             completion(.success(.connected(trackerConnection: trackerConnection)))
         }))
 
-        Perform(healthKitMock, .requestAccess(config: .any, completion: .any, perform: { (item, completion) in
+        Perform(healthKitMock, .requestAccess(config: .any, completion: .any, perform: { (_, completion) in
            completion(.success(()))
         }))
 
@@ -123,7 +123,7 @@ final class ActivitySourcesManagerTests: XCTestCase {
         let promise = expectation(description: "Success get external authentication URL")
 
         let polarAuthUrl = "https://flow.polar.com/oauth2/authorization?response_type=code&client_id=71fyfQ"
-        Perform(apiClientMock, .connect(trackerValue: .value(TrackerValue.POLAR), completion: .any, perform: { (item, completion) in
+        Perform(apiClientMock, .connect(trackerValue: .value(TrackerValue.POLAR), completion: .any, perform: { (_, completion) in
 
             completion(.success(.externalAuthenticationFlowRequired(authenticationUrl: polarAuthUrl)))
         }))
@@ -150,7 +150,7 @@ final class ActivitySourcesManagerTests: XCTestCase {
         // Given
         let promise = expectation(description: "Handle server response with error")
 
-        Perform(apiClientMock, .connect(trackerValue: .value(TrackerValue.POLAR), completion: .any, perform: { (item, completion) in
+        Perform(apiClientMock, .connect(trackerValue: .value(TrackerValue.POLAR), completion: .any, perform: { (_, completion) in
             completion(.failure(FjuulError.activitySourceConnectionFailure(reason: .sourceAlreadyConnected(message: "Conflict, the source already connected"))))
         }))
 
@@ -178,7 +178,7 @@ final class ActivitySourcesManagerTests: XCTestCase {
         let trackerConnection = TrackerConnection(id: "0ca60422", tracker: "polar", createdAt: Date(), endedAt: nil)
         let activitySourceConnection = ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: PolarActivitySource.shared)
 
-        Perform(apiClientMock, .disconnect(activitySourceConnection: .value(activitySourceConnection), completion: .any, perform: { (item, completion) in
+        Perform(apiClientMock, .disconnect(activitySourceConnection: .value(activitySourceConnection), completion: .any, perform: { (_, completion) in
 
             completion(.success(()))
         }))
@@ -202,7 +202,7 @@ final class ActivitySourcesManagerTests: XCTestCase {
         let trackerConnection = TrackerConnection(id: "0ca60422", tracker: "polar", createdAt: Date(), endedAt: nil)
         let activitySourceConnection = ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: PolarActivitySource.shared)
 
-        Perform(apiClientMock, .disconnect(activitySourceConnection: .value(activitySourceConnection), completion: .any, perform: { (item, completion) in
+        Perform(apiClientMock, .disconnect(activitySourceConnection: .value(activitySourceConnection), completion: .any, perform: { (_, completion) in
 
             completion(.failure(FjuulError.invalidConfig))
         }))

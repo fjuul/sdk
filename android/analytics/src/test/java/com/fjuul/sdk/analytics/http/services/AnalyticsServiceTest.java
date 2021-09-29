@@ -16,6 +16,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import com.fjuul.sdk.analytics.entities.AggregatedDailyStats;
+import com.fjuul.sdk.analytics.entities.AggregationType;
 import com.fjuul.sdk.analytics.entities.DailyStats;
 import com.fjuul.sdk.core.entities.InMemoryStorage;
 import com.fjuul.sdk.core.entities.Keystore;
@@ -146,6 +148,41 @@ public class AnalyticsServiceTest {
         assertEquals(120, secondDailyStats.getModerate().getSeconds(), 0.0001);
         assertEquals(3.4, secondDailyStats.getHigh().getMetMinutes(), 0.0001);
         assertEquals(30, secondDailyStats.getHigh().getSeconds(), 0.0001);
+    }
+
+    @Test
+    public void getAggregatedDailyStatsTest() throws InterruptedException {
+        testKeystore.setKey(validSigningKey);
+        clientBuilder.setKeystore(testKeystore);
+        analyticsService = new AnalyticsService(clientBuilder.build());
+        MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK)
+            .setHeader("Content-Type", "application/json")
+            .setBody("{\n" + "\"activeKcal\": 170.14,\n" + "\"bmr\": 860.16,\n"
+                + "\"low\": { \"seconds\": 2222, \"metMinutes\": 32 },\n"
+                + "\"moderate\": { \"seconds\": 1980, \"metMinutes\": 44 },\n"
+                + "\"high\": { \"seconds\": 600, \"metMinutes\": 9 }\n" + "}");
+        mockWebServer.enqueue(mockResponse);
+
+        ApiCallResult<AggregatedDailyStats> result = analyticsService
+            .getAggregatedDailyStats(LocalDate.parse("2020-03-10"), LocalDate.parse("2020-03-11"), AggregationType.sum)
+            .execute();
+
+        RecordedRequest request = mockWebServer.takeRequest();
+        assertThat("should transform local date to string",
+            request.getPath(),
+            containsString("daily-stats/USER_TOKEN/aggregated?from=2020-03-10&to=2020-03-11&aggregation=sum"));
+
+        assertFalse("success result", result.isError());
+        AggregatedDailyStats aggregatedStats = result.getValue();
+
+        assertEquals(170.14, aggregatedStats.getActiveKcal(), 0.0001);
+        assertEquals(860.16, aggregatedStats.getBmr(), 0.0001);
+        assertEquals(32, aggregatedStats.getLow().getMetMinutes(), 0.0001);
+        assertEquals(2222, aggregatedStats.getLow().getSeconds(), 0.0001);
+        assertEquals(44, aggregatedStats.getModerate().getMetMinutes(), 0.0001);
+        assertEquals(1980, aggregatedStats.getModerate().getSeconds(), 0.0001);
+        assertEquals(9, aggregatedStats.getHigh().getMetMinutes(), 0.0001);
+        assertEquals(600, aggregatedStats.getHigh().getSeconds(), 0.0001);
     }
 
     @Test

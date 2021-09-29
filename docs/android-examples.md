@@ -213,7 +213,7 @@ ActivitySourcesManager.initialize(client, config)
 import com.fjuul.sdk.analytics.http.services.AnalyticsService
 ...
 val analyticsService = AnalyticsService(signedClient)
-val getDailyStatsApiCall = analyticsService.getDailyStats("2020-10-03", "2020-10-20")
+val getDailyStatsApiCall = analyticsService.getDailyStats(LocalDate.parse("2020-10-03"), LocalDate.parse("2020-10-20"))
 val getDailyStatsApiResult = getDailyStatsApiCall.execute()
 if (getDailyStatsApiResult.isError) {
     // handle error
@@ -222,6 +222,26 @@ val dailyStats = getDailyStatsApiResult.value!!
 dailyStats.forEach { item ->
     val formattedItem = """
         |date: ${item.date};
+        |low: ${item.low.metMinutes} metMinutes;
+        |moderate: ${item.moderate.metMinutes} metMinutes;
+        |high: ${item.high.metMinutes} metMinutes""".trimMargin()
+        println(formattedItem)
+}
+```
+
+### Getting sum or average aggregates of DailyStats per time interval
+```kotlin
+import com.fjuul.sdk.analytics.http.services.AnalyticsService
+...
+val analyticsService = AnalyticsService(signedClient)
+val getAggregatedDailyStatsApiCall = analyticsService.getAggregatedDailyStats(LocalDate.parse("2020-10-03"), LocalDate.parse.("2020-10-20"), AggregationType.sum)
+val getAggregatedDailyStatsApiResult = getAggregatedDailyStatsApiCall.execute()
+if (getAggregatedDailyStatsApiResult.isError) {
+    // handle error
+}
+val statsSums = getDailyStatsApiResult.value!!
+statsSums.forEach { item ->
+    val formattedItem = """
         |low: ${item.low.metMinutes} metMinutes;
         |moderate: ${item.moderate.metMinutes} metMinutes;
         |high: ${item.high.metMinutes} metMinutes""".trimMargin()

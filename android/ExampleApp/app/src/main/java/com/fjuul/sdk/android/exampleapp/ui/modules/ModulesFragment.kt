@@ -22,6 +22,7 @@ enum class ModuleItemName(val value: String) {
     ACTIVITY_SOURCES("Activity Sources"),
     GF_SYNC("Google Fit synchronization"),
     DAILY_STATS("Daily Stats"),
+    AGGREGATED_DAILY_STATS("Aggregated Daily Stats"),
     LOGOUT("Logout")
 }
 sealed class ModulesListItem()
@@ -54,6 +55,7 @@ class ModulesFragment : Fragment() {
             ModuleItem(ModuleItemName.GF_SYNC),
             ModulesSection("Analytics"),
             ModuleItem(ModuleItemName.DAILY_STATS),
+            ModuleItem(ModuleItemName.AGGREGATED_DAILY_STATS),
             ModulesSection("Exit"),
             ModuleItem(ModuleItemName.LOGOUT)
         )
@@ -65,6 +67,10 @@ class ModulesFragment : Fragment() {
                 when (pressedItem.name) {
                     ModuleItemName.DAILY_STATS -> {
                         val action = ModulesFragmentDirections.actionModulesFragmentToDailyStatsFragment()
+                        findNavController().navigate(action)
+                    }
+                    ModuleItemName.AGGREGATED_DAILY_STATS -> {
+                        val action = ModulesFragmentDirections.actionModulesFragmentToAggregatedDailyStatsFragment()
                         findNavController().navigate(action)
                     }
                     ModuleItemName.PROFILE -> {

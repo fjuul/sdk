@@ -33,7 +33,10 @@ class DailyStatsListAdapter(private val context: Context, var dataSource: Array<
 |date: ${item.date};
 |low: ${item.low.metMinutes} metMinutes;
 |moderate: ${item.moderate.metMinutes} metMinutes;
-|high: ${item.high.metMinutes} metMinutes""".trimMargin()
+|high: ${item.high.metMinutes} metMinutes;
+|activeKcal: ${item.activeKcal} kcal;
+|bmr: ${item.bmr};
+|steps: ${item.steps}""".trimMargin()
         return rowView
     }
 }

@@ -224,7 +224,10 @@ dailyStats.forEach { item ->
         |date: ${item.date};
         |low: ${item.low.metMinutes} metMinutes;
         |moderate: ${item.moderate.metMinutes} metMinutes;
-        |high: ${item.high.metMinutes} metMinutes""".trimMargin()
+        |high: ${item.high.metMinutes} metMinutes;
+        |activeKcal: ${item.activeKcal} kcal;
+        |bmr: ${item.bmr};
+        |steps: ${item.steps}""".trimMargin()
         println(formattedItem)
 }
 ```
@@ -244,7 +247,10 @@ statsSums.forEach { item ->
     val formattedItem = """
         |low: ${item.low.metMinutes} metMinutes;
         |moderate: ${item.moderate.metMinutes} metMinutes;
-        |high: ${item.high.metMinutes} metMinutes""".trimMargin()
+        |high: ${item.high.metMinutes} metMinutes;
+        |activeKcal: ${item.activeKcal} kcal;
+        |bmr: ${item.bmr};
+        |steps: ${item.steps}""".trimMargin()
         println(formattedItem)
 }
 ```

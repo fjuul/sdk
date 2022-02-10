@@ -7,6 +7,7 @@ public class DailyStats {
     String date;
     float activeKcal;
     float bmr;
+    int steps;
 
     @NonNull
     ActivityMeasure low;
@@ -28,6 +29,11 @@ public class DailyStats {
     @NonNull
     public float getBmr() {
         return bmr;
+    }
+
+    @NonNull
+    public float getSteps() {
+        return steps;
     }
 
     @NonNull

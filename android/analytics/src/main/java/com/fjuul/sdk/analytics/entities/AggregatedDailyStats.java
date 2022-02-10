@@ -6,6 +6,7 @@ public class AggregatedDailyStats {
 
     float activeKcal;
     float bmr;
+    int steps;
 
     @NonNull
     ActivityMeasure low;
@@ -22,6 +23,11 @@ public class AggregatedDailyStats {
     @NonNull
     public float getBmr() {
         return bmr;
+    }
+
+    @NonNull
+    public float getSteps() {
+        return steps;
     }
 
     @NonNull

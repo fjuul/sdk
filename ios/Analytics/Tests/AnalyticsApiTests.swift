@@ -31,7 +31,7 @@ final class AnalyticsApiTests: XCTestCase {
             \"low\":{\"seconds\":80,\"metMinutes\":4.44},
             \"moderate\":{\"seconds\":160,\"metMinutes\":5.58},
             \"high\":{\"seconds\":110,\"metMinutes\":6.23},
-            \"bmr\":705.64,\"activeKcal\":255.64
+            \"bmr\":705.64,\"activeKcal\":255.64,\"steps\":7400
         }
     """
 

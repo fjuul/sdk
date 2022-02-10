@@ -59,6 +59,11 @@ struct AggregatedDailyStatsScreen: View {
                                 .frame(width: 30, height: 10, alignment: .leading)
                             Text("bmr \(stats.bmr, specifier: "%.1f")")
                         }
+                        HStack {
+                            Image(systemName: "figure.walk")
+                                .frame(width: 30, height: 10, alignment: .leading)
+                            Text("steps \(stats.steps, specifier: "%.1f")")
+                        }
                     }.padding(.top, 5)
                 }
             }

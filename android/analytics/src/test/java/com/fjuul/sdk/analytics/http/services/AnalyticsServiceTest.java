@@ -74,9 +74,8 @@ public class AnalyticsServiceTest {
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK)
             .setHeader("Content-Type", "application/json")
-            .setBody("{\n" + "" + "\"date\": \"2020-03-10\",\n"
-                + "\"activeKcal\": 300.23,\n" + "\"bmr\": 502.10,\n" + "\"steps\": 8522,\n"
-                + "\"low\": { \"seconds\": 1800, \"metMinutes\": 20 },\n"
+            .setBody("{\n" + "" + "\"date\": \"2020-03-10\",\n" + "\"activeKcal\": 300.23,\n" + "\"bmr\": 502.10,\n"
+                + "\"steps\": 8522,\n" + "\"low\": { \"seconds\": 1800, \"metMinutes\": 20 },\n"
                 + "\"moderate\": { \"seconds\": 1200, \"metMinutes\": 10 },\n"
                 + "\"high\": { \"seconds\": 180, \"metMinutes\": 15 }\n" + "}");
         mockWebServer.enqueue(mockResponse);
@@ -109,9 +108,8 @@ public class AnalyticsServiceTest {
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK)
             .setHeader("Content-Type", "application/json")
-            .setBody("[ \n" + "{\n" + "\"date\": \"2020-03-10\",\n"
-                + "\"activeKcal\": 300,\n" + "\"bmr\": 500,\n" + "\"steps\": 8900,\n"
-                + "\"low\": { \"seconds\": 1800, \"metMinutes\": 20 },\n"
+            .setBody("[ \n" + "{\n" + "\"date\": \"2020-03-10\",\n" + "\"activeKcal\": 300,\n" + "\"bmr\": 500,\n"
+                + "\"steps\": 8900,\n" + "\"low\": { \"seconds\": 1800, \"metMinutes\": 20 },\n"
                 + "\"moderate\": { \"seconds\": 1200, \"metMinutes\": 10 },\n"
                 + "\"high\": { \"seconds\": 180, \"metMinutes\": 15 }\n" + "}, \n" + "{\n"
                 + "\"date\": \"2020-03-11\",\n" + "\"activeKcal\": 321,\n" + "\"bmr\": 550.55,\n" + "\"steps\": 9010,\n"

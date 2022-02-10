@@ -28,7 +28,7 @@ ApiClient.createUser(baseUrl: baseUrl, apiKey: "YOUR_API_KEY", profile: profileD
 }
 ```
 
-The result of the creation is an instance of `UserCreationResult`, which is a composition of the user profile and secret of the user. You should persist the token and secret of the user.  
+The result of the creation is an instance of `UserCreationResult`, which is a composition of the user profile and secret of the user. You should persist the token and secret of the user.
 To perform user-authorized actions, you must provide the user credentials to the `ApiClient` initializer. The user credentials are a pair of token and secret.
 
 ## Core Module
@@ -228,6 +228,7 @@ apiClient.analytics.aggregatedDailyStats(from: fromDate, to: toDate, aggregation
         //{
         //    "activeKcal": 300,
         //    "bmr": 1700,
+        //    "steps": 8600,
         //    "low": { "seconds": 1800, "metMinutes": 20 },
         //    "moderate": { "seconds": 1200, "metMinutes": 10 },
         //    "high": { "seconds": 180, "metMinutes": 15 },

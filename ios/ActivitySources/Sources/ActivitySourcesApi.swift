@@ -114,7 +114,7 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
         encoder.dateEncodingStrategy = .formatted(DateFormatters.iso8601Full)
         let parameterEncoder = JSONParameterEncoder(encoder: encoder)
 
-        apiClient.signedSession.request(url, method: .post, parameters: data, encoder: parameterEncoder).response { response in
+        apiClient.signedSession.request(url, method: .post, parameters: data, encoder: parameterEncoder).apiResponse { response in
             switch response.result {
             case .success:
                 return completion(.success(()))

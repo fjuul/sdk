@@ -138,7 +138,6 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
             case .failure(let err):
                 return completion(.failure(err))
             }
->>>>>>> 08e9f84 (base logic setup for syncing daily metrics)
         }
     }
 

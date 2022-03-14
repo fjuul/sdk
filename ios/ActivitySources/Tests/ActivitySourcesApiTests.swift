@@ -151,8 +151,7 @@ final class ActivitySourcesApiTests: XCTestCase {
 
         stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/connections/\(activitySourceConnection.id)")) { request in
             XCTAssertEqual(request.httpMethod, "DELETE")
-            let stubData = "".data(using: String.Encoding.utf8)
-            return HTTPStubsResponse(data: stubData!, statusCode: 204, headers: nil)
+            return HTTPStubsResponse(data: Data(), statusCode: 204, headers: nil)
         }
 
         sut.disconnect(activitySourceConnection: activitySourceConnection) { result in
@@ -244,12 +243,11 @@ final class ActivitySourcesApiTests: XCTestCase {
     }
 
     func testSendHealthKitBatchData() {
-        let e = expectation(description: "Request on send bacth data")
+        let e = expectation(description: "Request on send batch data")
 
-        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/healthkit")) { request in
+        let createStub = stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/healthkit")) { request in
             XCTAssertEqual(request.httpMethod, "POST")
-            let stubData = "".data(using: String.Encoding.utf8)
-            return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
+            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
 
         let entries = [AggregatedDataPoint(value: 3.141592, start: Date())]
@@ -263,6 +261,7 @@ final class ActivitySourcesApiTests: XCTestCase {
             case .failure:
                 XCTFail("Network level failure")
             }
+            HTTPStubs.removeStub(createStub)
         }
         waitForExpectations(timeout: 5.0, handler: nil)
     }
@@ -272,8 +271,7 @@ final class ActivitySourcesApiTests: XCTestCase {
 
         let createStub = stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/healthkit/profile")) { request in
             XCTAssertEqual(request.httpMethod, "PUT")
-            let stubData = "".data(using: String.Encoding.utf8)
-            return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
+            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
 
         let userProfileData = HKUserProfileData(height: 167.5, weight: 67)

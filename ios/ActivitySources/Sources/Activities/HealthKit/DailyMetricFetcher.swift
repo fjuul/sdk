@@ -53,7 +53,7 @@ class DailyMetricFetcher {
             let dataPoints = stats.map { statistic in
                 return HKDailyMetricDataPoint(
                     date: DateUtils.startOfDay(date: statistic.startDate),
-                    steps: statistic.sumQuantity()?.doubleValue(for: HKUnit.count())
+                    steps: Int(statistic.sumQuantity()?.doubleValue(for: HKUnit.count()) ?? 0)
                 )
             }
             completion(dataPoints)

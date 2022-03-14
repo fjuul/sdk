@@ -23,9 +23,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
     ///   - config: instance ActivitySourceConfig
     ///   - completion: void or error
     func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Void, Error>) -> Void) {
-        HealthKitManager.requestAccess(config: config) { result in
-            completion(result)
-        }
+        HealthKitManager.requestAccess(config: config, completion: completion)
     }
 
     /// Sync HealthKit intraday data based on types and dates.
@@ -46,9 +44,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
             return
         }
 
-        healthKitManager.sync(startDate: startDate, endDate: endDate, configTypes: configTypes) { result in
-            completion(result)
-        }
+        healthKitManager.sync(startDate: startDate, endDate: endDate, configTypes: configTypes, completion: completion)
     }
 
     /// Sync HealthKit daily metrics based on types and dates.
@@ -69,9 +65,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
             return
         }
 
-        healthKitManager.sync(startDate: startDate, endDate: endDate, configTypes: configTypes) { result in
-            completion(result)
-        }
+        healthKitManager.sync(startDate: startDate, endDate: endDate, configTypes: configTypes, completion: completion)
 
     }
 
@@ -86,9 +80,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
             return
         }
 
-        healthKitManager.sync(startDate: startDate, endDate: endDate, configTypes: [.workout]) { result in
-            completion(result)
-        }
+        healthKitManager.sync(startDate: startDate, endDate: endDate, configTypes: [.workout], completion: completion)
     }
 
     /// Sync latest known user metrics (weight or height).
@@ -107,9 +99,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
             return
         }
 
-        healthKitManager.sync(startDate: nil, endDate: nil, configTypes: configTypes) { result in
-            completion(result)
-        }
+        healthKitManager.sync(startDate: nil, endDate: nil, configTypes: configTypes, completion: completion)
     }
 
     /// Setup Healthkit backgroundDelivery for fetch desired data types based on ActivitySourceConfig.
@@ -127,9 +117,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
         let healthKitManager = healthKitManagerBuilder.create(dataHandler: self.dataHandler)
         self.healthKitManager = healthKitManager
 
-        healthKitManager.mount { result in
-            completion(result)
-        }
+        healthKitManager.mount(completion: completion)
     }
 
     /// Disable Healthkit backgroundDelivery.
@@ -140,9 +128,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
             return
         }
 
-        healthKitManager.disableAllBackgroundDelivery { result in
-            completion(result)
-        }
+        healthKitManager.disableAllBackgroundDelivery(completion: completion)
     }
 
     /// Handler for new data from backgroundDelivery or manual sync.
@@ -161,17 +147,11 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
 
         switch requestData {
         case .batchData(let batchData):
-            apiClient.sendHealthKitBatchData(data: batchData) { result in
-                completion(result)
-            }
+            apiClient.sendHealthKitBatchData(data: batchData, completion: completion)
         case .dailyMetricData(let dailyMetrics):
-            apiClient.sendHealthKitDailyMetrics(data: dailyMetrics) { result in
-                completion(result)
-            }
+            apiClient.sendHealthKitDailyMetrics(data: dailyMetrics, completion: completion)
         case .userProfileData(let userProfile):
-            apiClient.sendHealthKitUserProfileData(data: userProfile) { result in
-                completion(result)
-            }
+            apiClient.sendHealthKitUserProfileData(data: userProfile, completion: completion)
         }
     }
 }

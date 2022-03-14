@@ -44,6 +44,18 @@ struct SyncHealthKitActivitySource: View {
                         callback: self.healthKitSyncObservable.checkboxChanged
                     )
                 }
+                Section {
+                    if self.healthKitSyncObservable.isLoadingIntraday {
+                        Text("Loading...")
+                    } else {
+                        Button("Sync intraday") {
+                            self.healthKitSyncObservable.syncIntradayMetrics()
+                        }
+                    }
+                }
+            }
+
+            Section(header: Text("Daily Metrics")) {
                 HStack {
                     CheckboxField(
                         id: HealthKitConfigType.stepCount.rawValue,
@@ -54,11 +66,11 @@ struct SyncHealthKitActivitySource: View {
                     )
                 }
                 Section {
-                    if self.healthKitSyncObservable.isLoadingIntraday {
+                    if self.healthKitSyncObservable.isLoadingDailyMetrics {
                         Text("Loading...")
                     } else {
-                        Button("Sync intraday") {
-                            self.healthKitSyncObservable.syncIntradayMetrics()
+                        Button("Sync daily metrics") {
+                            self.healthKitSyncObservable.syncDailyMetrics()
                         }
                     }
                 }

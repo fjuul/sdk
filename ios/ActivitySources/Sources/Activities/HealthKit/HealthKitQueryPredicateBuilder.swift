@@ -54,6 +54,19 @@ class HealthKitQueryPredicateBuilder {
         return predicates
     }
 
+    func dailyMetricsCollectionsPredicate(days: Set<Date>) -> NSCompoundPredicate {
+        let datePredicates: [NSPredicate] = days.map { date in
+            let startOfDay = DateUtils.startOfDay(date: date)
+            return HKQuery.predicateForSamples(withStart: startOfDay, end: nil, options: .strictStartDate)
+        }
+        let datePredicate = NSCompoundPredicate(type: .or, subpredicates: datePredicates)
+        if !healthKitConfig.syncUserEnteredData {
+            return NSCompoundPredicate(type: .and, subpredicates: [datePredicate, wasUserEnteredPredicate])
+        } else {
+            return datePredicate
+        }
+    }
+
     /// Start date of data collection. Maximum is 30 days back.
     /// - Returns: Date
     internal func dataСollectionStartAt() -> Date {

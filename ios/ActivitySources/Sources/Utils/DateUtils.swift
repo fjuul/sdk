@@ -2,6 +2,11 @@ import Foundation
 
 /// Usefull functions to work with Date in Swift
 public class DateUtils {
+
+    static func startOfDay(date: Date) -> Date {
+        return Calendar.current.startOfDay(for: date)
+    }
+
     // Inspired from https://github.com/SwifterSwift/SwifterSwift/blob/master/Sources/SwifterSwift/Foundation/DateExtensions.swift
     static func beginningOfHour(date: Date?) -> Date? {
         guard let date = date else { return nil }

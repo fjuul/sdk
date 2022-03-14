@@ -51,6 +51,30 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
         }
     }
 
+    /// Sync HealthKit daily metrics based on types and dates.
+    /// - Paramaters:
+    ///   - startDate: Start Date
+    ///   - endDate: End Date
+    ///   - configTypes: list of HealthKitConfigType
+    ///   - completion: void or error
+    public func syncDailyMetrics(startDate: Date, endDate: Date, configTypes: [HealthKitConfigType] = HealthKitConfigType.dailyTypes,
+                                 completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let healthKitManager = self.healthKitManager else {
+            completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
+            return
+        }
+
+        guard configTypes.allSatisfy(HealthKitConfigType.dailyTypes.contains) else {
+            completion(.failure(FjuulError.activitySourceFailure(reason: .illegalHealthKitConfigType)))
+            return
+        }
+
+        healthKitManager.sync(startDate: startDate, endDate: endDate, configTypes: configTypes) { result in
+            completion(result)
+        }
+
+    }
+
     /// Sync HealthKit workouts data based on specific dates.
     /// - Parameters:
     ///   - startDate: Start date
@@ -138,6 +162,10 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
         switch requestData {
         case .batchData(let batchData):
             apiClient.sendHealthKitBatchData(data: batchData) { result in
+                completion(result)
+            }
+        case .dailyMetricData(let dailyMetrics):
+            apiClient.sendHealthKitDailyMetrics(data: dailyMetrics) { result in
                 completion(result)
             }
         case .userProfileData(let userProfile):

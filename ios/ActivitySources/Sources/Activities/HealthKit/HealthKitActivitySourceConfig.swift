@@ -37,7 +37,7 @@ public struct HealthKitActivitySourceConfig {
     ///   - dataTypesToRead: List of data types for read from HealthKit.
     ///   - syncUserEnteredData: Enable/Disable sync from HealthKit user manually entered data (default: true).
     ///   - enableBackgroundDelivery: Enable/Disable backgroundDelivery (default: true).
-    public init(dataTypesToRead: [HealthKitConfigType] = HealthKitConfigType.allCases,
+    public init(dataTypesToRead: [HealthKitConfigType] = [.activeEnergyBurned, .distanceCycling, .distanceWalkingRunning, .height, .weight],
                 syncUserEnteredData: Bool = true,
                 enableBackgroundDelivery: Bool = true) {
 

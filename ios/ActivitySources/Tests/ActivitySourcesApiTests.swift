@@ -216,7 +216,7 @@ final class ActivitySourcesApiTests: XCTestCase {
         // When
         apiClient.initActivitySourcesManager(config: config)
 
-        //Then
+        // Then
         XCTAssertNotNil(apiClient.activitySourcesManager)
     }
 
@@ -238,7 +238,7 @@ final class ActivitySourcesApiTests: XCTestCase {
             }
         }
 
-        //Then
+        // Then
         XCTAssertNotNil(apiClient.activitySourcesManager)
     }
 

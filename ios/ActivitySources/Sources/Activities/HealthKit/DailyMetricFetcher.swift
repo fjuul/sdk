@@ -3,7 +3,7 @@ import HealthKit
 
 class DailyMetricFetcher {
 
-    static var interval: DateComponents {
+    private static var interval: DateComponents {
         var interval = DateComponents()
         interval.day = 1
         return interval
@@ -39,7 +39,7 @@ class DailyMetricFetcher {
             anchorDate: DateUtils.startOfDay(date: Date()),
             intervalComponents: interval
         )
-        query.initialResultsHandler = { query, results, error in
+        query.initialResultsHandler = { _, results, _ in
             guard let stats = results?.statistics() else {
                 completion(nil)
                 return

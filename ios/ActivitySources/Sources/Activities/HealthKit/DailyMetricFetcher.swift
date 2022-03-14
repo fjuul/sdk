@@ -11,12 +11,16 @@ class DailyMetricFetcher {
 
     /// Fetch latest know value from HealthKit. If no anchor use HKSampleQuery for fetch only 1 last value, otherwise use HKAnchoredObjectQuery.
     /// - Parameters:
-    ///   - type:
+    ///   - type: HK sample type
     ///   - anchor: HKQueryAnchor
-    ///   - completion:  and new anchor
+    ///   - completion: optional array of HKDailyMetricDataPoint and new anchor
     static func fetch(type: HKQuantityType, anchor: HKQueryAnchor?, predicateBuilder: HealthKitQueryPredicateBuilder,
                       completion: @escaping ([HKDailyMetricDataPoint]?, HKQueryAnchor?) -> Void) {
         self.dirtyDays(sampleType: type, anchor: anchor, predicate: predicateBuilder.samplePredicate()) { dirtyDays, newAnchor in
+            if dirtyDays.isEmpty {
+                completion(nil, newAnchor)
+                return
+            }
             let predicate = predicateBuilder.dailyMetricsCollectionsPredicate(days: dirtyDays)
             if type == HKObjectType.quantityType(forIdentifier: .stepCount) {
                 self.getDailySteps(sampleType: type, predicate: predicate) { result in
@@ -41,6 +45,8 @@ class DailyMetricFetcher {
                 return
             }
             if stats.isEmpty {
+                // return nil instead of empty array in case of no data to not trigger a network
+                // request with an empty array upload
                 completion(nil)
                 return
             }

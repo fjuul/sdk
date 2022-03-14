@@ -57,7 +57,11 @@ class HealthKitQueryPredicateBuilder {
     func dailyMetricsCollectionsPredicate(days: Set<Date>) -> NSCompoundPredicate {
         let datePredicates: [NSPredicate] = days.map { date in
             let startOfDay = DateUtils.startOfDay(date: date)
-            return HKQuery.predicateForSamples(withStart: startOfDay, end: nil, options: .strictStartDate)
+            let endOfDay = DateUtils.endOfDay(date: date)
+            // note we could pass nil instead of endOfDay here, but that would lead to all days starting from the first
+            // dirty day getting reuploaded entirely regardless if they have changed or not; this can be considered if
+            // the current approach would cause issues in practice with data changes around midnight
+            return HKQuery.predicateForSamples(withStart: startOfDay, end: endOfDay, options: .strictStartDate)
         }
         let datePredicate = NSCompoundPredicate(type: .or, subpredicates: datePredicates)
         if !healthKitConfig.syncUserEnteredData {

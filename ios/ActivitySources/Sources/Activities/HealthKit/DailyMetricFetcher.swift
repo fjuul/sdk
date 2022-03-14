@@ -9,17 +9,13 @@ class DailyMetricFetcher {
         return interval
     }
 
-    private static func statisticsCollectionAnchor() -> Date {
-        return Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: Date())!
-    }
-
     /// Fetch latest know value from HealthKit. If no anchor use HKSampleQuery for fetch only 1 last value, otherwise use HKAnchoredObjectQuery.
     /// - Parameters:
     ///   - type:
     ///   - anchor: HKQueryAnchor
     ///   - completion:  and new anchor
     static func fetch(type: HKQuantityType, anchor: HKQueryAnchor?, predicateBuilder: HealthKitQueryPredicateBuilder,
-                      completion: @escaping ([HKDailyMetricDataPoint], HKQueryAnchor?) -> Void) {
+                      completion: @escaping ([HKDailyMetricDataPoint]?, HKQueryAnchor?) -> Void) {
         self.dirtyDays(sampleType: type, anchor: anchor, predicate: predicateBuilder.samplePredicate()) { dirtyDays, newAnchor in
             let predicate = predicateBuilder.dailyMetricsCollectionsPredicate(days: dirtyDays)
             if type == HKObjectType.quantityType(forIdentifier: .stepCount) {
@@ -27,25 +23,30 @@ class DailyMetricFetcher {
                     completion(result, newAnchor)
                 }
             }
+            // TODO handle rhr
         }
     }
 
-    private static func getDailySteps(sampleType: HKQuantityType, predicate: NSCompoundPredicate, completion: @escaping ([HKDailyMetricDataPoint]) -> Void) {
+    private static func getDailySteps(sampleType: HKQuantityType, predicate: NSCompoundPredicate, completion: @escaping ([HKDailyMetricDataPoint]?) -> Void) {
         let query = HKStatisticsCollectionQuery(
             quantityType: sampleType,
             quantitySamplePredicate: predicate,
             options: .cumulativeSum,
-            anchorDate: statisticsCollectionAnchor(),
+            anchorDate: DateUtils.startOfDay(date: Date()),
             intervalComponents: interval
         )
         query.initialResultsHandler = { query, results, error in
-            guard let stats = results else {
-                completion([])
+            guard let stats = results?.statistics() else {
+                completion(nil)
                 return
             }
-            let dataPoints = stats.statistics().map { statistic in
+            if stats.isEmpty {
+                completion(nil)
+                return
+            }
+            let dataPoints = stats.map { statistic in
                 return HKDailyMetricDataPoint(
-                    date: statistic.startDate,
+                    date: DateUtils.startOfDay(date: statistic.startDate),
                     steps: statistic.sumQuantity()?.doubleValue(for: HKUnit.count())
                 )
             }
@@ -54,7 +55,7 @@ class DailyMetricFetcher {
         HealthKitManager.healthStore.execute(query)
     }
 
-    /// Detect dirty days by making a HKAnchoredObjectQuery and fetching dates from the new entries in HK.
+    /// Detect dirty days by making an HKAnchoredObjectQuery and fetching dates from the new entries in HK.
     /// - Parameters:
     ///   - sampleType: HK sample type
     ///   - anchor: instance of HK anchor

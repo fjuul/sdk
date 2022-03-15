@@ -77,7 +77,7 @@ class AggregatedDataFetcher {
                                                 anchorDate: self.statisticsCollectionAnchor(),
                                                 intervalComponents: interval)
         // Set the results handler
-        query.initialResultsHandler = { query, results, error in
+        query.initialResultsHandler = { _, results, _ in
             guard let statsCollection = results else {
                 completion([])
                 return
@@ -123,7 +123,7 @@ class AggregatedDataFetcher {
                                                 anchorDate: self.statisticsCollectionAnchor(),
                                                 intervalComponents: interval)
         // Set the results handler
-        query.initialResultsHandler = { query, results, error in
+        query.initialResultsHandler = { _, results, _ in
             guard let statsCollection = results else {
                 completion([])
                 return

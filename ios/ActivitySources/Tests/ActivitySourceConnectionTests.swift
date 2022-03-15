@@ -46,7 +46,7 @@ final class ActivitySourceConnectionTests: XCTestCase {
     }
 
     func testInit() {
-        //Then
+        // Then
         XCTAssertEqual(sut.id, trackerConnection.id)
         XCTAssertEqual(sut.tracker, TrackerValue(value: trackerConnection.tracker))
         XCTAssertEqual(sut.createdAt, trackerConnection.createdAt)

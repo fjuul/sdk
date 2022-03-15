@@ -22,7 +22,6 @@ enum ApiEnvironment: Int, CaseIterable, Identifiable {
         }
     }
 
-    // swiftlint:disable:next identifier_name
     var id: ApiEnvironment { self }
 
 }

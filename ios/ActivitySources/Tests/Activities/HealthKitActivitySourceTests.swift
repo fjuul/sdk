@@ -41,7 +41,7 @@ final class ActivitySourceHKTests: XCTestCase {
     }
 
     func testInit() {
-        //Then
+        // Then
         XCTAssertNil(sut.apiClient)
         XCTAssertEqual(sut.trackerValue, TrackerValue.HEALTHKIT)
     }
@@ -56,7 +56,7 @@ final class ActivitySourceHKTests: XCTestCase {
             completion(.success(()))
         }))
 
-        //When
+        // When
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
@@ -78,7 +78,7 @@ final class ActivitySourceHKTests: XCTestCase {
             completion(.failure(FjuulError.activitySourceFailure(reason: .healthkitNotAvailableOnDevice)))
         }))
 
-        //When
+        // When
         sut.mount(apiClient: activitySourcesApiClientMock, config: self.config, healthKitManagerBuilder: healthKitManagerBuilderMock) { result in
             switch result {
             case .success:
@@ -113,7 +113,7 @@ final class ActivitySourceHKTests: XCTestCase {
             completion(.success(()))
         }))
 
-        //When
+        // When
         sut.unmount { result in
             switch result {
             case .success:
@@ -148,7 +148,7 @@ final class ActivitySourceHKTests: XCTestCase {
             completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
         }))
 
-        //When
+        // When
         sut.unmount { result in
             switch result {
             case .success:
@@ -174,7 +174,7 @@ final class ActivitySourceHKTests: XCTestCase {
             completion(.success(()))
         }))
 
-        //When
+        // When
         sut.unmount { result in
             switch result {
             case .success:
@@ -213,7 +213,7 @@ final class ActivitySourceHKTests: XCTestCase {
             completion(.success(()))
         }))
 
-        //When
+        // When
         sut.syncIntradayMetrics(startDate: startDate, endDate: endDate) { result in
             switch result {
             case .success:
@@ -251,7 +251,7 @@ final class ActivitySourceHKTests: XCTestCase {
             completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
         }))
 
-        //When
+        // When
         sut.syncIntradayMetrics(startDate: startDate, endDate: endDate) { result in
             switch result {
             case .success:
@@ -284,7 +284,7 @@ final class ActivitySourceHKTests: XCTestCase {
         let startDate = Calendar.current.startOfDay(for: Date())
         let endDate = Date()
 
-        //When
+        // When
         sut.syncIntradayMetrics(startDate: startDate, endDate: endDate, configTypes: [.workout]) { result in
             switch result {
             case .success:
@@ -324,7 +324,7 @@ final class ActivitySourceHKTests: XCTestCase {
             completion(.success(()))
         }))
 
-        //When
+        // When
         sut.syncWorkouts(startDate: startDate, endDate: endDate) { result in
             switch result {
             case .success:
@@ -363,7 +363,7 @@ final class ActivitySourceHKTests: XCTestCase {
             completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
         }))
 
-        //When
+        // When
         sut.syncWorkouts(startDate: startDate, endDate: endDate) { result in
             switch result {
             case .success:
@@ -399,7 +399,7 @@ final class ActivitySourceHKTests: XCTestCase {
             completion(.success(()))
         }))
 
-        //When
+        // When
         sut.syncProfile { result in
             switch result {
             case .success:
@@ -435,7 +435,7 @@ final class ActivitySourceHKTests: XCTestCase {
             completion(.failure(FjuulError.activitySourceFailure(reason: .activitySourceNotMounted)))
         }))
 
-        //When
+        // When
         sut.syncProfile { result in
             switch result {
             case .success:
@@ -466,7 +466,7 @@ final class ActivitySourceHKTests: XCTestCase {
             }
         }
 
-        //When
+        // When
         sut.syncProfile(configTypes: [.workout]) { result in
             switch result {
             case .success:

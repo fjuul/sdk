@@ -62,7 +62,7 @@ struct DailyStatsScreen: View {
                             HStack {
                                 Image(systemName: "figure.walk")
                                     .frame(width: 30, height: 10, alignment: .leading)
-                                Text("steps \(each.steps, specifier: "%.1f")")
+                                Text("steps \(each.steps, specifier: "%d")")
                             }
                         }.padding(.top, 5)
                     }

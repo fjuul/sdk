@@ -26,7 +26,7 @@ about java 8 desugaring if you plan to support older api levels (Android Gradle 
 - The 'activitysources' module requires `google-play-services` on an Android device to work with the Google Fit API. This means that devices with missing Google Play services (for example, phones manufactured by Huawei) wouldn't be able to connect to Google Fit.
 
 ### Distribution
-Fjuul SDK for Android is published to the private Github Packages registry with the url `https://maven.pkg.github.com/fjuul/sdk`. In order to access its modules you need to:
+Fjuul SDK for Android is published to the Github Packages registry with the url `https://maven.pkg.github.com/fjuul/sdk`. In order to access its modules you need to:
 
 1. get an authentication token with 'read:packages' access to fjuul/sdk repository on GitHub
 2. declare a maven repository in your `build.gradle` in the following way:
@@ -108,7 +108,7 @@ Fjuul SDK for iOS is written in Swift, and published as an SPM package.
 Fjuul SDK for iOS is published in this repository. In order to access its modules you need to:
 
 1. Select `File > Swift Packages > Add Package Dependency` from the main menu in XCode
-2. Fill the package repository URL with either `https://github.com/fjuul/sdk` or `git@github.com:fjuul/sdk.git`, depending on your preferred method of authentication
+2. Fill the package repository URL with either `https://github.com/fjuul/sdk` or `git@github.com:fjuul/sdk.git`
 3. Choose package products as needed: `FjuulCore, FjuulUser, FjuulActivitySources, FjuulAnalytics`
 
 ### Getting started

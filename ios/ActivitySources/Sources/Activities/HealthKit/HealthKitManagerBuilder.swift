@@ -1,7 +1,7 @@
 import Foundation
 import FjuulCore
 
-//sourcery: AutoMockable
+// sourcery: AutoMockable
 protocol HealthKitManagerBuilding {
     init(apiClient: ActivitySourcesApiClient, persistor: Persistor, config: ActivitySourceConfigBuilder)
     func create(dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void)) -> HealthKitManaging

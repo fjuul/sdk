@@ -1,7 +1,7 @@
 import Foundation
 import FjuulCore
 
-//sourcery: AutoMockable
+// sourcery: AutoMockable
 protocol MountableHealthKitActivitySource: MountableActivitySource {
     func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Void, Error>) -> Void)
 }
@@ -45,6 +45,7 @@ public final class HealthKitActivitySource: MountableHealthKitActivitySource {
         }
 
         healthKitManager.sync(startDate: startDate, endDate: endDate, configTypes: configTypes, completion: completion)
+
     }
 
     /// Sync HealthKit daily metrics based on types and dates.

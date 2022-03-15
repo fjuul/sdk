@@ -1,7 +1,7 @@
 import Foundation
 import FjuulCore
 
-//sourcery: AutoMockable
+// sourcery: AutoMockable
 protocol MountableHealthKitActivitySource: MountableActivitySource {
     func requestAccess(config: ActivitySourceConfigBuilder, completion: @escaping (Result<Void, Error>) -> Void)
 }

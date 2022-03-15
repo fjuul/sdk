@@ -77,7 +77,7 @@ class UserProfileDataFetcher {
                     return
                 }
 
-                //no data
+                // no data
                 completion(nil)
             }
 

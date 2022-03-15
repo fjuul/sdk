@@ -64,6 +64,13 @@ struct SyncHealthKitActivitySource: View {
                         textSize: 16,
                         callback: self.healthKitSyncObservable.checkboxChanged
                     )
+                    CheckboxField(
+                        id: HealthKitConfigType.restingHeartRate.rawValue,
+                        label: "Resting Heart Rate",
+                        size: 16,
+                        textSize: 16,
+                        callback: self.healthKitSyncObservable.checkboxChanged
+                    )
                 }
                 Section {
                     if self.healthKitSyncObservable.isLoadingDailyMetrics {

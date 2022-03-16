@@ -8,7 +8,7 @@ let package = Package(
     platforms: [
         // required to run tests depending on Alamofire
         .macOS(.v10_12),
-        .iOS(.v10)
+        .iOS(.v11)
     ],
     products: [
         .library(name: "FjuulCore", targets: ["FjuulCore"]),

@@ -34,11 +34,13 @@ struct ActivitySourcesScreen: View {
                 }
             }
 
-            ForEach(self.activitySourceObserver.notConnectedActivitySources, id: \.self.trackerValue.value) { activitySource in
-                Button(action: {
-                    self.activitySourceObserver.connect(activitySource: activitySource)
-                }) {
-                    Text("Connect \(activitySource.trackerValue.value)")
+            Section {
+                ForEach(self.activitySourceObserver.notConnectedActivitySources, id: \.self.trackerValue.value) { activitySource in
+                    Button(action: {
+                        self.activitySourceObserver.connect(activitySource: activitySource)
+                    }) {
+                        Text("Connect \(activitySource.trackerValue.value)")
+                    }
                 }
             }
         }

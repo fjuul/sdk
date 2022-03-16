@@ -39,6 +39,8 @@ struct HKAnchorStore {
             anchors?[.distanceWalkingRunning] = newAnchor
         case HKObjectType.quantityType(forIdentifier: .heartRate):
             anchors?[.heartRate] = newAnchor
+        case HKObjectType.quantityType(forIdentifier: .restingHeartRate):
+            anchors?[.restingHeartRate] = newAnchor
         case HKObjectType.workoutType():
             anchors?[.workout] = newAnchor
         case HKObjectType.quantityType(forIdentifier: .bodyMass):
@@ -63,6 +65,8 @@ struct HKAnchorStore {
             return anchors?[.distanceWalkingRunning]
         case HKObjectType.quantityType(forIdentifier: .heartRate):
             return anchors?[.heartRate]
+        case HKObjectType.quantityType(forIdentifier: .restingHeartRate):
+            return anchors?[.restingHeartRate]
         case HKObjectType.workoutType():
             return anchors?[.workout]
         case HKObjectType.quantityType(forIdentifier: .bodyMass):

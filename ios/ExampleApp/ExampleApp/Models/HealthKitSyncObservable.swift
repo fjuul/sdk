@@ -11,6 +11,7 @@ class HealthKitSyncObservable: ObservableObject {
 
     @Published var error: ErrorHolder?
     @Published var isLoadingIntraday: Bool = false
+    @Published var isLoadingDailyMetrics: Bool = false
     @Published var isLoadingProfile: Bool = false
     @Published var isLoadingWorkouts: Bool = false
 
@@ -41,6 +42,31 @@ class HealthKitSyncObservable: ObservableObject {
             }
 
             DispatchQueue.main.async { self.isLoadingIntraday = false }
+        }
+    }
+
+    func syncDailyMetrics() {
+        guard let activitySourceConnection = ApiClientHolder.default.apiClient?.activitySourcesManager?
+                .mountedActivitySourceConnections.first(where: { item in item.activitySource is HealthKitActivitySource }) else {
+            return
+        }
+
+        guard let activitySource = activitySourceConnection.activitySource as? HealthKitActivitySource else {
+            return
+        }
+
+        self.isLoadingDailyMetrics = true
+
+        let configTypes = HealthKitConfigType.dailyTypes.filter { item in enabledConfigTypes.contains(item) }
+
+        activitySource.syncDailyMetrics(startDate: self.fromDate, endDate: self.toDate, configTypes: configTypes) { result in
+            switch result {
+            case .success:
+                print("Success sync \(configTypes)")
+            case .failure(let err): self.error = ErrorHolder(error: err)
+            }
+
+            DispatchQueue.main.async { self.isLoadingDailyMetrics = false }
         }
     }
 

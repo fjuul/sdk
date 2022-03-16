@@ -199,8 +199,7 @@ class HealthKitManager: HealthKitManaging {
         case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned),
              HKObjectType.quantityType(forIdentifier: .distanceCycling),
              HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning),
-             HKObjectType.quantityType(forIdentifier: .heartRate),
-             HKObjectType.quantityType(forIdentifier: .stepCount):
+             HKObjectType.quantityType(forIdentifier: .heartRate):
 
             let predicateBuilder = HealthKitQueryPredicateBuilder(healthKitConfig: self.config.healthKitConfig, startDate: startDate, endDate: endDate)
 
@@ -212,6 +211,19 @@ class HealthKitManager: HealthKitManaging {
 
                 completion(HKRequestData.batchData(data), newAnchor)
             }
+
+        case HKObjectType.quantityType(forIdentifier: .stepCount),
+             HKObjectType.quantityType(forIdentifier: .restingHeartRate):
+            let predicateBuilder = HealthKitQueryPredicateBuilder(healthKitConfig: self.config.healthKitConfig, startDate: startDate, endDate: endDate)
+
+            self.fetchDailyUpdates(sampleType: (sampleType as? HKQuantityType)!, predicateBuilder: predicateBuilder) { (data, newAnchor) in
+                guard let data = data else {
+                    completion(nil, newAnchor)
+                    return
+                }
+                completion(HKRequestData.dailyMetricData(data), newAnchor)
+            }
+
         case HKObjectType.workoutType():
             let predicateBuilder = HealthKitQueryPredicateBuilder(healthKitConfig: self.config.healthKitConfig, startDate: startDate, endDate: endDate)
 
@@ -258,6 +270,20 @@ class HealthKitManager: HealthKitManaging {
             let anchor = try self.anchorStore.get(type: sampleType)
             AggregatedDataFetcher.fetch(type: sampleType, anchor: anchor, predicateBuilder: predicateBuilder) { hkBatchData, newAnchor in
                 completion(hkBatchData, newAnchor)
+            }
+        } catch {
+            DataLogger.shared.error("Unexpected error on get HKAnchor for the type: \(sampleType) \(error).")
+            completion(nil, nil)
+            return
+        }
+    }
+
+    private func fetchDailyUpdates(sampleType: HKQuantityType, predicateBuilder: HealthKitQueryPredicateBuilder,
+                                   completion: @escaping (_ data: [HKDailyMetricDataPoint]?, _ newAnchor: HKQueryAnchor?) -> Void) {
+        do {
+            let anchor = try self.anchorStore.get(type: sampleType)
+            DailyMetricFetcher.fetch(type: sampleType, anchor: anchor, predicateBuilder: predicateBuilder) { hkDailyData, newAnchor in
+                completion(hkDailyData, newAnchor)
             }
         } catch {
             DataLogger.shared.error("Unexpected error on get HKAnchor for the type: \(sampleType) \(error).")

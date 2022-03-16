@@ -3,7 +3,7 @@ import HealthKit
 
 /// Data types that availbale configure for HealthKitActivitySourceConfig
 public enum HealthKitConfigType: Int, CaseIterable {
-    case activeEnergyBurned, stepCount, distanceCycling, distanceWalkingRunning, heartRate, workout, weight, height
+    case activeEnergyBurned, stepCount, distanceCycling, distanceWalkingRunning, heartRate, restingHeartRate, workout, weight, height
 
     /// Appropriate type of HKSampleType
     public var sampleType: HKSampleType? {
@@ -13,6 +13,7 @@ public enum HealthKitConfigType: Int, CaseIterable {
         case .distanceWalkingRunning:   return HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning)
         case .heartRate:                return HKObjectType.quantityType(forIdentifier: .heartRate)
         case .height:                   return HKObjectType.quantityType(forIdentifier: .height)
+        case .restingHeartRate:         return HKObjectType.quantityType(forIdentifier: .restingHeartRate)
         case .stepCount:                return HKObjectType.quantityType(forIdentifier: .stepCount)
         case .weight:                   return HKObjectType.quantityType(forIdentifier: .bodyMass)
         case .workout:                  return HKObjectType.workoutType()
@@ -21,7 +22,8 @@ public enum HealthKitConfigType: Int, CaseIterable {
 }
 
 extension HealthKitConfigType {
-    public static let intradayTypes: [HealthKitConfigType] = [.activeEnergyBurned, .distanceCycling, .distanceWalkingRunning, .heartRate, .stepCount]
+    public static let intradayTypes: [HealthKitConfigType] = [.activeEnergyBurned, .distanceCycling, .distanceWalkingRunning, .heartRate]
+    public static let dailyTypes: [HealthKitConfigType] = [.stepCount, .restingHeartRate]
     public static let userProfileTypes: [HealthKitConfigType] = [.height, .weight]
 }
 

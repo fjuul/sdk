@@ -266,6 +266,28 @@ final class ActivitySourcesApiTests: XCTestCase {
         waitForExpectations(timeout: 5.0, handler: nil)
     }
 
+    func testSendHealthKitDailyMetricData() {
+        let e = expectation(description: "Request on send daily metric data")
+
+        let createStub = stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/healthkit/dailies")) { request in
+            XCTAssertEqual(request.httpMethod, "POST")
+            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+        }
+
+        let metrics = [HKDailyMetricDataPoint(date: Date(), steps: 123)]
+
+        sut.sendHealthKitDailyMetrics(data: metrics) { result in
+            switch result {
+            case .success:
+                e.fulfill()
+            case .failure:
+                XCTFail("Network level failure")
+            }
+            HTTPStubs.removeStub(createStub)
+        }
+        waitForExpectations(timeout: 5.0, handler: nil)
+    }
+
     func testSendHealthKitUserProfileData() {
         let e = expectation(description: "Request on send user profile data")
 

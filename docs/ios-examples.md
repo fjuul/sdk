@@ -86,9 +86,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         let config = ActivitySourceConfigBuilder { builder in
             builder.healthKitConfig = HealthKitActivitySourceConfig(dataTypesToRead: [
-                .activeEnergyBurned, .heartRate,
-                .distanceCycling, .distanceWalkingRunning,
-                .stepCount, .workout, .height, .weight
+                .activeEnergyBurned, .distanceCycling, .distanceWalkingRunning,
+                .height, .weight
             ])
         }
 
@@ -109,6 +108,7 @@ After calling `apiClient.initActivitySourcesManager`, the `ActivitySourceManager
 ### Collect HealthKit Data
 
 HealthKitActivitySource will register background delivery observers after connecting. HealthKit will then trigger the app each time when new data (corresponding to the types from HealthKitActivitySourceConfig) was stored in HealthKit.
+User-entered Apple Health data can be excluded by setting `syncUserEnteredData` to `false` in `HealthKitActivitySourceConfig` initialization. This will constrain fetched data based on the `HKMetadataKeyWasUserEntered` metadata key.
 
 ### Connect ActivitySource
 
@@ -186,6 +186,23 @@ guard let activitySource = activitySourceConnection.activitySource as? HealthKit
 }
 
 activitySource.syncIntradayMetrics(startDate: self.fromDate, endDate: self.toDate, configTypes: HealthKitConfigType.intradayTypes) { result in
+    switch result {
+    case .success:
+        print("Success sync")
+    case .failure(let err): self.error = err
+    }
+}
+```
+
+Sync daily metric data from HealthKit:
+``` swift
+import FjuulActivitySources
+
+guard let activitySource = activitySourceConnection.activitySource as? HealthKitActivitySource else {
+    return
+}
+
+activitySource.syncDailyMetrics(startDate: self.fromDate, endDate: self.toDate, configTypes: HealthKitConfigType.dailyTypes) { result in
     switch result {
     case .success:
         print("Success sync")

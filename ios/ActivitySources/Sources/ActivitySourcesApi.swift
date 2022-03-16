@@ -16,6 +16,7 @@ protocol ActivitySourcesApiClient: AutoMockable {
     func getCurrentConnections(completion: @escaping (Result<[TrackerConnection], Error>) -> Void)
     func sendHealthKitUserProfileData(data: HKUserProfileData, completion: @escaping (Result<Void, Error>) -> Void)
     func sendHealthKitBatchData(data: HKBatchData, completion: @escaping (Result<Void, Error>) -> Void)
+    func sendHealthKitDailyMetrics(data: [HKDailyMetricDataPoint], completion: @escaping (Result<Void, Error>) -> Void)
 }
 
 /// The `ActivitySourcesApi` encapsulates the management of a users activity sources.
@@ -112,6 +113,22 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
 
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .formatted(DateFormatters.iso8601Full)
+        let parameterEncoder = JSONParameterEncoder(encoder: encoder)
+
+        apiClient.signedSession.request(url, method: .post, parameters: data, encoder: parameterEncoder).apiResponse(emptyResponseCodes: [200]) { response in
+            let decodedResponse = response.map { _ -> Void in () }
+            completion(decodedResponse.result)
+        }
+    }
+
+    internal func sendHealthKitDailyMetrics(data: [HKDailyMetricDataPoint], completion: @escaping (Result<Void, Error>) -> Void) {
+        let path = "/\(apiClient.userToken)/healthkit/dailies"
+        guard let url = baseUrl?.appendingPathComponent(path) else {
+            return completion(.failure(FjuulError.invalidConfig))
+        }
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .formatted(DateFormatters.yyyyMMddLocale)
         let parameterEncoder = JSONParameterEncoder(encoder: encoder)
 
         apiClient.signedSession.request(url, method: .post, parameters: data, encoder: parameterEncoder).apiResponse(emptyResponseCodes: [200]) { response in

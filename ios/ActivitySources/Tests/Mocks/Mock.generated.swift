@@ -1,9 +1,11 @@
-// Generated using Sourcery 1.0.0 — https://github.com/krzysztofzablocki/Sourcery
+// Generated using Sourcery 1.6.0 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 
 // swiftlint:disable all
 
-// Generated with SwiftyMocky 4.0.1
+// Generated with SwiftyMocky 4.1.0
+// Required Sourcery: 1.6.0
+
 
 import SwiftyMocky
 import XCTest
@@ -27,6 +29,8 @@ open class ActivitySourcesApiClientMock: ActivitySourcesApiClient, Mock {
     var matcher: Matcher = Matcher.default
     var stubbingPolicy: StubbingPolicy = .wrap
     var sequencingPolicy: SequencingPolicy = .lastWrittenResolvedFirst
+
+    private var queue = DispatchQueue(label: "com.swiftymocky.invocations", qos: .userInteractive)
     private var invocations: [MethodType] = []
     private var methodReturnValues: [Given] = []
     private var methodPerformValues: [Perform] = []
@@ -90,6 +94,12 @@ open class ActivitySourcesApiClientMock: ActivitySourcesApiClient, Mock {
 		perform?(`data`, `completion`)
     }
 
+    open func sendHealthKitDailyMetrics(data: [HKDailyMetricDataPoint], completion: @escaping (Result<Void, Error>) -> Void) {
+        addInvocation(.m_sendHealthKitDailyMetrics__data_datacompletion_completion(Parameter<[HKDailyMetricDataPoint]>.value(`data`), Parameter<(Result<Void, Error>) -> Void>.value(`completion`)))
+		let perform = methodPerformValue(.m_sendHealthKitDailyMetrics__data_datacompletion_completion(Parameter<[HKDailyMetricDataPoint]>.value(`data`), Parameter<(Result<Void, Error>) -> Void>.value(`completion`))) as? ([HKDailyMetricDataPoint], @escaping (Result<Void, Error>) -> Void) -> Void
+		perform?(`data`, `completion`)
+    }
+
 
     fileprivate enum MethodType {
         case m_connect__trackerValue_trackerValuecompletion_completion(Parameter<TrackerValue>, Parameter<(Result<ConnectionResult, Error>) -> Void>)
@@ -97,6 +107,7 @@ open class ActivitySourcesApiClientMock: ActivitySourcesApiClient, Mock {
         case m_getCurrentConnections__completion_completion(Parameter<(Result<[TrackerConnection], Error>) -> Void>)
         case m_sendHealthKitUserProfileData__data_datacompletion_completion(Parameter<HKUserProfileData>, Parameter<(Result<Void, Error>) -> Void>)
         case m_sendHealthKitBatchData__data_datacompletion_completion(Parameter<HKBatchData>, Parameter<(Result<Void, Error>) -> Void>)
+        case m_sendHealthKitDailyMetrics__data_datacompletion_completion(Parameter<[HKDailyMetricDataPoint]>, Parameter<(Result<Void, Error>) -> Void>)
         case p_apiClient_get
 
         static func compareParameters(lhs: MethodType, rhs: MethodType, matcher: Matcher) -> Matcher.ComparisonResult {
@@ -129,6 +140,12 @@ open class ActivitySourcesApiClientMock: ActivitySourcesApiClient, Mock {
 				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsData, rhs: rhsData, with: matcher), lhsData, rhsData, "data"))
 				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsCompletion, rhs: rhsCompletion, with: matcher), lhsCompletion, rhsCompletion, "completion"))
 				return Matcher.ComparisonResult(results)
+
+            case (.m_sendHealthKitDailyMetrics__data_datacompletion_completion(let lhsData, let lhsCompletion), .m_sendHealthKitDailyMetrics__data_datacompletion_completion(let rhsData, let rhsCompletion)):
+				var results: [Matcher.ParameterComparisonResult] = []
+				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsData, rhs: rhsData, with: matcher), lhsData, rhsData, "data"))
+				results.append(Matcher.ParameterComparisonResult(Parameter.compare(lhs: lhsCompletion, rhs: rhsCompletion, with: matcher), lhsCompletion, rhsCompletion, "completion"))
+				return Matcher.ComparisonResult(results)
             case (.p_apiClient_get,.p_apiClient_get): return Matcher.ComparisonResult.match
             default: return .none
             }
@@ -141,6 +158,7 @@ open class ActivitySourcesApiClientMock: ActivitySourcesApiClient, Mock {
             case let .m_getCurrentConnections__completion_completion(p0): return p0.intValue
             case let .m_sendHealthKitUserProfileData__data_datacompletion_completion(p0, p1): return p0.intValue + p1.intValue
             case let .m_sendHealthKitBatchData__data_datacompletion_completion(p0, p1): return p0.intValue + p1.intValue
+            case let .m_sendHealthKitDailyMetrics__data_datacompletion_completion(p0, p1): return p0.intValue + p1.intValue
             case .p_apiClient_get: return 0
             }
         }
@@ -151,6 +169,7 @@ open class ActivitySourcesApiClientMock: ActivitySourcesApiClient, Mock {
             case .m_getCurrentConnections__completion_completion: return ".getCurrentConnections(completion:)"
             case .m_sendHealthKitUserProfileData__data_datacompletion_completion: return ".sendHealthKitUserProfileData(data:completion:)"
             case .m_sendHealthKitBatchData__data_datacompletion_completion: return ".sendHealthKitBatchData(data:completion:)"
+            case .m_sendHealthKitDailyMetrics__data_datacompletion_completion: return ".sendHealthKitDailyMetrics(data:completion:)"
             case .p_apiClient_get: return "[get] .apiClient"
             }
         }
@@ -178,6 +197,7 @@ open class ActivitySourcesApiClientMock: ActivitySourcesApiClient, Mock {
         public static func getCurrentConnections(completion: Parameter<(Result<[TrackerConnection], Error>) -> Void>) -> Verify { return Verify(method: .m_getCurrentConnections__completion_completion(`completion`))}
         public static func sendHealthKitUserProfileData(data: Parameter<HKUserProfileData>, completion: Parameter<(Result<Void, Error>) -> Void>) -> Verify { return Verify(method: .m_sendHealthKitUserProfileData__data_datacompletion_completion(`data`, `completion`))}
         public static func sendHealthKitBatchData(data: Parameter<HKBatchData>, completion: Parameter<(Result<Void, Error>) -> Void>) -> Verify { return Verify(method: .m_sendHealthKitBatchData__data_datacompletion_completion(`data`, `completion`))}
+        public static func sendHealthKitDailyMetrics(data: Parameter<[HKDailyMetricDataPoint]>, completion: Parameter<(Result<Void, Error>) -> Void>) -> Verify { return Verify(method: .m_sendHealthKitDailyMetrics__data_datacompletion_completion(`data`, `completion`))}
         public static var apiClient: Verify { return Verify(method: .p_apiClient_get) }
     }
 
@@ -199,6 +219,9 @@ open class ActivitySourcesApiClientMock: ActivitySourcesApiClient, Mock {
         }
         public static func sendHealthKitBatchData(data: Parameter<HKBatchData>, completion: Parameter<(Result<Void, Error>) -> Void>, perform: @escaping (HKBatchData, @escaping (Result<Void, Error>) -> Void) -> Void) -> Perform {
             return Perform(method: .m_sendHealthKitBatchData__data_datacompletion_completion(`data`, `completion`), performs: perform)
+        }
+        public static func sendHealthKitDailyMetrics(data: Parameter<[HKDailyMetricDataPoint]>, completion: Parameter<(Result<Void, Error>) -> Void>, perform: @escaping ([HKDailyMetricDataPoint], @escaping (Result<Void, Error>) -> Void) -> Void) -> Perform {
+            return Perform(method: .m_sendHealthKitDailyMetrics__data_datacompletion_completion(`data`, `completion`), performs: perform)
         }
     }
 
@@ -230,7 +253,7 @@ open class ActivitySourcesApiClientMock: ActivitySourcesApiClient, Mock {
     }
 
     private func addInvocation(_ call: MethodType) {
-        invocations.append(call)
+        self.queue.sync { invocations.append(call) }
     }
     private func methodReturnValue(_ method: MethodType) throws -> StubProduct {
         matcher.set(file: self.file, line: self.line)
@@ -289,6 +312,8 @@ open class HealthKitManagerBuildingMock: HealthKitManagerBuilding, Mock {
     var matcher: Matcher = Matcher.default
     var stubbingPolicy: StubbingPolicy = .wrap
     var sequencingPolicy: SequencingPolicy = .lastWrittenResolvedFirst
+
+    private var queue = DispatchQueue(label: "com.swiftymocky.invocations", qos: .userInteractive)
     private var invocations: [MethodType] = []
     private var methodReturnValues: [Given] = []
     private var methodPerformValues: [Perform] = []
@@ -319,16 +344,16 @@ open class HealthKitManagerBuildingMock: HealthKitManagerBuilding, Mock {
 
     public required init(apiClient: ActivitySourcesApiClient, persistor: Persistor, config: ActivitySourceConfigBuilder) { }
 
-    open func create(dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void)) -> HealthKitManaging {
+    open func create(dataHandler: @escaping (_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void) -> HealthKitManaging {
         addInvocation(.m_create__dataHandler_dataHandler(Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void>.value(`dataHandler`)))
-		let perform = methodPerformValue(.m_create__dataHandler_dataHandler(Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void>.value(`dataHandler`))) as? (@escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void)) -> Void
+		let perform = methodPerformValue(.m_create__dataHandler_dataHandler(Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void>.value(`dataHandler`))) as? (@escaping (_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void) -> Void
 		perform?(`dataHandler`)
 		var __value: HealthKitManaging
 		do {
 		    __value = try methodReturnValue(.m_create__dataHandler_dataHandler(Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void>.value(`dataHandler`))).casted()
 		} catch {
-			onFatalFailure("Stub return value not specified for create(dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void)). Use given")
-			Failure("Stub return value not specified for create(dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void)). Use given")
+			onFatalFailure("Stub return value not specified for create(dataHandler: @escaping (_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void). Use given")
+			Failure("Stub return value not specified for create(dataHandler: @escaping (_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void). Use given")
 		}
 		return __value
     }
@@ -389,7 +414,7 @@ open class HealthKitManagerBuildingMock: HealthKitManagerBuilding, Mock {
         fileprivate var method: MethodType
         var performs: Any
 
-        public static func create(dataHandler: Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void>, perform: @escaping (@escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void)) -> Void) -> Perform {
+        public static func create(dataHandler: Parameter<(_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void>, perform: @escaping (@escaping (_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void) -> Void) -> Perform {
             return Perform(method: .m_create__dataHandler_dataHandler(`dataHandler`), performs: perform)
         }
     }
@@ -422,7 +447,7 @@ open class HealthKitManagerBuildingMock: HealthKitManagerBuilding, Mock {
     }
 
     private func addInvocation(_ call: MethodType) {
-        invocations.append(call)
+        self.queue.sync { invocations.append(call) }
     }
     private func methodReturnValue(_ method: MethodType) throws -> StubProduct {
         matcher.set(file: self.file, line: self.line)
@@ -481,6 +506,8 @@ open class HealthKitManagingMock: HealthKitManaging, Mock, StaticMock {
     var matcher: Matcher = Matcher.default
     var stubbingPolicy: StubbingPolicy = .wrap
     var sequencingPolicy: SequencingPolicy = .lastWrittenResolvedFirst
+
+    private var queue = DispatchQueue(label: "com.swiftymocky.invocations", qos: .userInteractive)
     private var invocations: [MethodType] = []
     private var methodReturnValues: [Given] = []
     private var methodPerformValues: [Perform] = []
@@ -507,6 +534,7 @@ open class HealthKitManagingMock: HealthKitManaging, Mock, StaticMock {
     static var matcher: Matcher = Matcher.default
     static var stubbingPolicy: StubbingPolicy = .wrap
     static var sequencingPolicy: SequencingPolicy = .lastWrittenResolvedFirst
+    static private var queue = DispatchQueue(label: "com.swiftymocky.invocations.static", qos: .userInteractive)
     static private var invocations: [StaticMethodType] = []
     static private var methodReturnValues: [StaticGiven] = []
     static private var methodPerformValues: [StaticPerform] = []
@@ -536,7 +564,7 @@ open class HealthKitManagingMock: HealthKitManaging, Mock, StaticMock {
 		perform?(`config`, `completion`)
     }
 
-    public required init(anchorStore: HKAnchorStore, config: ActivitySourceConfigBuilder,         dataHandler: @escaping ((_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void)) { }
+    public required init(anchorStore: HKAnchorStore, config: ActivitySourceConfigBuilder, dataHandler: @escaping (_ data: HKRequestData?, _ completion: @escaping (Result<Void, Error>) -> Void) -> Void) { }
 
     open func mount(completion: @escaping (Result<Void, Error>) -> Void) {
         addInvocation(.m_mount__completion_completion(Parameter<(Result<Void, Error>) -> Void>.value(`completion`)))
@@ -724,7 +752,7 @@ open class HealthKitManagingMock: HealthKitManaging, Mock, StaticMock {
     }
 
     private func addInvocation(_ call: MethodType) {
-        invocations.append(call)
+        self.queue.sync { invocations.append(call) }
     }
     private func methodReturnValue(_ method: MethodType) throws -> StubProduct {
         matcher.set(file: self.file, line: self.line)
@@ -796,7 +824,7 @@ open class HealthKitManagingMock: HealthKitManaging, Mock, StaticMock {
     }
 
     static private func addInvocation(_ call: StaticMethodType) {
-        invocations.append(call)
+        self.queue.sync { invocations.append(call) }
     }
     static private func methodReturnValue(_ method: StaticMethodType) throws -> StubProduct {
         let candidates = sequencingPolicy.sorted(methodReturnValues, by: { $0.method.intValue() > $1.method.intValue() })
@@ -846,6 +874,8 @@ open class MountableHealthKitActivitySourceMock: MountableHealthKitActivitySourc
     var matcher: Matcher = Matcher.default
     var stubbingPolicy: StubbingPolicy = .wrap
     var sequencingPolicy: SequencingPolicy = .lastWrittenResolvedFirst
+
+    private var queue = DispatchQueue(label: "com.swiftymocky.invocations", qos: .userInteractive)
     private var invocations: [MethodType] = []
     private var methodReturnValues: [Given] = []
     private var methodPerformValues: [Perform] = []
@@ -890,7 +920,7 @@ open class MountableHealthKitActivitySourceMock: MountableHealthKitActivitySourc
 		perform?(`config`, `completion`)
     }
 
-    open func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder,               healthKitManagerBuilder: HealthKitManagerBuilding, completion: @escaping (Result<Void, Error>) -> Void) {
+    open func mount(apiClient: ActivitySourcesApiClient, config: ActivitySourceConfigBuilder, healthKitManagerBuilder: HealthKitManagerBuilding, completion: @escaping (Result<Void, Error>) -> Void) {
         addInvocation(.m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(Parameter<ActivitySourcesApiClient>.value(`apiClient`), Parameter<ActivitySourceConfigBuilder>.value(`config`), Parameter<HealthKitManagerBuilding>.value(`healthKitManagerBuilder`), Parameter<(Result<Void, Error>) -> Void>.value(`completion`)))
 		let perform = methodPerformValue(.m_mount__apiClient_apiClientconfig_confighealthKitManagerBuilder_healthKitManagerBuildercompletion_completion(Parameter<ActivitySourcesApiClient>.value(`apiClient`), Parameter<ActivitySourceConfigBuilder>.value(`config`), Parameter<HealthKitManagerBuilding>.value(`healthKitManagerBuilder`), Parameter<(Result<Void, Error>) -> Void>.value(`completion`))) as? (ActivitySourcesApiClient, ActivitySourceConfigBuilder, HealthKitManagerBuilding, @escaping (Result<Void, Error>) -> Void) -> Void
 		perform?(`apiClient`, `config`, `healthKitManagerBuilder`, `completion`)
@@ -1026,7 +1056,7 @@ open class MountableHealthKitActivitySourceMock: MountableHealthKitActivitySourc
     }
 
     private func addInvocation(_ call: MethodType) {
-        invocations.append(call)
+        self.queue.sync { invocations.append(call) }
     }
     private func methodReturnValue(_ method: MethodType) throws -> StubProduct {
         matcher.set(file: self.file, line: self.line)

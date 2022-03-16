@@ -5,7 +5,6 @@ import HealthKit
 struct HKBatchData: Encodable {
     var caloriesData: [BatchDataPoint]?
     var cyclingData: [BatchDataPoint]?
-    var stepsData: [BatchDataPoint]?
     var walkingData: [BatchDataPoint]?
     var hrData: [HrBatchDataPoint]?
     var workoutsData: [WorkoutDataPoint]?
@@ -25,8 +24,6 @@ extension HKBatchData {
         switch quantityType {
         case HKObjectType.quantityType(forIdentifier: .activeEnergyBurned):
            return HKBatchData(caloriesData: batches)
-        case HKObjectType.quantityType(forIdentifier: .stepCount):
-            return HKBatchData(stepsData: batches)
         case HKObjectType.quantityType(forIdentifier: .distanceCycling):
             return HKBatchData(cyclingData: batches)
         case HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning):

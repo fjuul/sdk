@@ -28,7 +28,7 @@ class WorkoutFetcher {
                 cycleDispatchGroup.enter()
                 let events = sampleItem.workoutEvents?.compactMap { event in
                     return WorkoutEventData(
-                        startDate: event.date,
+                        startDate: event.dateInterval.start,
                         type: event.type.typeName,
                         metadata: event.metadata?.compactMapValues { String(describing: $0 )}
                     )

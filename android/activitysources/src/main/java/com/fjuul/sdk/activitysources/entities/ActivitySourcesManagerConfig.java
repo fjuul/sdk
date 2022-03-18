@@ -288,28 +288,22 @@ public class ActivitySourcesManagerConfig {
     }
 
     /**
-     * Build the default config with all collectable fitness metrics and enabled background synchronization for intraday
-     * and session data from Google Fit (minimum duration of sessions is 5 minutes), user profile properties.
+     * Build the default config with the minimum required fitness metrics for core functionality and enabled background
+     * synchronization for intraday and user profile data from Google Fit.
      *
      * @return config
      */
     @SuppressLint("NewApi")
     @NonNull
     public static ActivitySourcesManagerConfig buildDefault() {
-        final Duration minSessionDuration = Duration.ofMinutes(5);
-        final Set<FitnessMetricsType> allFitnessMetrics =
-            Stream
-                .of(FitnessMetricsType.INTRADAY_CALORIES,
-                    FitnessMetricsType.INTRADAY_HEART_RATE,
-                    FitnessMetricsType.INTRADAY_STEPS,
-                    FitnessMetricsType.WORKOUTS,
-                    FitnessMetricsType.HEIGHT,
-                    FitnessMetricsType.WEIGHT)
+        final Set<FitnessMetricsType> fitnessMetrics =
+            Stream.of(FitnessMetricsType.INTRADAY_CALORIES, FitnessMetricsType.HEIGHT, FitnessMetricsType.WEIGHT)
                 .collect(Collectors.toSet());
         final ActivitySourcesManagerConfig config =
-            new ActivitySourcesManagerConfig.Builder().enableGoogleFitBackgroundSync(minSessionDuration)
+            new ActivitySourcesManagerConfig.Builder().enableGoogleFitIntradayBackgroundSync()
+                .disableGoogleFitSessionsBackgroundSync()
                 .enableProfileBackgroundSync()
-                .setCollectableFitnessMetrics(allFitnessMetrics)
+                .setCollectableFitnessMetrics(fitnessMetrics)
                 .build();
         return config;
     }

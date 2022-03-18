@@ -17,6 +17,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig
+import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.android.exampleapp.R
 import com.fjuul.sdk.android.exampleapp.data.AppStorage
 import com.fjuul.sdk.android.exampleapp.data.AuthorizedUserDataViewModel
@@ -26,12 +28,33 @@ import com.fjuul.sdk.android.exampleapp.data.SdkEnvironment
 import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
 import com.fjuul.sdk.core.ApiClient
 import com.fjuul.sdk.core.entities.UserCredentials
+import java.time.Duration
+import java.util.stream.Collectors
+import java.util.stream.Stream
 
 class LoginFragment : Fragment() {
     private val sdkConfigViewModel: SDKConfigViewModel by activityViewModels {
         SDKConfigViewModelFactory(AppStorage(requireContext()))
     }
     private val authorizedUserDataViewModel: AuthorizedUserDataViewModel by activityViewModels()
+
+    private val activitySourcesManagerConfig: ActivitySourcesManagerConfig by lazy {
+        val minSessionDuration = Duration.ofMinutes(5)
+        val allFitnessMetrics = Stream.of(
+            FitnessMetricsType.INTRADAY_CALORIES,
+            FitnessMetricsType.INTRADAY_HEART_RATE,
+            FitnessMetricsType.INTRADAY_STEPS,
+            FitnessMetricsType.WORKOUTS,
+            FitnessMetricsType.HEIGHT,
+            FitnessMetricsType.WEIGHT
+        )
+            .collect(Collectors.toSet())
+        return@lazy ActivitySourcesManagerConfig.Builder()
+            .enableGoogleFitBackgroundSync(minSessionDuration)
+            .enableProfileBackgroundSync()
+            .setCollectableFitnessMetrics(allFitnessMetrics)
+            .build()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,9 +82,15 @@ class LoginFragment : Fragment() {
         // initial setup by view models
         apiKeyInput.setText(sdkConfigViewModel.apiKey.value, TextView.BufferType.NORMAL)
         when (sdkConfigViewModel.environment.value) {
-            SdkEnvironment.DEV -> view.findViewById<RadioButton>(R.id.dev_env_radio).isChecked = true
-            SdkEnvironment.TEST -> view.findViewById<RadioButton>(R.id.test_env_radio).isChecked = true
-            SdkEnvironment.PROD -> view.findViewById<RadioButton>(R.id.prod_env_radio).isChecked = true
+            SdkEnvironment.DEV ->
+                view.findViewById<RadioButton>(R.id.dev_env_radio).isChecked =
+                    true
+            SdkEnvironment.TEST ->
+                view.findViewById<RadioButton>(R.id.test_env_radio).isChecked =
+                    true
+            SdkEnvironment.PROD ->
+                view.findViewById<RadioButton>(R.id.prod_env_radio).isChecked =
+                    true
         }
         tokenInput.setText(sdkConfigViewModel.userToken.value)
         secretInput.setText(sdkConfigViewModel.userSecret.value)
@@ -76,7 +105,8 @@ class LoginFragment : Fragment() {
             viewLifecycleOwner,
             Observer {
                 val (apiKey, env, token, secret) = it
-                continueButton.isEnabled = apiKey != null && env != null && !token.isNullOrBlank() && !secret.isNullOrBlank()
+                continueButton.isEnabled =
+                    apiKey != null && env != null && !token.isNullOrBlank() && !secret.isNullOrBlank()
             }
         )
 
@@ -116,12 +146,14 @@ class LoginFragment : Fragment() {
                     .build()
                 authorizedUserDataViewModel.fetchUserProfile(apiClient) { success, exception ->
                     ApiClientHolder.setup(apiClient)
-                    ActivitySourcesManager.initialize(apiClient)
+                    ActivitySourcesManager.initialize(apiClient, activitySourcesManagerConfig)
                     if (success) {
                         val action = LoginFragmentDirections.actionLoginFragmentToModulesFragment()
                         findNavController().navigate(action)
                     } else {
-                        AlertDialog.Builder(requireContext()).setMessage(exception?.message ?: "Unknown Error").show()
+                        AlertDialog.Builder(requireContext()).setMessage(
+                            exception?.message ?: "Unknown Error"
+                        ).show()
                     }
                 }
             }

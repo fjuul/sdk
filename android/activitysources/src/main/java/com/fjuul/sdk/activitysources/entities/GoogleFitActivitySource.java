@@ -156,7 +156,17 @@ public class GoogleFitActivitySource extends ActivitySource {
     /**
      * Checks whether the Google Fit app is installed on the user's device. You don't have to have the installed
      * application to work with the Google Fit API. However, this is the easiest way to record and detect the user's
-     * physical activity during the day.
+     * physical activity during the day. <br>
+     * Note: starting from API level 30, this check will always return false unless a query is declared in
+     * AndroidManifest:
+     *
+     * <pre>
+     * {@code
+     *    <queries>
+     *      <package android:name="com.google.android.apps.fitness" />
+     *    </queries>
+     * }
+     * </pre>
      *
      * @return boolean result of the check
      */

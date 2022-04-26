@@ -94,4 +94,8 @@ class UserFormViewModel : ViewModel() {
         }
         return UserService(client).updateProfile(partialProfile)
     }
+
+    fun deleteUser(client: ApiClient): ApiCall<Void> {
+        return UserService(client).deleteUser()
+    }
 }

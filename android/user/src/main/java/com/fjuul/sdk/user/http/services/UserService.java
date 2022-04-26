@@ -97,6 +97,17 @@ public class UserService {
     }
 
     /**
+     * Builds the call to mark a user for deletion by the user credentials specified at the client configuration. A user
+     * that was marked for deletion can't make any authorized requests and will be deleted within 200 days.
+     *
+     * @return ApiCall for the user deletion.
+     */
+    @NonNull
+    public ApiCall<Void> deleteUser() {
+        return getOrCreateSigningUserApi().delete(clientBuilder.getUserToken());
+    }
+
+    /**
      * Builds the call to get a user profile by the user credentials specified at the client configuration.
      *
      * @return ApiCall for the user profile.

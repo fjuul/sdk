@@ -48,6 +48,7 @@ class UserProfileFragment : Fragment() {
     private lateinit var heightInput: EditText
     private lateinit var weightInput: EditText
     private lateinit var submitButton: Button
+    private lateinit var deleteButton: Button
     private lateinit var timezoneTextField: TextInputLayout
     private lateinit var localeTextField: TextInputLayout
 
@@ -81,6 +82,7 @@ class UserProfileFragment : Fragment() {
         heightInput = view.findViewById(R.id.height_input)
         weightInput = view.findViewById(R.id.weight_input)
         submitButton = view.findViewById(R.id.create_user_submit_button)
+        deleteButton = view.findViewById(R.id.delete_user_submit_button)
         timezoneTextField = view.findViewById(R.id.timezoneTextField)
         localeTextField = view.findViewById(R.id.localeTextField)
 
@@ -88,6 +90,7 @@ class UserProfileFragment : Fragment() {
             timezoneTextField.visibility = View.VISIBLE
             localeTextField.visibility = View.VISIBLE
             submitButton.text = "UPDATE"
+            deleteButton.text = "DELETE PROFILE"
 
             model.profileWasRefreshed.observe(
                 viewLifecycleOwner,
@@ -195,6 +198,28 @@ class UserProfileFragment : Fragment() {
                     AlertDialog.Builder(requireContext()).setMessage(exception.message).show()
                 }
             }
+        }
+
+        deleteButton.setOnClickListener {
+            AlertDialog.Builder(requireContext())
+                .setTitle("Are you sure you want to mark your profile for deletion?")
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    dialog.dismiss()
+                }.setPositiveButton("Delete") { dialog, _ ->
+                    try {
+                        model.deleteUser(ApiClientHolder.sdkClient).enqueue { call, result ->
+                            if (result.isError) {
+                                buildAlertFromApiException(result.error!!).show()
+                                return@enqueue
+                            }
+                        }
+                    } catch (exception: Exception) {
+                        AlertDialog.Builder(requireContext()).setMessage(exception.message).show()
+                    }
+                    dialog.dismiss()
+                    val action = UserProfileFragmentDirections.actionCreateUserFragmentToLoginFragment()
+                    findNavController().navigate(action)
+                }.show()
         }
     }
 

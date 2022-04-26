@@ -211,6 +211,18 @@
             app:layout_constraintBottom_toBottomOf="parent"
             android:layout_marginBottom="30dp"/>
 
+        <Button
+            android:id="@+id/delete_user_submit_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Delete"
+            android:backgroundTint="@android:color/holo_red_light"
+            android:layout_centerHorizontal="true"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/create_user_submit_button"
+            android:layout_marginBottom="15dp"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

@@ -219,6 +219,56 @@ public class UserServiceTest {
         }
     }
 
+    public static class DeleteUserTest extends GivenRobolectricContext {
+        UserService userService;
+        MockWebServer mockWebServer;
+        TestApiClient.Builder clientBuilder;
+        Keystore testKeystore;
+        SigningKey validSigningKey;
+
+        @Before
+        public void setup() throws IOException {
+            mockWebServer = new MockWebServer();
+            mockWebServer.start();
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.HOUR, 2);
+            validSigningKey = new SigningKey(KEY_ID, SECRET_KEY, calendar.getTime());
+            testKeystore = new Keystore(new InMemoryStorage());
+            clientBuilder = new TestApiClient.Builder(mockWebServer);
+        }
+
+        @After
+        public void teardown() throws IOException {
+            mockWebServer.shutdown();
+        }
+
+        @Test
+        public void deleteUser_WithoutUserCredentials_ThrowsException() throws IOException, InterruptedException {
+            userService = new UserService(clientBuilder.build());
+            try {
+                ApiCallResult<Void> result = userService.deleteUser().execute();
+                assertTrue("should throw exception", false);
+            } catch (Exception exc) {
+                assertThat(exc, instanceOf(IllegalStateException.class));
+                assertEquals("should have error message",
+                    "The builder needed user credentials to build a signing client",
+                    exc.getMessage());
+            }
+        }
+
+        @Test
+        public void deleteUser_WithValidUserCredentials_RespondsWithSuccess() {
+            clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
+            testKeystore.setKey(validSigningKey);
+            clientBuilder.setKeystore(testKeystore);
+            userService = new UserService(clientBuilder.build());
+            MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK);
+            mockWebServer.enqueue(mockResponse);
+            ApiCallResult<Void> result = userService.deleteUser().execute();
+            assertFalse("success result", result.isError());
+        }
+    }
+
     public static class GetProfileTest extends GivenRobolectricContext {
         UserService userService;
         MockWebServer mockWebServer;
@@ -247,7 +297,7 @@ public class UserServiceTest {
             userService = new UserService(clientBuilder.build());
             try {
                 ApiCallResult<UserProfile> result = userService.getProfile().execute();
-                assertTrue("should throws exception", false);
+                assertTrue("should throw exception", false);
             } catch (Exception exc) {
                 assertThat(exc, instanceOf(IllegalStateException.class));
                 assertEquals("should have error message",

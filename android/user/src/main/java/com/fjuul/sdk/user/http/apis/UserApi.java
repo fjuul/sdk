@@ -6,6 +6,7 @@ import com.fjuul.sdk.user.entities.UserProfile;
 
 import androidx.annotation.NonNull;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
@@ -24,4 +25,8 @@ public interface UserApi {
     @POST("/sdk/users/v1")
     @NonNull
     ApiCall<UserCreationResult> create(@NonNull @Body UserProfile.PartialBuilder profileBuilder);
+
+    @DELETE("/sdk/users/v1/{userToken}")
+    @NonNull
+    ApiCall<Void> delete(@Path("userToken") @NonNull String userToken);
 }

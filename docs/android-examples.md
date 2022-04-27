@@ -64,6 +64,23 @@ val signedClient = ApiClient.Builder(appContext,
     .build()
 ```
 
+### Mark user for deletion
+The deletion of a user's data can be requested using:<br/>
+```kotlin
+import com.fjuul.sdk.user.http.services.UserService
+
+val client: ApiClient = ...
+
+UserService(client).markUserForDeletion().enqueue { call, result ->
+    if (result.isError) {
+        println(result.error!!)
+        return@enqueue
+    }
+    println("Successfully marked user for deletion.")
+}
+```
+After a successful request, the user won't be able to make any authorized requests. The user's data will be hard deleted within the constraints of the data protection agreement with the tenant.
+
 ## Activity Sources Module
 `ActivitySourcesManager` is the high-level and main entity of the **AcivitySources** module. It is designed as a singleton, which must be initialized before the first use:
 ```kotlin

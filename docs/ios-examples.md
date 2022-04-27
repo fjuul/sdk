@@ -31,6 +31,25 @@ ApiClient.createUser(baseUrl: baseUrl, apiKey: "YOUR_API_KEY", profile: profileD
 The result of the creation is an instance of `UserCreationResult`, which is a composition of the user profile and secret of the user. You should persist the token and secret of the user.
 To perform user-authorized actions, you must provide the user credentials to the `ApiClient` initializer. The user credentials are a pair of token and secret.
 
+### Mark user for deletion
+The deletion of a user's data can be requested using:<br/>
+```swift
+import FjuulUser
+
+// Init apiClient with user credentials before initializing ActivitySourcesManager (see example in `Initialize ApiClient`)
+...
+
+apiClient.user.markUserForDeletion { result in
+    switch result {
+    case .success:
+        print("Successfully marked user for deletion.")
+    case .failure(let err):
+        print("Error: \(err)")
+    }
+}
+```
+After a successful request, the user won't be able to make any authorized requests. The user's data will be hard deleted within the constraints of the data protection agreement with the tenant.
+
 ## Core Module
 ### Initialize ApiClient
 In order to use the Fjuul SDK API you need to initialize an `ApiClient` instance from the **Core** module:

@@ -235,14 +235,14 @@ final class UserApiTests: XCTestCase {
         waitForExpectations(timeout: 5.0, handler: nil)
     }
 
-    func testDeleteUser() {
+    func testMarkUserForDeletion() {
         let e = expectation(description: "Alamofire")
         let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: InMemoryPersistor())
         let deleteStub = stub(condition: isHost("apibase") && pathMatches("^/sdk/users/v1/*")) { request in
             XCTAssertEqual(request.httpMethod, "DELETE")
             return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
-        client.user.deleteUser { _ in
+        client.user.markUserForDeletion { _ in
             HTTPStubs.removeStub(deleteStub)
             e.fulfill()
         }

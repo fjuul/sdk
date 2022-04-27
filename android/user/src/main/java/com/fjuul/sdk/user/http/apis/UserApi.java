@@ -28,5 +28,5 @@ public interface UserApi {
 
     @DELETE("/sdk/users/v1/{userToken}")
     @NonNull
-    ApiCall<Void> delete(@Path("userToken") @NonNull String userToken);
+    ApiCall<Void> markForDeletion(@Path("userToken") @NonNull String userToken);
 }

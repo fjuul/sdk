@@ -91,9 +91,9 @@ class UserProfileObservable: ObservableObject {
         }
     }
 
-    func deleteUser() -> Bool {
+    func markUserForDeletion() -> Bool {
         var userDeleted = false
-        ApiClientHolder.default.apiClient?.user.deleteUser { result in
+        ApiClientHolder.default.apiClient?.user.markUserForDeletion { result in
             switch result {
             case .success:
                 userDeleted = true

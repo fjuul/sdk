@@ -219,7 +219,7 @@ public class UserServiceTest {
         }
     }
 
-    public static class DeleteUserTest extends GivenRobolectricContext {
+    public static class MarkUserForDeletionTest extends GivenRobolectricContext {
         UserService userService;
         MockWebServer mockWebServer;
         TestApiClient.Builder clientBuilder;
@@ -243,10 +243,11 @@ public class UserServiceTest {
         }
 
         @Test
-        public void deleteUser_WithoutUserCredentials_ThrowsException() throws IOException, InterruptedException {
+        public void markUserForDeletion_WithoutUserCredentials_ThrowsException()
+            throws IOException, InterruptedException {
             userService = new UserService(clientBuilder.build());
             try {
-                ApiCallResult<Void> result = userService.deleteUser().execute();
+                ApiCallResult<Void> result = userService.markUserForDeletion().execute();
                 assertTrue("should throw exception", false);
             } catch (Exception exc) {
                 assertThat(exc, instanceOf(IllegalStateException.class));
@@ -257,14 +258,14 @@ public class UserServiceTest {
         }
 
         @Test
-        public void deleteUser_WithValidUserCredentials_RespondsWithSuccess() {
+        public void markUserForDeletion_WithValidUserCredentials_RespondsWithSuccess() {
             clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
             testKeystore.setKey(validSigningKey);
             clientBuilder.setKeystore(testKeystore);
             userService = new UserService(clientBuilder.build());
             MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK);
             mockWebServer.enqueue(mockResponse);
-            ApiCallResult<Void> result = userService.deleteUser().execute();
+            ApiCallResult<Void> result = userService.markUserForDeletion().execute();
             assertFalse("success result", result.isError());
         }
     }

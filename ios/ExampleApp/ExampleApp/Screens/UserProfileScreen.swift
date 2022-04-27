@@ -30,7 +30,7 @@ struct UserProfileScreen: View {
                     .background(Color.white)
                     .alert(isPresented: $showingUserDeleteAlert) {
                         Alert(title: Text("Are you sure you want to mark your profile for deletion?"), primaryButton: .destructive(Text("Delete")) {
-                            if userProfile.deleteUser() {
+                            if userProfile.markUserForDeletion() {
                                 self.onSuccessLogout = true
                             }
                         }, secondaryButton: .cancel())

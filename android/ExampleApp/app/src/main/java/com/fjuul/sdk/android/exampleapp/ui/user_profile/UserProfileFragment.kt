@@ -207,7 +207,7 @@ class UserProfileFragment : Fragment() {
                     dialog.dismiss()
                 }.setPositiveButton("Delete") { dialog, _ ->
                     try {
-                        model.deleteUser(ApiClientHolder.sdkClient).enqueue { call, result ->
+                        model.markUserForDeletion(ApiClientHolder.sdkClient).enqueue { call, result ->
                             if (result.isError) {
                                 buildAlertFromApiException(result.error!!).show()
                                 return@enqueue

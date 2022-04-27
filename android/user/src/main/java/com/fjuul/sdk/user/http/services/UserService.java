@@ -97,6 +97,19 @@ public class UserService {
     }
 
     /**
+     * Builds the call to mark a user for deletion by the user credentials specified at the client configuration. The
+     * user's data will be hard deleted within the constraints of the data protection agreement with the tenant. A user
+     * that was marked for deletion can't make any authorized requests.<br>
+     * Note: This operation cannot be undone through the API
+     *
+     * @return ApiCall for the user deletion.
+     */
+    @NonNull
+    public ApiCall<Void> markUserForDeletion() {
+        return getOrCreateSigningUserApi().markForDeletion(clientBuilder.getUserToken());
+    }
+
+    /**
      * Builds the call to get a user profile by the user credentials specified at the client configuration.
      *
      * @return ApiCall for the user profile.

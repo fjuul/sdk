@@ -115,6 +115,30 @@ public class UserApi {
         }
     }
 
+    /// Mark user for deletion.
+    /// The user's data will be hard deleted within the constraints of the data protection agreement with tenant.
+    /// A user that was marked for deletion can't make any authorized requests.
+    /// Note: This operation cannot be undone through the API
+    /// - Parameter completion: void or error
+    public func markUserForDeletion(completion: @escaping (Result<Void, Error>) -> Void) {
+        let path = "/\(apiClient.userToken)"
+        guard let url = baseUrl?.appendingPathComponent(path) else {
+            return completion(.failure(FjuulError.invalidConfig))
+        }
+        apiClient.signedSession.request(url, method: .delete)
+            .apiResponse(emptyResponseCodes: [200]) { response in
+
+            let decodedResponse = response
+                .map { _ -> Void in () }
+                .mapAPIError { _, jsonError in
+                    guard let jsonError = jsonError else { return nil }
+
+                    return .userFailure(reason: .generic(message: jsonError.message))
+                }
+            completion(decodedResponse.result)
+        }
+    }
+
 }
 
 private var AssociatedObjectHandle: UInt8 = 0

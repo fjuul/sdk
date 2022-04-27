@@ -91,6 +91,19 @@ class UserProfileObservable: ObservableObject {
         }
     }
 
+    func deleteUser() -> Bool {
+        var userDeleted = false
+        ApiClientHolder.default.apiClient?.user.deleteUser { result in
+            switch result {
+            case .success:
+                userDeleted = true
+            case .failure(let err):
+                self.error = ErrorHolder(error: err)
+            }
+        }
+        return userDeleted
+    }
+
     func logout() -> Bool {
         guard let result = ApiClientHolder.default.apiClient?.clearPersistentStorage(), result else { return false }
 

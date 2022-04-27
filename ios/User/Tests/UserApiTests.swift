@@ -235,4 +235,18 @@ final class UserApiTests: XCTestCase {
         waitForExpectations(timeout: 5.0, handler: nil)
     }
 
+    func testDeleteUser() {
+        let e = expectation(description: "Alamofire")
+        let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: InMemoryPersistor())
+        let deleteStub = stub(condition: isHost("apibase") && pathMatches("^/sdk/users/v1/*")) { request in
+            XCTAssertEqual(request.httpMethod, "DELETE")
+            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+        }
+        client.user.deleteUser { _ in
+            HTTPStubs.removeStub(deleteStub)
+            e.fulfill()
+        }
+        waitForExpectations(timeout: 5.0, handler: nil)
+    }
+
 }

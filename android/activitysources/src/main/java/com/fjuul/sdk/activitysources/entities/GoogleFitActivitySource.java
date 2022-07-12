@@ -33,7 +33,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.Scope;
-import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.tasks.Task;
@@ -43,11 +42,9 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -58,16 +55,12 @@ import androidx.core.content.ContextCompat;
  */
 @SuppressLint("NewApi")
 public class GoogleFitActivitySource extends ActivitySource {
-    static final String SERVER_CLIENT_ID_METADATA_KEY = "com.fjuul.sdk.googlefit.server_client_id";
-    static final String REQUEST_OFFLINE_ACCESS_METADATA_KEY = "com.fjuul.sdk.googlefit.request_offline_access";
     static final String GOOGLE_FIT_APP_PACKAGE_NAME = "com.google.android.apps.fitness";
 
     private static final ExecutorService sharedSequentialExecutor = createSequentialSingleCachedExecutor();
 
     private static volatile GoogleFitActivitySource instance;
 
-    private final boolean requestOfflineAccess;
-    private final @NonNull String serverClientId;
     private final @NonNull Set<FitnessMetricsType> collectableFitnessMetrics;
     private final @NonNull ActivitySourcesService sourcesService;
     private final @NonNull Context context;
@@ -78,32 +71,13 @@ public class GoogleFitActivitySource extends ActivitySource {
     static synchronized void initialize(@NonNull ApiClient client,
         @NonNull ActivitySourcesManagerConfig sourcesManagerConfig) {
         final Context context = client.getAppContext();
-        ApplicationInfo app;
-        try {
-            app =
-                context.getPackageManager().getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
-        } catch (PackageManager.NameNotFoundException e) {
-            throw new IllegalStateException(
-                "Can't retrieve config parameters for google-fit from the manifest: " + e.getLocalizedMessage());
-        }
-        final Bundle bundle = app.metaData;
-        final boolean requestOfflineAccess = bundle.getBoolean(REQUEST_OFFLINE_ACCESS_METADATA_KEY, false);
-        final String serverClientId = bundle.getString(SERVER_CLIENT_ID_METADATA_KEY);
-        if (requestOfflineAccess && (serverClientId == null || serverClientId.isEmpty())) {
-            throw new IllegalStateException("Can't retrieve meta-data for 'server_client_id' key from the manifest");
-        }
         final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
         final GFDataUtils gfUtils = new GFDataUtils();
         final GFSyncMetadataStore syncMetadataStore = new GFSyncMetadataStore(client.getStorage());
         final GFDataManagerBuilder gfDataManagerBuilder =
             new GFDataManagerBuilder(context, gfUtils, syncMetadataStore, sourcesService);
-        instance = new GoogleFitActivitySource(requestOfflineAccess,
-            serverClientId,
-            sourcesManagerConfig.getCollectableFitnessMetrics(),
-            sourcesService,
-            context,
-            gfDataManagerBuilder,
-            sharedSequentialExecutor);
+        instance = new GoogleFitActivitySource(sourcesManagerConfig
+            .getCollectableFitnessMetrics(), sourcesService, context, gfDataManagerBuilder, sharedSequentialExecutor);
     }
 
     /**
@@ -122,15 +96,11 @@ public class GoogleFitActivitySource extends ActivitySource {
         return instance;
     }
 
-    GoogleFitActivitySource(boolean requestOfflineAccess,
-        @NonNull String serverClientId,
-        @NonNull Set<FitnessMetricsType> collectableFitnessMetrics,
+    GoogleFitActivitySource(@NonNull Set<FitnessMetricsType> collectableFitnessMetrics,
         @NonNull ActivitySourcesService sourcesService,
         @NonNull Context context,
         @NonNull GFDataManagerBuilder gfDataManagerBuilder,
         @NonNull ExecutorService localSequentialBackgroundExecutor) {
-        this.requestOfflineAccess = requestOfflineAccess;
-        this.serverClientId = serverClientId;
         this.collectableFitnessMetrics = collectableFitnessMetrics;
         this.sourcesService = sourcesService;
         this.context = context;
@@ -201,8 +171,8 @@ public class GoogleFitActivitySource extends ActivitySource {
      */
     @NonNull
     public Intent buildIntentRequestingFitnessPermissions() {
-        final GoogleSignInClient signInClient = GoogleSignIn.getClient(context,
-            buildGoogleSignInOptions(requestOfflineAccess, serverClientId, collectableFitnessMetrics));
+        final GoogleSignInClient signInClient =
+            GoogleSignIn.getClient(context, buildGoogleSignInOptions(collectableFitnessMetrics));
         return signInClient.getSignInIntent();
     }
 
@@ -231,15 +201,6 @@ public class GoogleFitActivitySource extends ActivitySource {
                 return;
             }
             final Map<String, String> queryParams = new HashMap<>();
-            final String authCode = account.getServerAuthCode();
-            if (isOfflineAccessRequired() && authCode == null) {
-                final Result<Void> result =
-                    Result.error(new CommonException("No server auth code for the requested offline access"));
-                callback.onResult(result);
-                return;
-            } else if (isOfflineAccessRequired() && authCode != null) {
-                queryParams.put("code", authCode);
-            }
             sourcesService.connect(getTrackerValue().getValue(), queryParams).enqueue((call, result) -> {
                 if (result.isError()) {
                     callback.onResult(Result.error(result.getError()));
@@ -261,16 +222,6 @@ public class GoogleFitActivitySource extends ActivitySource {
             final Result<Void> error = Result.error(new CommonException("ApiException: " + exc.getMessage()));
             callback.onResult(error);
         }
-    }
-
-    /**
-     * Returns a boolean indicating whether the offline access should be requested from a user. The offline access is
-     * used for the GoogleFit connection supported by the server.
-     *
-     * @return boolean
-     */
-    public boolean isOfflineAccessRequired() {
-        return requestOfflineAccess;
     }
 
     /**
@@ -451,8 +402,7 @@ public class GoogleFitActivitySource extends ActivitySource {
         // The solution based on https://github.com/android/fit-samples/issues/28#issue-491885148
 
         // TODO: always revoke the full list of permissions ?
-        final GoogleSignInOptions signInOptions =
-            buildGoogleSignInOptions(requestOfflineAccess, serverClientId, collectableFitnessMetrics);
+        final GoogleSignInOptions signInOptions = buildGoogleSignInOptions(collectableFitnessMetrics);
         return GoogleSignIn.getClient(context, signInOptions)
             .revokeAccess()
             .continueWithTask((revokeAccessTask) -> Tasks.forResult(null));
@@ -463,13 +413,7 @@ public class GoogleFitActivitySource extends ActivitySource {
     }
 
     private boolean areFitnessPermissionsGranted(@Nullable GoogleSignInAccount account) {
-        return areFitnessPermissionsGranted(account, collectableFitnessMetrics);
-    }
-
-    private boolean areFitnessPermissionsGranted(@Nullable GoogleSignInAccount account,
-        @NonNull Set<FitnessMetricsType> fitnessMetrics) {
-        return GoogleFitActivitySource
-            .areFitnessPermissionsGranted(account, requestOfflineAccess, serverClientId, fitnessMetrics);
+        return GoogleFitActivitySource.areFitnessPermissionsGranted(account, collectableFitnessMetrics);
     }
 
     private <T> void performTaskAlongWithCallback(@NonNull Supplier<Task<T>> taskSupplier,
@@ -496,9 +440,7 @@ public class GoogleFitActivitySource extends ActivitySource {
     }
 
     @NonNull
-    static GoogleSignInOptions buildGoogleSignInOptions(boolean offlineAccess,
-        @Nullable String serverClientId,
-        @NonNull Set<FitnessMetricsType> fitnessMetrics) {
+    static GoogleSignInOptions buildGoogleSignInOptions(@NonNull Set<FitnessMetricsType> fitnessMetrics) {
         final FitnessOptions.Builder fitnessOptionsBuilder = FitnessOptions.builder();
         if (fitnessMetrics.contains(FitnessMetricsType.INTRADAY_CALORIES)) {
             fitnessOptionsBuilder.addDataType(DataType.AGGREGATE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ);
@@ -527,38 +469,16 @@ public class GoogleFitActivitySource extends ActivitySource {
         final FitnessOptions fitnessOptions = fitnessOptionsBuilder.build();
         GoogleSignInOptions.Builder googleSignInOptionsBuilder = new GoogleSignInOptions.Builder();
         googleSignInOptionsBuilder.addExtension(fitnessOptions);
-        if (offlineAccess) {
-            // TODO: determine exactly scopes required by the server
-            // see
-            // https://github.com/fjuul/commons-js/blob/d067a458c4b1eb88497c5c4c5b961d4891f7f08e/src/services/trackers/googleFit/GoogleFitClient.ts#L49-L54
-            // NOTE: currently the server uses all scopes because it tries to sync every possible fitness data of a
-            // user.
-            // Since we are not sure about the future of the GF backend integration, scopes listed as-is (see the link
-            // above).
-            // Ideally, the server implementation of the syncing should safely request data only for the granted scopes.
-            final Scope[] hrScope = FitnessOptions.builder()
-                .addDataType(DataType.AGGREGATE_HEART_RATE_SUMMARY, FitnessOptions.ACCESS_READ)
-                .build()
-                .getImpliedScopes()
-                .toArray(new Scope[0]);
-            googleSignInOptionsBuilder = googleSignInOptionsBuilder.requestProfile()
-                .requestScopes(Fitness.SCOPE_ACTIVITY_READ, Fitness.SCOPE_BODY_READ)
-                .requestScopes(Fitness.SCOPE_LOCATION_READ, hrScope)
-                .requestServerAuthCode(serverClientId, true);
-        }
         return googleSignInOptionsBuilder.build();
     }
 
     static boolean areFitnessPermissionsGranted(@Nullable GoogleSignInAccount account,
-        boolean offlineAccess,
-        String serverClientId,
         @NonNull Set<FitnessMetricsType> fitnessMetrics) {
         if (account == null) {
             return false;
         }
         final Set<Scope> grantedScopes = account.getGrantedScopes();
-        return grantedScopes
-            .containsAll(buildGoogleSignInOptions(offlineAccess, serverClientId, fitnessMetrics).getScopes());
+        return grantedScopes.containsAll(buildGoogleSignInOptions(fitnessMetrics).getScopes());
     }
 
     private static ExecutorService createSequentialSingleCachedExecutor() {

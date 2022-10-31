@@ -10,9 +10,7 @@ apply plugin: 'com.android.library'
 apply from: "${rootDir}/gradle/publish.gradle"
 
 repositories {
-    // Use jcenter for resolving dependencies.
-    // You can declare any Maven/Ivy/file repository here.
-    jcenter()
+    mavenCentral()
     google()
 }
 

@@ -4,7 +4,7 @@ buildscript {
     ext.nav_version = "2.3.0"
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:4.1.2'
@@ -21,7 +21,7 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
         mavenLocal()
     }
 }

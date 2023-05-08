@@ -11,7 +11,7 @@ struct WorkoutDataPoint: Codable {
     var totalSwimmingStrokeCount: Double
     var workoutEvents: [WorkoutEventData]?
     var metadata: [String: String]?
-    var heartRates: [WorkoutSampleData]?
+    var heartrates: [WorkoutSampleData]?
     var walkingRunningDistances: [WorkoutSampleData]?
     var activeEnergyBurned: [WorkoutSampleData]?
     var cyclingDistances: [WorkoutSampleData]?
@@ -24,7 +24,7 @@ struct WorkoutEventData: Codable {
 }
 
 struct WorkoutSampleData: Codable {
-  var value: Double // Value can be for heartRates, meters or activeEnergyBurned
+  var value: Double // Value can be for heartrates, meters or activeEnergyBurned
   var startDate: Date
   var endDate: Date
 }

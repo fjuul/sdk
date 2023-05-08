@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.1'
+        classpath 'com.android.tools.build:gradle:4.2.0'
     }
 }
 
@@ -15,7 +15,7 @@ plugins {
 
 ext {
     compileSdkVersion = 29
-    buildToolsVersion = "29.0.3"
+    buildToolsVersion = "30.0.2"
     minSdkVersion = 21
     targetSdkVersion = 29
 
@@ -32,6 +32,7 @@ spotless {
     java {
         target fileTree('.') {
             include '**/*.java'
+            exclude '*/build/generated/**/*.*'
         }
         // licenseHeaderFile project.rootProject.file('spotless/copyright.java')
 

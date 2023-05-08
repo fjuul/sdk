@@ -12,10 +12,10 @@ jobs:
 
   test:
 
-    runs-on: macOS-10.15
+    runs-on: macOS-12
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: lint
       run: |
         (cd ios; swiftlint)
@@ -24,7 +24,7 @@ jobs:
         set -o pipefail && xcodebuild \
           -scheme "Fjuul SDK-Package" \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=14.4' \
+          -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=16.2' \
           test | xcpretty
     - name: xcode test ExampleApp
       run: |
@@ -32,5 +32,5 @@ jobs:
           -workspace ios/SDK.xcworkspace \
           -scheme ExampleApp \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone SE (2nd generation),OS=14.4' \
+          -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=16.2' \
           test | xcpretty

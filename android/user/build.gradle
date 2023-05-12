@@ -57,7 +57,7 @@ dependencies {
 
     // Use JUnit test framework
     testImplementation "junit:junit:$rootProject.ext.junitVersion"
-    testImplementation 'org.mockito:mockito-core:3.4.4'
+    testImplementation 'org.mockito:mockito-core:5.3.1'
     testImplementation "com.squareup.okhttp3:mockwebserver:$rootProject.ext.okHttpVersion"
     testImplementation project(':test')
 

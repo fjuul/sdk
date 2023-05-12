@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.0'
+        classpath 'com.android.tools.build:gradle:7.0.0'
     }
 }
 
@@ -23,9 +23,9 @@ ext {
     retrofitVersion = '2.9.0'
     androidXAnnotationVersion = '1.1.0'
     androidXCoreVersion = '1.3.2'
-    robolectricVersion = '4.5'
-    androidXTestCoreVersion = '1.3.0'
-    junitVersion = '4.13'
+    robolectricVersion = '4.9'
+    androidXTestCoreVersion = '1.5.0'
+    junitVersion = '4.13.2'
 }
 
 spotless {

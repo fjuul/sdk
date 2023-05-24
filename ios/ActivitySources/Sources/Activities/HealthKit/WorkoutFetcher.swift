@@ -92,7 +92,7 @@ class WorkoutFetcher {
             self.fetchWorkoutSamples(sampleType: heartRateType, workout: item) { result in
                 switch result {
                 case .success(let samples):
-                    workout.heartRates = self.convertWorkoutQuantitySamples(samples: samples, unit: hrUnit)
+                    workout.heartrates = self.convertWorkoutQuantitySamples(samples: samples, unit: hrUnit)
                 case .failure(let err):
                     DataLogger.shared.error("WorkoutFetcher error: \(err)")
                 }

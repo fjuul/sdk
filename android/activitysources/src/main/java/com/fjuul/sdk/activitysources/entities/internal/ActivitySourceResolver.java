@@ -4,6 +4,7 @@ import com.fjuul.sdk.activitysources.entities.ActivitySource;
 import com.fjuul.sdk.activitysources.entities.FitbitActivitySource;
 import com.fjuul.sdk.activitysources.entities.GarminActivitySource;
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
+import com.fjuul.sdk.activitysources.entities.OuraActivitySource;
 import com.fjuul.sdk.activitysources.entities.PolarActivitySource;
 import com.fjuul.sdk.activitysources.entities.StravaActivitySource;
 import com.fjuul.sdk.activitysources.entities.SuuntoActivitySource;
@@ -23,6 +24,8 @@ public class ActivitySourceResolver {
             return FitbitActivitySource.getInstance();
         } else if (TrackerValue.GARMIN.equals(tracker)) {
             return GarminActivitySource.getInstance();
+        } else if (TrackerValue.OURA.equals(tracker)) {
+            return OuraActivitySource.getInstance();
         } else if (TrackerValue.STRAVA.equals(tracker)) {
             return StravaActivitySource.getInstance();
         } else if (TrackerValue.SUUNTO.equals(tracker)) {

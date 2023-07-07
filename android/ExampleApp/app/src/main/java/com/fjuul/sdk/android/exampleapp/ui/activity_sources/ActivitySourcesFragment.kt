@@ -18,6 +18,7 @@ import androidx.lifecycle.Observer
 import com.fjuul.sdk.activitysources.entities.FitbitActivitySource
 import com.fjuul.sdk.activitysources.entities.GarminActivitySource
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource
+import com.fjuul.sdk.activitysources.entities.OuraActivitySource
 import com.fjuul.sdk.activitysources.entities.PolarActivitySource
 import com.fjuul.sdk.activitysources.entities.StravaActivitySource
 import com.fjuul.sdk.activitysources.entities.SuuntoActivitySource
@@ -129,6 +130,7 @@ class ActivitySourcesFragment : Fragment() {
             arrayListOf(
                 ActivitySourcesItem.FITBIT,
                 ActivitySourcesItem.GARMIN,
+                ActivitySourcesItem.OURA,
                 ActivitySourcesItem.POLAR,
                 ActivitySourcesItem.GOOGLE_FIT,
                 ActivitySourcesItem.STRAVA,
@@ -141,6 +143,7 @@ class ActivitySourcesFragment : Fragment() {
         sourcesList.setOnItemClickListener { parent, view, position, id ->
             val activitySource = when (adapter.getItem(position)) {
                 ActivitySourcesItem.FITBIT -> FitbitActivitySource.getInstance()
+                ActivitySourcesItem.OURA -> OuraActivitySource.getInstance()
                 ActivitySourcesItem.POLAR -> PolarActivitySource.getInstance()
                 ActivitySourcesItem.GARMIN -> GarminActivitySource.getInstance()
                 ActivitySourcesItem.STRAVA -> StravaActivitySource.getInstance()

@@ -21,6 +21,7 @@ import androidx.annotation.Nullable;
 public class TrackerValue {
     public static final TrackerValue FITBIT = new TrackerValue("fitbit");
     public static final TrackerValue GARMIN = new TrackerValue("garmin");
+    public static final TrackerValue OURA = new TrackerValue("oura");
     public static final TrackerValue POLAR = new TrackerValue("polar");
     public static final TrackerValue GOOGLE_FIT = new TrackerValue("googlefit");
     public static final TrackerValue STRAVA = new TrackerValue("strava");

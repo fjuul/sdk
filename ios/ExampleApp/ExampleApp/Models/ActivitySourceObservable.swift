@@ -5,8 +5,8 @@ import UIKit
 class ActivitySourceObservable: ObservableObject {
     let availableActivitySources: [ActivitySource] = [
         HealthKitActivitySource.shared, FitbitActivitySource.shared, GarminActivitySource.shared,
-        PolarActivitySource.shared, StravaActivitySource.shared, SuuntoActivitySource.shared,
-        WithingsActivitySource.shared
+        OuraActivitySource.shared, PolarActivitySource.shared, StravaActivitySource.shared,
+        SuuntoActivitySource.shared, WithingsActivitySource.shared
     ]
 
     @Published var error: ErrorHolder?

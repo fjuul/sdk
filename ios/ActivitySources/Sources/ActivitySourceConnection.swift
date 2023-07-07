@@ -66,6 +66,8 @@ enum ActivitySourceConnectionFactory {
             return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: HealthKitActivitySource.shared)
         } else if TrackerValue.POLAR == trackerValue {
             return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: PolarActivitySource.shared)
+        } else if TrackerValue.OURA == trackerValue {
+            return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: OuraActivitySource.shared)
         } else if TrackerValue.GARMIN == trackerValue {
             return ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: GarminActivitySource.shared)
         } else if TrackerValue.STRAVA == trackerValue {

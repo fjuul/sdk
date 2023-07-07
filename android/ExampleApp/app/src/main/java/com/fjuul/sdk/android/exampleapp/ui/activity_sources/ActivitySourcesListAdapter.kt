@@ -10,6 +10,7 @@ import android.widget.TextView
 enum class ActivitySourcesItem(val label: String) {
     FITBIT("Fitbit"),
     GARMIN("Garmin"),
+    OURA("Oura"),
     POLAR("Polar"),
     GOOGLE_FIT("Google Fit"),
     STRAVA("Strava"),

@@ -62,6 +62,7 @@ class LoginFragment : Fragment() {
             SdkEnvironment.DEV -> view.findViewById<RadioButton>(R.id.dev_env_radio).isChecked = true
             SdkEnvironment.TEST -> view.findViewById<RadioButton>(R.id.test_env_radio).isChecked = true
             SdkEnvironment.PROD -> view.findViewById<RadioButton>(R.id.prod_env_radio).isChecked = true
+            else -> {}
         }
         tokenInput.setText(sdkConfigViewModel.userToken.value)
         secretInput.setText(sdkConfigViewModel.userSecret.value)

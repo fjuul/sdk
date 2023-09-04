@@ -5,19 +5,26 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.fjuul.sdk.activitysources.entities.ExternalAuthenticationFlowHandler
+import com.fjuul.sdk.android.exampleapp.databinding.ActivityMainBinding
 import com.fjuul.sdk.android.exampleapp.ui.activity_sources.ActivitySourcesFragment
-import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val navController = findNavController(R.id.nav_host_fragment)
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navController = navHostFragment.navController
         val appBarConfiguration = AppBarConfiguration(navController.graph)
         findViewById<Toolbar>(R.id.toolbar)
             .setupWithNavController(navController, appBarConfiguration)
@@ -28,9 +35,14 @@ class MainActivity : AppCompatActivity() {
         if (intent?.data?.scheme == "fjuulsdk-exampleapp") {
             val redirectResult = ExternalAuthenticationFlowHandler.handle(intent.data!!)
             if (redirectResult != null && redirectResult.isSuccess) {
-                val navigationController = nav_host_fragment.findNavController()
+                val navigationController = binding.navHostFragment.findNavController()
                 if (navigationController.currentDestination?.id == R.id.activitySourcesFragment) {
-                    (nav_host_fragment.childFragmentManager.fragments[0] as ActivitySourcesFragment).refreshCurrentConnections()
+                    supportFragmentManager.fragments.forEach {
+                        if(it is ActivitySourcesFragment) {
+                            it.refreshCurrentConnections()
+                            return@forEach
+                        }
+                    }
                 }
             }
         }

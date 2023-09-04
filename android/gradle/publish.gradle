@@ -2,10 +2,6 @@ apply plugin: "maven-publish"
 
 afterEvaluate {
     // do not attach R and BuildConfig to a publication except 'core' module
-    if (project.name != "core") {
-        generateReleaseBuildConfig.enabled = false
-        generateDebugBuildConfig.enabled = false
-    }
     generateReleaseResValues.enabled = false
     generateDebugResValues.enabled = false
 
@@ -52,7 +48,7 @@ afterEvaluate {
                 version = project.findProperty("VERSION_NAME")
                 from project.components.release
                 artifact sourcesJar
-                artifact javadocJar
+                //artifact javadocJar
             }
         }
     }

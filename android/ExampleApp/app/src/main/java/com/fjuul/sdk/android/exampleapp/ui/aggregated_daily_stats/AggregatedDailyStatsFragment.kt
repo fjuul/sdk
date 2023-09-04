@@ -47,6 +47,7 @@ class AggregatedDailyStatsFragment : Fragment() {
         when (model.aggregation.value) {
             AggregationType.sum -> view.findViewById<RadioButton>(R.id.radio_sum).isChecked = true
             AggregationType.average -> view.findViewById<RadioButton>(R.id.radio_avg).isChecked = true
+            else -> {}
         }
 
         model.requestData()

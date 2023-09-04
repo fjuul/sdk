@@ -1,8 +1,22 @@
-rootProject.name = 'FjuulSDK'
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
 
-include ':core', ':analytics', ':user', ':activitysources', 'test'
-project(':core').projectDir = new File(rootProject.projectDir, 'core')
-project(':analytics').projectDir = new File(rootProject.projectDir, 'analytics')
-project(':user').projectDir = new File(rootProject.projectDir, 'user')
-project(':activitysources').projectDir = new File(rootProject.projectDir, 'activitysources')
-project(':test').projectDir = new File(rootProject.projectDir, 'test')
+rootProject.name = "FjuulSDK"
+//include ':app'
+include ':core'
+include ':test'
+include ':analytics'
+include ':activitysources'
+include ':user'

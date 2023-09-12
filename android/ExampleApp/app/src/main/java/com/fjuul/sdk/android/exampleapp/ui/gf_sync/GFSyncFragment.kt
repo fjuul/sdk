@@ -29,13 +29,14 @@ class GFSyncFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        //Data binding added because kotlin extension is deprecated
         binding = GfSyncFragmentBinding.bind(inflater.inflate(R.layout.gf_sync_fragment, container, false))
         return binding.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this)[GFSyncViewModel::class.java]
+        viewModel = ViewModelProvider(this).get(GFSyncViewModel::class.java)
 
         binding.intradaySectionText.sectionText.text = "Intraday metrics"
         binding.sessionsSectionText.sectionText.text = "Sessions"

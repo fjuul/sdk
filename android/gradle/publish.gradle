@@ -1,18 +1,16 @@
 apply plugin: "maven-publish"
-
 afterEvaluate {
     // do not attach R and BuildConfig to a publication except 'core' module
     generateReleaseResValues.enabled = false
     generateDebugResValues.enabled = false
-
     task sourcesJar(type: Jar) {
         from android.sourceSets.main.java.srcDirs
         archiveClassifier = 'sources'
     }
-
     task javadoc(type: Javadoc) {
         source = android.sourceSets.main.java.srcDirs
         classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+        print("PATH "+android.getBootClasspath().join(File.pathSeparator)+" -- end\n")
         android.libraryVariants.all { variant ->
             if (variant.name == 'release') {
                 owner.classpath += variant.javaCompileProvider.get().classpath
@@ -20,17 +18,14 @@ afterEvaluate {
         }
         exclude '**/R.html', '**/R.*.html', '**/index.html'
     }
-
     task javadocJar(type: Jar, dependsOn: javadoc) {
         archiveClassifier = 'javadoc'
         from javadoc.destinationDir
     }
-
     artifacts {
         archives javadocJar
         archives sourcesJar
     }
-
     publishing {
         repositories {
             maven {
@@ -48,7 +43,7 @@ afterEvaluate {
                 version = project.findProperty("VERSION_NAME")
                 from project.components.release
                 artifact sourcesJar
-                //artifact javadocJar
+                artifact javadocJar
             }
         }
     }

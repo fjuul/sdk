@@ -9,6 +9,9 @@ android {
 
     defaultConfig {
         minSdk rootProject.ext.minSdk
+        compileSdk rootProject.ext.compileSdk
+        targetSdk rootProject.ext.targetSdk
+
         versionCode 1
         versionName project.findProperty("VERSION_NAME") ?: "dev build"
 

@@ -19,6 +19,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        //Data binding added because kotlin extension is deprecated
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 

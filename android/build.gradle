@@ -32,7 +32,7 @@ subprojects {
             eclipse('4.13').configFile("$project.rootProject.projectDir/eclipse-java-google-style.xml")
             removeUnusedImports()
             trimTrailingWhitespace()
-            importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''	// A sequence of package names
+            importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''    // A sequence of package names
         }
         groovyGradle {
             target fileTree('.') {
@@ -50,12 +50,12 @@ subprojects {
             // version and userData are both optional
             // NOTE: keep synced with editorconfig!
             def styles = [
-                    indent_size: '4',
-                    indent_style: 'space',
-                    'continuation_indent_size': '2',
-                    'insert_final_newline': 'true',
-                    trim_trailing_whitespace: 'true',
-                    end_of_line: 'lf'
+                indent_size               : '4',
+                indent_style              : 'space',
+                'continuation_indent_size': '2',
+                'insert_final_newline'    : 'true',
+                trim_trailing_whitespace  : 'true',
+                end_of_line               : 'lf'
             ]
             ktlint('0.48.1').userData(styles)
         }
@@ -86,10 +86,10 @@ allprojects {
             showStackTraces true
             showStandardStreams true
             events = [
-                    "passed",
-                    "skipped",
-                    "failed",
-                    "standardOut"
+                "passed",
+                "skipped",
+                "failed",
+                "standardOut"
             ]
         }
     }

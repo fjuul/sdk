@@ -16,7 +16,7 @@ afterEvaluate {
                 owner.classpath += variant.javaCompileProvider.get().classpath
             }
         }
-        exclude '**/R.html', '**/R.*.html', '**/index.html'
+        exclude '**/R.html', '**/R.*.html', '**/index.html', '**/*.kt'
     }
     task javadocJar(type: Jar, dependsOn: javadoc) {
         archiveClassifier = 'javadoc'

@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace 'com.fjuul.sdk.android.exampleapp'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.fjuul.sdk.android.exampleapp"
-        minSdk 21
-        targetSdk 33
+        minSdk 26
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 

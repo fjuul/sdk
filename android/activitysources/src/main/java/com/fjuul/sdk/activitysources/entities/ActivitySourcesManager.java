@@ -131,6 +131,7 @@ public final class ActivitySourcesManager {
             client.getApiKey(),
             client.getBaseUrl());
         GoogleFitActivitySource.initialize(client, config);
+        GoogleHealthConnectActivitySource.initialize(client, config);
 
         final BackgroundWorkManager backgroundWorkManager = new BackgroundWorkManager(config, scheduler);
         final ActivitySourceResolver activitySourceResolver = new ActivitySourceResolver();
@@ -321,6 +322,8 @@ public final class ActivitySourcesManager {
      */
     @SuppressLint("NewApi")
     public void refreshCurrent(@Nullable Callback<List<ActivitySourceConnection>> callback) {
+        //TODO: remove this testing hack:
+        GoogleHealthConnectActivitySource.getInstance().checkForChanges();
         sourcesService.getCurrentConnections().enqueue((call, apiCallResult) -> {
             if (apiCallResult.isError()) {
                 if (callback != null) {

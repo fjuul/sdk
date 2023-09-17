@@ -64,10 +64,10 @@ public class BackgroundWorkManager {
     }
 
     @SuppressLint("NewApi")
-    public void configureProfileSyncWork() {
-        switch (config.getProfileBackgroundSyncMode()) {
+    public void configureGFProfileSyncWork() {
+        switch (config.getGoogleFitProfileBackgroundSyncMode()) {
             case DISABLED:
-                workScheduler.cancelProfileSyncWork();
+                workScheduler.cancelGFProfileSyncWork();
                 break;
             case ENABLED: {
                 final Set<FitnessMetricsType> profileMetrics = config.getCollectableFitnessMetrics()
@@ -75,16 +75,83 @@ public class BackgroundWorkManager {
                     .filter(FitnessMetricsType::isProfileMetricType)
                     .collect(Collectors.toSet());
                 if (profileMetrics.isEmpty()) {
-                    workScheduler.cancelProfileSyncWork();
+                    workScheduler.cancelGFProfileSyncWork();
                 } else {
-                    workScheduler.scheduleProfileSyncWork(profileMetrics);
+                    workScheduler.scheduleGFProfileSyncWork(profileMetrics);
                 }
                 break;
             }
         }
     }
 
-    public void cancelProfileSyncWork() {
-        workScheduler.cancelProfileSyncWork();
+    public void cancelGFProfileSyncWork() {
+        workScheduler.cancelGFProfileSyncWork();
+    }
+
+    @SuppressLint("NewApi")
+    public void configureGHCSyncWorks() {
+        switch (config.getGoogleHealthConnectIntradayBackgroundSyncMode()) {
+            case DISABLED: {
+                workScheduler.cancelGHCIntradaySyncWork();
+                break;
+            }
+            case ENABLED: {
+                final Set<FitnessMetricsType> intradayMetrics = config.getCollectableFitnessMetrics()
+                    .stream()
+                    .filter(FitnessMetricsType::isIntradayMetricType)
+                    .collect(Collectors.toSet());
+                if (intradayMetrics.isEmpty()) {
+                    workScheduler.cancelGHCIntradaySyncWork();
+                } else {
+                    workScheduler.scheduleGHCIntradaySyncWork(intradayMetrics);
+                }
+                break;
+            }
+        }
+        switch (config.getGoogleHealthConnectSessionsBackgroundSyncMode()) {
+            case DISABLED: {
+                workScheduler.cancelGHCSessionsSyncWork();
+                break;
+            }
+            case ENABLED: {
+                if (config.getCollectableFitnessMetrics().contains(FitnessMetricsType.WORKOUTS)) {
+                    workScheduler
+                        .scheduleGHCSessionsSyncWork(config.getGoogleHealthConnectSessionsBackgroundSyncMinSessionDuration());
+                } else {
+                    workScheduler.cancelGHCSessionsSyncWork();
+                }
+                break;
+            }
+        }
+    }
+
+    public void cancelGHCSyncWorks() {
+        workScheduler.cancelGHCIntradaySyncWork();
+        workScheduler.cancelGHCSessionsSyncWork();
+    }
+
+    @SuppressLint("NewApi")
+    public void configureGHCProfileSyncWork() {
+        switch (config.getGoogleHealthConnectProfileBackgroundSyncMode()) {
+            case DISABLED:
+                workScheduler.cancelGHCProfileSyncWork();
+                break;
+            case ENABLED: {
+                final Set<FitnessMetricsType> profileMetrics = config.getCollectableFitnessMetrics()
+                    .stream()
+                    .filter(FitnessMetricsType::isProfileMetricType)
+                    .collect(Collectors.toSet());
+                if (profileMetrics.isEmpty()) {
+                    workScheduler.cancelGHCProfileSyncWork();
+                } else {
+                    workScheduler.scheduleGHCProfileSyncWork(profileMetrics);
+                }
+                break;
+            }
+        }
+    }
+
+    public void cancelGHCProfileSyncWork() {
+        workScheduler.cancelGHCProfileSyncWork();
     }
 }

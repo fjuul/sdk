@@ -28,7 +28,7 @@ import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFDataPointsBat
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRSummaryDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHeightDataPoint;
-import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFPowerDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFPowerSummaryDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSessionBundle;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSpeedDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFStepsDataPoint;
@@ -928,7 +928,7 @@ class TestSessionSamplesData {
         new GFHRDataPoint(58f,
             Date.from(Instant.parse("2020-01-15T17:25:10.000Z")),
             "raw:com.google.heart_rate.bpm:stream2"));
-    public static final List<GFPowerDataPoint> power = Arrays.asList(new GFPowerDataPoint(10f,
+    public static final List<GFPowerSummaryDataPoint> power = Arrays.asList(new GFPowerSummaryDataPoint(10f,
         Date.from(Instant.parse("2020-01-15T17:25:05.000Z")),
         "raw:com.google.power.sample:stream"));
     public static final List<GFSpeedDataPoint> speed = Arrays.asList(

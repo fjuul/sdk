@@ -16,10 +16,10 @@ import androidx.annotation.NonNull;
 import androidx.work.WorkerParameters;
 
 // NOTE: currently it inherits from GFSyncWorker and syncs only with Google Fit but in the future, it will be changed.
-public class ProfileSyncWorker extends GFSyncWorker {
+public class GFProfileSyncWorker extends GFSyncWorker {
     public static final String KEY_PROFILE_METRICS_ARG = "PROFILE_METRICS";
 
-    public ProfileSyncWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+    public GFProfileSyncWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
     }
 

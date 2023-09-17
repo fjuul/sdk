@@ -1,5 +1,6 @@
 package com.fjuul.sdk.activitysources.entities;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -123,6 +124,9 @@ public final class ActivitySourcesManager {
         final List<TrackerConnection> storedConnections = stateStore.getConnections();
         final CopyOnWriteArrayList<TrackerConnection> currentConnections =
             Optional.ofNullable(storedConnections).map(CopyOnWriteArrayList::new).orElse(new CopyOnWriteArrayList<>());
+        //TODO: Remove testing hack
+        addGoogleHealthConnectIfAbsent(currentConnections);
+        // end of testing hack
         final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
         final WorkManager workManager = WorkManager.getInstance(client.getAppContext());
         final ActivitySourceWorkScheduler scheduler = new ActivitySourceWorkScheduler(workManager,
@@ -322,8 +326,6 @@ public final class ActivitySourcesManager {
      */
     @SuppressLint("NewApi")
     public void refreshCurrent(@Nullable Callback<List<ActivitySourceConnection>> callback) {
-        //TODO: remove this testing hack:
-        GoogleHealthConnectActivitySource.getInstance().checkForChanges();
         sourcesService.getCurrentConnections().enqueue((call, apiCallResult) -> {
             if (apiCallResult.isError()) {
                 if (callback != null) {
@@ -333,6 +335,9 @@ public final class ActivitySourcesManager {
             }
             final CopyOnWriteArrayList<TrackerConnection> freshTrackerConnections =
                 new CopyOnWriteArrayList(apiCallResult.getValue());
+            //TODO: Remove testing hack
+            addGoogleHealthConnectIfAbsent(freshTrackerConnections);
+            // end of testing hack
             configureExternalStateByConnections(freshTrackerConnections);
             stateStore.setConnections(freshTrackerConnections);
             this.currentConnections = freshTrackerConnections;
@@ -377,11 +382,11 @@ public final class ActivitySourcesManager {
             .orElse(null);
         // TODO: move out the line with configuring the profile sync work when there will be other local activity
         if (gfTrackerConnection != null) {
-            backgroundWorkManager.configureProfileSyncWork();
+            backgroundWorkManager.configureGFProfileSyncWork();
             backgroundWorkManager.configureGFSyncWorks();
         } else {
             backgroundWorkManager.cancelGFSyncWorks();
-            backgroundWorkManager.cancelProfileSyncWork();
+            backgroundWorkManager.cancelGFProfileSyncWork();
         }
 
         final GoogleFitActivitySource googleFit = (GoogleFitActivitySource) activitySourceResolver
@@ -390,6 +395,19 @@ public final class ActivitySourcesManager {
             googleFit.setLowerDateBoundary(gfTrackerConnection.getCreatedAt());
         } else {
             googleFit.setLowerDateBoundary(null);
+        }
+    }
+
+    private static void addGoogleHealthConnectIfAbsent(List<TrackerConnection> connections) {
+        boolean hasGHC = false;
+        for (TrackerConnection trackerConnection : connections) {
+            if (trackerConnection.getId().equals("ghc-id")) {
+                hasGHC = true;
+                break;
+            }
+        }
+        if (!hasGHC) {
+            connections.add(new TrackerConnection("ghc-id", TrackerValue.GOOGLE_HEALTH_CONNECT.getValue(), new Date(), null));
         }
     }
 }

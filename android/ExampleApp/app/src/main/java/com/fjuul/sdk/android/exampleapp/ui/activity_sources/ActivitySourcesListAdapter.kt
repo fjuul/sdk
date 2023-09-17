@@ -13,6 +13,7 @@ enum class ActivitySourcesItem(val label: String) {
     OURA("Oura"),
     POLAR("Polar"),
     GOOGLE_FIT("Google Fit"),
+    GOOGLE_HEALTH_CONNECT("Google Health Connect"),
     STRAVA("Strava"),
     SUUNTO("Suunto"),
     WITHINGS("Withings"),

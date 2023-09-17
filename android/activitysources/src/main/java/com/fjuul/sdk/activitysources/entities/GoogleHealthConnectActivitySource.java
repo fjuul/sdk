@@ -1,133 +1,154 @@
 package com.fjuul.sdk.activitysources.entities;
 
 import android.content.Context;
-//TODO: Replace Log with Timber and use SDK's Timber utility classes
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.health.connect.client.records.ExerciseSessionRecord;
-import androidx.health.connect.client.records.HeartRateRecord;
-import androidx.health.connect.client.records.HeightRecord;
-import androidx.health.connect.client.records.Record;
-import androidx.health.connect.client.records.StepsRecord;
-import androidx.health.connect.client.records.TotalCaloriesBurnedRecord;
-import androidx.health.connect.client.records.WeightRecord;
+import androidx.annotation.Nullable;
 
 import com.fjuul.sdk.activitysources.entities.internal.GHCClientWrapper;
-import com.fjuul.sdk.activitysources.entities.internal.HealthConnectAvailability;
-import com.fjuul.sdk.activitysources.entities.internal.HealthConnectRecords;
+import com.fjuul.sdk.activitysources.entities.internal.GHCDataManager;
+import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.core.ApiClient;
+import com.fjuul.sdk.core.entities.Callback;
+import com.fjuul.sdk.core.entities.Result;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
-//TODO: Make this extend ActivitySource and uncomment getTrackerValue
-public class GoogleHealthConnectActivitySource {
+public class GoogleHealthConnectActivitySource extends ActivitySource {
     private static final String LOG_TAG = "GoogleHealthConnectActivitySource";
-    private static final String CHANGES_TOKEN_KEY = "google-health-connect-changes-token";
+
+    private static final ExecutorService sharedSequentialExecutor = createSequentialSingleCachedExecutor();
+
     private static volatile GoogleHealthConnectActivitySource instance;
-    @NonNull
-    private final ApiClient apiClient;
-    @NonNull
-    private final Context context;
-    @NonNull
-    private final ActivitySourcesManagerConfig config;
-    @NonNull
-    private final GHCClientWrapper clientWrapper;
+    private final @NonNull Set<FitnessMetricsType> collectableFitnessMetrics;
+    private final @NonNull ActivitySourcesService sourcesService;
+    private final @NonNull ApiClient apiClient;
+    private final @NonNull Context context;
+    private final @NonNull ActivitySourcesManagerConfig config;
+    private final @NonNull GHCClientWrapper clientWrapper;
+    private final @NonNull ExecutorService localSequentialBackgroundExecutor;
 
     static synchronized void initialize(@NonNull ApiClient client,
                                         @NonNull ActivitySourcesManagerConfig config) {
-        instance = new GoogleHealthConnectActivitySource(client, config);
+        final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
+        final Set<FitnessMetricsType> collectableFitnessMetrics = config.getCollectableFitnessMetrics();
+        instance = new GoogleHealthConnectActivitySource(
+            collectableFitnessMetrics, sourcesService, client, config, sharedSequentialExecutor);
     }
 
-    private GoogleHealthConnectActivitySource(@NonNull ApiClient apiClient,
-                                              @NonNull ActivitySourcesManagerConfig config) {
+    private GoogleHealthConnectActivitySource(
+        @NonNull Set<FitnessMetricsType> collectableFitnessMetrics,
+        @NonNull ActivitySourcesService sourcesService,
+        @NonNull ApiClient apiClient,
+        @NonNull ActivitySourcesManagerConfig config,
+        @NonNull ExecutorService localSequentialBackgroundExecutor) {
+        this.collectableFitnessMetrics = collectableFitnessMetrics;
+        this.sourcesService = sourcesService;
         this.apiClient = apiClient;
         this.context = apiClient.getAppContext();
         this.config = config;
         this.clientWrapper = new GHCClientWrapper(context);
+        this.localSequentialBackgroundExecutor = localSequentialBackgroundExecutor;
+    }
+
+    /**
+     * Puts the task of synchronizing intraday data in a sequential execution queue (i.e., only one sync task can be
+     * executed at a time) and will execute it when it comes to its turn. The synchronization result is available in the
+     * callback.<br>
+     * The task is atomic, so it will either succeed for all the specified types of metrics, or it will not succeed at
+     * all.
+     *
+     * @param callback callback for the result
+     */
+    public void syncIntradayMetrics(
+        @NonNull final GoogleHealthConnectIntradaySyncOptions options,
+        @Nullable final Callback<Void> callback) {
+        Log.d(LOG_TAG, "Syncing intraday metrics");
+        GHCDataManager dataManager = new GHCDataManager(clientWrapper, sourcesService, apiClient);
+        performTaskAlongWithCallback(() -> dataManager.syncIntradayMetrics(options), callback);
+    }
+
+    /**
+     * Puts the task of synchronizing sessions in a sequential execution queue (i.e., only one sync task can be executed
+     * at a time) and will execute it when it comes to its turn. The synchronization result is available in the
+     * callback.
+     *
+     * @param callback callback for the result
+     */
+    public void syncSessions(
+        @NonNull final GoogleHealthConnectSessionSyncOptions options,
+        @Nullable final Callback<Void> callback) {
+        Log.d(LOG_TAG, "Syncing sessions");
+        GHCDataManager dataManager = new GHCDataManager(clientWrapper, sourcesService, apiClient);
+        performTaskAlongWithCallback(() -> dataManager.syncSessions(options), callback);
+    }
+
+    /**
+     * Puts the task of synchronizing the user profile from Google Fit in a sequential execution queue (i.e., only one
+     * sync task can be executed at a time) and will execute it when it comes to its turn. The synchronization result is
+     * available in the callback.<br>
+     * The task is atomic, so it will either succeed for all the specified types of metrics, or it will not succeed at
+     * all.
+     *
+     * @param callback callback for the result
+     */
+    public void syncProfile(
+        @NonNull final GoogleHealthConnectProfileSyncOptions options,
+        @Nullable final Callback<Void> callback) {
+        Log.d(LOG_TAG, "Syncing profile");
+        GHCDataManager dataManager = new GHCDataManager(clientWrapper, sourcesService, apiClient);
+        performTaskAlongWithCallback(() -> dataManager.syncProfile(options), callback);
     }
 
     @NonNull
     public static GoogleHealthConnectActivitySource getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException(
+                "You must initialize ActivitySourceManager before use of GoogleHealthConnectActivitySource");
+        }
         return instance;
     }
 
-//    @NonNull
-//    @Override
-//    protected TrackerValue getTrackerValue() {
-//        return TrackerValue.GOOGLE_HEALTH_CONNECT;
-//    }
+    @NonNull
+    @Override
+    protected TrackerValue getTrackerValue() {
+        return TrackerValue.GOOGLE_HEALTH_CONNECT;
+    }
 
-    // TODO: integrate this with the SDK's framework so that it sends the changes as JSON
-    // to the new endpoints
-    public void checkForChanges() {
-        new Thread(() -> {
+    private <T> void performTaskAlongWithCallback(@NonNull Supplier<Task<T>> taskSupplier,
+                                                  @Nullable Callback<T> callback) {
+        localSequentialBackgroundExecutor.execute(() -> {
             try {
-                HealthConnectAvailability availability = clientWrapper.getAvailability().getValue();
-                if (availability != HealthConnectAvailability.INSTALLED) {
-                    Log.e(LOG_TAG, "Failed: not installed");
+                T taskResult = Tasks.await(taskSupplier.get());
+                Result<T> result = Result.value(taskResult);
+                if (callback != null) {
+                    callback.onResult(result);
+                }
+            } catch (ExecutionException | InterruptedException exc) {
+                if (callback == null) {
                     return;
                 }
-                Boolean hasAllPermissions = clientWrapper.hasAllPermissionsAsync(
-                    clientWrapper.getDefaultRequiredPermissions()).get();
-                if (!hasAllPermissions) {
-                    Log.e(LOG_TAG, "Failed: does not have required permissions");
-                    return;
+                Throwable throwableToPropagate = exc;
+                if (exc instanceof ExecutionException && exc.getCause() != null) {
+                    throwableToPropagate = exc.getCause();
                 }
-                String token = apiClient.getStorage().get(CHANGES_TOKEN_KEY);
-                HealthConnectRecords records;
-                if (token == null) {
-                    records = clientWrapper.getInitialRecordsAsync(30).get();
-                } else {
-                    records = clientWrapper.getChangesAsync(token).get();
-                }
-                apiClient.getStorage().set(CHANGES_TOKEN_KEY, records.getNextToken());
-                for (Record record : records.getRecords()) {
-                    if (record instanceof HeightRecord) {
-                        processHeightChange((HeightRecord)record);
-                    } else if (record instanceof WeightRecord) {
-                        processWeightChange((WeightRecord)record);
-                    } else if (record instanceof StepsRecord) {
-                        processStepsChange((StepsRecord)record);
-                    } else if (record instanceof HeartRateRecord) {
-                        processHeartRateChange((HeartRateRecord)record);
-                    } else if (record instanceof TotalCaloriesBurnedRecord) {
-                        processTotalCaloriesBurnedChange((TotalCaloriesBurnedRecord)record);
-                    } else if (record instanceof ExerciseSessionRecord) {
-                        processExerciseSessionChange((ExerciseSessionRecord)record);
-                    } else {
-                        Log.e(LOG_TAG, "Unexpected record type: " + record.getClass().getCanonicalName());
-                    }
-                }
-            } catch (ExecutionException ex) {
-                Log.e(LOG_TAG, "Threw ExecutionException: " + ex.getMessage());
-            } catch (InterruptedException ex) {
-                Log.e(LOG_TAG, "Threw InterruptedException: " + ex.getMessage());
+                Result<T> errorResult = Result.error(throwableToPropagate);
+                callback.onResult(errorResult);
             }
-        }).start();
+        });
     }
 
-    private void processHeightChange(HeightRecord record) {
-        Log.i(LOG_TAG, "Got height record, height: " + record.getHeight().getMeters() + "m");
-    }
-
-    private void processWeightChange(WeightRecord record) {
-        Log.i(LOG_TAG, "Got weight record, weight: " + record.getWeight().getKilograms() + "kg");
-    }
-
-    private void processStepsChange(StepsRecord record) {
-        Log.i(LOG_TAG, "Got steps record, steps: " + record.getCount() + " steps");
-    }
-
-    private void processHeartRateChange(HeartRateRecord record) {
-        Log.i(LOG_TAG, "Got heart rate record, heart rate: " + record.getSamples().size() + " samples");
-    }
-
-    private void processTotalCaloriesBurnedChange(TotalCaloriesBurnedRecord record) {
-        Log.i(LOG_TAG, "Got total calories burned record, burned: " + record.getEnergy().getCalories() + " calories");
-    }
-
-    private void processExerciseSessionChange(ExerciseSessionRecord record) {
-        Log.i(LOG_TAG, "Got exercise session record, title: " + record.getTitle());
+    private static ExecutorService createSequentialSingleCachedExecutor() {
+        // NOTE: this solution works only for single thread (do not edit maximumPoolSize)
+        return new ThreadPoolExecutor(0, 1, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
     }
 }

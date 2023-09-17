@@ -4,6 +4,7 @@ import com.fjuul.sdk.activitysources.entities.ActivitySource;
 import com.fjuul.sdk.activitysources.entities.FitbitActivitySource;
 import com.fjuul.sdk.activitysources.entities.GarminActivitySource;
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
+import com.fjuul.sdk.activitysources.entities.GoogleHealthConnectActivitySource;
 import com.fjuul.sdk.activitysources.entities.OuraActivitySource;
 import com.fjuul.sdk.activitysources.entities.PolarActivitySource;
 import com.fjuul.sdk.activitysources.entities.StravaActivitySource;
@@ -34,6 +35,8 @@ public class ActivitySourceResolver {
             return WithingsActivitySource.getInstance();
         } else if (TrackerValue.GOOGLE_FIT.equals(tracker)) {
             return GoogleFitActivitySource.getInstance();
+        } else if (TrackerValue.GOOGLE_HEALTH_CONNECT.equals(tracker)) {
+            return GoogleHealthConnectActivitySource.getInstance();
         }
         return new UnknownActivitySource(new TrackerValue(trackerValue));
     }

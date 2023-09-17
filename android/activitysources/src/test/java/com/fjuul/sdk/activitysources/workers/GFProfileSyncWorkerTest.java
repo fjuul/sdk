@@ -51,20 +51,20 @@ import androidx.work.ListenableWorker;
 import androidx.work.testing.TestWorkerBuilder;
 
 @RunWith(Enclosed.class)
-public class ProfileSyncWorkerTest {
+public class GFProfileSyncWorkerTest {
     @RunWith(RobolectricTestRunner.class)
     @Config(sdk = {Build.VERSION_CODES.P})
     private abstract static class GivenRobolectricContext {}
 
     public static class GetOrInitializeActivitySourcesManagerTests extends GivenRobolectricContext {
-        ProfileSyncWorker subject;
-        TestWorkerBuilder<ProfileSyncWorker> workerBuilder;
+        GFProfileSyncWorker subject;
+        TestWorkerBuilder<GFProfileSyncWorker> workerBuilder;
 
         @Before
         public void setUp() {
             final Context context = ApplicationProvider.getApplicationContext();
             final Executor executor = Executors.newSingleThreadExecutor();
-            workerBuilder = TestWorkerBuilder.from(context, ProfileSyncWorker.class, executor);
+            workerBuilder = TestWorkerBuilder.from(context, GFProfileSyncWorker.class, executor);
         }
 
         @Test
@@ -80,7 +80,7 @@ public class ProfileSyncWorkerTest {
                     .putString("API_KEY", "FJUUL_API_KEY")
                     .putString("BASE_URL", "https://fjuul.com")
                     .build();
-                subject = (ProfileSyncWorker) workerBuilder.setInputData(inputData).build();
+                subject = (GFProfileSyncWorker) workerBuilder.setInputData(inputData).build();
                 subject.getOrInitializeActivitySourcesManager();
 
                 final ArgumentCaptor<ApiClient> apiClientCaptor = ArgumentCaptor.forClass(ApiClient.class);
@@ -115,15 +115,15 @@ public class ProfileSyncWorkerTest {
 
     public static class DoWorkTests extends GivenRobolectricContext {
         // NOTE: we use the spy here to mock the initialization of ActivitySourcesManager
-        ProfileSyncWorker spySubject;
-        TestWorkerBuilder<ProfileSyncWorker> workerBuilder;
+        GFProfileSyncWorker spySubject;
+        TestWorkerBuilder<GFProfileSyncWorker> workerBuilder;
         static PausedExecutorService pausedExecutor = new PausedExecutorService();
 
         @Before
         public void setUp() {
             final Context context = ApplicationProvider.getApplicationContext();
             final Executor executor = Executors.newSingleThreadExecutor();
-            workerBuilder = TestWorkerBuilder.from(context, ProfileSyncWorker.class, executor);
+            workerBuilder = TestWorkerBuilder.from(context, GFProfileSyncWorker.class, executor);
         }
 
         @AfterClass
@@ -169,7 +169,7 @@ public class ProfileSyncWorkerTest {
 
             final Data inputData =
                 new Data.Builder().putStringArray("PROFILE_METRICS", new String[] {"HEIGHT", "WEIGHT"}).build();
-            spySubject = spy((ProfileSyncWorker) workerBuilder.setInputData(inputData).build());
+            spySubject = spy((GFProfileSyncWorker) workerBuilder.setInputData(inputData).build());
             doReturn(mockedSourcesManager).when(spySubject).getOrInitializeActivitySourcesManager();
 
             final Future<ListenableWorker.Result> futureResult = pausedExecutor.submit(spySubject::doWork);
@@ -206,7 +206,7 @@ public class ProfileSyncWorkerTest {
 
             final Data inputData =
                 new Data.Builder().putStringArray("PROFILE_METRICS", new String[] {"HEIGHT", "WEIGHT"}).build();
-            spySubject = spy((ProfileSyncWorker) workerBuilder.setInputData(inputData).build());
+            spySubject = spy((GFProfileSyncWorker) workerBuilder.setInputData(inputData).build());
             doReturn(mockedSourcesManager).when(spySubject).getOrInitializeActivitySourcesManager();
 
             final Future<ListenableWorker.Result> futureResult = pausedExecutor.submit(spySubject::doWork);

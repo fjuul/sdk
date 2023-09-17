@@ -8,7 +8,11 @@ import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
 import com.fjuul.sdk.activitysources.workers.GFIntradaySyncWorker;
 import com.fjuul.sdk.activitysources.workers.GFSessionsSyncWorker;
 import com.fjuul.sdk.activitysources.workers.GFSyncWorker;
-import com.fjuul.sdk.activitysources.workers.ProfileSyncWorker;
+import com.fjuul.sdk.activitysources.workers.GFProfileSyncWorker;
+import com.fjuul.sdk.activitysources.workers.GHCIntradaySyncWorker;
+import com.fjuul.sdk.activitysources.workers.GHCProfileSyncWorker;
+import com.fjuul.sdk.activitysources.workers.GHCSessionsSyncWorker;
+import com.fjuul.sdk.activitysources.workers.GHCSyncWorker;
 
 import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
@@ -22,7 +26,10 @@ import androidx.work.WorkManager;
 public class ActivitySourceWorkScheduler {
     public static final String GF_INTRADAY_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.gf_intraday_sync";
     public static final String GF_SESSIONS_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.gf_sessions_sync";
-    public static final String PROFILE_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.profile_sync";
+    public static final String GF_PROFILE_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.gf_profile_sync";
+    public static final String GHC_INTRADAY_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.ghc_intraday_sync";
+    public static final String GHC_SESSIONS_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.ghc_sessions_sync";
+    public static final String GHC_PROFILE_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.ghc_profile_sync";
 
     @NonNull
     private final WorkManager workManager;
@@ -36,7 +43,10 @@ public class ActivitySourceWorkScheduler {
     private final String baseUrl;
     private volatile boolean gfIntradaySyncWorkEnqueued = false;
     private volatile boolean gfSessionsSyncWorkEnqueued = false;
-    private volatile boolean profileSyncWorkEnqueued = false;
+    private volatile boolean gfProfileSyncWorkEnqueued = false;
+    private volatile boolean ghcIntradaySyncWorkEnqueued = false;
+    private volatile boolean ghcSessionsSyncWorkEnqueued = false;
+    private volatile boolean ghcProfileSyncWorkEnqueued = false;
 
     public ActivitySourceWorkScheduler(@NonNull WorkManager workManager,
         @NonNull String userToken,
@@ -53,13 +63,19 @@ public class ActivitySourceWorkScheduler {
     public static void cancelWorks(@NonNull WorkManager workManager) {
         workManager.cancelUniqueWork(GF_INTRADAY_SYNC_WORK_NAME);
         workManager.cancelUniqueWork(GF_SESSIONS_SYNC_WORK_NAME);
-        workManager.cancelUniqueWork(PROFILE_SYNC_WORK_NAME);
+        workManager.cancelUniqueWork(GF_PROFILE_SYNC_WORK_NAME);
+        workManager.cancelUniqueWork(GHC_INTRADAY_SYNC_WORK_NAME);
+        workManager.cancelUniqueWork(GHC_SESSIONS_SYNC_WORK_NAME);
+        workManager.cancelUniqueWork(GHC_PROFILE_SYNC_WORK_NAME);
     }
 
     public synchronized void cancelWorks() {
         cancelGFIntradaySyncWork();
         cancelGFSessionsSyncWork();
-        cancelProfileSyncWork();
+        cancelGFProfileSyncWork();
+        cancelGHCIntradaySyncWork();
+        cancelGHCSessionsSyncWork();
+        cancelGHCProfileSyncWork();
     }
 
     @SuppressLint("NewApi")
@@ -68,7 +84,7 @@ public class ActivitySourceWorkScheduler {
             return;
         }
         final String[] serializedIntradayMetrics = serializeFitnessMetrics(intradayMetrics);
-        final Data inputWorkRequestData = buildEssentialInputData()
+        final Data inputWorkRequestData = buildGFEssentialInputData()
             .putStringArray(GFIntradaySyncWorker.KEY_INTRADAY_METRICS_ARG, serializedIntradayMetrics)
             .build();
         final PeriodicWorkRequest periodicWorkRequest =
@@ -94,7 +110,7 @@ public class ActivitySourceWorkScheduler {
         }
         final String serializedDuration = minSessionDuration.toString();
         final Data inputWorkRequestData =
-            buildEssentialInputData().putString(GFSessionsSyncWorker.KEY_MIN_SESSION_DURATION_ARG, serializedDuration)
+            buildGFEssentialInputData().putString(GFSessionsSyncWorker.KEY_MIN_SESSION_DURATION_ARG, serializedDuration)
                 .build();
         final PeriodicWorkRequest periodicWorkRequest =
             new PeriodicWorkRequest.Builder(GFSessionsSyncWorker.class, 1, TimeUnit.HOURS)
@@ -113,35 +129,117 @@ public class ActivitySourceWorkScheduler {
         gfSessionsSyncWorkEnqueued = false;
     }
 
-    public synchronized void scheduleProfileSyncWork(@NonNull Set<FitnessMetricsType> profileMetrics) {
-        if (profileSyncWorkEnqueued) {
+    public synchronized void scheduleGFProfileSyncWork(@NonNull Set<FitnessMetricsType> profileMetrics) {
+        if (gfProfileSyncWorkEnqueued) {
             return;
         }
         final String[] serializedMetrics = serializeFitnessMetrics(profileMetrics);
         final Data inputWorkRequestData =
-            buildEssentialInputData().putStringArray(ProfileSyncWorker.KEY_PROFILE_METRICS_ARG, serializedMetrics)
+            buildGFEssentialInputData().putStringArray(GFProfileSyncWorker.KEY_PROFILE_METRICS_ARG, serializedMetrics)
                 .build();
         final PeriodicWorkRequest periodicWorkRequest =
-            new PeriodicWorkRequest.Builder(ProfileSyncWorker.class, 1, TimeUnit.HOURS)
+            new PeriodicWorkRequest.Builder(GFProfileSyncWorker.class, 1, TimeUnit.HOURS)
                 .setConstraints(buildCommonWorkConstraints())
                 .setInitialDelay(1, TimeUnit.HOURS)
                 .setInputData(inputWorkRequestData)
                 .build();
         workManager
-            .enqueueUniquePeriodicWork(PROFILE_SYNC_WORK_NAME, ExistingPeriodicWorkPolicy.REPLACE, periodicWorkRequest);
-        profileSyncWorkEnqueued = true;
+            .enqueueUniquePeriodicWork(GF_PROFILE_SYNC_WORK_NAME, ExistingPeriodicWorkPolicy.REPLACE, periodicWorkRequest);
+        gfProfileSyncWorkEnqueued = true;
     }
 
-    public synchronized void cancelProfileSyncWork() {
-        workManager.cancelUniqueWork(PROFILE_SYNC_WORK_NAME);
-        profileSyncWorkEnqueued = false;
+    public synchronized void cancelGFProfileSyncWork() {
+        workManager.cancelUniqueWork(GF_PROFILE_SYNC_WORK_NAME);
+        gfProfileSyncWorkEnqueued = false;
     }
 
-    private Data.Builder buildEssentialInputData() {
+    private Data.Builder buildGFEssentialInputData() {
         return new Data.Builder().putString(GFSyncWorker.KEY_USER_TOKEN_ARG, userToken)
             .putString(GFSyncWorker.KEY_USER_SECRET_ARG, userSecret)
             .putString(GFSyncWorker.KEY_API_KEY_ARG, apiKey)
             .putString(GFSyncWorker.KEY_BASE_URL_ARG, baseUrl);
+    }
+
+    @SuppressLint("NewApi")
+    public synchronized void scheduleGHCIntradaySyncWork(@NonNull Set<FitnessMetricsType> intradayMetrics) {
+        if (ghcIntradaySyncWorkEnqueued) {
+            return;
+        }
+        final String[] serializedIntradayMetrics = serializeFitnessMetrics(intradayMetrics);
+        final Data inputWorkRequestData = buildGHCEssentialInputData()
+            .putStringArray(GHCIntradaySyncWorker.KEY_INTRADAY_METRICS_ARG, serializedIntradayMetrics)
+            .build();
+        final PeriodicWorkRequest periodicWorkRequest =
+            new PeriodicWorkRequest.Builder(GHCIntradaySyncWorker.class, 1, TimeUnit.HOURS)
+                .setConstraints(buildCommonWorkConstraints())
+                .setInitialDelay(1, TimeUnit.HOURS)
+                .setInputData(inputWorkRequestData)
+                .build();
+        workManager.enqueueUniquePeriodicWork(GHC_INTRADAY_SYNC_WORK_NAME,
+            ExistingPeriodicWorkPolicy.REPLACE,
+            periodicWorkRequest);
+        ghcIntradaySyncWorkEnqueued = true;
+    }
+
+    public synchronized void cancelGHCIntradaySyncWork() {
+        workManager.cancelUniqueWork(GHC_INTRADAY_SYNC_WORK_NAME);
+        ghcIntradaySyncWorkEnqueued = false;
+    }
+
+    public synchronized void scheduleGHCSessionsSyncWork(@NonNull Duration minSessionDuration) {
+        if (ghcSessionsSyncWorkEnqueued) {
+            return;
+        }
+        final String serializedDuration = minSessionDuration.toString();
+        final Data inputWorkRequestData =
+            buildGHCEssentialInputData().putString(GHCSessionsSyncWorker.KEY_MIN_SESSION_DURATION_ARG, serializedDuration)
+                .build();
+        final PeriodicWorkRequest periodicWorkRequest =
+            new PeriodicWorkRequest.Builder(GHCSessionsSyncWorker.class, 1, TimeUnit.HOURS)
+                .setConstraints(buildCommonWorkConstraints())
+                .setInitialDelay(1, TimeUnit.HOURS)
+                .setInputData(inputWorkRequestData)
+                .build();
+        workManager.enqueueUniquePeriodicWork(GHC_SESSIONS_SYNC_WORK_NAME,
+            ExistingPeriodicWorkPolicy.REPLACE,
+            periodicWorkRequest);
+        ghcSessionsSyncWorkEnqueued = true;
+    }
+
+    public synchronized void cancelGHCSessionsSyncWork() {
+        workManager.cancelUniqueWork(GHC_SESSIONS_SYNC_WORK_NAME);
+        ghcSessionsSyncWorkEnqueued = false;
+    }
+
+    public synchronized void scheduleGHCProfileSyncWork(@NonNull Set<FitnessMetricsType> profileMetrics) {
+        if (ghcProfileSyncWorkEnqueued) {
+            return;
+        }
+        final String[] serializedMetrics = serializeFitnessMetrics(profileMetrics);
+        final Data inputWorkRequestData =
+            buildGHCEssentialInputData().putStringArray(GHCProfileSyncWorker.KEY_PROFILE_METRICS_ARG, serializedMetrics)
+                .build();
+        final PeriodicWorkRequest periodicWorkRequest =
+            new PeriodicWorkRequest.Builder(GHCProfileSyncWorker.class, 1, TimeUnit.HOURS)
+                .setConstraints(buildCommonWorkConstraints())
+                .setInitialDelay(1, TimeUnit.HOURS)
+                .setInputData(inputWorkRequestData)
+                .build();
+        workManager
+            .enqueueUniquePeriodicWork(GHC_PROFILE_SYNC_WORK_NAME, ExistingPeriodicWorkPolicy.REPLACE, periodicWorkRequest);
+        ghcProfileSyncWorkEnqueued = true;
+    }
+
+    public synchronized void cancelGHCProfileSyncWork() {
+        workManager.cancelUniqueWork(GHC_PROFILE_SYNC_WORK_NAME);
+        ghcProfileSyncWorkEnqueued = false;
+    }
+
+    private Data.Builder buildGHCEssentialInputData() {
+        return new Data.Builder().putString(GHCSyncWorker.KEY_USER_TOKEN_ARG, userToken)
+            .putString(GHCSyncWorker.KEY_USER_SECRET_ARG, userSecret)
+            .putString(GHCSyncWorker.KEY_API_KEY_ARG, apiKey)
+            .putString(GHCSyncWorker.KEY_BASE_URL_ARG, baseUrl);
     }
 
     private Constraints buildCommonWorkConstraints() {

@@ -259,7 +259,7 @@ public class ActivitySourcesManagerTest {
                 verify(mockedStateStore).setConnections(Collections.emptyList());
                 // should disable any background workers of GoogleFit
                 verify(mockedBackgroundWorkManager).cancelGFSyncWorks();
-                verify(mockedBackgroundWorkManager).cancelProfileSyncWork();
+                verify(mockedBackgroundWorkManager).cancelGFProfileSyncWork();
                 assertEquals("should set new connections in the subject",
                     Collections.emptyList(),
                     subject.getCurrent());
@@ -442,7 +442,7 @@ public class ActivitySourcesManagerTest {
                     gfActivitySourceConnection.getTracker());
                 // should configure background works because of the presence of the google-fit tracker
                 verify(mockedBackgroundWorkManager).configureGFSyncWorks();
-                verify(mockedBackgroundWorkManager).configureProfileSyncWork();
+                verify(mockedBackgroundWorkManager).configureGFProfileSyncWork();
                 // should set the lower date bound from the connection
                 verify(googleFitStub).setLowerDateBoundary(connectionCreatedAt);
             }
@@ -497,7 +497,7 @@ public class ActivitySourcesManagerTest {
                     polarActivitySourceConnection.getTracker());
                 // should cancel background works because of the absence of the google-fit tracker
                 verify(mockedBackgroundWorkManager).cancelGFSyncWorks();
-                verify(mockedBackgroundWorkManager).cancelProfileSyncWork();
+                verify(mockedBackgroundWorkManager).cancelGFProfileSyncWork();
                 // should disable the lower date bound
                 verify(googleFitStub).setLowerDateBoundary(null);
                 final ArgumentCaptor<Result<List<ActivitySourceConnection>>> callbackResultArgumentCaptor =

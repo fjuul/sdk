@@ -1,23 +1,19 @@
 package com.fjuul.sdk.activitysources.workers;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-
-import androidx.annotation.NonNull;
-import androidx.work.WorkerParameters;
+import java.util.concurrent.ExecutionException;
 
 import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
-import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
-import com.fjuul.sdk.activitysources.entities.GoogleFitIntradaySyncOptions;
 import com.fjuul.sdk.activitysources.entities.GoogleHealthConnectActivitySource;
 import com.fjuul.sdk.activitysources.entities.GoogleHealthConnectIntradaySyncOptions;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 
-import java.time.LocalDate;
-import java.util.concurrent.ExecutionException;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import androidx.annotation.NonNull;
+import androidx.work.WorkerParameters;
 
 public class GHCIntradaySyncWorker extends GHCSyncWorker {
     public static final String KEY_INTRADAY_METRICS_ARG = "INTRADAY_METRICS";
@@ -37,7 +33,8 @@ public class GHCIntradaySyncWorker extends GHCSyncWorker {
             // NOTE: currently, the task will be canceled on the next initialization of ActivitySourcesManager
             return Result.success();
         }
-        final GoogleHealthConnectActivitySource ghcSource = ((GoogleHealthConnectActivitySource) ghcConnection.getActivitySource());
+        final GoogleHealthConnectActivitySource ghcSource =
+            ((GoogleHealthConnectActivitySource) ghcConnection.getActivitySource());
         final TaskCompletionSource<Void> taskCompletionSource = new TaskCompletionSource<>();
         final GoogleHealthConnectIntradaySyncOptions syncOptions = buildIntradaySyncOptions();
         ghcSource.syncIntradayMetrics(syncOptions, (result -> {

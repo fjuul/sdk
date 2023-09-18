@@ -1,14 +1,13 @@
 package com.fjuul.sdk.activitysources.entities.internal;
 
-import android.util.Log;
-
-import androidx.annotation.NonNull;
-import androidx.health.connect.client.records.HeartRateRecord;
-import androidx.health.connect.client.records.HeightRecord;
-import androidx.health.connect.client.records.Record;
-import androidx.health.connect.client.records.StepsRecord;
-import androidx.health.connect.client.records.TotalCaloriesBurnedRecord;
-import androidx.health.connect.client.records.WeightRecord;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
 import com.fjuul.sdk.activitysources.entities.GoogleHealthConnectIntradaySyncOptions;
@@ -28,17 +27,17 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import android.util.Log;
+import androidx.annotation.NonNull;
+import androidx.health.connect.client.records.HeartRateRecord;
+import androidx.health.connect.client.records.HeightRecord;
+import androidx.health.connect.client.records.Record;
+import androidx.health.connect.client.records.StepsRecord;
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord;
+import androidx.health.connect.client.records.WeightRecord;
 
 public class GHCDataManager {
-    private static final int MAX_DAYS = 30;  // Don't try to get older data than this
+    private static final int MAX_DAYS = 30; // Don't try to get older data than this
     private static final ExecutorService localBackgroundExecutor = Executors.newCachedThreadPool();
 
     private static final String LOG_TAG = "GHCDataManager";
@@ -50,8 +49,7 @@ public class GHCDataManager {
     private final @NonNull GHCClientWrapper clientWrapper;
     private final @NonNull ApiClient apiClient;
 
-    public GHCDataManager(
-        @NonNull GHCClientWrapper clientWrapper,
+    public GHCDataManager(@NonNull GHCClientWrapper clientWrapper,
         @NonNull ActivitySourcesService activitySourcesService,
         @NonNull ApiClient apiClient) {
         this.clientWrapper = clientWrapper;
@@ -60,7 +58,7 @@ public class GHCDataManager {
     }
 
     @NonNull
-    public Task<Void> syncIntradayMetrics(GoogleHealthConnectIntradaySyncOptions options) {
+    public Task<Void> syncIntradayMetrics(@NonNull GoogleHealthConnectIntradaySyncOptions options) {
         Log.d(LOG_TAG, "Syncing intraday metrics");
         final Task<Boolean> checkPermissionsTask = checkPermissions();
         final Task<HealthConnectRecords> readTask =
@@ -102,12 +100,11 @@ public class GHCDataManager {
     }
 
     @NonNull
-    public Task<Void> syncSessions(GoogleHealthConnectSessionSyncOptions options) {
+    public Task<Void> syncSessions(@NonNull GoogleHealthConnectSessionSyncOptions options) {
         Log.d(LOG_TAG, "Syncing sessions");
         final Task<Boolean> checkPermissionsTask = checkPermissions();
-        final Task<HealthConnectSessions> readTask =
-            checkPermissionsTask.continueWithTask(localBackgroundExecutor,
-                task -> readExerciseSessions(options.getMinimumSessionDuration()));
+        final Task<HealthConnectSessions> readTask = checkPermissionsTask.continueWithTask(localBackgroundExecutor,
+            task -> readExerciseSessions(options.getMinimumSessionDuration()));
         return readTask.onSuccessTask(localBackgroundExecutor, (healthConnectSessions -> {
             final String nextToken = healthConnectSessions.getNextToken();
             final List<ExerciseSession> exerciseSessions = healthConnectSessions.getSessions();
@@ -117,20 +114,20 @@ public class GHCDataManager {
             } else {
                 final List<GHCSessionBundle> sessionBundles = new ArrayList<>();
                 for (ExerciseSession exerciseSession : exerciseSessions) {
-                    sessionBundles.add(
-                        GHCDataConverter.convertSessionToSessionBundle(exerciseSession));
+                    sessionBundles.add(GHCDataConverter.convertSessionToSessionBundle(exerciseSession));
                 }
                 GHCUploadData uploadData = new GHCUploadData();
                 uploadData.setSessionsData(sessionBundles);
 
                 return sendGHCUploadData(SESSION_CHANGES_TOKEN_KEY, nextToken, uploadData).onSuccessTask(
-                    localBackgroundExecutor, (apiCallResult) -> Tasks.forResult(apiCallResult.getValue()));
+                    localBackgroundExecutor,
+                    (apiCallResult) -> Tasks.forResult(apiCallResult.getValue()));
             }
         }));
     }
 
     @NonNull
-    public Task<Void> syncProfile(GoogleHealthConnectProfileSyncOptions options) {
+    public Task<Void> syncProfile(@NonNull GoogleHealthConnectProfileSyncOptions options) {
         Log.d(LOG_TAG, "Syncing profile");
         final Task<Boolean> checkPermissionsTask = checkPermissions();
         final Task<HealthConnectRecords> readTask =
@@ -171,6 +168,7 @@ public class GHCDataManager {
         }));
     }
 
+    @NonNull
     public Task<Boolean> checkPermissions() {
         HealthConnectAvailability availability = clientWrapper.getAvailability().getValue();
         if (availability != HealthConnectAvailability.INSTALLED) {
@@ -178,8 +176,8 @@ public class GHCDataManager {
             return Tasks.forResult(false);
         }
         try {
-            Boolean hasAllPermissions = clientWrapper.hasAllPermissionsAsync(
-                clientWrapper.getDefaultRequiredPermissions()).get();
+            Boolean hasAllPermissions =
+                clientWrapper.hasAllPermissionsAsync(clientWrapper.getDefaultRequiredPermissions()).get();
             if (!hasAllPermissions) {
                 Log.e(LOG_TAG, "Failed: does not have required permissions");
                 return Tasks.forResult(false);
@@ -196,8 +194,7 @@ public class GHCDataManager {
 
     @NonNull
     private Task<HealthConnectRecords> readIntradayMetrics(Set<FitnessMetricsType> optionsMetricTypes) {
-        TaskCompletionSource<HealthConnectRecords> taskCompletionSource =
-            new TaskCompletionSource<>();
+        TaskCompletionSource<HealthConnectRecords> taskCompletionSource = new TaskCompletionSource<>();
         try {
             String token = apiClient.getStorage().get(INTRADAY_CHANGES_TOKEN_KEY);
             HealthConnectRecords records;
@@ -219,8 +216,7 @@ public class GHCDataManager {
 
     @NonNull
     private Task<HealthConnectSessions> readExerciseSessions(Duration optionsMaxDuration) {
-        TaskCompletionSource<HealthConnectSessions> taskCompletionSource =
-            new TaskCompletionSource<>();
+        TaskCompletionSource<HealthConnectSessions> taskCompletionSource = new TaskCompletionSource<>();
         try {
             String token = apiClient.getStorage().get(SESSION_CHANGES_TOKEN_KEY);
             HealthConnectSessions sessions;
@@ -242,8 +238,7 @@ public class GHCDataManager {
 
     @NonNull
     private Task<HealthConnectRecords> readProfileMetrics(Set<FitnessMetricsType> optionsMetricTypes) {
-        TaskCompletionSource<HealthConnectRecords> taskCompletionSource =
-            new TaskCompletionSource<>();
+        TaskCompletionSource<HealthConnectRecords> taskCompletionSource = new TaskCompletionSource<>();
         try {
             String token = apiClient.getStorage().get(PROFILE_CHANGES_TOKEN_KEY);
             HealthConnectRecords records;
@@ -264,13 +259,16 @@ public class GHCDataManager {
     }
 
     @NonNull
-    private Task<ApiCallResult<Void>> sendGHCUploadData(@NonNull String tokenKey, @NonNull String nextToken, @NonNull GHCUploadData uploadData) {
+    private Task<ApiCallResult<Void>> sendGHCUploadData(@NonNull String tokenKey,
+        @NonNull String nextToken,
+        @NonNull GHCUploadData uploadData) {
         final TaskCompletionSource<ApiCallResult<Void>> sendDataTaskCompletionSource = new TaskCompletionSource<>();
         activitySourcesService.uploadGoogleHealthConnectData(uploadData).enqueue((apiCall, result) -> {
             if (result.isError()) {
                 Log.d(LOG_TAG, "failed to send GHC data: " + result.getError().getMessage());
                 final GoogleFitActivitySourceExceptions.CommonException exception =
-                    new GoogleFitActivitySourceExceptions.CommonException("Failed to send data to the server", result.getError());
+                    new GoogleFitActivitySourceExceptions.CommonException("Failed to send data to the server",
+                        result.getError());
                 sendDataTaskCompletionSource.trySetException(exception);
                 return;
             }
@@ -282,13 +280,15 @@ public class GHCDataManager {
     }
 
     @NonNull
-    private Task<ApiCallResult<Void>> sendGHCProfileParams(@NonNull String nextToken, @NonNull GHCSynchronizableProfileParams profileParams) {
+    private Task<ApiCallResult<Void>> sendGHCProfileParams(@NonNull String nextToken,
+        @NonNull GHCSynchronizableProfileParams profileParams) {
         final TaskCompletionSource<ApiCallResult<Void>> sendDataTaskCompletionSource = new TaskCompletionSource<>();
         activitySourcesService.updateProfileOnBehalfOfGoogleHealthConnect(profileParams).enqueue((apiCall, result) -> {
             if (result.isError()) {
                 Logger.get().d("failed to send the profile data: %s", result.getError().getMessage());
                 final GoogleFitActivitySourceExceptions.CommonException exception =
-                    new GoogleFitActivitySourceExceptions.CommonException("Failed to send data to the server", result.getError());
+                    new GoogleFitActivitySourceExceptions.CommonException("Failed to send data to the server",
+                        result.getError());
                 sendDataTaskCompletionSource.trySetException(exception);
                 return;
             }

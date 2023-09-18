@@ -1,18 +1,14 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import android.annotation.SuppressLint;
+import java.time.Duration;
 
+import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
-
-import java.time.Clock;
-import java.time.Duration;
-import java.time.LocalDate;
 
 /**
- * A class that encapsulates parameters for syncing sessions of Google Health Connect. In order to
- * build the instance of this class, use {@link Builder}.
+ * A class that encapsulates parameters for syncing sessions of Google Health Connect. In order to build the instance of
+ * this class, use {@link Builder}.
  */
 public final class GoogleHealthConnectSessionSyncOptions {
     @NonNull
@@ -28,8 +24,8 @@ public final class GoogleHealthConnectSessionSyncOptions {
     }
 
     /**
-     * Builder of {@link GoogleHealthConnectSessionSyncOptions}. The minimum session duration
-     * must be specified during the building.
+     * Builder of {@link GoogleHealthConnectSessionSyncOptions}. The minimum session duration must be specified during
+     * the building.
      */
     public static class Builder {
         @Nullable

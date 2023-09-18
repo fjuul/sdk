@@ -1,31 +1,29 @@
 package com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.fjuul.sdk.activitysources.entities.internal.ExerciseSession;
+
+import android.util.Log;
+import androidx.annotation.NonNull;
 import androidx.health.connect.client.records.ExerciseSegment;
 import androidx.health.connect.client.records.ExerciseSessionRecord;
 import androidx.health.connect.client.records.HeartRateRecord;
 import androidx.health.connect.client.records.HeightRecord;
 import androidx.health.connect.client.records.PowerRecord;
+import androidx.health.connect.client.records.Record;
 import androidx.health.connect.client.records.SpeedRecord;
 import androidx.health.connect.client.records.StepsRecord;
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord;
 import androidx.health.connect.client.records.WeightRecord;
-import androidx.health.connect.client.records.Record;
-
-import androidx.annotation.NonNull;
-
-import com.fjuul.sdk.activitysources.entities.internal.ExerciseSession;
 
 public class GHCDataConverter {
     private static final String TAG = "GHCDataConverter";
 
     @NonNull
-    public static List<GHCDataPoint> convertRecordsToDataPoints(List<Record> records) {
+    public static List<GHCDataPoint> convertRecordsToDataPoints(@NonNull List<Record> records) {
         List<GHCDataPoint> dataPoints = new ArrayList<>();
         for (Record record : records) {
             if (record instanceof HeightRecord heightRecord) {
@@ -48,7 +46,7 @@ public class GHCDataConverter {
     }
 
     @NonNull
-    public static List<GHCSessionBundle> convertSessionsToBundles(List<ExerciseSession> sessions) {
+    public static List<GHCSessionBundle> convertSessionsToBundles(@NonNull List<ExerciseSession> sessions) {
         List<GHCSessionBundle> bundles = new ArrayList<>();
         for (ExerciseSession session : sessions) {
             bundles.add(convertSessionToSessionBundle(session));
@@ -57,8 +55,7 @@ public class GHCDataConverter {
     }
 
     @NonNull
-    public static GHCCalorieDataPoint convertRecordToCalories(
-        @NonNull TotalCaloriesBurnedRecord record) {
+    public static GHCCalorieDataPoint convertRecordToCalories(@NonNull TotalCaloriesBurnedRecord record) {
         final Date start = Date.from(record.getStartTime());
         final double kcals = record.getEnergy().getCalories();
         final String dataSourceId = record.getMetadata().getDataOrigin().getPackageName();
@@ -74,8 +71,7 @@ public class GHCDataConverter {
     }
 
     @NonNull
-    public static GHCPowerSummaryDataPoint convertRecordToPowerSummary(
-        @NonNull PowerRecord record) {
+    public static GHCPowerSummaryDataPoint convertRecordToPowerSummary(@NonNull PowerRecord record) {
         final Date start = Date.from(record.getStartTime());
         final Date end = Date.from(record.getEndTime());
         double total = 0;
@@ -97,8 +93,7 @@ public class GHCDataConverter {
     }
 
     @NonNull
-    public static GHCHeartRateSummaryDataPoint convertRecordToHeartRateSummary(
-        @NonNull HeartRateRecord record) {
+    public static GHCHeartRateSummaryDataPoint convertRecordToHeartRateSummary(@NonNull HeartRateRecord record) {
         final Date start = Date.from(record.getStartTime());
         final Date end = Date.from(record.getEndTime());
         float total = 0;
@@ -120,8 +115,7 @@ public class GHCDataConverter {
     }
 
     @NonNull
-    public static GHCSpeedSummaryDataPoint convertRecordToSpeedSummary(
-        @NonNull SpeedRecord record) {
+    public static GHCSpeedSummaryDataPoint convertRecordToSpeedSummary(@NonNull SpeedRecord record) {
         final Date start = Date.from(record.getStartTime());
         final Date end = Date.from(record.getEndTime());
         double total = 0;
@@ -162,8 +156,7 @@ public class GHCDataConverter {
     }
 
     @NonNull
-    public static GHCSessionBundle convertSessionToSessionBundle(
-        @NonNull ExerciseSession session) {
+    public static GHCSessionBundle convertSessionToSessionBundle(@NonNull ExerciseSession session) {
         final ExerciseSessionRecord sessionRecord = session.getSessionRecord();
         final String title = sessionRecord.getTitle();
         final String notes = sessionRecord.getNotes();
@@ -195,8 +188,7 @@ public class GHCDataConverter {
         for (SpeedRecord record : session.getSpeedRecords()) {
             speedDataPoints.add(convertRecordToSpeedSummary(record));
         }
-        return new GHCSessionBundle(
-            title,
+        return new GHCSessionBundle(title,
             notes,
             start,
             end,
@@ -206,8 +198,7 @@ public class GHCDataConverter {
             stepsDataPoints,
             heartRateDataPoints,
             powerDataPoints,
-            speedDataPoints
-        );
+            speedDataPoints);
     }
 
     @NonNull

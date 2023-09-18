@@ -45,14 +45,15 @@ public interface ActivitySourcesApi {
     @PUT("/sdk/activity-sources/v1/{userToken}/googlefit/profile")
     @NonNull
     ApiCall<Void> updateProfileOnBehalfOfGoogleFit(@Path("userToken") @NonNull String userToken,
-                                                   @Body @NonNull GFSynchronizableProfileParams params);
+        @Body @NonNull GFSynchronizableProfileParams params);
 
     @NonNull
     @POST("/sdk/activity-sources/v1/{userToken}/healthconnect")
-    ApiCall<Void> uploadGoogleHealthConnectData(@Path("userToken") @NonNull String userToken, @Body @NonNull GHCUploadData data);
+    ApiCall<Void> uploadGoogleHealthConnectData(@Path("userToken") @NonNull String userToken,
+        @Body @NonNull GHCUploadData data);
 
     @PUT("/sdk/activity-sources/v1/{userToken}/healthconnect/profile")
     @NonNull
     ApiCall<Void> updateProfileOnBehalfOfGoogleHealthConnect(@Path("userToken") @NonNull String userToken,
-                                                   @Body @NonNull GHCSynchronizableProfileParams params);
+        @Body @NonNull GHCSynchronizableProfileParams params);
 }

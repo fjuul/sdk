@@ -47,9 +47,6 @@ subprojects {
         }
 
         kotlin {
-            jvmToolchain {
-                languageVersion.set(JavaLanguageVersion.of(17))
-            }
             target fileTree('.') {
                 include '**/*.kt'
             }
@@ -65,6 +62,10 @@ subprojects {
             ]
             ktlint('0.48.1').userData(styles)
         }
+
+        spotlessJava.dependsOn 'spotlessGroovyGradle'
+        spotlessKotlin.dependsOn 'spotlessGroovyGradle'
+        spotlessKotlin.dependsOn 'spotlessJava'
     }
 }
 

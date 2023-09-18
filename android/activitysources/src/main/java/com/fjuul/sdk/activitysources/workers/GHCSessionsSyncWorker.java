@@ -1,23 +1,19 @@
 package com.fjuul.sdk.activitysources.workers;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-
-import androidx.annotation.NonNull;
-import androidx.work.WorkerParameters;
+import java.time.Duration;
+import java.util.concurrent.ExecutionException;
 
 import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
-import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
-import com.fjuul.sdk.activitysources.entities.GoogleFitSessionSyncOptions;
 import com.fjuul.sdk.activitysources.entities.GoogleHealthConnectActivitySource;
 import com.fjuul.sdk.activitysources.entities.GoogleHealthConnectSessionSyncOptions;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.util.concurrent.ExecutionException;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import androidx.annotation.NonNull;
+import androidx.work.WorkerParameters;
 
 public class GHCSessionsSyncWorker extends GHCSyncWorker {
     public static final String KEY_MIN_SESSION_DURATION_ARG = "MIN_SESSION_DURATION";
@@ -37,7 +33,8 @@ public class GHCSessionsSyncWorker extends GHCSyncWorker {
             // TODO: the task should be canceled on the next initialization of ActivitySourcesManager
             return Result.success();
         }
-        final GoogleHealthConnectActivitySource ghcSource = ((GoogleHealthConnectActivitySource) ghcConnection.getActivitySource());
+        final GoogleHealthConnectActivitySource ghcSource =
+            ((GoogleHealthConnectActivitySource) ghcConnection.getActivitySource());
         final TaskCompletionSource<Void> taskCompletionSource = new TaskCompletionSource<>();
         final GoogleHealthConnectSessionSyncOptions syncOptions = buildSessionSyncOptions();
         ghcSource.syncSessions(syncOptions, (result -> {
@@ -59,7 +56,8 @@ public class GHCSessionsSyncWorker extends GHCSyncWorker {
 
     @SuppressLint("NewApi")
     private GoogleHealthConnectSessionSyncOptions buildSessionSyncOptions() {
-        return new GoogleHealthConnectSessionSyncOptions.Builder().setMinimumSessionDuration(Duration.parse(getInputData().getString(KEY_MIN_SESSION_DURATION_ARG)))
+        return new GoogleHealthConnectSessionSyncOptions.Builder()
+            .setMinimumSessionDuration(Duration.parse(getInputData().getString(KEY_MIN_SESSION_DURATION_ARG)))
             .build();
     }
 }

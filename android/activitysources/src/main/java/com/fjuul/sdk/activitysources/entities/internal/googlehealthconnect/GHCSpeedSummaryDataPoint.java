@@ -23,7 +23,12 @@ public class GHCSpeedSummaryDataPoint extends GHCDataPoint {
         return max;
     }
 
-    public GHCSpeedSummaryDataPoint(double avg, double min, double max, @NonNull Date start, @NonNull Date end, @NonNull String dataSource) {
+    public GHCSpeedSummaryDataPoint(double avg,
+        double min,
+        double max,
+        @NonNull Date start,
+        @NonNull Date end,
+        @NonNull String dataSource) {
         super(start, end, dataSource);
         this.avg = avg;
         this.min = min;

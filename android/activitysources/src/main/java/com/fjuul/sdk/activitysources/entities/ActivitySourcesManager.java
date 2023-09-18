@@ -124,7 +124,7 @@ public final class ActivitySourcesManager {
         final List<TrackerConnection> storedConnections = stateStore.getConnections();
         final CopyOnWriteArrayList<TrackerConnection> currentConnections =
             Optional.ofNullable(storedConnections).map(CopyOnWriteArrayList::new).orElse(new CopyOnWriteArrayList<>());
-        //TODO: Remove testing hack
+        // TODO: Remove testing hack
         addGoogleHealthConnectIfAbsent(currentConnections);
         // end of testing hack
         final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
@@ -335,7 +335,7 @@ public final class ActivitySourcesManager {
             }
             final CopyOnWriteArrayList<TrackerConnection> freshTrackerConnections =
                 new CopyOnWriteArrayList(apiCallResult.getValue());
-            //TODO: Remove testing hack
+            // TODO: Remove testing hack
             addGoogleHealthConnectIfAbsent(freshTrackerConnections);
             // end of testing hack
             configureExternalStateByConnections(freshTrackerConnections);
@@ -407,7 +407,8 @@ public final class ActivitySourcesManager {
             }
         }
         if (!hasGHC) {
-            connections.add(new TrackerConnection("ghc-id", TrackerValue.GOOGLE_HEALTH_CONNECT.getValue(), new Date(), null));
+            connections
+                .add(new TrackerConnection("ghc-id", TrackerValue.GOOGLE_HEALTH_CONNECT.getValue(), new Date(), null));
         }
     }
 }

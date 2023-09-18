@@ -23,7 +23,12 @@ public class GHCPowerSummaryDataPoint extends GHCDataPoint {
         return max;
     }
 
-    public GHCPowerSummaryDataPoint(double avg, double min, double max, @NonNull Date start, @NonNull Date end, @NonNull String dataSource) {
+    public GHCPowerSummaryDataPoint(double avg,
+        double min,
+        double max,
+        @NonNull Date start,
+        @NonNull Date end,
+        @NonNull String dataSource) {
         super(start, end, dataSource);
         this.avg = avg;
         this.min = min;
@@ -36,8 +41,8 @@ public class GHCPowerSummaryDataPoint extends GHCDataPoint {
         final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.getDefault());
         final String startFormatted = dateFormat.format(start);
         final String endFormatted = dateFormat.format(end);
-        return String.format(Locale
-            .getDefault(), "GHCPowerDataPoint: avg watts %f, min watts %f, max watts %f, start %s, end %s, dataSource %s",
+        return String.format(Locale.getDefault(),
+            "GHCPowerDataPoint: avg watts %f, min watts %f, max watts %f, start %s, end %s, dataSource %s",
             avg,
             min,
             max,

@@ -1,14 +1,14 @@
 package com.fjuul.sdk.activitysources.entities.internal;
 
-import androidx.annotation.NonNull;
+import java.util.Collections;
+import java.util.List;
 
 import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCCalorieDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCHeartRateSummaryDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCSessionBundle;
 import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCStepsDataPoint;
 
-import java.util.Collections;
-import java.util.List;
+import androidx.annotation.NonNull;
 
 public class GHCUploadData {
     @NonNull

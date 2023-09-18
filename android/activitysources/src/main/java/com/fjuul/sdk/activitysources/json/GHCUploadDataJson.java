@@ -1,10 +1,10 @@
 package com.fjuul.sdk.activitysources.json;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import java.util.Date;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class GHCUploadDataJson {
     @NonNull
@@ -17,9 +17,9 @@ public class GHCUploadDataJson {
     final List<GHCSessionJson> sessionsData;
 
     public GHCUploadDataJson(@NonNull List<GHCSampleJson<GHCIntradaySampleEntryJson<Float>>> caloriesData,
-                             @NonNull List<GHCSampleJson<GHCIntradaySampleEntryJson<Integer>>> stepsData,
-                             @NonNull List<GHCSampleJson<GHCIntradayHeartRateSampleEntryJson>> heartRateData,
-                             @NonNull List<GHCSessionJson> sessionsData) {
+        @NonNull List<GHCSampleJson<GHCIntradaySampleEntryJson<Integer>>> stepsData,
+        @NonNull List<GHCSampleJson<GHCIntradayHeartRateSampleEntryJson>> heartRateData,
+        @NonNull List<GHCSessionJson> sessionsData) {
         this.caloriesData = caloriesData;
         this.stepsData = stepsData;
         this.heartRateData = heartRateData;

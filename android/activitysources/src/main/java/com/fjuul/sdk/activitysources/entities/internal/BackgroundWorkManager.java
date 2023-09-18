@@ -115,8 +115,8 @@ public class BackgroundWorkManager {
             }
             case ENABLED: {
                 if (config.getCollectableFitnessMetrics().contains(FitnessMetricsType.WORKOUTS)) {
-                    workScheduler
-                        .scheduleGHCSessionsSyncWork(config.getGoogleHealthConnectSessionsBackgroundSyncMinSessionDuration());
+                    workScheduler.scheduleGHCSessionsSyncWork(
+                        config.getGoogleHealthConnectSessionsBackgroundSyncMinSessionDuration());
                 } else {
                     workScheduler.cancelGHCSessionsSyncWork();
                 }

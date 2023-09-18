@@ -16,6 +16,7 @@ public class GHCWeightDataPoint extends GHCScalarDataPoint<Float> {
     public String toString() {
         final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.getDefault());
         final String startFormatted = dateFormat.format(start);
-        return String.format(Locale.getDefault(), "GHCHeightDataPoint: kg %.1f, start %s, dataSource %s", value, startFormatted, dataSource);
+        return String.format(Locale
+            .getDefault(), "GHCHeightDataPoint: kg %.1f, start %s, dataSource %s", value, startFormatted, dataSource);
     }
 }

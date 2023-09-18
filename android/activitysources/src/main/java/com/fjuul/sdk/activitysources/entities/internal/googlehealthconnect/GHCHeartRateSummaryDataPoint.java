@@ -24,7 +24,12 @@ public class GHCHeartRateSummaryDataPoint extends GHCDataPoint {
         return max;
     }
 
-    public GHCHeartRateSummaryDataPoint(float avg, float min, float max, @NonNull Date start, @NonNull Date end, @Nullable String dataSource) {
+    public GHCHeartRateSummaryDataPoint(float avg,
+        float min,
+        float max,
+        @NonNull Date start,
+        @NonNull Date end,
+        @Nullable String dataSource) {
         super(start, end, dataSource);
         this.avg = avg;
         this.min = min;

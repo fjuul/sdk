@@ -1,15 +1,14 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
-
 import java.util.HashSet;
 import java.util.Set;
 
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
+
 /**
- * A class that encapsulates parameters for syncing intraday data of Google Health Connect. In
- * order to build the instance of this class, use {@link Builder}.
+ * A class that encapsulates parameters for syncing intraday data of Google Health Connect. In order to build the
+ * instance of this class, use {@link Builder}.
  */
 public final class GoogleHealthConnectIntradaySyncOptions {
     @NonNull
@@ -26,16 +25,15 @@ public final class GoogleHealthConnectIntradaySyncOptions {
     }
 
     /**
-     * Builder of {@link GoogleHealthConnectIntradaySyncOptions}. The start date, the end date,
-     * and at least one fitness metric must be specified during the building.
+     * Builder of {@link GoogleHealthConnectIntradaySyncOptions}. The start date, the end date, and at least one fitness
+     * metric must be specified during the building.
      */
     public static class Builder {
         private Set<FitnessMetricsType> metrics = new HashSet<>();
 
         /**
-         * Adds the specified intraday fitness metric to the set of data to be synced. This method
-         * throws IllegalArgumentException if the fitness metric is not supported for the intraday
-         * sync.
+         * Adds the specified intraday fitness metric to the set of data to be synced. This method throws
+         * IllegalArgumentException if the fitness metric is not supported for the intraday sync.
          *
          * @param type intraday fitness metric (calories, steps, heart rate)
          * @return builder

@@ -1,12 +1,7 @@
 package com.fjuul.sdk.activitysources.workers;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.work.Worker;
-import androidx.work.WorkerParameters;
+import java.util.Collections;
+import java.util.List;
 
 import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
@@ -15,8 +10,12 @@ import com.fjuul.sdk.activitysources.entities.GoogleHealthConnectActivitySource;
 import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.UserCredentials;
 
-import java.util.Collections;
-import java.util.List;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.work.Worker;
+import androidx.work.WorkerParameters;
 
 public abstract class GHCSyncWorker extends Worker {
     public static final String KEY_USER_TOKEN_ARG = "USER_TOKEN";

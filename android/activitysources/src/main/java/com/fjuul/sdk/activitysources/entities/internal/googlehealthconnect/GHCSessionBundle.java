@@ -1,13 +1,12 @@
 package com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class GHCSessionBundle {
     @NonNull
@@ -104,8 +103,7 @@ public class GHCSessionBundle {
         return speed;
     }
 
-    public GHCSessionBundle(
-        @Nullable String title,
+    public GHCSessionBundle(@Nullable String title,
         @Nullable String notes,
         @NonNull Date timeStart,
         @NonNull Date timeEnd,
@@ -172,9 +170,8 @@ public class GHCSessionBundle {
     }
 
     /**
-     * Generate a hopefully unique identifier using session's data. It would make little sense
-     * to have two sessions covering the exact same period with the exact same title and exercise
-     * type.
+     * Generate a hopefully unique identifier using session's data. It would make little sense to have two sessions
+     * covering the exact same period with the exact same title and exercise type.
      *
      * @param timeStart the start of the session
      * @param timeEnd the end of the session
@@ -182,7 +179,10 @@ public class GHCSessionBundle {
      * @param exerciseType the type of exercise
      * @return unique ID for the session
      */
-    private static String generateId(@NonNull Date timeStart, @NonNull Date timeEnd, @Nullable String title, int exerciseType) {
+    private static String generateId(@NonNull Date timeStart,
+        @NonNull Date timeEnd,
+        @Nullable String title,
+        int exerciseType) {
         long tmp = timeStart.getTime() + timeEnd.getTime() + exerciseType;
         if (title != null) {
             for (char ch : title.toCharArray()) {

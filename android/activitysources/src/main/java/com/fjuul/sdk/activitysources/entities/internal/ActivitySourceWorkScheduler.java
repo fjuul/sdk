@@ -6,9 +6,9 @@ import java.util.concurrent.TimeUnit;
 
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
 import com.fjuul.sdk.activitysources.workers.GFIntradaySyncWorker;
+import com.fjuul.sdk.activitysources.workers.GFProfileSyncWorker;
 import com.fjuul.sdk.activitysources.workers.GFSessionsSyncWorker;
 import com.fjuul.sdk.activitysources.workers.GFSyncWorker;
-import com.fjuul.sdk.activitysources.workers.GFProfileSyncWorker;
 import com.fjuul.sdk.activitysources.workers.GHCIntradaySyncWorker;
 import com.fjuul.sdk.activitysources.workers.GHCProfileSyncWorker;
 import com.fjuul.sdk.activitysources.workers.GHCSessionsSyncWorker;
@@ -143,8 +143,9 @@ public class ActivitySourceWorkScheduler {
                 .setInitialDelay(1, TimeUnit.HOURS)
                 .setInputData(inputWorkRequestData)
                 .build();
-        workManager
-            .enqueueUniquePeriodicWork(GF_PROFILE_SYNC_WORK_NAME, ExistingPeriodicWorkPolicy.REPLACE, periodicWorkRequest);
+        workManager.enqueueUniquePeriodicWork(GF_PROFILE_SYNC_WORK_NAME,
+            ExistingPeriodicWorkPolicy.REPLACE,
+            periodicWorkRequest);
         gfProfileSyncWorkEnqueued = true;
     }
 
@@ -191,9 +192,9 @@ public class ActivitySourceWorkScheduler {
             return;
         }
         final String serializedDuration = minSessionDuration.toString();
-        final Data inputWorkRequestData =
-            buildGHCEssentialInputData().putString(GHCSessionsSyncWorker.KEY_MIN_SESSION_DURATION_ARG, serializedDuration)
-                .build();
+        final Data inputWorkRequestData = buildGHCEssentialInputData()
+            .putString(GHCSessionsSyncWorker.KEY_MIN_SESSION_DURATION_ARG, serializedDuration)
+            .build();
         final PeriodicWorkRequest periodicWorkRequest =
             new PeriodicWorkRequest.Builder(GHCSessionsSyncWorker.class, 1, TimeUnit.HOURS)
                 .setConstraints(buildCommonWorkConstraints())
@@ -225,8 +226,9 @@ public class ActivitySourceWorkScheduler {
                 .setInitialDelay(1, TimeUnit.HOURS)
                 .setInputData(inputWorkRequestData)
                 .build();
-        workManager
-            .enqueueUniquePeriodicWork(GHC_PROFILE_SYNC_WORK_NAME, ExistingPeriodicWorkPolicy.REPLACE, periodicWorkRequest);
+        workManager.enqueueUniquePeriodicWork(GHC_PROFILE_SYNC_WORK_NAME,
+            ExistingPeriodicWorkPolicy.REPLACE,
+            periodicWorkRequest);
         ghcProfileSyncWorkEnqueued = true;
     }
 

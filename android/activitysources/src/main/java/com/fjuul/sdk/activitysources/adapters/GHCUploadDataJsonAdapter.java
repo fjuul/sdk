@@ -39,7 +39,7 @@ public class GHCUploadDataJsonAdapter {
 
     @SuppressLint("NewApi")
     private <T extends GHCDataPoint, O> List<GHCSampleJson<O>> groupAndMapGHCPointsToJsonSample(List<T> dataPoints,
-                                                                                                Function<T, O> pointMapper) {
+        Function<T, O> pointMapper) {
         final Map<Optional<String>, List<T>> groupedByDataSource =
             dataPoints.stream().collect(Collectors.groupingBy(point -> Optional.ofNullable(point.getDataSource())));
         final List<GHCSampleJson<O>> samples = groupedByDataSource.entrySet().stream().map((entry) -> {
@@ -58,8 +58,7 @@ public class GHCUploadDataJsonAdapter {
         final List<GHCSampleJson<GHCUploadDataJson.GHCSampleEntryJson<Integer>>> stepsData =
             groupAndMapGHCPointsToJsonSample(sessionBundle.getSteps(), this::mapDataPointToSampleEntry);
         final List<GHCSampleJson<GHCIntradayHeartRateSampleEntryJson>> hrData =
-            groupAndMapGHCPointsToJsonSample(sessionBundle.getHeartRate(),
-                this::mapDataPointToIntradayHeartRateEntry);
+            groupAndMapGHCPointsToJsonSample(sessionBundle.getHeartRate(), this::mapDataPointToIntradayHeartRateEntry);
         final List<GHCSampleJson<GHCUploadDataJson.GHCIntradayPowerSampleEntryJson>> powerData =
             groupAndMapGHCPointsToJsonSample(sessionBundle.getPower(), this::mapDataPointToIntradayPowerEntry);
         return new GHCSessionJson(sessionBundle.getId(),
@@ -79,15 +78,24 @@ public class GHCUploadDataJsonAdapter {
         return new GHCIntradaySampleEntryJson<>(point.getStart(), point.getValue());
     }
 
-    private GHCIntradayHeartRateSampleEntryJson mapDataPointToIntradayHeartRateEntry(GHCHeartRateSummaryDataPoint point) {
-        return new GHCIntradayHeartRateSampleEntryJson(point.getStart(), point.getAvg(), point.getMin(), point.getMax());
+    private GHCIntradayHeartRateSampleEntryJson mapDataPointToIntradayHeartRateEntry(
+        GHCHeartRateSummaryDataPoint point) {
+        return new GHCIntradayHeartRateSampleEntryJson(point.getStart(),
+            point.getAvg(),
+            point.getMin(),
+            point.getMax());
     }
 
-    private GHCUploadDataJson.GHCIntradayPowerSampleEntryJson mapDataPointToIntradayPowerEntry(GHCPowerSummaryDataPoint point) {
-        return new GHCUploadDataJson.GHCIntradayPowerSampleEntryJson(point.getStart(), point.getAvg(), point.getMin(), point.getMax());
+    private GHCUploadDataJson.GHCIntradayPowerSampleEntryJson mapDataPointToIntradayPowerEntry(
+        GHCPowerSummaryDataPoint point) {
+        return new GHCUploadDataJson.GHCIntradayPowerSampleEntryJson(point.getStart(),
+            point.getAvg(),
+            point.getMin(),
+            point.getMax());
     }
 
-    private <T extends Number> GHCUploadDataJson.GHCSampleEntryJson<T> mapDataPointToSampleEntry(GHCScalarDataPoint<T> point) {
+    private <T extends Number> GHCUploadDataJson.GHCSampleEntryJson<T> mapDataPointToSampleEntry(
+        GHCScalarDataPoint<T> point) {
         if (point.getEnd() == null) {
             throw new IllegalStateException("GHCScalarDataPoint must have the defined end time: " + point.toString());
         }

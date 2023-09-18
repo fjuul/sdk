@@ -1,12 +1,10 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
-
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
 
 /**
  * A class that encapsulates parameters for syncing body parameters of the user profile from Google Fit. In order to
@@ -26,8 +24,8 @@ public class GoogleHealthConnectProfileSyncOptions {
     }
 
     /**
-     * Builder of {@link GoogleHealthConnectProfileSyncOptions}. At least one fitness metric must be specified during the
-     * building.
+     * Builder of {@link GoogleHealthConnectProfileSyncOptions}. At least one fitness metric must be specified during
+     * the building.
      */
     public static class Builder {
         private final Set<FitnessMetricsType> metrics = new HashSet<>();

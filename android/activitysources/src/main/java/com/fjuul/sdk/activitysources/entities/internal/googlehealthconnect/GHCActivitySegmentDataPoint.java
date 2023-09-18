@@ -7,9 +7,7 @@ import java.util.Locale;
 import androidx.annotation.NonNull;
 
 public class GHCActivitySegmentDataPoint extends GHCScalarDataPoint<Integer> {
-    public GHCActivitySegmentDataPoint(@NonNull Integer segmentType,
-        @NonNull Date start,
-        @NonNull Date end) {
+    public GHCActivitySegmentDataPoint(@NonNull Integer segmentType, @NonNull Date start, @NonNull Date end) {
         super(segmentType, start, end, null);
     }
 

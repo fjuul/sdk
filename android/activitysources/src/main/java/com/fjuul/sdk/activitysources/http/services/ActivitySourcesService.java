@@ -143,9 +143,8 @@ public class ActivitySourcesService {
     }
 
     /**
-     * Build the call to update the user profile with marking that changes originated from Google
-     * Health Connect. The method is intended to be used for syncing the user profile with Google
-     * Health Connect.
+     * Build the call to update the user profile with marking that changes originated from Google Health Connect. The
+     * method is intended to be used for syncing the user profile with Google Health Connect.
      *
      * @param params - profile parameters
      * @return ApiCall for updating the user profile

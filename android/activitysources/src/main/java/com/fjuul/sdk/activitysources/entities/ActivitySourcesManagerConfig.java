@@ -70,8 +70,8 @@ public class ActivitySourcesManagerConfig {
     }
 
     /**
-     * Returns the mode that indicates whether intraday data of Google Health Connect should be
-     * synced in the background.
+     * Returns the mode that indicates whether intraday data of Google Health Connect should be synced in the
+     * background.
      *
      * @return background mode
      */
@@ -81,8 +81,7 @@ public class ActivitySourcesManagerConfig {
     }
 
     /**
-     * Returns the mode that indicates whether sessions of Google Health Connect should be synced
-     * in the background.
+     * Returns the mode that indicates whether sessions of Google Health Connect should be synced in the background.
      *
      * @return background mode
      */
@@ -276,12 +275,12 @@ public class ActivitySourcesManagerConfig {
         }
 
         /**
-         * Enables background syncing of intraday data from Google HealthConnect. The types of data to be collected will be
-         * determined by the set of collectable fitness metrics. If intraday types are not included in the collectable
-         * fitness metrics, the background synchronization will be disabled.<br>
-         * Note: SDK will schedule background syncs only if there is a current connection to Google HealthConnect. In other words,
-         * this option expresses an intent to have the background synchronization when it's applicable but it doesn't
-         * mean a requirement of the connection to Google HealthConnect.
+         * Enables background syncing of intraday data from Google HealthConnect. The types of data to be collected will
+         * be determined by the set of collectable fitness metrics. If intraday types are not included in the
+         * collectable fitness metrics, the background synchronization will be disabled.<br>
+         * Note: SDK will schedule background syncs only if there is a current connection to Google HealthConnect. In
+         * other words, this option expresses an intent to have the background synchronization when it's applicable but
+         * it doesn't mean a requirement of the connection to Google HealthConnect.
          *
          * @return configured builder
          */
@@ -293,12 +292,12 @@ public class ActivitySourcesManagerConfig {
         }
 
         /**
-         * Enables background syncing of session data from Google HealthConnect. Sessions with a shorter duration than the
-         * specified one will be ignored in the background synchronization. If sessions are not included in the
+         * Enables background syncing of session data from Google HealthConnect. Sessions with a shorter duration than
+         * the specified one will be ignored in the background synchronization. If sessions are not included in the
          * collectable fitness metrics, the background synchronization will be disabled.<br>
-         * Note: SDK will schedule background syncs only if there is a current connection to Google HealthConnect. In other words,
-         * this option expresses an intent to have the background synchronization when it's applicable but it doesn't
-         * mean a requirement of the connection to Google HealthConnect.
+         * Note: SDK will schedule background syncs only if there is a current connection to Google HealthConnect. In
+         * other words, this option expresses an intent to have the background synchronization when it's applicable but
+         * it doesn't mean a requirement of the connection to Google HealthConnect.
          *
          * @param minSessionDuration min duration for sessions to be synced
          * @return configured builder
@@ -313,9 +312,9 @@ public class ActivitySourcesManagerConfig {
 
         /**
          * Enables background synchronization of intraday and session data from Google HealthConnect.<br>
-         * Note: SDK will schedule background syncs only if there is a current connection to Google HealthConnect. In other words,
-         * this option expresses an intent to have the background synchronization when it's applicable but it doesn't
-         * mean a requirement of the connection to Google HealthConnect.
+         * Note: SDK will schedule background syncs only if there is a current connection to Google HealthConnect. In
+         * other words, this option expresses an intent to have the background synchronization when it's applicable but
+         * it doesn't mean a requirement of the connection to Google HealthConnect.
          *
          * @see #enableGoogleHealthConnectIntradayBackgroundSync
          * @see #enableGoogleHealthConnectSessionsBackgroundSync
@@ -483,8 +482,7 @@ public class ActivitySourcesManagerConfig {
             Stream.of(FitnessMetricsType.INTRADAY_CALORIES, FitnessMetricsType.HEIGHT, FitnessMetricsType.WEIGHT)
                 .collect(Collectors.toSet());
         final ActivitySourcesManagerConfig config =
-            new ActivitySourcesManagerConfig.Builder()
-                .enableGoogleFitIntradayBackgroundSync()
+            new ActivitySourcesManagerConfig.Builder().enableGoogleFitIntradayBackgroundSync()
                 .disableGoogleFitSessionsBackgroundSync()
                 .enableGoogleFitProfileBackgroundSync()
                 .enableGoogleHealthConnectIntradayBackgroundSync()

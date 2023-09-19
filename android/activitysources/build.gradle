@@ -20,6 +20,12 @@ android {
         consumerProguardFiles "consumer-rules.pro"
     }
 
+    sourceSets {
+        test {
+            java.srcDirs = ['src/main/', 'src/test/']
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false

@@ -105,7 +105,7 @@ public class GFProfileSyncWorkerTest {
                 final ActivitySourcesManagerConfig config = configCaptor.getValue();
                 assertEquals("config should have the untouched background mode",
                     ActivitySourcesManagerConfig.BackgroundSyncMode.UNTOUCHED,
-                    config.getProfileBackgroundSyncMode());
+                    config.getGoogleFitProfileBackgroundSyncMode());
                 assertEquals("config should have the empty set of collectable fitness metrics",
                     Collections.emptySet(),
                     config.getCollectableFitnessMetrics());

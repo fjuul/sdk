@@ -30,7 +30,8 @@ public class TrackerValueTest {
                         TrackerValue.STRAVA,
                         TrackerValue.SUUNTO,
                         TrackerValue.WITHINGS,
-                        TrackerValue.GOOGLE_FIT));
+                        TrackerValue.GOOGLE_FIT,
+                        TrackerValue.GOOGLE_HEALTH_CONNECT));
             }
         }
 

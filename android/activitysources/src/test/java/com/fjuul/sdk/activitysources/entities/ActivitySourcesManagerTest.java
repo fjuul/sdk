@@ -80,8 +80,7 @@ public class ActivitySourcesManagerTest {
                     ActivitySourcesManager.initialize(client);
                     assertEquals("should log only one message", 1, LOGGER.size());
                     final TimberLogEntry logEntry = LOGGER.getLogEntries().get(0);
-                    assertEquals(
-                        "[activitysources] ActivitySourcesManager: initialized successfully (the previous one could be overridden)",
+                    assertEquals("initialized successfully (the previous one could be overridden)",
                         logEntry.getMessage());
                     assertEquals(Log.DEBUG, logEntry.getPriority());
                 }

@@ -456,7 +456,7 @@ public class ActivitySourcesManagerConfig {
             Objects.requireNonNull(config.googleFitSessionsBackgroundSyncMode,
                 "GoogleFit sessions background sync mode must be set");
             Objects.requireNonNull(config.googleFitProfileBackgroundSyncMode,
-                "Google Fit profile background sync mode must be set");
+                "GoogleFit profile background sync mode must be set");
             Objects.requireNonNull(config.googleHealthConnectIntradayBackgroundSyncMode,
                 "Google Health Connect intraday background sync mode must be set");
             Objects.requireNonNull(config.googleHealthConnectSessionsBackgroundSyncMode,

@@ -44,7 +44,7 @@ import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFCalorieDataPo
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHRSummaryDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFHeightDataPoint;
-import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFPowerSummaryDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFPowerDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSessionBundle;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFSpeedDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlefit.GFStepsDataPoint;
@@ -906,7 +906,7 @@ public class GFClientWrapperTest {
             assertEquals("should collect speed's datasource", "derived:com.google.speed", speed.getDataSource());
 
             assertTrue("session bundle should have 1 power sample", sessionBundle.getPower().size() == 1);
-            GFPowerSummaryDataPoint power = sessionBundle.getPower().get(0);
+            GFPowerDataPoint power = sessionBundle.getPower().get(0);
             assertEquals("should collect power's start time as an instant measurement", sessionEnd, power.getStart());
             assertNull("should not collect power's end time", power.getEnd());
             assertEquals("should collect power's watts", 5f, power.getValue(), 0.00001);
@@ -1064,7 +1064,7 @@ public class GFClientWrapperTest {
             assertEquals("should collect speed's datasource", "derived:com.google.speed", speed.getDataSource());
 
             assertTrue("session bundle should have 1 power sample", sessionBundle.getPower().size() == 1);
-            GFPowerSummaryDataPoint power = sessionBundle.getPower().get(0);
+            GFPowerDataPoint power = sessionBundle.getPower().get(0);
             assertEquals("should collect power's start time as an instant measurement", sessionEnd, power.getStart());
             assertNull("should not collect power's end time", power.getEnd());
             assertEquals("should collect power's watts", 5f, power.getValue(), 0.00001);

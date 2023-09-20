@@ -85,10 +85,10 @@ public class SigningAuthInterceptorTest extends LoggableTestSuite {
         mockWebServer.shutdown();
         assertEquals("logger should have entries", 2, LOGGER.size());
         TimberLogEntry firstEntry = LOGGER.getLogEntries().get(0);
-        assertEquals("[core] SigningAuthInterceptor: retrieving a new signing key", firstEntry.getMessage());
+        assertEquals("retrieving a new signing key", firstEntry.getMessage());
         assertEquals(Log.DEBUG, firstEntry.getPriority());
         TimberLogEntry secondEntry = LOGGER.getLogEntries().get(1);
-        assertEquals("[core] SigningAuthInterceptor: failed to retrieve the signing key", secondEntry.getMessage());
+        assertEquals("failed to retrieve the signing key", secondEntry.getMessage());
         assertEquals(Log.DEBUG, secondEntry.getPriority());
     }
 
@@ -119,7 +119,7 @@ public class SigningAuthInterceptorTest extends LoggableTestSuite {
         mockWebServer.shutdown();
         assertEquals("logger should have only one entry", 1, LOGGER.size());
         TimberLogEntry logEntry = LOGGER.getLogEntries().get(0);
-        assertEquals("[core] SigningAuthInterceptor: retrieving a new signing key", logEntry.getMessage());
+        assertEquals("retrieving a new signing key", logEntry.getMessage());
         assertEquals(Log.DEBUG, logEntry.getPriority());
     }
 

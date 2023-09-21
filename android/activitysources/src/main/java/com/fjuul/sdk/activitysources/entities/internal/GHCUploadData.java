@@ -64,11 +64,26 @@ public class GHCUploadData {
     public String toString() {
         //@formatter:off
         return "GHCUploadData{" +
-            "calories=" + caloriesData.size() +
-            ", steps=" + stepsData.size() +
-            ", heartRates=" + heartRateData.size() +
-            ", sessions=" + sessionsData.size() +
+            "calories=" + toString(caloriesData) +
+            ", steps=" + toString(stepsData) +
+            ", heartRates=" + toString(heartRateData) +
+            ", sessions=" + toString(sessionsData) +
             '}';
         //@formatter:on
+    }
+
+    private static <T> String toString(List<T> data) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("(count: ");
+        builder.append(data.size());
+        builder.append("; first elements: ");
+        for (int i = 0; i < Math.min(5, data.size()); i++) {
+            if (i > 0) {
+                builder.append("; ");
+            }
+            builder.append(data.get(i));
+        }
+        builder.append(")");
+        return builder.toString();
     }
 }

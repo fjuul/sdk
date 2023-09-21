@@ -7,10 +7,6 @@ import java.util.Locale;
 import androidx.annotation.NonNull;
 
 public class GHCCalorieDataPoint extends GHCScalarDataPoint<Float> {
-    public GHCCalorieDataPoint(@NonNull Float value, @NonNull Date start, @NonNull String dataSource) {
-        this(value, start, null, dataSource);
-    }
-
     public GHCCalorieDataPoint(@NonNull Float aFloat,
         @NonNull Date start,
         @NonNull Date end,

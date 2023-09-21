@@ -21,9 +21,10 @@ public class GHCDataConverter {
     @NonNull
     public static GHCCalorieDataPoint convertRecordToCalories(@NonNull TotalCaloriesBurnedRecord record) {
         final Date start = Date.from(record.getStartTime());
+        final Date end = Date.from(record.getEndTime());
         final double kcals = record.getEnergy().getCalories();
         final String dataSourceId = record.getMetadata().getDataOrigin().getPackageName();
-        return new GHCCalorieDataPoint((float) kcals, start, dataSourceId);
+        return new GHCCalorieDataPoint((float) kcals, start, end, dataSourceId);
     }
 
     @NonNull

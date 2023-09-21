@@ -124,9 +124,9 @@ public final class ActivitySourcesManager {
         final List<TrackerConnection> storedConnections = stateStore.getConnections();
         final CopyOnWriteArrayList<TrackerConnection> currentConnections =
             Optional.ofNullable(storedConnections).map(CopyOnWriteArrayList::new).orElse(new CopyOnWriteArrayList<>());
-        // TODO: Remove testing hack
+        // TODO: TESTING HACK because REST API doesn't yet return GHC connections:
         // addGoogleHealthConnectIfAbsent(currentConnections);
-        // end of testing hack
+        // end of TESTING HACK
         final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
         final WorkManager workManager = WorkManager.getInstance(client.getAppContext());
         final ActivitySourceWorkScheduler scheduler = new ActivitySourceWorkScheduler(workManager,
@@ -334,10 +334,10 @@ public final class ActivitySourcesManager {
                 return;
             }
             final CopyOnWriteArrayList<TrackerConnection> freshTrackerConnections =
-                new CopyOnWriteArrayList(apiCallResult.getValue());
-            // TODO: Remove testing hack
+                new CopyOnWriteArrayList<>(apiCallResult.getValue());
+            // TODO: TESTING HACK because REST API doesn't yet return GHC connections:
             // addGoogleHealthConnectIfAbsent(freshTrackerConnections);
-            // end of testing hack
+            // end of TESTING HACK
             configureExternalStateByConnections(freshTrackerConnections);
             stateStore.setConnections(freshTrackerConnections);
             this.currentConnections = freshTrackerConnections;
@@ -407,8 +407,10 @@ public final class ActivitySourcesManager {
             }
         }
         if (!hasGHC) {
-            connections
-                .add(new TrackerConnection("ghc-id", TrackerValue.GOOGLE_HEALTH_CONNECT.getValue(), new Date(), null));
+            Date now = new Date();
+            Date thirtyDaysHence = new Date(now.getTime() + 30L * 24 * 60 * 60 * 1000);
+            connections.add(
+                new TrackerConnection("ghc-id", TrackerValue.GOOGLE_HEALTH_CONNECT.getValue(), now, thirtyDaysHence));
         }
     }
 }

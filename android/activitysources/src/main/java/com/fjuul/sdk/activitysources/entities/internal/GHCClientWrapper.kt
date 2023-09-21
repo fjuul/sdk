@@ -77,6 +77,8 @@ class GHCClientWrapper(private val context: Context) {
             HealthPermission.getReadPermission(StepsRecord::class),
             HealthPermission.getReadPermission(ExerciseSessionRecord::class),
             HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
+            HealthPermission.getReadPermission(PowerRecord::class),
+            HealthPermission.getReadPermission(SpeedRecord::class),
             HealthPermission.getReadPermission(HeightRecord::class),
             HealthPermission.getReadPermission(WeightRecord::class),
         )

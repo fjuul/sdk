@@ -261,6 +261,7 @@ public class GHCDataManager {
         @NonNull String nextToken,
         @NonNull GHCUploadData uploadData) {
         final TaskCompletionSource<ApiCallResult<Void>> sendDataTaskCompletionSource = new TaskCompletionSource<>();
+        Logger.get().d("Uploading GHC data: %s", uploadData);
         activitySourcesService.uploadGoogleHealthConnectData(uploadData).enqueue((apiCall, result) -> {
             if (result.isError()) {
                 Logger.get().d("Failed to send GHC data: %s", result.getError().getMessage());
@@ -281,6 +282,7 @@ public class GHCDataManager {
     private Task<ApiCallResult<Void>> sendGHCProfileParams(@NonNull String nextToken,
         @NonNull GHCSynchronizableProfileParams profileParams) {
         final TaskCompletionSource<ApiCallResult<Void>> sendDataTaskCompletionSource = new TaskCompletionSource<>();
+        Logger.get().d("Updating GHC profile: %s", profileParams);
         activitySourcesService.updateProfileOnBehalfOfGoogleHealthConnect(profileParams).enqueue((apiCall, result) -> {
             if (result.isError()) {
                 Logger.get().d("failed to send the profile data: %s", result.getError().getMessage());

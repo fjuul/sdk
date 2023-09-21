@@ -1,11 +1,9 @@
 package com.fjuul.sdk.core.entities;
 
-import java.io.File;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -51,18 +49,7 @@ public class PersistentStorage implements IStorage {
     @Override
     public synchronized boolean remove() {
         final boolean editorResult = getPreferences().edit().clear().commit();
-        boolean deleteFileResult = false;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            deleteFileResult = context.deleteSharedPreferences(getSharedPrefsName());
-        } else {
-            final File sharedPrefsDir = new File(context.getFilesDir().getParent() + "/shared_prefs/");
-            final File[] sharedPrefsFiles =
-                sharedPrefsDir.listFiles((dir, name) -> name.startsWith(getSharedPrefsName()));
-            if (sharedPrefsFiles.length > 0) {
-                final File sharedPrefsFile = sharedPrefsFiles[0];
-                deleteFileResult = sharedPrefsFile.delete();
-            }
-        }
+        boolean deleteFileResult = context.deleteSharedPreferences(getSharedPrefsName());
         preferences = null;
         return editorResult && deleteFileResult;
     }

@@ -27,7 +27,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 
-import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.health.connect.client.records.HeartRateRecord;
 import androidx.health.connect.client.records.HeightRecord;
@@ -40,7 +39,6 @@ public class GHCDataManager {
     private static final int MAX_DAYS = 30; // Don't try to get older data than this
     private static final ExecutorService localBackgroundExecutor = Executors.newCachedThreadPool();
 
-    private static final String LOG_TAG = "GHCDataManager";
     private static final String PROFILE_CHANGES_TOKEN_KEY = "ghc-profile-changes-token";
     private static final String INTRADAY_CHANGES_TOKEN_KEY = "ghc-intraday-changes-token";
     private static final String SESSION_CHANGES_TOKEN_KEY = "ghc-session-changes-token";
@@ -59,7 +57,7 @@ public class GHCDataManager {
 
     @NonNull
     public Task<Void> syncIntradayMetrics(@NonNull GoogleHealthConnectIntradaySyncOptions options) {
-        Log.d(LOG_TAG, "Syncing intraday metrics");
+        Logger.get().d("Syncing intraday metrics");
         final Task<Boolean> checkPermissionsTask = checkPermissions();
         final Task<HealthConnectRecords> readTask =
             checkPermissionsTask.continueWithTask(localBackgroundExecutor,
@@ -68,7 +66,7 @@ public class GHCDataManager {
             final String nextToken = healthConnectRecords.getNextToken();
             final List<Record> healthRecords = healthConnectRecords.getRecords();
             if (healthRecords.isEmpty()) {
-                Log.d(LOG_TAG, "No new records to send");
+                Logger.get().d("No new records to send");
                 return Tasks.forResult(null);
             } else {
                 final List<GHCStepsDataPoint> stepsDataPoints = new ArrayList<>();
@@ -85,7 +83,7 @@ public class GHCDataManager {
                         calorieDataPoints.add(
                             GHCDataConverter.convertRecordToCalories(totalCaloriesBurnedRecord));
                     } else {
-                        Log.e(LOG_TAG, "Unexpected record type: " + healthRecord.getClass().getCanonicalName());
+                        Logger.get().e("Unexpected record type: %s", healthRecord.getClass().getCanonicalName());
                     }
                 }
                 GHCUploadData uploadData = new GHCUploadData();
@@ -101,7 +99,7 @@ public class GHCDataManager {
 
     @NonNull
     public Task<Void> syncSessions(@NonNull GoogleHealthConnectSessionSyncOptions options) {
-        Log.d(LOG_TAG, "Syncing sessions");
+        Logger.get().d("Syncing sessions");
         final Task<Boolean> checkPermissionsTask = checkPermissions();
         final Task<HealthConnectSessions> readTask = checkPermissionsTask.continueWithTask(localBackgroundExecutor,
             task -> readExerciseSessions(options.getMinimumSessionDuration()));
@@ -109,7 +107,7 @@ public class GHCDataManager {
             final String nextToken = healthConnectSessions.getNextToken();
             final List<ExerciseSession> exerciseSessions = healthConnectSessions.getSessions();
             if (exerciseSessions.isEmpty()) {
-                Log.d(LOG_TAG, "No new sessions to send");
+                Logger.get().d("No new sessions to send");
                 return Tasks.forResult(null);
             } else {
                 final List<GHCSessionBundle> sessionBundles = new ArrayList<>();
@@ -128,7 +126,7 @@ public class GHCDataManager {
 
     @NonNull
     public Task<Void> syncProfile(@NonNull GoogleHealthConnectProfileSyncOptions options) {
-        Log.d(LOG_TAG, "Syncing profile");
+        Logger.get().d("Syncing profile");
         final Task<Boolean> checkPermissionsTask = checkPermissions();
         final Task<HealthConnectRecords> readTask =
             checkPermissionsTask.continueWithTask(localBackgroundExecutor,
@@ -155,11 +153,11 @@ public class GHCDataManager {
                         profileParams.setWeight((float) (weightRecord.getWeight().getKilograms()));
                     }
                 } else {
-                    Log.e(LOG_TAG, "Unexpected record type: " + healthRecord.getClass().getCanonicalName());
+                    Logger.get().e("Unexpected record type: %s", healthRecord.getClass().getCanonicalName());
                 }
             }
             if (profileParams.isEmpty()) {
-                Log.d(LOG_TAG, "No new profile data to send");
+                Logger.get().d("No new profile data to send");
                 return Tasks.forResult(null);
             } else {
                 return sendGHCProfileParams(nextToken, profileParams).onSuccessTask(
@@ -172,21 +170,21 @@ public class GHCDataManager {
     public Task<Boolean> checkPermissions() {
         HealthConnectAvailability availability = clientWrapper.getAvailability().getValue();
         if (availability != HealthConnectAvailability.INSTALLED) {
-            Log.e(LOG_TAG, "Failed: not installed");
+            Logger.get().e("Health Connect permission check failed: not installed");
             return Tasks.forResult(false);
         }
         try {
             Boolean hasAllPermissions =
                 clientWrapper.hasAllPermissionsAsync(clientWrapper.getDefaultRequiredPermissions()).get();
             if (!hasAllPermissions) {
-                Log.e(LOG_TAG, "Failed: does not have required permissions");
+                Logger.get().e("Health Connect permission check failed: does not have required permissions");
                 return Tasks.forResult(false);
             }
         } catch (ExecutionException ex) {
-            Log.e(LOG_TAG, "Execution failed: " + ex.getMessage());
+            Logger.get().e("Health Connect permission check execution failed: %s", ex.getMessage());
             return Tasks.forException(ex);
         } catch (InterruptedException ex) {
-            Log.e(LOG_TAG, "Execution interrupted: " + ex.getMessage());
+            Logger.get().e("Health Connect permission check execution interrupted: %s", ex.getMessage());
             return Tasks.forException(ex);
         }
         return Tasks.forResult(true);
@@ -205,10 +203,10 @@ public class GHCDataManager {
             }
             taskCompletionSource.trySetResult(records);
         } catch (ExecutionException ex) {
-            Log.e(LOG_TAG, "Execution failed: " + ex.getMessage());
+            Logger.get().e("Health Connect read intraday metrics execution failed: %s", ex.getMessage());
             taskCompletionSource.trySetException(ex);
         } catch (InterruptedException ex) {
-            Log.e(LOG_TAG, "Execution interrupted: " + ex.getMessage());
+            Logger.get().e("Health Connect read intraday metrics execution interrupted: %s", ex.getMessage());
             taskCompletionSource.trySetException(ex);
         }
         return taskCompletionSource.getTask();
@@ -227,10 +225,10 @@ public class GHCDataManager {
             }
             taskCompletionSource.trySetResult(sessions);
         } catch (ExecutionException ex) {
-            Log.e(LOG_TAG, "Execution failed: " + ex.getMessage());
+            Logger.get().e("Health Connect read exercise sessions execution failed: %s", ex.getMessage());
             taskCompletionSource.trySetException(ex);
         } catch (InterruptedException ex) {
-            Log.e(LOG_TAG, "Execution interrupted: " + ex.getMessage());
+            Logger.get().e("Health Connect read exercise sessions execution interrupted: %s", ex.getMessage());
             taskCompletionSource.trySetException(ex);
         }
         return taskCompletionSource.getTask();
@@ -249,10 +247,10 @@ public class GHCDataManager {
             }
             taskCompletionSource.trySetResult(records);
         } catch (ExecutionException ex) {
-            Log.e(LOG_TAG, "Execution failed: " + ex.getMessage());
+            Logger.get().e("Health Connect read profile metrics execution failed: %s", ex.getMessage());
             taskCompletionSource.trySetException(ex);
         } catch (InterruptedException ex) {
-            Log.e(LOG_TAG, "Execution interrupted: " + ex.getMessage());
+            Logger.get().e("Health Connect read profile metrics execution interrupted: %s", ex.getMessage());
             taskCompletionSource.trySetException(ex);
         }
         return taskCompletionSource.getTask();
@@ -265,14 +263,14 @@ public class GHCDataManager {
         final TaskCompletionSource<ApiCallResult<Void>> sendDataTaskCompletionSource = new TaskCompletionSource<>();
         activitySourcesService.uploadGoogleHealthConnectData(uploadData).enqueue((apiCall, result) -> {
             if (result.isError()) {
-                Log.d(LOG_TAG, "failed to send GHC data: " + result.getError().getMessage());
+                Logger.get().d("Failed to send GHC data: %s", result.getError().getMessage());
                 final GoogleFitActivitySourceExceptions.CommonException exception =
                     new GoogleFitActivitySourceExceptions.CommonException("Failed to send data to the server",
                         result.getError());
                 sendDataTaskCompletionSource.trySetException(exception);
                 return;
             }
-            Log.d(LOG_TAG, "succeeded to send GHC data");
+            Logger.get().d("Succeeded to send GHC data");
             apiClient.getStorage().set(tokenKey, nextToken);
             sendDataTaskCompletionSource.trySetResult(result);
         });

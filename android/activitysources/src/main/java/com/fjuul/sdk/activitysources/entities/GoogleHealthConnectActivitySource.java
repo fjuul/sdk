@@ -14,25 +14,20 @@ import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.Callback;
 import com.fjuul.sdk.core.entities.Result;
+import com.fjuul.sdk.core.utils.Logger;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 
 import android.content.Context;
-import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 public class GoogleHealthConnectActivitySource extends ActivitySource {
-    private static final String LOG_TAG = "GoogleHealthConnectActivitySource";
-
     private static final ExecutorService sharedSequentialExecutor = createSequentialSingleCachedExecutor();
 
     private static volatile GoogleHealthConnectActivitySource instance;
-    private final @NonNull Set<FitnessMetricsType> collectableFitnessMetrics;
     private final @NonNull ActivitySourcesService sourcesService;
     private final @NonNull ApiClient apiClient;
-    private final @NonNull Context context;
-    private final @NonNull ActivitySourcesManagerConfig config;
     private final @NonNull GHCClientWrapper clientWrapper;
     private final @NonNull ExecutorService localSequentialBackgroundExecutor;
 
@@ -42,20 +37,16 @@ public class GoogleHealthConnectActivitySource extends ActivitySource {
         instance = new GoogleHealthConnectActivitySource(collectableFitnessMetrics,
             sourcesService,
             client,
-            config,
             sharedSequentialExecutor);
     }
 
     private GoogleHealthConnectActivitySource(@NonNull Set<FitnessMetricsType> collectableFitnessMetrics,
         @NonNull ActivitySourcesService sourcesService,
         @NonNull ApiClient apiClient,
-        @NonNull ActivitySourcesManagerConfig config,
         @NonNull ExecutorService localSequentialBackgroundExecutor) {
-        this.collectableFitnessMetrics = collectableFitnessMetrics;
         this.sourcesService = sourcesService;
         this.apiClient = apiClient;
-        this.context = apiClient.getAppContext();
-        this.config = config;
+        Context context = apiClient.getAppContext();
         this.clientWrapper = new GHCClientWrapper(context);
         this.localSequentialBackgroundExecutor = localSequentialBackgroundExecutor;
     }
@@ -71,7 +62,7 @@ public class GoogleHealthConnectActivitySource extends ActivitySource {
      */
     public void syncIntradayMetrics(@NonNull final GoogleHealthConnectIntradaySyncOptions options,
         @Nullable final Callback<Void> callback) {
-        Log.d(LOG_TAG, "Syncing intraday metrics");
+        Logger.get().d("Syncing intraday metrics");
         GHCDataManager dataManager = new GHCDataManager(clientWrapper, sourcesService, apiClient);
         performTaskAlongWithCallback(() -> dataManager.syncIntradayMetrics(options), callback);
     }
@@ -85,7 +76,7 @@ public class GoogleHealthConnectActivitySource extends ActivitySource {
      */
     public void syncSessions(@NonNull final GoogleHealthConnectSessionSyncOptions options,
         @Nullable final Callback<Void> callback) {
-        Log.d(LOG_TAG, "Syncing sessions");
+        Logger.get().d("Syncing sessions");
         GHCDataManager dataManager = new GHCDataManager(clientWrapper, sourcesService, apiClient);
         performTaskAlongWithCallback(() -> dataManager.syncSessions(options), callback);
     }
@@ -101,7 +92,7 @@ public class GoogleHealthConnectActivitySource extends ActivitySource {
      */
     public void syncProfile(@NonNull final GoogleHealthConnectProfileSyncOptions options,
         @Nullable final Callback<Void> callback) {
-        Log.d(LOG_TAG, "Syncing profile");
+        Logger.get().d("Syncing profile");
         GHCDataManager dataManager = new GHCDataManager(clientWrapper, sourcesService, apiClient);
         performTaskAlongWithCallback(() -> dataManager.syncProfile(options), callback);
     }

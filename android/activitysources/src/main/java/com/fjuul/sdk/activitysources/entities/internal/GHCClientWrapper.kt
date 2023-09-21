@@ -2,7 +2,6 @@ package com.fjuul.sdk.activitysources.entities.internal
 
 import android.content.Context
 import android.os.Build
-import android.util.Log
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.HealthConnectClient
@@ -23,6 +22,7 @@ import androidx.health.connect.client.request.ChangesTokenRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
+import com.fjuul.sdk.core.utils.Logger
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
@@ -42,7 +42,6 @@ const val MIN_SUPPORTED_SDK = Build.VERSION_CODES.O_MR1
  */
 class GHCClientWrapper(private val context: Context) {
     private val healthConnectClient by lazy { HealthConnectClient.getOrCreate(context) }
-    private val LOGTAG = "GHCClientWrapper"
     private val profileRecordTypes = setOf(
         HeightRecord::class,
         WeightRecord::class,
@@ -224,9 +223,9 @@ class GHCClientWrapper(private val context: Context) {
                     }
                 } else if (change is DeletionChange) {
                     // TODO Handle deletions
-                    Log.i(LOGTAG, "Ignoring a deletion change")
+                    Logger.get().i("Ignoring a deletion change")
                 } else {
-                    Log.e(LOGTAG, "Unexpected change type")
+                    Logger.get().e("Unexpected change type")
                 }
             }
             nextChangesToken = response.nextChangesToken
@@ -254,9 +253,9 @@ class GHCClientWrapper(private val context: Context) {
                     records.add(change.record as ExerciseSessionRecord)
                 } else if (change is DeletionChange) {
                     // TODO Handle deletions
-                    Log.i(LOGTAG, "Ignoring a deletion change")
+                    Logger.get().i("Ignoring a deletion change")
                 } else {
-                    Log.e(LOGTAG, "Unexpected change type")
+                    Logger.get().e("Unexpected change type")
                 }
             }
             nextChangesToken = response.nextChangesToken

@@ -6,54 +6,18 @@ import java.util.List;
 
 import com.fjuul.sdk.activitysources.entities.internal.ExerciseSession;
 
-import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.health.connect.client.records.ExerciseSegment;
 import androidx.health.connect.client.records.ExerciseSessionRecord;
 import androidx.health.connect.client.records.HeartRateRecord;
 import androidx.health.connect.client.records.HeightRecord;
 import androidx.health.connect.client.records.PowerRecord;
-import androidx.health.connect.client.records.Record;
 import androidx.health.connect.client.records.SpeedRecord;
 import androidx.health.connect.client.records.StepsRecord;
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord;
 import androidx.health.connect.client.records.WeightRecord;
 
 public class GHCDataConverter {
-    private static final String TAG = "GHCDataConverter";
-
-    @NonNull
-    public static List<GHCDataPoint> convertRecordsToDataPoints(@NonNull List<Record> records) {
-        List<GHCDataPoint> dataPoints = new ArrayList<>();
-        for (Record record : records) {
-            if (record instanceof HeightRecord heightRecord) {
-                dataPoints.add(convertRecordToHeight(heightRecord));
-            } else if (record instanceof WeightRecord weightRecord) {
-                dataPoints.add(convertRecordToWeight(weightRecord));
-            } else if (record instanceof StepsRecord stepsRecord) {
-                dataPoints.add(convertRecordToSteps(stepsRecord));
-            } else if (record instanceof HeartRateRecord heartRateRecord) {
-                dataPoints.add(convertRecordToHeartRateSummary(heartRateRecord));
-            } else if (record instanceof TotalCaloriesBurnedRecord totalCaloriesBurnedRecord) {
-                dataPoints.add(convertRecordToCalories(totalCaloriesBurnedRecord));
-            } else if (record instanceof ExerciseSessionRecord) {
-                Log.e(TAG, "Unexpected ExerciseSessionRecord");
-            } else {
-                Log.e(TAG, "Unexpected record type: " + record.getClass().getCanonicalName());
-            }
-        }
-        return dataPoints;
-    }
-
-    @NonNull
-    public static List<GHCSessionBundle> convertSessionsToBundles(@NonNull List<ExerciseSession> sessions) {
-        List<GHCSessionBundle> bundles = new ArrayList<>();
-        for (ExerciseSession session : sessions) {
-            bundles.add(convertSessionToSessionBundle(session));
-        }
-        return bundles;
-    }
-
     @NonNull
     public static GHCCalorieDataPoint convertRecordToCalories(@NonNull TotalCaloriesBurnedRecord record) {
         final Date start = Date.from(record.getStartTime());

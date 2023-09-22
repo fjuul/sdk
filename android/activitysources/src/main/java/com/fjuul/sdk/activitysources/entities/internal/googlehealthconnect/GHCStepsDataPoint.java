@@ -7,10 +7,6 @@ import java.util.Locale;
 import androidx.annotation.NonNull;
 
 public class GHCStepsDataPoint extends GHCScalarDataPoint<Integer> {
-    public GHCStepsDataPoint(@NonNull Integer value, @NonNull Date start, @NonNull String dataSource) {
-        this(value, start, null, dataSource);
-    }
-
     public GHCStepsDataPoint(@NonNull Integer integer,
         @NonNull Date start,
         @NonNull Date end,

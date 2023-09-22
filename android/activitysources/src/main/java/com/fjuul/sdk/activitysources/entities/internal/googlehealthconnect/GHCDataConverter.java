@@ -30,9 +30,10 @@ public class GHCDataConverter {
     @NonNull
     public static GHCStepsDataPoint convertRecordToSteps(@NonNull StepsRecord record) {
         final Date start = Date.from(record.getStartTime());
+        final Date end = Date.from(record.getEndTime());
         final long steps = record.getCount();
         final String dataSourceId = record.getMetadata().getDataOrigin().getPackageName();
-        return new GHCStepsDataPoint((int) steps, start, dataSourceId);
+        return new GHCStepsDataPoint((int) steps, start, end, dataSourceId);
     }
 
     @NonNull
@@ -102,22 +103,6 @@ public class GHCDataConverter {
         double avg = total / record.getSamples().size();
         final String dataSourceId = record.getMetadata().getDataOrigin().getPackageName();
         return new GHCSpeedSummaryDataPoint(avg, min, max, start, end, dataSourceId);
-    }
-
-    @NonNull
-    public static GHCHeightDataPoint convertRecordToHeight(@NonNull HeightRecord record) {
-        final Date start = Date.from(record.getTime());
-        final double height = record.getHeight().getMeters();
-        final String dataSourceId = record.getMetadata().getDataOrigin().getPackageName();
-        return new GHCHeightDataPoint((float) height, start, dataSourceId);
-    }
-
-    @NonNull
-    public static GHCWeightDataPoint convertRecordToWeight(@NonNull WeightRecord record) {
-        final Date start = Date.from(record.getTime());
-        final double weight = record.getWeight().getKilograms();
-        final String dataSourceId = record.getMetadata().getDataOrigin().getPackageName();
-        return new GHCWeightDataPoint((float) weight, start, dataSourceId);
     }
 
     @NonNull

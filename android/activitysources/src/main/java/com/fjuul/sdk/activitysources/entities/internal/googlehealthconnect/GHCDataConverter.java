@@ -10,12 +10,10 @@ import androidx.annotation.NonNull;
 import androidx.health.connect.client.records.ExerciseSegment;
 import androidx.health.connect.client.records.ExerciseSessionRecord;
 import androidx.health.connect.client.records.HeartRateRecord;
-import androidx.health.connect.client.records.HeightRecord;
 import androidx.health.connect.client.records.PowerRecord;
 import androidx.health.connect.client.records.SpeedRecord;
 import androidx.health.connect.client.records.StepsRecord;
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord;
-import androidx.health.connect.client.records.WeightRecord;
 
 public class GHCDataConverter {
     @NonNull

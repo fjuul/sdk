@@ -46,7 +46,7 @@ dependencies {
     implementation "androidx.annotation:annotation:$rootProject.ext.androidXAnnotationVersion"
     implementation "androidx.core:core:$rootProject.ext.androidXCoreVersion"
 
-    implementation 'com.google.android.gms:play-services-auth:20.6.0'
+    implementation 'com.google.android.gms:play-services-auth:19.0.0'
     implementation 'com.google.android.gms:play-services-fitness:20.0.0'
     implementation "androidx.work:work-runtime:$workVersion"
 
@@ -55,8 +55,8 @@ dependencies {
 
     // Use JUnit test framework
     testImplementation "junit:junit:$rootProject.ext.junitVersion"
-    testImplementation 'org.mockito:mockito-core:3.4.4'
-    testImplementation('org.mockito:mockito-inline:3.4.4')
+    testImplementation 'org.mockito:mockito-core:5.5.0'
+    testImplementation('org.mockito:mockito-inline:5.2.0')
     testImplementation "com.squareup.okhttp3:mockwebserver:$rootProject.ext.okHttpVersion"
     testImplementation "androidx.work:work-testing:$workVersion"
     testImplementation project(':test')

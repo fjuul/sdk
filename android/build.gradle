@@ -24,7 +24,8 @@ subprojects {
     spotless {
         java {
             target fileTree('.') {
-                include '**/*.java'
+                // exclude generated source files
+                include 'src/**/*.java'
             }
             // licenseHeaderFile project.rootProject.file('spotless/copyright.java')
 
@@ -59,6 +60,11 @@ subprojects {
             ]
             ktlint('0.48.1').userData(styles)
         }
+
+        spotlessJava.dependsOn 'spotlessGroovyGradle'
+        spotlessKotlin.dependsOn 'spotlessGroovyGradle'
+        spotlessKotlin.dependsOn 'spotlessJava'
+
     }
 }
 

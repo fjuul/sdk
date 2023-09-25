@@ -124,7 +124,6 @@ class LoginFragment : Fragment() {
                     .build()
                 authorizedUserDataViewModel.fetchUserProfile(apiClient) { success, exception ->
                     ApiClientHolder.setup(apiClient)
-                    //There is no need to pass activitySourcesManagerConfig
                     ActivitySourcesManager.initialize(apiClient)
                     if (success) {
                         val action = LoginFragmentDirections.actionLoginFragmentToModulesFragment()

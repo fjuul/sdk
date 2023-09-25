@@ -29,7 +29,6 @@ class GFSyncFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        //Data binding added because kotlin extension is deprecated
         binding = GfSyncFragmentBinding.bind(inflater.inflate(R.layout.gf_sync_fragment, container, false))
         return binding.root
     }

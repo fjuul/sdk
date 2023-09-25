@@ -28,7 +28,6 @@ android {
         }
     }
 
-    //View and Data binding added because kotlin extension is deprecated
     buildFeatures {
         buildConfig true
         viewBinding true
@@ -41,8 +40,7 @@ android {
         }
     }
     compileOptions {
-        // Flag to enable support for the new language APIs
-        coreLibraryDesugaringEnabled = true // <- this flag is required
+        coreLibraryDesugaringEnabled = true
 
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -63,8 +61,6 @@ task publishFjuulSDKToMavenLocal(type: Exec) {
 }
 
 dependencies {
-
-    //Updated to latest version for compatibility
 
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
@@ -106,5 +102,6 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3") // <- this dependency is required to support date picker in lower version
+    // this dependency is required to support date picker in lower version
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 }

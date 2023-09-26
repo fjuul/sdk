@@ -59,9 +59,16 @@ class LoginFragment : Fragment() {
         // initial setup by view models
         apiKeyInput.setText(sdkConfigViewModel.apiKey.value, TextView.BufferType.NORMAL)
         when (sdkConfigViewModel.environment.value) {
-            SdkEnvironment.DEV -> view.findViewById<RadioButton>(R.id.dev_env_radio).isChecked = true
-            SdkEnvironment.TEST -> view.findViewById<RadioButton>(R.id.test_env_radio).isChecked = true
-            SdkEnvironment.PROD -> view.findViewById<RadioButton>(R.id.prod_env_radio).isChecked = true
+            SdkEnvironment.DEV ->
+                view.findViewById<RadioButton>(R.id.dev_env_radio).isChecked =
+                    true
+            SdkEnvironment.TEST ->
+                view.findViewById<RadioButton>(R.id.test_env_radio).isChecked =
+                    true
+            SdkEnvironment.PROD ->
+                view.findViewById<RadioButton>(R.id.prod_env_radio).isChecked =
+                    true
+            else -> {}
         }
         tokenInput.setText(sdkConfigViewModel.userToken.value)
         secretInput.setText(sdkConfigViewModel.userSecret.value)
@@ -76,7 +83,8 @@ class LoginFragment : Fragment() {
             viewLifecycleOwner,
             Observer {
                 val (apiKey, env, token, secret) = it
-                continueButton.isEnabled = apiKey != null && env != null && !token.isNullOrBlank() && !secret.isNullOrBlank()
+                continueButton.isEnabled =
+                    apiKey != null && env != null && !token.isNullOrBlank() && !secret.isNullOrBlank()
             }
         )
 
@@ -121,7 +129,9 @@ class LoginFragment : Fragment() {
                         val action = LoginFragmentDirections.actionLoginFragmentToModulesFragment()
                         findNavController().navigate(action)
                     } else {
-                        AlertDialog.Builder(requireContext()).setMessage(exception?.message ?: "Unknown Error").show()
+                        AlertDialog.Builder(requireContext()).setMessage(
+                            exception?.message ?: "Unknown Error"
+                        ).show()
                     }
                 }
             }

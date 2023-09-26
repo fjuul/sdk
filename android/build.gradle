@@ -1,70 +1,70 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        google()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.1'
-    }
-}
-
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-    id "com.diffplug.gradle.spotless" version "4.4.0"
+    id 'com.android.application' version '8.1.1' apply false
+    id 'com.android.library' version '8.1.1' apply false
+    id "com.diffplug.gradle.spotless" version "6.21.0" apply false
 }
 
 ext {
-    compileSdkVersion = 29
-    buildToolsVersion = "29.0.3"
-    minSdkVersion = 21
-    targetSdkVersion = 29
+    compileSdk = 33
+    minSdk = 21
+    targetSdk = 33
 
     okHttpVersion = '4.9.1'
     retrofitVersion = '2.9.0'
-    androidXAnnotationVersion = '1.1.0'
-    androidXCoreVersion = '1.3.2'
-    robolectricVersion = '4.5'
-    androidXTestCoreVersion = '1.3.0'
-    junitVersion = '4.13'
+    androidXAnnotationVersion = '1.6.0'
+    androidXCoreVersion = '1.10.1'
+    robolectricVersion = '4.10.3'
+    androidXTestCoreVersion = '1.5.0'
+    junitVersion = '4.13.2'
 }
 
-spotless {
-    java {
-        target fileTree('.') {
-            include '**/*.java'
-        }
-        // licenseHeaderFile project.rootProject.file('spotless/copyright.java')
+subprojects {
+    apply plugin: 'com.diffplug.spotless'
+    spotless {
+        java {
+            target fileTree('.') {
+                // exclude generated source files
+                include 'src/**/*.java'
+            }
+            // licenseHeaderFile project.rootProject.file('spotless/copyright.java')
 
-        // optional: you can specify a specific version and/or config file
-        eclipse('4.13.0').configFile('eclipse-java-google-style.xml')
-        removeUnusedImports()
-        trimTrailingWhitespace()
-        importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''	// A sequence of package names
-    }
-    groovyGradle {
-        target fileTree('.') {
-            include '**/*.gradle'
+            // optional: you can specify a specific version and/or config file
+            eclipse('4.13').configFile("$project.rootProject.projectDir/eclipse-java-google-style.xml")
+            removeUnusedImports()
+            trimTrailingWhitespace()
+            importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''    // A sequence of package names
         }
-        greclipse()
-        indentWithSpaces(4)
-    }
+        groovyGradle {
+            target fileTree('.') {
+                include '**/*.gradle'
+            }
+            greclipse()
+            indentWithSpaces(4)
+        }
 
-    // only for the example application
-    kotlin {
-        target fileTree('./ExampleApp') {
-            include '**/*.kt'
+        // only for the example application
+        kotlin {
+            target fileTree('./ExampleApp') {
+                include '**/*.kt'
+            }
+            // version and userData are both optional
+            // NOTE: keep synced with editorconfig!
+            def styles = [
+                indent_size               : '4',
+                indent_style              : 'space',
+                'continuation_indent_size': '2',
+                'insert_final_newline'    : 'true',
+                trim_trailing_whitespace  : 'true',
+                end_of_line               : 'lf'
+            ]
+            ktlint('0.48.1').userData(styles)
         }
-        // version and userData are both optional
-        // NOTE: keep synced with editorconfig!
-        def styles = [
-            indent_size: '4',
-            indent_style: 'space',
-            'continuation_indent_size': '2',
-            'insert_final_newline': 'true',
-            trim_trailing_whitespace: 'true',
-            end_of_line: 'lf'
-        ]
-        ktlint('0.37.2').userData(styles)
+
+        spotlessJava.dependsOn 'spotlessGroovyGradle'
+        spotlessKotlin.dependsOn 'spotlessGroovyGradle'
+        spotlessKotlin.dependsOn 'spotlessJava'
+
     }
 }
 
@@ -83,8 +83,6 @@ configure(subprojects) {
     }
 }
 
-
-
 allprojects {
     tasks.withType(Test) {
         testLogging {
@@ -101,8 +99,4 @@ allprojects {
             ]
         }
     }
-}
-
-repositories {
-    google()
 }

@@ -5,13 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.fjuul.sdk.android.exampleapp.R
-import kotlinx.android.synthetic.main.gf_sync_fragment.*
+import com.fjuul.sdk.android.exampleapp.databinding.GfSyncFragmentBinding
 import java.lang.Exception
 import java.time.Duration
 import java.time.LocalDate
@@ -23,39 +22,41 @@ class GFSyncFragment : Fragment() {
     }
 
     private lateinit var viewModel: GFSyncViewModel
+    private lateinit var binding: GfSyncFragmentBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.gf_sync_fragment, container, false)
+        binding = GfSyncFragmentBinding.bind(inflater.inflate(R.layout.gf_sync_fragment, container, false))
+        return binding.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(GFSyncViewModel::class.java)
 
-        (intraday_section_text as TextView).text = "Intraday metrics"
-        (sessions_section_text as TextView).text = "Sessions"
-        (profile_section_text as TextView).text = "Profile"
+        binding.intradaySectionText.sectionText.text = "Intraday metrics"
+        binding.sessionsSectionText.sectionText.text = "Sessions"
+        binding.profileSectionText.sectionText.text = "Profile"
 
         viewModel.startDate.observe(
             viewLifecycleOwner,
             Observer { date ->
-                start_date_value_text.text = date.toString()
+                binding.startDateValueText.text = date.toString()
             }
         )
         viewModel.endDate.observe(
             viewLifecycleOwner,
             Observer {
-                end_date_value_text.text = it.toString()
+                binding.endDateValueText.text = it.toString()
             }
         )
         viewModel.syncingIntradayMetrics.observe(
             viewLifecycleOwner,
             Observer { syncing ->
-                intraday_sync_progress_bar.visibility = when (syncing) {
+                binding.intradaySyncProgressBar.visibility = when (syncing) {
                     true -> View.VISIBLE
                     false -> View.INVISIBLE
                 }
@@ -65,7 +66,7 @@ class GFSyncFragment : Fragment() {
         viewModel.syncingSessions.observe(
             viewLifecycleOwner,
             Observer { syncing ->
-                sessions_sync_progress_bar.visibility = when (syncing) {
+                binding.sessionsSyncProgressBar.visibility = when (syncing) {
                     true -> View.VISIBLE
                     false -> View.INVISIBLE
                 }
@@ -74,7 +75,7 @@ class GFSyncFragment : Fragment() {
         viewModel.syncingProfile.observe(
             viewLifecycleOwner,
             Observer { syncing ->
-                profile_sync_progress_bar.visibility = when (syncing) {
+                binding.profileSyncProgressBar.visibility = when (syncing) {
                     true -> View.VISIBLE
                     false -> View.INVISIBLE
                 }
@@ -94,7 +95,7 @@ class GFSyncFragment : Fragment() {
             }
         )
 
-        start_date_input_layout.setOnClickListener {
+        binding.startDateInputLayout.setOnClickListener {
             val date = viewModel.startDate.value ?: LocalDate.now()
             DatePickerDialog(
                 requireContext(),
@@ -107,7 +108,7 @@ class GFSyncFragment : Fragment() {
             ).show()
         }
 
-        end_date_input_layout.setOnClickListener {
+        binding.endDateInputLayout.setOnClickListener {
             val date = viewModel.endDate.value ?: LocalDate.now()
             DatePickerDialog(
                 requireContext(),
@@ -120,21 +121,21 @@ class GFSyncFragment : Fragment() {
             ).show()
         }
 
-        min_session_duration_text_edit.onFocusChangeListener = View.OnFocusChangeListener { view, hasFocus ->
-            if (!hasFocus && min_session_duration_text_edit.text.isNullOrEmpty()) {
-                min_session_duration_text_edit.setText("3")
+        binding.minSessionDurationTextEdit.onFocusChangeListener = View.OnFocusChangeListener { view, hasFocus ->
+            if (!hasFocus && binding.minSessionDurationTextEdit.text.isNullOrEmpty()) {
+                binding.minSessionDurationTextEdit.setText("3")
             }
         }
 
-        run_intraday_sync_button.setOnClickListener {
-            val calories = calories_check_box.isChecked
-            val steps = steps_check_box.isChecked
-            val heartRate = heart_rate_check_box.isChecked
+        binding.runIntradaySyncButton.setOnClickListener {
+            val calories = binding.caloriesCheckBox.isChecked
+            val steps = binding.stepsCheckBox.isChecked
+            val heartRate = binding.heartRateCheckBox.isChecked
             viewModel.runIntradaySync(calories, heartRate, steps)
         }
 
-        run_sessions_sync_button.setOnClickListener {
-            val minutesDurationText = min_session_duration_text_edit.text.toString()
+        binding.runSessionsSyncButton.setOnClickListener {
+            val minutesDurationText = binding.minSessionDurationTextEdit.text.toString()
             var minSessionDuration: Duration? = null
             try {
                 val minutes = minutesDurationText.toInt()
@@ -148,9 +149,9 @@ class GFSyncFragment : Fragment() {
             viewModel.runSessionsSync(minSessionDuration)
         }
 
-        run_profile_sync_button.setOnClickListener {
-            val height = height_check_box.isChecked
-            val weight = weight_check_box.isChecked
+        binding.runProfileSyncButton.setOnClickListener {
+            val height = binding.heightCheckBox.isChecked
+            val weight = binding.weightCheckBox.isChecked
             viewModel.runProfileSync(height, weight)
         }
     }

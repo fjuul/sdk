@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 import timber.log.Timber;
 
@@ -17,6 +18,7 @@ public class DebugTimberTree extends TimberTree {
     private final Timber.DebugTree delegate;
     private @Nullable Method delegateMethod;
 
+    @SuppressLint("LogNotTimber")
     public DebugTimberTree() {
         this.delegate = new Timber.DebugTree();
         try {

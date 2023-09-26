@@ -1,19 +1,12 @@
 apply plugin: "maven-publish"
-
 afterEvaluate {
     // do not attach R and BuildConfig to a publication except 'core' module
-    if (project.name != "core") {
-        generateReleaseBuildConfig.enabled = false
-        generateDebugBuildConfig.enabled = false
-    }
     generateReleaseResValues.enabled = false
     generateDebugResValues.enabled = false
-
     task sourcesJar(type: Jar) {
         from android.sourceSets.main.java.srcDirs
         archiveClassifier = 'sources'
     }
-
     task javadoc(type: Javadoc) {
         source = android.sourceSets.main.java.srcDirs
         classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
@@ -24,17 +17,14 @@ afterEvaluate {
         }
         exclude '**/R.html', '**/R.*.html', '**/index.html'
     }
-
     task javadocJar(type: Jar, dependsOn: javadoc) {
         archiveClassifier = 'javadoc'
         from javadoc.destinationDir
     }
-
     artifacts {
         archives javadocJar
         archives sourcesJar
     }
-
     publishing {
         repositories {
             maven {

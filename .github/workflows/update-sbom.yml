@@ -31,4 +31,4 @@ jobs:
           dependency-graph: generate-and-submit
       - name: update Gradle SBOM
         working-directory: "android"
-        run: ./gradlew build
+        run: ./gradlew publishFjuulSDKPublicationToMavenLocal -PVERSION_NAME=100.0.0-SNAPSHOT

@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - master
+      - chore/restrict-dep-graph
 
 concurrency:
   group: sbom-${{ github.head_ref || github.run_id }}
@@ -30,4 +31,6 @@ jobs:
           dependency-graph: generate-and-submit
       - name: update Gradle SBOM
         working-directory: "android"
-        run: ./gradlew assemble
+        run: ./gradlew assembleRelease
+        env:
+          DEPENDENCY_GRAPH_INCLUDE_CONFIGURATIONS: releaseRuntimeClasspath

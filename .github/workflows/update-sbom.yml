@@ -1,0 +1,34 @@
+name: Update SBOM
+
+permissions:
+  contents: write
+      
+on:
+  push:
+    branches:
+      - master
+      - chore/update-sbom
+
+concurrency:
+  group: sbom-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  update-sbom:
+    name: update-sbom
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Note: setup-java is required to inject a valid settings.xml consuming the GitHub credentials
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: setup Gradle to generate and submit dependency graphs
+        uses: gradle/gradle-build-action@v2
+        with:
+          dependency-graph: generate-and-submit
+      - name: update Gradle SBOM
+        working-directory: "android"
+        run: ./gradlew build

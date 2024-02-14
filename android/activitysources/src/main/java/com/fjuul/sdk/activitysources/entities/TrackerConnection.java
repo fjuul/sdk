@@ -24,7 +24,7 @@ public class TrackerConnection {
     public TrackerConnection(@NonNull String id,
         @NonNull String tracker,
         @NonNull Date createdAt,
-        @NonNull Date endedAt) {
+        @Nullable Date endedAt) {
         this.id = id;
         this.tracker = tracker;
         this.createdAt = createdAt;

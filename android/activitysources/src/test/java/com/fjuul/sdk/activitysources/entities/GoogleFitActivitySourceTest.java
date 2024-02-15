@@ -58,7 +58,6 @@ import com.fjuul.sdk.core.http.utils.ApiCallResult;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
@@ -223,8 +222,7 @@ public class GoogleFitActivitySourceTest {
                     final Intent testIntent = new Intent();
                     final Callback<Void> mockedCallback = mock(Callback.class);
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
-                    final Set<Scope> grantedScopes =
-                        Stream.of(new Scope(Scopes.FITNESS_ACTIVITY_READ)).collect(Collectors.toSet());
+                    final Set<Scope> grantedScopes = Stream.of(Fitness.SCOPE_LOCATION_READ).collect(Collectors.toSet());
                     when(mockedGoogleSignInAccount.getGrantedScopes()).thenReturn(grantedScopes);
                     mockGoogleSignIn.when(() -> GoogleSignIn.getSignedInAccountFromIntent(testIntent))
                         .thenReturn(Tasks.forResult(mockedGoogleSignInAccount));
@@ -260,18 +258,14 @@ public class GoogleFitActivitySourceTest {
                     final Intent testIntent = new Intent();
                     final Callback<Void> mockedCallback = mock(Callback.class);
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
-                    final Set<Scope> grantedScopes =
-                        Stream
-                            .concat(
-                                Stream.of(new Scope(Scopes.FITNESS_ACTIVITY_READ),
-                                    new Scope(Scopes.FITNESS_LOCATION_READ),
-                                    new Scope(Scopes.FITNESS_BODY_READ)),
-                                FitnessOptions.builder()
-                                    .addDataType(DataType.TYPE_HEART_RATE_BPM)
-                                    .build()
-                                    .getImpliedScopes()
-                                    .stream())
-                            .collect(Collectors.toSet());
+                    final Set<Scope> grantedScopes = Stream.concat(
+                        Stream.of(Fitness.SCOPE_ACTIVITY_READ, Fitness.SCOPE_LOCATION_READ, Fitness.SCOPE_BODY_READ),
+                        FitnessOptions.builder()
+                            .addDataType(DataType.TYPE_HEART_RATE_BPM)
+                            .build()
+                            .getImpliedScopes()
+                            .stream())
+                        .collect(Collectors.toSet());
                     when(mockedGoogleSignInAccount.getGrantedScopes()).thenReturn(grantedScopes);
                     when(mockedGoogleSignInAccount.getServerAuthCode()).thenReturn(null);
                     mockGoogleSignIn.when(() -> GoogleSignIn.getSignedInAccountFromIntent(testIntent))
@@ -315,18 +309,14 @@ public class GoogleFitActivitySourceTest {
                     final Intent testIntent = new Intent();
                     final Callback<Void> mockedCallback = mock(Callback.class);
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
-                    final Set<Scope> grantedScopes =
-                        Stream
-                            .concat(
-                                Stream.of(new Scope(Scopes.FITNESS_ACTIVITY_READ),
-                                    new Scope(Scopes.FITNESS_LOCATION_READ),
-                                    new Scope(Scopes.FITNESS_BODY_READ)),
-                                FitnessOptions.builder()
-                                    .addDataType(DataType.TYPE_HEART_RATE_BPM)
-                                    .build()
-                                    .getImpliedScopes()
-                                    .stream())
-                            .collect(Collectors.toSet());
+                    final Set<Scope> grantedScopes = Stream.concat(
+                        Stream.of(Fitness.SCOPE_ACTIVITY_READ, Fitness.SCOPE_LOCATION_READ, Fitness.SCOPE_BODY_READ),
+                        FitnessOptions.builder()
+                            .addDataType(DataType.TYPE_HEART_RATE_BPM)
+                            .build()
+                            .getImpliedScopes()
+                            .stream())
+                        .collect(Collectors.toSet());
                     when(mockedGoogleSignInAccount.getGrantedScopes()).thenReturn(grantedScopes);
                     when(mockedGoogleSignInAccount.getServerAuthCode()).thenReturn(null);
                     mockGoogleSignIn.when(() -> GoogleSignIn.getSignedInAccountFromIntent(testIntent))
@@ -422,8 +412,7 @@ public class GoogleFitActivitySourceTest {
 
                     final Callback<Void> mockedCallback = mock(Callback.class);
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
-                    final Set<Scope> grantedScopes =
-                        Stream.of(new Scope(Scopes.FITNESS_ACTIVITY_READ)).collect(Collectors.toSet());
+                    final Set<Scope> grantedScopes = Stream.of(Fitness.SCOPE_ACTIVITY_READ).collect(Collectors.toSet());
                     when(mockedGoogleSignInAccount.getGrantedScopes()).thenReturn(grantedScopes);
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
@@ -468,8 +457,7 @@ public class GoogleFitActivitySourceTest {
 
                     final Callback<Void> mockedCallback = mock(Callback.class);
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
-                    final Set<Scope> grantedScopes =
-                        Stream.of(new Scope(Scopes.FITNESS_ACTIVITY_READ)).collect(Collectors.toSet());
+                    final Set<Scope> grantedScopes = Stream.of(Fitness.SCOPE_ACTIVITY_READ).collect(Collectors.toSet());
                     when(mockedGoogleSignInAccount.getGrantedScopes()).thenReturn(grantedScopes);
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
@@ -753,8 +741,7 @@ public class GoogleFitActivitySourceTest {
 
                     final Callback<Boolean> mockedCallback = mock(Callback.class);
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
-                    final Set<Scope> grantedScopes =
-                        Stream.of(new Scope(Scopes.FITNESS_BODY_READ)).collect(Collectors.toSet());
+                    final Set<Scope> grantedScopes = Stream.of(Fitness.SCOPE_BODY_READ).collect(Collectors.toSet());
                     when(mockedGoogleSignInAccount.getGrantedScopes()).thenReturn(grantedScopes);
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);
@@ -798,8 +785,7 @@ public class GoogleFitActivitySourceTest {
 
                     final Callback<Boolean> mockedCallback = mock(Callback.class);
                     final GoogleSignInAccount mockedGoogleSignInAccount = mock(GoogleSignInAccount.class);
-                    final Set<Scope> grantedScopes =
-                        Stream.of(new Scope(Scopes.FITNESS_BODY_READ)).collect(Collectors.toSet());
+                    final Set<Scope> grantedScopes = Stream.of(Fitness.SCOPE_BODY_READ).collect(Collectors.toSet());
                     when(mockedGoogleSignInAccount.getGrantedScopes()).thenReturn(grantedScopes);
                     mockGoogleSignIn.when(() -> GoogleSignIn.getLastSignedInAccount(context))
                         .thenReturn(mockedGoogleSignInAccount);

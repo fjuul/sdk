@@ -48,7 +48,7 @@ import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.request.SessionReadRequest;
 import com.google.android.gms.fitness.result.DataReadResponse;
 import com.google.android.gms.fitness.result.SessionReadResponse;
-import com.google.android.gms.internal.fitness.zzko;
+import com.google.android.gms.internal.fitness.zzfv;
 import com.google.android.gms.tasks.CancellationToken;
 import com.google.android.gms.tasks.CancellationTokenSource;
 import com.google.android.gms.tasks.Task;
@@ -61,7 +61,7 @@ import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.core.util.Supplier;
 
-// NOTE#1: the package com.google.android.gms.internal.fitness.zzko it's not supposed to be used as public api but I
+// NOTE#1: the package com.google.android.gms.internal.fitness.zzfv it's not supposed to be used as public api but I
 // didn't find another way to get the integer based constant of ActivityType by the string presentation which is
 // returned by default along with a session.
 // Don't worry if it wasn't discovered after the upgrade of `play-services-fitness`, it may be placed under a different
@@ -584,7 +584,7 @@ class GFClientWrapper {
         sessionBundleBuilder.setApplicationIdentifier(session.getAppPackageName());
         sessionBundleBuilder.setTimeStart(new Date(session.getStartTime(TimeUnit.MILLISECONDS)));
         sessionBundleBuilder.setTimeEnd(new Date(session.getEndTime(TimeUnit.MILLISECONDS)));
-        sessionBundleBuilder.setType(zzko.zzo(session.getActivity()));
+        sessionBundleBuilder.setType(zzfv.zza(session.getActivity()));
         sessionBundleBuilder.setActivityType(session.getActivity());
         return sessionBundleBuilder;
     }

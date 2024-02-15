@@ -46,8 +46,8 @@ dependencies {
     implementation "androidx.annotation:annotation:$rootProject.ext.androidXAnnotationVersion"
     implementation "androidx.core:core:$rootProject.ext.androidXCoreVersion"
 
-    implementation 'com.google.android.gms:play-services-auth:19.0.0'
-    implementation 'com.google.android.gms:play-services-fitness:20.0.0'
+    implementation 'com.google.android.gms:play-services-auth:20.7.0'
+    implementation 'com.google.android.gms:play-services-fitness:21.1.0'
     implementation "androidx.work:work-runtime:$workVersion"
 
     // TODO: specify an exact version for the Core package

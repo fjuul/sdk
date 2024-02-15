@@ -41,7 +41,7 @@ android {
 }
 
 dependencies {
-    def workVersion = "2.8.1"
+    def workVersion = "2.9.0"
 
     implementation "androidx.annotation:annotation:$rootProject.ext.androidXAnnotationVersion"
     implementation "androidx.core:core:$rootProject.ext.androidXCoreVersion"
@@ -55,7 +55,7 @@ dependencies {
 
     // Use JUnit test framework
     testImplementation "junit:junit:$rootProject.ext.junitVersion"
-    testImplementation 'org.mockito:mockito-core:5.5.0'
+    testImplementation 'org.mockito:mockito-core:5.10.0'
     testImplementation('org.mockito:mockito-inline:5.2.0')
     testImplementation "com.squareup.okhttp3:mockwebserver:$rootProject.ext.okHttpVersion"
     testImplementation "androidx.work:work-testing:$workVersion"

@@ -10,7 +10,6 @@ import android.widget.ListView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import com.fjuul.sdk.android.exampleapp.R
 import java.time.LocalDate
 
@@ -42,33 +41,30 @@ class DailyStatsFragment : Fragment() {
 
         model.requestData()
         model.startDate.observe(
-            viewLifecycleOwner,
-            Observer { date ->
-                fromValueText.text = date.toString()
-            }
-        )
+            viewLifecycleOwner
+        ) { date ->
+            fromValueText.text = date.toString()
+        }
         model.endDate.observe(
-            viewLifecycleOwner,
-            Observer {
-                toValueText.text = it.toString()
-            }
-        )
+            viewLifecycleOwner
+        ) {
+            toValueText.text = it.toString()
+        }
 
         val adapter = DailyStatsListAdapter(requireContext(), arrayOf())
         dailyStatsList.adapter = adapter
         model.data.observe(
-            viewLifecycleOwner,
-            Observer {
-                adapter.dataSource = it
-                adapter.notifyDataSetChanged()
-            }
-        )
+            viewLifecycleOwner
+        ) {
+            adapter.dataSource = it
+            adapter.notifyDataSetChanged()
+        }
 
         fromInput.setOnClickListener {
             val date = model.startDate.value!!
             DatePickerDialog(
                 requireContext(),
-                DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+                { _, year, month, dayOfMonth ->
                     model.setupDateRange(startDate = LocalDate.of(year, month + 1, dayOfMonth))
                 },
                 date.year,
@@ -81,7 +77,7 @@ class DailyStatsFragment : Fragment() {
             val date = model.endDate.value!!
             DatePickerDialog(
                 requireContext(),
-                DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+                { _, year, month, dayOfMonth ->
                     model.setupDateRange(endDate = LocalDate.of(year, month + 1, dayOfMonth))
                 },
                 date.year,

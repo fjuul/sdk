@@ -10,11 +10,11 @@ import com.fjuul.sdk.analytics.http.services.AnalyticsService
 import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
 import java.time.LocalDate
 
-class AggregatedDailyStatsViewModel() : ViewModel() {
+class AggregatedDailyStatsViewModel : ViewModel() {
     private val analyticsService = AnalyticsService(ApiClientHolder.sdkClient)
-    private val _startDate = MutableLiveData<LocalDate>(LocalDate.now())
-    private val _endDate = MutableLiveData<LocalDate>(LocalDate.now())
-    private val _aggregation = MutableLiveData<AggregationType>(AggregationType.sum)
+    private val _startDate = MutableLiveData(LocalDate.now())
+    private val _endDate = MutableLiveData(LocalDate.now())
+    private val _aggregation = MutableLiveData(AggregationType.sum)
     private val _data = MutableLiveData<AggregatedDailyStats>()
     private val _errorMessage = MutableLiveData<String>()
 

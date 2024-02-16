@@ -17,7 +17,7 @@ import java.util.TimeZone
 class UserFormViewModel : ViewModel() {
     private var _profileBuilder: UserProfile.PartialBuilder? = null
     private val profileBuilder: UserProfile.PartialBuilder
-        private get() {
+        get() {
             if (_profileBuilder == null) {
                 _profileBuilder = UserProfile.PartialBuilder()
             }
@@ -29,23 +29,23 @@ class UserFormViewModel : ViewModel() {
 
     fun setBirthDate(date: LocalDate) {
         _birthDate.value = date
-        profileBuilder?.setBirthDate(date)
+        profileBuilder.setBirthDate(date)
     }
 
-    private val _height = MutableLiveData<Float>()
-    val height: MutableLiveData<Float> = _height
+    private val _height = MutableLiveData<Float?>()
+    val height: MutableLiveData<Float?> = _height
 
     fun setHeight(height: Float?) {
         _height.value = height
-        profileBuilder?.setHeight(height ?: 0f)
+        profileBuilder.setHeight(height ?: 0f)
     }
 
-    private val _weight = MutableLiveData<Float>()
-    val weight: MutableLiveData<Float> = _weight
+    private val _weight = MutableLiveData<Float?>()
+    val weight: MutableLiveData<Float?> = _weight
 
     fun setWeight(weight: Float?) {
         _weight.value = weight
-        profileBuilder?.setWeight(weight ?: 0f)
+        profileBuilder.setWeight(weight ?: 0f)
     }
 
     private val _gender = MutableLiveData<Gender>()
@@ -53,7 +53,7 @@ class UserFormViewModel : ViewModel() {
 
     fun setGender(gender: Gender) {
         _gender.value = gender
-        profileBuilder?.setGender(gender)
+        profileBuilder.setGender(gender)
     }
 
     private val _timezone = MutableLiveData<String>()
@@ -70,10 +70,10 @@ class UserFormViewModel : ViewModel() {
 
     fun setLocale(locale: String) {
         _locale.value = locale
-        profileBuilder?.locale = locale
+        profileBuilder.locale = locale
     }
 
-    val profileWasRefreshed = MutableLiveData<Boolean>(false)
+    val profileWasRefreshed = MutableLiveData(false)
 
     @Throws(Exception::class)
     fun createUser(context: Context, apiKey: String, sdkEnvironment: SdkEnvironment): ApiCall<UserCreationResult> {

@@ -28,11 +28,12 @@ class GFSyncFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = GfSyncFragmentBinding.bind(inflater.inflate(R.layout.gf_sync_fragment, container, false))
         return binding.root
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(GFSyncViewModel::class.java)
@@ -42,45 +43,40 @@ class GFSyncFragment : Fragment() {
         binding.profileSectionText.sectionText.text = "Profile"
 
         viewModel.startDate.observe(
-            viewLifecycleOwner,
-            Observer { date ->
-                binding.startDateValueText.text = date.toString()
-            }
-        )
+            viewLifecycleOwner
+        ) { date ->
+            binding.startDateValueText.text = date.toString()
+        }
         viewModel.endDate.observe(
-            viewLifecycleOwner,
-            Observer {
-                binding.endDateValueText.text = it.toString()
-            }
-        )
+            viewLifecycleOwner
+        ) {
+            binding.endDateValueText.text = it.toString()
+        }
         viewModel.syncingIntradayMetrics.observe(
-            viewLifecycleOwner,
-            Observer { syncing ->
-                binding.intradaySyncProgressBar.visibility = when (syncing) {
-                    true -> View.VISIBLE
-                    false -> View.INVISIBLE
-                }
+            viewLifecycleOwner
+        ) { syncing ->
+            binding.intradaySyncProgressBar.visibility = when (syncing) {
+                true -> View.VISIBLE
+                false -> View.INVISIBLE
             }
-        )
+        }
 
         viewModel.syncingSessions.observe(
-            viewLifecycleOwner,
-            Observer { syncing ->
-                binding.sessionsSyncProgressBar.visibility = when (syncing) {
-                    true -> View.VISIBLE
-                    false -> View.INVISIBLE
-                }
+            viewLifecycleOwner
+        ) { syncing ->
+            binding.sessionsSyncProgressBar.visibility = when (syncing) {
+                true -> View.VISIBLE
+                false -> View.INVISIBLE
             }
-        )
+        }
         viewModel.syncingProfile.observe(
-            viewLifecycleOwner,
-            Observer { syncing ->
-                binding.profileSyncProgressBar.visibility = when (syncing) {
-                    true -> View.VISIBLE
-                    false -> View.INVISIBLE
-                }
+            viewLifecycleOwner
+        ) { syncing ->
+            binding.profileSyncProgressBar.visibility = when (syncing) {
+                true -> View.VISIBLE
+                false -> View.INVISIBLE
             }
-        )
+        }
         viewModel.errorMessage.observe(
             viewLifecycleOwner,
             Observer {
@@ -99,7 +95,7 @@ class GFSyncFragment : Fragment() {
             val date = viewModel.startDate.value ?: LocalDate.now()
             DatePickerDialog(
                 requireContext(),
-                DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+                { _, year, month, dayOfMonth ->
                     viewModel.setupDateRange(startDate = LocalDate.of(year, month + 1, dayOfMonth))
                 },
                 date.year,
@@ -112,7 +108,7 @@ class GFSyncFragment : Fragment() {
             val date = viewModel.endDate.value ?: LocalDate.now()
             DatePickerDialog(
                 requireContext(),
-                DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+                { _, year, month, dayOfMonth ->
                     viewModel.setupDateRange(endDate = LocalDate.of(year, month + 1, dayOfMonth))
                 },
                 date.year,
@@ -121,7 +117,7 @@ class GFSyncFragment : Fragment() {
             ).show()
         }
 
-        binding.minSessionDurationTextEdit.onFocusChangeListener = View.OnFocusChangeListener { view, hasFocus ->
+        binding.minSessionDurationTextEdit.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
             if (!hasFocus && binding.minSessionDurationTextEdit.text.isNullOrEmpty()) {
                 binding.minSessionDurationTextEdit.setText("3")
             }

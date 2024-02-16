@@ -8,13 +8,13 @@ import com.fjuul.sdk.activitysources.entities.ActivitySource
 import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
 
-class ActivitySourcesViewModel() : ViewModel() {
+class ActivitySourcesViewModel : ViewModel() {
     private val _currentConnections = MutableLiveData<List<ActivitySourceConnection>>(listOf())
-    private val _errorMessage = MutableLiveData<String>()
+    private val _errorMessage = MutableLiveData<String?>()
     private val _connectionIntent = MutableLiveData<Pair<ActivitySource, Intent>>()
 
     val currentConnections: LiveData<List<ActivitySourceConnection>> = _currentConnections
-    val errorMessage: LiveData<String> = _errorMessage
+    val errorMessage: LiveData<String?> = _errorMessage
     val connectionIntent: LiveData<Pair<ActivitySource, Intent>?> = _connectionIntent
 
     fun fetchCurrentConnections() {

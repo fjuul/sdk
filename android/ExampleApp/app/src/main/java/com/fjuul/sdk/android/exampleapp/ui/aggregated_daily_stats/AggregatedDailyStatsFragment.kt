@@ -11,7 +11,6 @@ import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import com.fjuul.sdk.analytics.entities.AggregationType
 import com.fjuul.sdk.android.exampleapp.R
 import java.time.LocalDate
@@ -41,7 +40,7 @@ class AggregatedDailyStatsFragment : Fragment() {
         toInput = view.findViewById<LinearLayout>(R.id.to_input_layout)
         fromValueText = view.findViewById(R.id.from_value_text)
         toValueText = view.findViewById(R.id.to_value_text)
-        radioGroup = view.findViewById<RadioGroup>(R.id.aggregate_radio_group)
+        radioGroup = view.findViewById(R.id.aggregate_radio_group)
         aggregatedStats = view.findViewById(R.id.aggregated_stats)
 
         when (model.aggregation.value) {
@@ -52,44 +51,40 @@ class AggregatedDailyStatsFragment : Fragment() {
 
         model.requestData()
         model.startDate.observe(
-            viewLifecycleOwner,
-            Observer { date ->
-                fromValueText.text = date.toString()
-            }
-        )
+            viewLifecycleOwner
+        ) { date ->
+            fromValueText.text = date.toString()
+        }
         model.endDate.observe(
-            viewLifecycleOwner,
-            Observer {
-                toValueText.text = it.toString()
-            }
-        )
+            viewLifecycleOwner
+        ) {
+            toValueText.text = it.toString()
+        }
 
         model.data.observe(
-            viewLifecycleOwner,
-            Observer { it ->
-                aggregatedStats.text =
-                    """
+            viewLifecycleOwner
+        ) {
+            aggregatedStats.text =
+                """
  low: ${it.low.metMinutes} metMinutes;
  moderate: ${it.moderate.metMinutes} metMinutes;
  high: ${it.high.metMinutes} metMinutes;
  activeKcal: ${it.activeKcal} kcal;
  bmr: ${it.bmr};
  steps: ${it.steps}"""
-            }
-        )
+        }
 
         model.errorMessage.observe(
-            viewLifecycleOwner,
-            Observer { it ->
-                aggregatedStats.text = it.toString()
-            }
-        )
+            viewLifecycleOwner
+        ) {
+            aggregatedStats.text = it.toString()
+        }
 
         fromInput.setOnClickListener {
             val date = model.startDate.value!!
             DatePickerDialog(
                 requireContext(),
-                DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+                { _, year, month, dayOfMonth ->
                     model.setupDateRange(startDate = LocalDate.of(year, month + 1, dayOfMonth))
                 },
                 date.year,
@@ -102,7 +97,7 @@ class AggregatedDailyStatsFragment : Fragment() {
             val date = model.endDate.value!!
             DatePickerDialog(
                 requireContext(),
-                DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+                { _, year, month, dayOfMonth ->
                     model.setupDateRange(endDate = LocalDate.of(year, month + 1, dayOfMonth))
                 },
                 date.year,
@@ -111,7 +106,7 @@ class AggregatedDailyStatsFragment : Fragment() {
             ).show()
         }
 
-        radioGroup.setOnCheckedChangeListener { group, checkedId ->
+        radioGroup.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
                 R.id.radio_sum -> model.setAggregation(AggregationType.sum)
                 R.id.radio_avg -> model.setAggregation(AggregationType.average)

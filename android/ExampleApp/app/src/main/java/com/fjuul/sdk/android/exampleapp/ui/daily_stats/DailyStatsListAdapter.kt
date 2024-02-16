@@ -8,7 +8,7 @@ import android.widget.BaseAdapter
 import android.widget.TextView
 import com.fjuul.sdk.analytics.entities.DailyStats
 
-class DailyStatsListAdapter(private val context: Context, var dataSource: Array<DailyStats>) :
+class DailyStatsListAdapter(context: Context, var dataSource: Array<DailyStats>) :
     BaseAdapter() {
     private val inflater = LayoutInflater.from(context)
 
@@ -26,7 +26,7 @@ class DailyStatsListAdapter(private val context: Context, var dataSource: Array<
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val item = getItem(position)
-        var rowView = inflater.inflate(android.R.layout.simple_list_item_1, parent, false)
+        val rowView = inflater.inflate(android.R.layout.simple_list_item_1, parent, false)
         val textView = rowView.findViewById<TextView>(android.R.id.text1)
         textView.text =
             """

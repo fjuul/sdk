@@ -52,10 +52,6 @@ class UserProfileFragment : Fragment() {
     private lateinit var timezoneTextField: TextInputLayout
     private lateinit var localeTextField: TextInputLayout
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -119,16 +115,15 @@ class UserProfileFragment : Fragment() {
 
         // birthdate
         model.birthDate.observe(
-            viewLifecycleOwner,
-            Observer { date ->
-                birthdateText.text = date?.toString()
-            }
-        )
+            viewLifecycleOwner
+        ) { date ->
+            birthdateText.text = date?.toString()
+        }
         birthdateInput.setOnClickListener {
-            val date = model.birthDate?.value ?: LocalDate.of(1980, 10, 20)
+            val date = model.birthDate.value ?: LocalDate.of(1980, 10, 20)
             DatePickerDialog(
                 requireContext(),
-                DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+                { _, year, month, dayOfMonth ->
                     model.setBirthDate(LocalDate.of(year, month + 1, dayOfMonth))
                 },
                 date.year,
@@ -185,7 +180,7 @@ class UserProfileFragment : Fragment() {
                 }
             } else if (args.flow == UserProfileNavigationFlow.UPDATE) {
                 try {
-                    model.updateUser(ApiClientHolder.sdkClient).enqueue { call, result ->
+                    model.updateUser(ApiClientHolder.sdkClient).enqueue { _, result ->
                         if (result.isError) {
                             buildAlertFromApiException(result.error!!).show()
                             return@enqueue
@@ -207,7 +202,7 @@ class UserProfileFragment : Fragment() {
                     dialog.dismiss()
                 }.setPositiveButton("Delete") { dialog, _ ->
                     try {
-                        model.markUserForDeletion(ApiClientHolder.sdkClient).enqueue { call, result ->
+                        model.markUserForDeletion(ApiClientHolder.sdkClient).enqueue { _, result ->
                             if (result.isError) {
                                 buildAlertFromApiException(result.error!!).show()
                                 return@enqueue
@@ -238,7 +233,7 @@ class UserProfileFragment : Fragment() {
     }
 
     private fun prefillWithUserProfile(profile: UserProfile) {
-        genderDropdown.setText(profile.gender.name.toUpperCase(), false)
+        genderDropdown.setText(profile.gender.name.uppercase(), false)
         birthdateText.text = profile.birthDate.toString()
         heightInput.setText(profile.height.toString(), TextView.BufferType.NORMAL)
         weightInput.setText(profile.weight.toString(), TextView.BufferType.NORMAL)
@@ -262,7 +257,7 @@ class UserProfileFragment : Fragment() {
     }
 }
 
-public enum class GenderPicker(val displayName: String) {
+enum class GenderPicker(val displayName: String) {
     MALE("MALE"),
     FEMALE("FEMALE"),
     OTHER("OTHER")

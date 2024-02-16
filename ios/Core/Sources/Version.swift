@@ -2,5 +2,5 @@ import Foundation
 
 /// Structure with Fjuul SDK Version number
 struct FjuulSDKVersion {
-    static let version = "1.5.2"
+    static let version = "1.5.3"
 }

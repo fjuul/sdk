@@ -1,7 +1,7 @@
 package com.fjuul.sdk.activitysources.adapters;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.Instant;
 import java.util.Arrays;

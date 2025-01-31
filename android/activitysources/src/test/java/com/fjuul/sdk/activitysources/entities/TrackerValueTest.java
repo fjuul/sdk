@@ -1,5 +1,6 @@
 package com.fjuul.sdk.activitysources.entities;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.*;
 

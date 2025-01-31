@@ -1,5 +1,6 @@
 package com.fjuul.sdk.core.http.interceptors;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;

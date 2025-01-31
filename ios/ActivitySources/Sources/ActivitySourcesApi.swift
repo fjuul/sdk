@@ -77,7 +77,7 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
         }
         apiClient.signedSession.request(url, method: .delete).apiResponse { response in
             let decodedResponse = response
-                .map { _ -> Void in () }
+                .map { _ in () }
                 .mapAPIError { _, jsonError in
                     guard let jsonError = jsonError else { return nil }
 
@@ -116,7 +116,7 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
         let parameterEncoder = JSONParameterEncoder(encoder: encoder)
 
         apiClient.signedSession.request(url, method: .post, parameters: data, encoder: parameterEncoder).apiResponse(emptyResponseCodes: [200]) { response in
-            let decodedResponse = response.map { _ -> Void in () }
+            let decodedResponse = response.map { _ in () }
             completion(decodedResponse.result)
         }
     }
@@ -132,7 +132,7 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
         let parameterEncoder = JSONParameterEncoder(encoder: encoder)
 
         apiClient.signedSession.request(url, method: .post, parameters: data, encoder: parameterEncoder).apiResponse(emptyResponseCodes: [200]) { response in
-            let decodedResponse = response.map { _ -> Void in () }
+            let decodedResponse = response.map { _ in () }
             completion(decodedResponse.result)
         }
     }
@@ -147,7 +147,7 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
             .apiResponse(emptyResponseCodes: [200]) { response in
 
             let decodedResponse = response
-                .map { _ -> Void in () }
+                .map { _ in () }
                 .mapAPIError { _, jsonError in
                     guard let jsonError = jsonError else { return nil }
 

@@ -140,7 +140,7 @@ class WorkoutFetcher {
         let query = HKSampleQuery(sampleType: sampleType,
                                   predicate: workoutPredicate,
                                   limit: HKObjectQueryNoLimit,
-                                  sortDescriptors: [startDateSort]) { (_, results, error) -> Void in
+                                  sortDescriptors: [startDateSort]) { (_, results, error) in
                                     if let error = error {
                                         completion(.failure(error))
                                         return

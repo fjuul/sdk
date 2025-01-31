@@ -33,10 +33,6 @@ final class DiskPersistorTests: XCTestCase {
         super.setUp()
     }
 
-    override func tearDown() {
-        super.tearDown()
-    }
-
     func testClassFuncRemove() {
         // Given
         let anotherToken = "xxxxxxxxxxx"

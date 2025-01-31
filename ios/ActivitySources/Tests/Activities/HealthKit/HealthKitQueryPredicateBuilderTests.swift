@@ -10,14 +10,6 @@ final class HealthKitQueryPredicateBuilderTests: XCTestCase {
         .distanceWalkingRunning, .stepCount, .workout,
     ])
 
-    override func setUp() {
-        super.setUp()
-    }
-
-    override func tearDown() {
-        super.tearDown()
-    }
-
     func testDataСollectionStartAtWithDateRangeWhenStartDateLateThanDefault() {
         let startDate = Calendar.current.date(byAdding: .day, value: -7, to: Date())!
         let endDate = Date()

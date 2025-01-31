@@ -41,10 +41,6 @@ final class ActivitySourceConnectionTests: XCTestCase {
         }
     }
 
-    override func tearDown() {
-        super.tearDown()
-    }
-
     func testInit() {
         // Then
         XCTAssertEqual(sut.id, trackerConnection.id)

@@ -25,7 +25,6 @@ public struct HKAnchorData: Codable, Equatable {
     private var bodyMassRaw: Data?
     private var heightRaw: Data?
 
-    // swiftlint:disable function_body_length
     subscript(key: HKAnchorKey) -> HKQueryAnchor? {
         get {
             var valueRaw: Data?

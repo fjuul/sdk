@@ -7,7 +7,6 @@ on:
   push:
     branches:
       - master
-      - chore/restrict-dep-graph
 
 concurrency:
   group: sbom-${{ github.head_ref || github.run_id }}

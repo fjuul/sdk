@@ -1,5 +1,6 @@
 package com.fjuul.sdk.activitysources.entities.internal;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.*;
 

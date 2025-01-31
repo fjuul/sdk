@@ -1,17 +1,13 @@
 package com.fjuul.sdk.analytics.entities;
 
-import androidx.annotation.NonNull;
-
 public class ActivityMeasure {
-    double seconds;
+    int seconds;
     float metMinutes;
 
-    @NonNull
-    public double getSeconds() {
+    public int getSeconds() {
         return seconds;
     }
 
-    @NonNull
     public float getMetMinutes() {
         return metMinutes;
     }

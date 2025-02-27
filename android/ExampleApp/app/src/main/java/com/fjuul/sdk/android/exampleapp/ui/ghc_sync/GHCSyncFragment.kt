@@ -1,6 +1,5 @@
 package com.fjuul.sdk.android.exampleapp.ui.ghc_sync
 
-import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,9 +10,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.fjuul.sdk.android.exampleapp.R
 import com.fjuul.sdk.android.exampleapp.databinding.GhcSyncFragmentBinding
-import java.lang.Exception
-import java.time.Duration
-import java.time.LocalDate
 
 class GHCSyncFragment : Fragment() {
 
@@ -39,7 +35,6 @@ class GHCSyncFragment : Fragment() {
         viewModel = ViewModelProvider(this).get(GHCSyncViewModel::class.java)
 
         binding.intradaySectionText.sectionText.text = "Intraday metrics"
-        binding.sessionsSectionText.sectionText.text = "Sessions"
         binding.profileSectionText.sectionText.text = "Profile"
 
         viewModel.syncingIntradayMetrics.observe(
@@ -52,15 +47,6 @@ class GHCSyncFragment : Fragment() {
             }
         )
 
-        viewModel.syncingSessions.observe(
-            viewLifecycleOwner,
-            Observer { syncing ->
-                binding.sessionsSyncProgressBar.visibility = when (syncing) {
-                    true -> View.VISIBLE
-                    false -> View.INVISIBLE
-                }
-            }
-        )
         viewModel.syncingProfile.observe(
             viewLifecycleOwner,
             Observer { syncing ->
@@ -84,32 +70,11 @@ class GHCSyncFragment : Fragment() {
             }
         )
 
-        binding.minSessionDurationTextEdit.onFocusChangeListener = View.OnFocusChangeListener { view, hasFocus ->
-            if (!hasFocus && binding.minSessionDurationTextEdit.text.isNullOrEmpty()) {
-                binding.minSessionDurationTextEdit.setText("3")
-            }
-        }
-
         binding.runIntradaySyncButton.setOnClickListener {
             val calories = binding.caloriesCheckBox.isChecked
             val steps = binding.stepsCheckBox.isChecked
             val heartRate = binding.heartRateCheckBox.isChecked
             viewModel.runIntradaySync(calories, heartRate, steps)
-        }
-
-        binding.runSessionsSyncButton.setOnClickListener {
-            val minutesDurationText = binding.minSessionDurationTextEdit.text.toString()
-            var minSessionDuration: Duration? = null
-            try {
-                val minutes = minutesDurationText.toInt()
-                if (minutes > 0) {
-                    minSessionDuration = Duration.ofMinutes(minutes.toLong())
-                }
-            } catch (exc: Exception) { }
-            if (minSessionDuration == null) {
-                return@setOnClickListener
-            }
-            viewModel.runSessionsSync(minSessionDuration)
         }
 
         binding.runProfileSyncButton.setOnClickListener {

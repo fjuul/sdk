@@ -108,26 +108,10 @@ public class BackgroundWorkManager {
                 break;
             }
         }
-        switch (config.getGoogleHealthConnectSessionsBackgroundSyncMode()) {
-            case DISABLED: {
-                workScheduler.cancelGHCSessionsSyncWork();
-                break;
-            }
-            case ENABLED: {
-                if (config.getCollectableFitnessMetrics().contains(FitnessMetricsType.WORKOUTS)) {
-                    workScheduler.scheduleGHCSessionsSyncWork(
-                        config.getGoogleHealthConnectSessionsBackgroundSyncMinSessionDuration());
-                } else {
-                    workScheduler.cancelGHCSessionsSyncWork();
-                }
-                break;
-            }
-        }
     }
 
     public void cancelGHCSyncWorks() {
         workScheduler.cancelGHCIntradaySyncWork();
-        workScheduler.cancelGHCSessionsSyncWork();
     }
 
     @SuppressLint("NewApi")

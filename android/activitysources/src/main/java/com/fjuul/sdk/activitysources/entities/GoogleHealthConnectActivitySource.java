@@ -68,20 +68,6 @@ public class GoogleHealthConnectActivitySource extends ActivitySource {
     }
 
     /**
-     * Puts the task of synchronizing sessions in a sequential execution queue (i.e., only one sync task can be executed
-     * at a time) and will execute it when it comes to its turn. The synchronization result is available in the
-     * callback.
-     *
-     * @param callback callback for the result
-     */
-    public void syncSessions(@NonNull final GoogleHealthConnectSessionSyncOptions options,
-        @Nullable final Callback<Void> callback) {
-        Logger.get().d("Syncing sessions");
-        GHCDataManager dataManager = new GHCDataManager(clientWrapper, sourcesService, apiClient);
-        performTaskAlongWithCallback(() -> dataManager.syncSessions(options), callback);
-    }
-
-    /**
      * Puts the task of synchronizing the user profile from Google Fit in a sequential execution queue (i.e., only one
      * sync task can be executed at a time) and will execute it when it comes to its turn. The synchronization result is
      * available in the callback.<br>

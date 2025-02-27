@@ -114,10 +114,6 @@ class GHCClientWrapper(private val context: Context) {
     fun getInitialIntradayRecordsAsync(days: Int, optionsMetricTypes: Set<FitnessMetricsType>): CompletableFuture<HealthConnectRecords> =
         GlobalScope.future { getInitialRecords(intradayRecordTypes, optionsMetricTypes, days) }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    fun getInitialSessionsAsync(days: Int, optionsMinimumDuration: Duration): CompletableFuture<HealthConnectSessions> =
-        GlobalScope.future { getInitialSessions(days, optionsMinimumDuration) }
-
     private suspend fun getInitialRecords(
         recordTypes: Set<KClass<out Record>>,
         optionsMetricTypes: Set<FitnessMetricsType>,
@@ -139,53 +135,6 @@ class GHCClientWrapper(private val context: Context) {
         return HealthConnectRecords(changesToken, records)
     }
 
-    private suspend fun getInitialSessions(days: Int, optionsMinimumDuration: Duration): HealthConnectSessions {
-        val startTime = Instant.now().minusSeconds((24 * 60 * 60 * days).toLong())
-        val filter = TimeRangeFilter.after(startTime)
-        val records = healthConnectClient.readRecords(
-            ReadRecordsRequest(ExerciseSessionRecord::class, timeRangeFilter = filter),
-        ).records
-        val sessions = getSessions(records, optionsMinimumDuration)
-        val changesToken = healthConnectClient.getChangesToken(ChangesTokenRequest(sessionRecordTypes))
-        return HealthConnectSessions(changesToken, sessions)
-    }
-
-    private suspend fun getSessions(sessionRecords: List<ExerciseSessionRecord>, optionsMinimumDuration: Duration): List<ExerciseSession> {
-        val sessions = mutableListOf<ExerciseSession>()
-        for (record in sessionRecords) {
-            if (Duration.between(record.startTime, record.endTime) < optionsMinimumDuration) {
-                continue
-            }
-            val sessionFilter = TimeRangeFilter.between(record.startTime, record.endTime)
-            val caloriesRecords = healthConnectClient.readRecords(
-                ReadRecordsRequest(TotalCaloriesBurnedRecord::class, sessionFilter),
-            ).records
-            val stepsRecords = healthConnectClient.readRecords(
-                ReadRecordsRequest(StepsRecord::class, sessionFilter),
-            ).records
-            val heartRateRecords = healthConnectClient.readRecords(
-                ReadRecordsRequest(HeartRateRecord::class, sessionFilter),
-            ).records
-            val powerRecords = healthConnectClient.readRecords(
-                ReadRecordsRequest(PowerRecord::class, sessionFilter),
-            ).records
-            val speedRecords = healthConnectClient.readRecords(
-                ReadRecordsRequest(SpeedRecord::class, sessionFilter),
-            ).records
-            sessions.add(
-                ExerciseSession(
-                    record,
-                    caloriesRecords,
-                    stepsRecords,
-                    heartRateRecords,
-                    powerRecords,
-                    speedRecords,
-                ),
-            )
-        }
-        return sessions
-    }
-
     /**
      * Provide a way for Java to (indirectly) call our Kotlin suspend function.
      * TODO: handle coroutines better in production code
@@ -197,10 +146,6 @@ class GHCClientWrapper(private val context: Context) {
     @OptIn(DelicateCoroutinesApi::class)
     fun getIntradayChangeRecordsAsync(token: String, optionsMetricTypes: Set<FitnessMetricsType>): CompletableFuture<HealthConnectRecords> =
         GlobalScope.future { getChangeRecords(intradayRecordTypes.intersect(toRecordTypes(optionsMetricTypes)), token) }
-
-    @OptIn(DelicateCoroutinesApi::class)
-    fun getChangeSessionsAsync(token: String, minimumDuration: Duration): CompletableFuture<HealthConnectSessions> =
-        GlobalScope.future { getChangeSessions(minimumDuration, token) }
 
     /**
      * Retrieve changes from a changes token. For now, ignore deletions
@@ -235,37 +180,6 @@ class GHCClientWrapper(private val context: Context) {
         return HealthConnectRecords(nextChangesToken, records)
     }
 
-    /**
-     * Retrieve session changes from a changes token. For now, ignore deletions
-     */
-    private suspend fun getChangeSessions(
-        optionsMinimumDuration: Duration,
-        token: String,
-    ): HealthConnectSessions {
-        var nextChangesToken = token
-        val records = mutableListOf<ExerciseSessionRecord>()
-        do {
-            val response = healthConnectClient.getChanges(nextChangesToken)
-            if (response.changesTokenExpired) {
-                // TODO handle expired change token, e.g. fetch last 30 days' data
-                throw IOException("Changes token has expired")
-            }
-            for (change in response.changes) {
-                if (change is UpsertionChange) {
-                    records.add(change.record as ExerciseSessionRecord)
-                } else if (change is DeletionChange) {
-                    // TODO Handle deletions
-                    Logger.get().i("Ignoring a deletion change")
-                } else {
-                    Logger.get().e("Unexpected change type")
-                }
-            }
-            nextChangesToken = response.nextChangesToken
-        } while (response.hasMore)
-        val sessions = getSessions(records, optionsMinimumDuration)
-        return HealthConnectSessions(nextChangesToken, sessions)
-    }
-
     private fun toRecordTypes(metricTypes: Set<FitnessMetricsType>): Set<KClass<out Record>> {
         return metricTypes.map { metricType -> getRecordType(metricType) }.toSet()
     }
@@ -283,17 +197,6 @@ class GHCClientWrapper(private val context: Context) {
 }
 
 data class HealthConnectRecords(val nextToken: String, val records: List<Record>)
-
-data class HealthConnectSessions(val nextToken: String, val sessions: List<ExerciseSession>)
-
-data class ExerciseSession(
-    val sessionRecord: ExerciseSessionRecord,
-    val caloriesRecords: List<TotalCaloriesBurnedRecord>,
-    val stepsRecords: List<StepsRecord>,
-    val heartRateRecords: List<HeartRateRecord>,
-    val powerRecords: List<PowerRecord>,
-    val speedRecords: List<SpeedRecord>,
-)
 
 /**
  * Health Connect requires that the underlying Health Connect APK is installed on the device.

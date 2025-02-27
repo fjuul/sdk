@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCCalorieDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCHeartRateSummaryDataPoint;
-import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCSessionBundle;
 import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCStepsDataPoint;
 
 import androidx.annotation.NonNull;
@@ -17,8 +16,6 @@ public class GHCUploadData {
     List<GHCStepsDataPoint> stepsData = Collections.emptyList();
     @NonNull
     List<GHCHeartRateSummaryDataPoint> heartRateData = Collections.emptyList();
-    @NonNull
-    List<GHCSessionBundle> sessionsData = Collections.emptyList();
 
     @NonNull
     public List<GHCCalorieDataPoint> getCaloriesData() {
@@ -35,11 +32,6 @@ public class GHCUploadData {
         return heartRateData;
     }
 
-    @NonNull
-    public List<GHCSessionBundle> getSessionsData() {
-        return sessionsData;
-    }
-
     public void setCaloriesData(@NonNull List<GHCCalorieDataPoint> caloriesData) {
         this.caloriesData = caloriesData;
     }
@@ -52,12 +44,8 @@ public class GHCUploadData {
         this.heartRateData = heartRateData;
     }
 
-    public void setSessionsData(@NonNull List<GHCSessionBundle> sessionsData) {
-        this.sessionsData = sessionsData;
-    }
-
     public boolean isEmpty() {
-        return caloriesData.isEmpty() && stepsData.isEmpty() && heartRateData.isEmpty() && sessionsData.isEmpty();
+        return caloriesData.isEmpty() && stepsData.isEmpty() && heartRateData.isEmpty();
     }
 
     @Override
@@ -67,7 +55,6 @@ public class GHCUploadData {
             "calories=" + toString(caloriesData) +
             ", steps=" + toString(stepsData) +
             ", heartRates=" + toString(heartRateData) +
-            ", sessions=" + toString(sessionsData) +
             '}';
         //@formatter:on
     }

@@ -11,7 +11,6 @@ import com.fjuul.sdk.activitysources.workers.GFSessionsSyncWorker;
 import com.fjuul.sdk.activitysources.workers.GFSyncWorker;
 import com.fjuul.sdk.activitysources.workers.GHCIntradaySyncWorker;
 import com.fjuul.sdk.activitysources.workers.GHCProfileSyncWorker;
-import com.fjuul.sdk.activitysources.workers.GHCSessionsSyncWorker;
 import com.fjuul.sdk.activitysources.workers.GHCSyncWorker;
 
 import android.annotation.SuppressLint;
@@ -28,7 +27,6 @@ public class ActivitySourceWorkScheduler {
     public static final String GF_SESSIONS_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.gf_sessions_sync";
     public static final String GF_PROFILE_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.gf_profile_sync";
     public static final String GHC_INTRADAY_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.ghc_intraday_sync";
-    public static final String GHC_SESSIONS_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.ghc_sessions_sync";
     public static final String GHC_PROFILE_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.ghc_profile_sync";
 
     @NonNull
@@ -45,7 +43,6 @@ public class ActivitySourceWorkScheduler {
     private volatile boolean gfSessionsSyncWorkEnqueued = false;
     private volatile boolean gfProfileSyncWorkEnqueued = false;
     private volatile boolean ghcIntradaySyncWorkEnqueued = false;
-    private volatile boolean ghcSessionsSyncWorkEnqueued = false;
     private volatile boolean ghcProfileSyncWorkEnqueued = false;
 
     public ActivitySourceWorkScheduler(@NonNull WorkManager workManager,
@@ -65,7 +62,6 @@ public class ActivitySourceWorkScheduler {
         workManager.cancelUniqueWork(GF_SESSIONS_SYNC_WORK_NAME);
         workManager.cancelUniqueWork(GF_PROFILE_SYNC_WORK_NAME);
         workManager.cancelUniqueWork(GHC_INTRADAY_SYNC_WORK_NAME);
-        workManager.cancelUniqueWork(GHC_SESSIONS_SYNC_WORK_NAME);
         workManager.cancelUniqueWork(GHC_PROFILE_SYNC_WORK_NAME);
     }
 
@@ -74,7 +70,6 @@ public class ActivitySourceWorkScheduler {
         cancelGFSessionsSyncWork();
         cancelGFProfileSyncWork();
         cancelGHCIntradaySyncWork();
-        cancelGHCSessionsSyncWork();
         cancelGHCProfileSyncWork();
     }
 
@@ -185,31 +180,6 @@ public class ActivitySourceWorkScheduler {
     public synchronized void cancelGHCIntradaySyncWork() {
         workManager.cancelUniqueWork(GHC_INTRADAY_SYNC_WORK_NAME);
         ghcIntradaySyncWorkEnqueued = false;
-    }
-
-    public synchronized void scheduleGHCSessionsSyncWork(@NonNull Duration minSessionDuration) {
-        if (ghcSessionsSyncWorkEnqueued) {
-            return;
-        }
-        final String serializedDuration = minSessionDuration.toString();
-        final Data inputWorkRequestData = buildGHCEssentialInputData()
-            .putString(GHCSessionsSyncWorker.KEY_MIN_SESSION_DURATION_ARG, serializedDuration)
-            .build();
-        final PeriodicWorkRequest periodicWorkRequest =
-            new PeriodicWorkRequest.Builder(GHCSessionsSyncWorker.class, 1, TimeUnit.HOURS)
-                .setConstraints(buildCommonWorkConstraints())
-                .setInitialDelay(1, TimeUnit.HOURS)
-                .setInputData(inputWorkRequestData)
-                .build();
-        workManager.enqueueUniquePeriodicWork(GHC_SESSIONS_SYNC_WORK_NAME,
-            ExistingPeriodicWorkPolicy.REPLACE,
-            periodicWorkRequest);
-        ghcSessionsSyncWorkEnqueued = true;
-    }
-
-    public synchronized void cancelGHCSessionsSyncWork() {
-        workManager.cancelUniqueWork(GHC_SESSIONS_SYNC_WORK_NAME);
-        ghcSessionsSyncWorkEnqueued = false;
     }
 
     public synchronized void scheduleGHCProfileSyncWork(@NonNull Set<FitnessMetricsType> profileMetrics) {

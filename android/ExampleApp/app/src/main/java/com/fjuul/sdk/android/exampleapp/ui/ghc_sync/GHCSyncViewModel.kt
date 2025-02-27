@@ -8,17 +8,13 @@ import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.entities.GoogleHealthConnectActivitySource
 import com.fjuul.sdk.activitysources.entities.GoogleHealthConnectIntradaySyncOptions
 import com.fjuul.sdk.activitysources.entities.GoogleHealthConnectProfileSyncOptions
-import com.fjuul.sdk.activitysources.entities.GoogleHealthConnectSessionSyncOptions
-import java.time.Duration
 
 class GHCSyncViewModel : ViewModel() {
     private val _syncingIntradayMetrics = MutableLiveData(false)
-    private val _syncingSessions = MutableLiveData(false)
     private val _syncingProfile = MutableLiveData(false)
     private val _errorMessage = MutableLiveData<String?>()
 
     val syncingIntradayMetrics: LiveData<Boolean> = _syncingIntradayMetrics
-    val syncingSessions: LiveData<Boolean> = _syncingSessions
     val syncingProfile: LiveData<Boolean> = _syncingProfile
     val errorMessage: LiveData<String?> = _errorMessage
 
@@ -51,33 +47,6 @@ class GHCSyncViewModel : ViewModel() {
             if (result.isError) {
                 _errorMessage.postValue(result.error?.message)
                 return@syncIntradayMetrics
-            }
-        }
-    }
-
-    fun runSessionsSync(minSessionDuration: Duration) {
-        val manager = ActivitySourcesManager.getInstance()
-        val ghcConnectionSource = manager.current.find { connection -> connection.activitySource is GoogleHealthConnectActivitySource }
-        if (ghcConnectionSource == null) {
-            _errorMessage.value = "No active Google Health Connect connection"
-            return
-        }
-        lateinit var options: GoogleHealthConnectSessionSyncOptions
-        try {
-            options = GoogleHealthConnectSessionSyncOptions.Builder()
-                .setMinimumSessionDuration(minSessionDuration)
-                .build()
-        } catch (exc: Exception) {
-            _errorMessage.postValue(exc.message)
-            return
-        }
-
-        _syncingSessions.postValue(true)
-        (ghcConnectionSource.activitySource as GoogleHealthConnectActivitySource).syncSessions(options) { result ->
-            _syncingSessions.postValue(false)
-            if (result.isError) {
-                _errorMessage.postValue(result.error?.message)
-                return@syncSessions
             }
         }
     }

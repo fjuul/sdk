@@ -12,11 +12,9 @@ import java.util.concurrent.Executors;
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
 import com.fjuul.sdk.activitysources.entities.GoogleHealthConnectIntradaySyncOptions;
 import com.fjuul.sdk.activitysources.entities.GoogleHealthConnectProfileSyncOptions;
-import com.fjuul.sdk.activitysources.entities.GoogleHealthConnectSessionSyncOptions;
 import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCCalorieDataPoint;
 import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCDataConverter;
 import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCHeartRateSummaryDataPoint;
-import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCSessionBundle;
 import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCStepsDataPoint;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
@@ -93,33 +91,6 @@ public class GHCDataManager {
 
                 return sendGHCUploadData(INTRADAY_CHANGES_TOKEN_KEY, nextToken, uploadData).onSuccessTask(
                     localBackgroundExecutor, (apiCallResult) -> Tasks.forResult(apiCallResult.getValue()));
-            }
-        }));
-    }
-
-    @NonNull
-    public Task<Void> syncSessions(@NonNull GoogleHealthConnectSessionSyncOptions options) {
-        Logger.get().d("Syncing sessions");
-        final Task<Boolean> checkPermissionsTask = checkPermissions();
-        final Task<HealthConnectSessions> readTask = checkPermissionsTask.continueWithTask(localBackgroundExecutor,
-            task -> readExerciseSessions(options.getMinimumSessionDuration()));
-        return readTask.onSuccessTask(localBackgroundExecutor, (healthConnectSessions -> {
-            final String nextToken = healthConnectSessions.getNextToken();
-            final List<ExerciseSession> exerciseSessions = healthConnectSessions.getSessions();
-            if (exerciseSessions.isEmpty()) {
-                Logger.get().d("No new sessions to send");
-                return Tasks.forResult(null);
-            } else {
-                final List<GHCSessionBundle> sessionBundles = new ArrayList<>();
-                for (ExerciseSession exerciseSession : exerciseSessions) {
-                    sessionBundles.add(GHCDataConverter.convertSessionToSessionBundle(exerciseSession));
-                }
-                GHCUploadData uploadData = new GHCUploadData();
-                uploadData.setSessionsData(sessionBundles);
-
-                return sendGHCUploadData(SESSION_CHANGES_TOKEN_KEY, nextToken, uploadData).onSuccessTask(
-                    localBackgroundExecutor,
-                    (apiCallResult) -> Tasks.forResult(apiCallResult.getValue()));
             }
         }));
     }
@@ -207,28 +178,6 @@ public class GHCDataManager {
             taskCompletionSource.trySetException(ex);
         } catch (InterruptedException ex) {
             Logger.get().e("Health Connect read intraday metrics execution interrupted: %s", ex.getMessage());
-            taskCompletionSource.trySetException(ex);
-        }
-        return taskCompletionSource.getTask();
-    }
-
-    @NonNull
-    private Task<HealthConnectSessions> readExerciseSessions(Duration optionsMaxDuration) {
-        TaskCompletionSource<HealthConnectSessions> taskCompletionSource = new TaskCompletionSource<>();
-        try {
-            String token = apiClient.getStorage().get(SESSION_CHANGES_TOKEN_KEY);
-            HealthConnectSessions sessions;
-            if (token == null) {
-                sessions = clientWrapper.getInitialSessionsAsync(MAX_DAYS, optionsMaxDuration).get();
-            } else {
-                sessions = clientWrapper.getChangeSessionsAsync(token, optionsMaxDuration).get();
-            }
-            taskCompletionSource.trySetResult(sessions);
-        } catch (ExecutionException ex) {
-            Logger.get().e("Health Connect read exercise sessions execution failed: %s", ex.getMessage());
-            taskCompletionSource.trySetException(ex);
-        } catch (InterruptedException ex) {
-            Logger.get().e("Health Connect read exercise sessions execution interrupted: %s", ex.getMessage());
             taskCompletionSource.trySetException(ex);
         }
         return taskCompletionSource.getTask();

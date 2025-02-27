@@ -1,5 +1,6 @@
 package com.fjuul.sdk.core.http.interceptors;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -85,10 +86,10 @@ public class SigningAuthInterceptorTest extends LoggableTestSuite {
         mockWebServer.shutdown();
         assertEquals("logger should have entries", 2, LOGGER.size());
         TimberLogEntry firstEntry = LOGGER.getLogEntries().get(0);
-        assertEquals("retrieving a new signing key", firstEntry.getMessage());
+        assertEquals("[core] SigningAuthInterceptor: retrieving a new signing key", firstEntry.getMessage());
         assertEquals(Log.DEBUG, firstEntry.getPriority());
         TimberLogEntry secondEntry = LOGGER.getLogEntries().get(1);
-        assertEquals("failed to retrieve the signing key", secondEntry.getMessage());
+        assertEquals("[core] SigningAuthInterceptor: failed to retrieve the signing key", secondEntry.getMessage());
         assertEquals(Log.DEBUG, secondEntry.getPriority());
     }
 
@@ -119,7 +120,7 @@ public class SigningAuthInterceptorTest extends LoggableTestSuite {
         mockWebServer.shutdown();
         assertEquals("logger should have only one entry", 1, LOGGER.size());
         TimberLogEntry logEntry = LOGGER.getLogEntries().get(0);
-        assertEquals("retrieving a new signing key", logEntry.getMessage());
+        assertEquals("[core] SigningAuthInterceptor: retrieving a new signing key", logEntry.getMessage());
         assertEquals(Log.DEBUG, logEntry.getPriority());
     }
 

@@ -7,6 +7,7 @@ enum HKAnchorKey {
     case distanceCycling
     case distanceWalkingRunning
     case heartRate
+    case restingHeartRate
     case workout
     case bodyMass
     case height
@@ -19,11 +20,11 @@ public struct HKAnchorData: Codable, Equatable {
     private var distanceCyclingRaw: Data?
     private var distanceWalkingRunningRaw: Data?
     private var heartRateRaw: Data?
+    private var restingHeartRateRaw: Data?
     private var workoutRaw: Data?
     private var bodyMassRaw: Data?
     private var heightRaw: Data?
 
-    // swiftlint:disable function_body_length
     subscript(key: HKAnchorKey) -> HKQueryAnchor? {
         get {
             var valueRaw: Data?
@@ -39,6 +40,8 @@ public struct HKAnchorData: Codable, Equatable {
                 valueRaw = distanceWalkingRunningRaw
             case .heartRate:
                 valueRaw = heartRateRaw
+            case .restingHeartRate:
+                valueRaw = restingHeartRateRaw
             case .workout:
                 valueRaw = workoutRaw
             case .bodyMass:
@@ -67,6 +70,8 @@ public struct HKAnchorData: Codable, Equatable {
                 distanceWalkingRunningRaw = newValueRaw
             case .heartRate:
                 heartRateRaw = newValueRaw
+            case .restingHeartRate:
+                restingHeartRateRaw = newValueRaw
             case .workout:
                 workoutRaw = newValueRaw
             case .bodyMass:

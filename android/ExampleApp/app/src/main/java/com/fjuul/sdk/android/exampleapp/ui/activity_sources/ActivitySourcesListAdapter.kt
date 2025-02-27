@@ -21,7 +21,7 @@ enum class ActivitySourcesItem(val label: String) {
 }
 
 class ActivitySourcesListAdapter(
-    private val context: Context,
+    context: Context,
     private val dataSource: ArrayList<ActivitySourcesItem>
 ) : BaseAdapter() {
     private val inflater = LayoutInflater.from(context)

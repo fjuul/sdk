@@ -28,7 +28,7 @@ class WorkoutFetcher {
                 cycleDispatchGroup.enter()
                 let events = sampleItem.workoutEvents?.compactMap { event in
                     return WorkoutEventData(
-                        startDate: event.date,
+                        startDate: event.dateInterval.start,
                         type: event.type.typeName,
                         metadata: event.metadata?.compactMapValues { String(describing: $0 )}
                     )
@@ -140,7 +140,7 @@ class WorkoutFetcher {
         let query = HKSampleQuery(sampleType: sampleType,
                                   predicate: workoutPredicate,
                                   limit: HKObjectQueryNoLimit,
-                                  sortDescriptors: [startDateSort]) { (_, results, error) -> Void in
+                                  sortDescriptors: [startDateSort]) { (_, results, error) in
                                     if let error = error {
                                         completion(.failure(error))
                                         return

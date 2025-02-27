@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-    id 'com.android.application' version '8.1.1' apply false
-    id 'com.android.library' version '8.1.1' apply false
+    id 'com.android.application' version '8.2.2' apply false
+    id 'com.android.library' version '8.2.2' apply false
     id 'org.jetbrains.kotlin.android' version '1.9.0' apply false
     id "com.diffplug.gradle.spotless" version "6.21.0" apply false
 }
@@ -11,11 +11,11 @@ ext {
     minSdk = 26
     targetSdk = 34
 
-    okHttpVersion = '4.9.1'
+    okHttpVersion = '4.12.0'
     retrofitVersion = '2.9.0'
-    androidXAnnotationVersion = '1.6.0'
+    androidXAnnotationVersion = '1.7.1'
     androidXCoreVersion = '1.12.0'
-    robolectricVersion = '4.10.3'
+    robolectricVersion = '4.11.1'
     androidXTestCoreVersion = '1.5.0'
     junitVersion = '4.13.2'
 
@@ -28,7 +28,7 @@ subprojects {
     spotless {
         java {
             target fileTree('.') {
-                // Don't run check on generated code not saved to Git
+                // exclude generated source files
                 include 'src/**/*.java'
             }
             // licenseHeaderFile project.rootProject.file('spotless/copyright.java')
@@ -47,8 +47,9 @@ subprojects {
             indentWithSpaces(4)
         }
 
+        // only for the example application
         kotlin {
-            target fileTree('.') {
+            target fileTree('./ExampleApp') {
                 include '**/*.kt'
             }
             // version and userData are both optional
@@ -67,6 +68,7 @@ subprojects {
         spotlessJava.dependsOn 'spotlessGroovyGradle'
         spotlessKotlin.dependsOn 'spotlessGroovyGradle'
         spotlessKotlin.dependsOn 'spotlessJava'
+
     }
 }
 

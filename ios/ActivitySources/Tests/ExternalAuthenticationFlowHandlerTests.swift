@@ -5,13 +5,6 @@ import XCTest
 @testable import FjuulActivitySources
 
 final class ExternalAuthenticationFlowHandlerTests: XCTestCase {
-    override func setUp() {
-        super.setUp()
-    }
-
-    override func tearDown() {
-        super.tearDown()
-    }
 
     func testHandleValidUrlWithSuccessStatus() {
         let url = URL(string: "fjuulsdk-exampleapp://externalConnection?service=polar&success=true")

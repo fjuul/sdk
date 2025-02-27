@@ -16,6 +16,7 @@ protocol ActivitySourcesApiClient: AutoMockable {
     func getCurrentConnections(completion: @escaping (Result<[TrackerConnection], Error>) -> Void)
     func sendHealthKitUserProfileData(data: HKUserProfileData, completion: @escaping (Result<Void, Error>) -> Void)
     func sendHealthKitBatchData(data: HKBatchData, completion: @escaping (Result<Void, Error>) -> Void)
+    func sendHealthKitDailyMetrics(data: [HKDailyMetricDataPoint], completion: @escaping (Result<Void, Error>) -> Void)
 }
 
 /// The `ActivitySourcesApi` encapsulates the management of a users activity sources.
@@ -76,7 +77,7 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
         }
         apiClient.signedSession.request(url, method: .delete).apiResponse { response in
             let decodedResponse = response
-                .map { _ -> Void in () }
+                .map { _ in () }
                 .mapAPIError { _, jsonError in
                     guard let jsonError = jsonError else { return nil }
 
@@ -115,7 +116,23 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
         let parameterEncoder = JSONParameterEncoder(encoder: encoder)
 
         apiClient.signedSession.request(url, method: .post, parameters: data, encoder: parameterEncoder).apiResponse(emptyResponseCodes: [200]) { response in
-            let decodedResponse = response.map { _ -> Void in () }
+            let decodedResponse = response.map { _ in () }
+            completion(decodedResponse.result)
+        }
+    }
+
+    internal func sendHealthKitDailyMetrics(data: [HKDailyMetricDataPoint], completion: @escaping (Result<Void, Error>) -> Void) {
+        let path = "/\(apiClient.userToken)/healthkit/dailies"
+        guard let url = baseUrl?.appendingPathComponent(path) else {
+            return completion(.failure(FjuulError.invalidConfig))
+        }
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .formatted(DateFormatters.yyyyMMddLocale)
+        let parameterEncoder = JSONParameterEncoder(encoder: encoder)
+
+        apiClient.signedSession.request(url, method: .post, parameters: data, encoder: parameterEncoder).apiResponse(emptyResponseCodes: [200]) { response in
+            let decodedResponse = response.map { _ in () }
             completion(decodedResponse.result)
         }
     }
@@ -130,7 +147,7 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
             .apiResponse(emptyResponseCodes: [200]) { response in
 
             let decodedResponse = response
-                .map { _ -> Void in () }
+                .map { _ in () }
                 .mapAPIError { _, jsonError in
                     guard let jsonError = jsonError else { return nil }
 

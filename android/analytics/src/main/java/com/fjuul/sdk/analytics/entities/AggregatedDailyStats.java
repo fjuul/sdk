@@ -15,18 +15,15 @@ public class AggregatedDailyStats {
     @NonNull
     ActivityMeasure high;
 
-    @NonNull
     public float getActiveKcal() {
         return activeKcal;
     }
 
-    @NonNull
     public float getBmr() {
         return bmr;
     }
 
-    @NonNull
-    public float getSteps() {
+    public int getSteps() {
         return steps;
     }
 

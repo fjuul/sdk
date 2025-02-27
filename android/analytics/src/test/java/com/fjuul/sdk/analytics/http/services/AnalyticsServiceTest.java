@@ -1,6 +1,7 @@
 package com.fjuul.sdk.analytics.http.services;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
@@ -92,13 +93,13 @@ public class AnalyticsServiceTest {
         assertEquals("2020-03-10", dailyStats.getDate());
         assertEquals(300.23, dailyStats.getActiveKcal(), 0.0001);
         assertEquals(502.10, dailyStats.getBmr(), 0.0001);
-        assertEquals(8522, dailyStats.getSteps(), 0.0001);
+        assertEquals(8522, dailyStats.getSteps());
         assertEquals(20, dailyStats.getLow().getMetMinutes(), 0.0001);
-        assertEquals(1800, dailyStats.getLow().getSeconds(), 0.0001);
+        assertEquals(1800, dailyStats.getLow().getSeconds());
         assertEquals(10, dailyStats.getModerate().getMetMinutes(), 0.0001);
-        assertEquals(1200, dailyStats.getModerate().getSeconds(), 0.0001);
+        assertEquals(1200, dailyStats.getModerate().getSeconds());
         assertEquals(15, dailyStats.getHigh().getMetMinutes(), 0.0001);
-        assertEquals(180, dailyStats.getHigh().getSeconds(), 0.0001);
+        assertEquals(180, dailyStats.getHigh().getSeconds());
     }
 
     @Test
@@ -132,25 +133,25 @@ public class AnalyticsServiceTest {
         assertEquals("2020-03-10", firstDailyStats.getDate());
         assertEquals(300, firstDailyStats.getActiveKcal(), 0.0001);
         assertEquals(500, firstDailyStats.getBmr(), 0.0001);
-        assertEquals(8900, firstDailyStats.getSteps(), 0.0001);
+        assertEquals(8900, firstDailyStats.getSteps());
         assertEquals(20, firstDailyStats.getLow().getMetMinutes(), 0.0001);
-        assertEquals(1800, firstDailyStats.getLow().getSeconds(), 0.0001);
+        assertEquals(1800, firstDailyStats.getLow().getSeconds());
         assertEquals(10, firstDailyStats.getModerate().getMetMinutes(), 0.0001);
-        assertEquals(1200, firstDailyStats.getModerate().getSeconds(), 0.0001);
+        assertEquals(1200, firstDailyStats.getModerate().getSeconds());
         assertEquals(15, firstDailyStats.getHigh().getMetMinutes(), 0.0001);
-        assertEquals(180, firstDailyStats.getHigh().getSeconds(), 0.0001);
+        assertEquals(180, firstDailyStats.getHigh().getSeconds());
 
         DailyStats secondDailyStats = dailyStatsRange[1];
         assertEquals("2020-03-11", secondDailyStats.getDate());
         assertEquals(321, secondDailyStats.getActiveKcal(), 0.0001);
         assertEquals(550.55, secondDailyStats.getBmr(), 0.0001);
-        assertEquals(9010, secondDailyStats.getSteps(), 0.0001);
+        assertEquals(9010, secondDailyStats.getSteps());
         assertEquals(2.1, secondDailyStats.getLow().getMetMinutes(), 0.0001);
-        assertEquals(100, secondDailyStats.getLow().getSeconds(), 0.0001);
+        assertEquals(100, secondDailyStats.getLow().getSeconds());
         assertEquals(2.3, secondDailyStats.getModerate().getMetMinutes(), 0.0001);
-        assertEquals(120, secondDailyStats.getModerate().getSeconds(), 0.0001);
+        assertEquals(120, secondDailyStats.getModerate().getSeconds());
         assertEquals(3.4, secondDailyStats.getHigh().getMetMinutes(), 0.0001);
-        assertEquals(30, secondDailyStats.getHigh().getSeconds(), 0.0001);
+        assertEquals(30, secondDailyStats.getHigh().getSeconds());
     }
 
     @Test
@@ -180,13 +181,13 @@ public class AnalyticsServiceTest {
 
         assertEquals(170.14, aggregatedStats.getActiveKcal(), 0.0001);
         assertEquals(860.16, aggregatedStats.getBmr(), 0.0001);
-        assertEquals(10103, aggregatedStats.getSteps(), 0.0001);
+        assertEquals(10103, aggregatedStats.getSteps());
         assertEquals(32, aggregatedStats.getLow().getMetMinutes(), 0.0001);
-        assertEquals(2222, aggregatedStats.getLow().getSeconds(), 0.0001);
+        assertEquals(2222, aggregatedStats.getLow().getSeconds());
         assertEquals(44, aggregatedStats.getModerate().getMetMinutes(), 0.0001);
-        assertEquals(1980, aggregatedStats.getModerate().getSeconds(), 0.0001);
+        assertEquals(1980, aggregatedStats.getModerate().getSeconds());
         assertEquals(9, aggregatedStats.getHigh().getMetMinutes(), 0.0001);
-        assertEquals(600, aggregatedStats.getHigh().getSeconds(), 0.0001);
+        assertEquals(600, aggregatedStats.getHigh().getSeconds());
     }
 
     @Test

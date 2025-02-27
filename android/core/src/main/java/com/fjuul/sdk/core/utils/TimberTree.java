@@ -23,8 +23,7 @@ import timber.log.Timber;
  * fully understanding capabilities.
  */
 public abstract class TimberTree extends Timber.Tree {
-    protected static final Pattern SDK_MODULE_NAME = Pattern.compile("^com.fjuul.sdk.([^.]+)\\.");
-    private static final Pattern ANONYMOUS_CLASS = Pattern.compile("(\\$\\d+)+$");
+    protected static final Pattern SDK_MODULE_NAME = Pattern.compile("^com\\.fjuul\\.sdk\\.([^.]+)\\.");
 
     @Override
     protected boolean isLoggable(@Nullable String tag, int priority) {
@@ -77,11 +76,7 @@ public abstract class TimberTree extends Timber.Tree {
 
     private boolean isTimberStackTraceElement(@NonNull StackTraceElement element) {
         String elementClassName = element.getClassName();
-        Matcher matcher = ANONYMOUS_CLASS.matcher(elementClassName);
-        if (matcher.find()) {
-            elementClassName = matcher.replaceAll("");
-        }
-        return elementClassName.equals(Timber.class.getName());
+        return elementClassName.startsWith(Timber.class.getName());
     }
 
     @NonNull

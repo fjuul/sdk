@@ -14,12 +14,11 @@ import java.time.Duration
 import java.time.LocalDate
 
 class GFSyncViewModel : ViewModel() {
-    //_startDate and _endDate giving error for null so LocalDate removed
     private val _startDate = MutableLiveData(LocalDate.now())
     private val _endDate = MutableLiveData(LocalDate.now())
-    private val _syncingIntradayMetrics = MutableLiveData<Boolean>(false)
-    private val _syncingSessions = MutableLiveData<Boolean>(false)
-    private val _syncingProfile = MutableLiveData<Boolean>(false)
+    private val _syncingIntradayMetrics = MutableLiveData(false)
+    private val _syncingSessions = MutableLiveData(false)
+    private val _syncingProfile = MutableLiveData(false)
     private val _errorMessage = MutableLiveData<String?>()
 
     val startDate: LiveData<LocalDate> = _startDate

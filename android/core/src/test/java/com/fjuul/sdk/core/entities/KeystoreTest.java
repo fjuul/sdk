@@ -1,7 +1,9 @@
 package com.fjuul.sdk.core.entities;
 
+import static net.bytebuddy.matcher.ElementMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.text.IsEmptyString.isEmptyOrNullString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
@@ -74,7 +76,7 @@ public class KeystoreTest {
             Date expiresAt = calendar.getTime();
             SigningKey key = new SigningKey("key-id", "REAL_SECRET", expiresAt);
             keystore.setKey(key);
-            assertThat("saves signing key in the storage", storage.get("signing-key"), not(isEmptyOrNullString()));
+            assertThat("saves signing key in the storage", storage.get("signing-key"), not(is(emptyOrNullString())));
             SigningKey savedKey = keyJsonAdapter.fromJson(storage.get("signing-key"));
             assertEquals(key.getId(), savedKey.getId());
             assertEquals(key.getSecret(), savedKey.getSecret());
@@ -133,7 +135,7 @@ public class KeystoreTest {
 
             assertThat("saves signing key in the shared prefs",
                 preferences.getString("signing-key", null),
-                not(isEmptyOrNullString()));
+                not(is(emptyOrNullString())));
             SigningKey savedKey = keyJsonAdapter.fromJson(storage.get("signing-key"));
             assertEquals(key.getId(), savedKey.getId());
             assertEquals(key.getSecret(), savedKey.getSecret());

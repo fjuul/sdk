@@ -2,9 +2,9 @@ package com.fjuul.sdk.activitysources.entities.internal;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -136,7 +136,7 @@ public class GFDataManagerTest {
             assertEquals("logger should have entry", 1, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
             assertEquals(
-                "skip syncing GF intraday metrics (INTRADAY_CALORIES) with input dates [2020-09-20, 2020-09-25]",
+                "[activitysources] GFDataManager: skip syncing GF intraday metrics (INTRADAY_CALORIES) with input dates [2020-09-20, 2020-09-25]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
@@ -194,11 +194,11 @@ public class GFDataManagerTest {
             assertEquals("logger should have entries", 2, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
             assertEquals(
-                "start syncing GF intraday metrics (INTRADAY_CALORIES) with date range [2020-09-28T13:40:00.000Z, 2020-10-02T21:59:59.999Z]",
+                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_CALORIES) with date range [2020-09-28T13:40:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("no new data to send", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: no new data to send", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
@@ -243,11 +243,11 @@ public class GFDataManagerTest {
             assertEquals("logger should have entries", 2, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
             assertEquals(
-                "start syncing GF intraday metrics (INTRADAY_CALORIES) with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
+                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_CALORIES) with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("no new data to send", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: no new data to send", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
@@ -292,7 +292,7 @@ public class GFDataManagerTest {
             assertEquals("logger should have entry", 1, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
             assertEquals(
-                "start syncing GF intraday metrics (INTRADAY_STEPS) with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
+                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_STEPS) with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
@@ -351,11 +351,11 @@ public class GFDataManagerTest {
             assertEquals("logger should have entries", 2, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
             assertEquals(
-                "start syncing GF intraday metrics (INTRADAY_CALORIES) with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
+                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_CALORIES) with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("no new data to send", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: no new data to send", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
@@ -436,15 +436,15 @@ public class GFDataManagerTest {
             assertEquals("logger should have entries", 3, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
             assertEquals(
-                "start syncing GF intraday metrics (INTRADAY_CALORIES) with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
+                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_CALORIES) with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("sending new GF data: GFUploadData{calories=1, steps=0, heartRates=0, sessions=0}",
+            assertEquals("[activitysources] GFDataManager: sending new GF data: GFUploadData{calories=1, steps=0, heartRates=0, sessions=0}",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("failed to send GF data: Bad request", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: failed to send GF data: Bad request", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
@@ -521,15 +521,15 @@ public class GFDataManagerTest {
             assertEquals("logger should have entries", 3, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
             assertEquals(
-                "start syncing GF intraday metrics (INTRADAY_CALORIES) with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
+                "[activitysources] GFDataManager: start syncing GF intraday metrics (INTRADAY_CALORIES) with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("sending new GF data: GFUploadData{calories=1, steps=0, heartRates=0, sessions=0}",
+            assertEquals("[activitysources] GFDataManager: sending new GF data: GFUploadData{calories=1, steps=0, heartRates=0, sessions=0}",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("succeeded to send GF data", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: succeeded to send GF data", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
@@ -681,11 +681,11 @@ public class GFDataManagerTest {
                 containsString("with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]"));
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("sending new GF data: GFUploadData{calories=1, steps=1, heartRates=1, sessions=0}",
+            assertEquals("[activitysources] GFDataManager: sending new GF data: GFUploadData{calories=1, steps=1, heartRates=1, sessions=0}",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("succeeded to send GF data", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: succeeded to send GF data", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
     }
@@ -742,7 +742,7 @@ public class GFDataManagerTest {
 
             assertEquals("logger should have entry", 1, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
-            assertEquals("skip syncing GF sessions with input dates [2020-09-20, 2020-09-25]", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: skip syncing GF sessions with input dates [2020-09-20, 2020-09-25]", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
@@ -778,11 +778,11 @@ public class GFDataManagerTest {
             assertEquals("logger should have entries", 2, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
             assertEquals(
-                "start syncing GF sessions with date range [2020-09-28T13:40:00.000Z, 2020-10-02T21:59:59.999Z]",
+                "[activitysources] GFDataManager: start syncing GF sessions with date range [2020-09-28T13:40:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("no new data to send", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: no new data to send", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
@@ -819,11 +819,11 @@ public class GFDataManagerTest {
             assertEquals("logger should have entries", 2, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
             assertEquals(
-                "start syncing GF sessions with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
+                "[activitysources] GFDataManager: start syncing GF sessions with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("no new data to send", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: no new data to send", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
@@ -864,11 +864,11 @@ public class GFDataManagerTest {
             assertEquals("logger should have entries", 2, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
             assertEquals(
-                "start syncing GF sessions with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
+                "[activitysources] GFDataManager: start syncing GF sessions with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("no new data to send", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: no new data to send", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
@@ -931,15 +931,15 @@ public class GFDataManagerTest {
             assertEquals("logger should have entries", 3, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
             assertEquals(
-                "start syncing GF sessions with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
+                "[activitysources] GFDataManager: start syncing GF sessions with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("sending new GF data: GFUploadData{calories=0, steps=0, heartRates=0, sessions=1}",
+            assertEquals("[activitysources] GFDataManager: sending new GF data: GFUploadData{calories=0, steps=0, heartRates=0, sessions=1}",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("failed to send GF data: Bad request", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: failed to send GF data: Bad request", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
@@ -993,15 +993,15 @@ public class GFDataManagerTest {
             assertEquals("logger should have entries", 3, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
             assertEquals(
-                "start syncing GF sessions with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
+                "[activitysources] GFDataManager: start syncing GF sessions with date range [2020-09-30T22:00:00.000Z, 2020-10-02T21:59:59.999Z]",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("sending new GF data: GFUploadData{calories=0, steps=0, heartRates=0, sessions=1}",
+            assertEquals("[activitysources] GFDataManager: sending new GF data: GFUploadData{calories=0, steps=0, heartRates=0, sessions=1}",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("succeeded to send GF data", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: succeeded to send GF data", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
     }
@@ -1059,10 +1059,10 @@ public class GFDataManagerTest {
 
             assertEquals("logger should have entries", 2, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
-            assertEquals("start syncing GF profile metrics (WEIGHT)", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("no the updated profile parameters to send", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: no the updated profile parameters to send", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
@@ -1091,10 +1091,10 @@ public class GFDataManagerTest {
 
             assertEquals("logger should have entries", 2, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
-            assertEquals("start syncing GF profile metrics (WEIGHT)", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("no the updated profile parameters to send", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: no the updated profile parameters to send", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
@@ -1137,14 +1137,14 @@ public class GFDataManagerTest {
 
             assertEquals("logger should have entries", 3, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
-            assertEquals("start syncing GF profile metrics (WEIGHT)", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("sending the updated profile parameters: GFSynchronizableProfileParams{weight=\"75.33\"}",
+            assertEquals("[activitysources] GFDataManager: sending the updated profile parameters: GFSynchronizableProfileParams{weight=\"75.33\"}",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("failed to send the profile data: Bad request", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: failed to send the profile data: Bad request", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
@@ -1185,14 +1185,14 @@ public class GFDataManagerTest {
 
             assertEquals("logger should have entries", 3, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
-            assertEquals("start syncing GF profile metrics (WEIGHT)", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("sending the updated profile parameters: GFSynchronizableProfileParams{weight=\"75.33\"}",
+            assertEquals("[activitysources] GFDataManager: sending the updated profile parameters: GFSynchronizableProfileParams{weight=\"75.33\"}",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("succeeded to send the profile data", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: succeeded to send the profile data", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
 
@@ -1245,11 +1245,11 @@ public class GFDataManagerTest {
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
             assertEquals(
-                "sending the updated profile parameters: GFSynchronizableProfileParams{height=\"182.9\", weight=\"75.33\"}",
+                "[activitysources] GFDataManager: sending the updated profile parameters: GFSynchronizableProfileParams{height=\"182.9\", weight=\"75.33\"}",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
-            assertEquals("succeeded to send the profile data", logEntry.getMessage());
+            assertEquals("[activitysources] GFDataManager: succeeded to send the profile data", logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
         }
     }

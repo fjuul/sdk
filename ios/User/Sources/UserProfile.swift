@@ -65,7 +65,7 @@ extension UserProfile: PartiallyEncodable {
 
     static public func key(for keyPath: PartialKeyPath<UserProfile>) -> String? {
         switch keyPath {
-        case \UserProfile.birthDate : return "birthDate"
+        case \UserProfile.birthDate: return "birthDate"
         case \UserProfile.gender: return "gender"
         case \UserProfile.height: return "height"
         case \UserProfile.weight: return "weight"

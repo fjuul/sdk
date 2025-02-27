@@ -86,6 +86,5 @@ class SDKConfigViewModel(private val appStorage: AppStorage) : ViewModel() {
 }
 
 class SDKConfigViewModelFactory(private val appStorage: AppStorage) : ViewModelProvider.NewInstanceFactory() {
-    //Giving error for the override method so ? removed from the ViewModel
     override fun <T : ViewModel> create(modelClass: Class<T>): T = SDKConfigViewModel(appStorage) as T
 }

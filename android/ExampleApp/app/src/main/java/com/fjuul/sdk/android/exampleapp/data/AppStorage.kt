@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 
-class AppStorage(private val context: Context) {
+class AppStorage(context: Context) {
     enum class Key(val value: String) {
         USER_TOKEN("USER_TOKEN"),
         USER_SECRET("USER_SECRET"),

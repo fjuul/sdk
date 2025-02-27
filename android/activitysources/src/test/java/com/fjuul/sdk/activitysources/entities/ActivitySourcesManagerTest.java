@@ -2,9 +2,9 @@ package com.fjuul.sdk.activitysources.entities;
 
 import static android.os.Looper.getMainLooper;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -80,7 +80,7 @@ public class ActivitySourcesManagerTest {
                     ActivitySourcesManager.initialize(client);
                     assertEquals("should log only one message", 1, LOGGER.size());
                     final TimberLogEntry logEntry = LOGGER.getLogEntries().get(0);
-                    assertEquals("initialized successfully (the previous one could be overridden)",
+                    assertEquals("[activitysources] ActivitySourcesManager: initialized successfully (the previous one could be overridden)",
                         logEntry.getMessage());
                     assertEquals(Log.DEBUG, logEntry.getPriority());
                 }

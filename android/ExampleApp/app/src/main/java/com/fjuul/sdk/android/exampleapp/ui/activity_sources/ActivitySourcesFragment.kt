@@ -32,10 +32,6 @@ class ActivitySourcesFragment : Fragment() {
 
     private val model: ActivitySourcesViewModel by viewModels()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -45,6 +41,7 @@ class ActivitySourcesFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_activity_sources, container, false)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == GOOGLE_SIGN_IN_REQUEST_CODE) {
@@ -65,6 +62,7 @@ class ActivitySourcesFragment : Fragment() {
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -89,12 +87,11 @@ class ActivitySourcesFragment : Fragment() {
         model.fetchCurrentConnections()
 
         model.currentConnections.observe(
-            viewLifecycleOwner,
-            Observer { connections ->
-                currentSourceText.text =
-                    "Current source(s): ${connections.joinToString(", ") { it.tracker }}"
-            }
-        )
+            viewLifecycleOwner
+        ) { connections ->
+            currentSourceText.text =
+                "Current source(s): ${connections.joinToString(", ") { it.tracker }}"
+        }
 
         model.errorMessage.observe(
             viewLifecycleOwner,
@@ -142,7 +139,7 @@ class ActivitySourcesFragment : Fragment() {
             )
         )
         sourcesList.adapter = adapter
-        sourcesList.setOnItemClickListener { parent, view, position, id ->
+        sourcesList.setOnItemClickListener { _, _, position, _ ->
             val activitySource = when (adapter.getItem(position)) {
                 ActivitySourcesItem.FITBIT -> FitbitActivitySource.getInstance()
                 ActivitySourcesItem.OURA -> OuraActivitySource.getInstance()
@@ -162,7 +159,7 @@ class ActivitySourcesFragment : Fragment() {
                 val menus = arrayOf("Request permissions", "Disconnect")
                 AlertDialog.Builder(requireContext())
                     .setTitle("Google Fit")
-                    .setItems(menus) { dialog, which ->
+                    .setItems(menus) { _, which ->
                         if (which == 0) {
                             val intent = activitySource.buildIntentRequestingFitnessPermissions()
                             startActivityForResult(intent, RE_GOOGLE_SIGN_IN_REQUEST_CODE)

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -330,6 +330,7 @@
 /* Begin PBXShellScriptBuildPhase section */
 		B3C683FB24A0A6930025056E /* swiftlint */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -344,7 +345,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if which swiftlint >/dev/null; then\n  swiftlint --path $PROJECT_DIR/..\nfi\n";
+			shellScript = "if which swiftlint >/dev/null; then\n  swiftlint $PROJECT_DIR/..\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

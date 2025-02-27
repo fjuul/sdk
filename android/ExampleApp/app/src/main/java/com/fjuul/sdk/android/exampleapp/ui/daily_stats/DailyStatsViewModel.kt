@@ -9,10 +9,10 @@ import com.fjuul.sdk.analytics.http.services.AnalyticsService
 import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
 import java.time.LocalDate
 
-class DailyStatsViewModel() : ViewModel() {
+class DailyStatsViewModel : ViewModel() {
     private val analyticsService = AnalyticsService(ApiClientHolder.sdkClient)
-    private val _startDate = MutableLiveData<LocalDate>(LocalDate.now())
-    private val _endDate = MutableLiveData<LocalDate>(LocalDate.now())
+    private val _startDate = MutableLiveData(LocalDate.now())
+    private val _endDate = MutableLiveData(LocalDate.now())
 
     private val _data = MutableLiveData<Array<DailyStats>>(arrayOf())
 
@@ -33,10 +33,10 @@ class DailyStatsViewModel() : ViewModel() {
 
     fun setupDateRange(startDate: LocalDate? = null, endDate: LocalDate? = null) {
         if (startDate != null) {
-            _startDate.value = startDate
+            _startDate.value = startDate!!
         }
         if (endDate != null) {
-            _endDate.value = endDate
+            _endDate.value = endDate!!
         }
         requestData()
     }

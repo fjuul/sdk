@@ -26,16 +26,12 @@ enum class ModuleItemName(val value: String) {
     AGGREGATED_DAILY_STATS("Aggregated Daily Stats"),
     LOGOUT("Logout")
 }
-sealed class ModulesListItem()
+sealed class ModulesListItem
 data class ModuleItem(val name: ModuleItemName) : ModulesListItem()
 data class ModulesSection(val name: String) : ModulesListItem()
 
 class ModulesFragment : Fragment() {
     private lateinit var modulesListView: ListView
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,8 +44,8 @@ class ModulesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        modulesListView = view.findViewById<ListView>(R.id.modules_list)
-        val listItems = arrayListOf<ModulesListItem>(
+        modulesListView = view.findViewById(R.id.modules_list)
+        val listItems = arrayListOf(
             ModulesSection("User"),
             ModuleItem(ModuleItemName.PROFILE),
             ModuleItem(ModuleItemName.ACTIVITY_SOURCES),
@@ -63,7 +59,7 @@ class ModulesFragment : Fragment() {
         )
         val adapter = ModulesListAdapter(requireContext(), listItems)
         modulesListView.adapter = adapter
-        modulesListView.setOnItemClickListener { parent, view, position, id ->
+        modulesListView.setOnItemClickListener { _, _, position, _ ->
             val pressedItem = adapter.getItem(position)
             if (pressedItem is ModuleItem) {
                 when (pressedItem.name) {
@@ -125,7 +121,7 @@ class ModulesFragment : Fragment() {
 }
 
 class ModulesListAdapter(
-    private val context: Context,
+    context: Context,
     private val dataSource: ArrayList<ModulesListItem>
 ) : BaseAdapter() {
     private val inflater = LayoutInflater.from(context)
@@ -145,7 +141,7 @@ class ModulesListAdapter(
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         // Get view for row item
         val item = getItem(position)
-        var rowView: View
+        val rowView: View
         if (item is ModuleItem) {
             rowView = inflater.inflate(android.R.layout.simple_list_item_1, parent, false)
             val textView = rowView.findViewById<TextView>(android.R.id.text1)

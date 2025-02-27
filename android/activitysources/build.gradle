@@ -45,13 +45,13 @@ android {
 }
 
 dependencies {
-    def workVersion = "2.8.1"
+    def workVersion = "2.9.0"
 
     implementation "androidx.annotation:annotation:$rootProject.ext.androidXAnnotationVersion"
     implementation "androidx.core:core-ktx:$rootProject.ext.androidXCoreVersion"
 
-    implementation 'com.google.android.gms:play-services-auth:19.0.0'
-    implementation 'com.google.android.gms:play-services-fitness:20.0.0'
+    implementation 'com.google.android.gms:play-services-auth:20.7.0'
+    implementation 'com.google.android.gms:play-services-fitness:21.1.0'
     implementation "androidx.work:work-runtime:$workVersion"
     implementation "com.google.guava:guava:31.0.1-android"
     implementation 'androidx.core:core-ktx:1.12.0'
@@ -69,7 +69,7 @@ dependencies {
 
     // Use JUnit test framework
     testImplementation "junit:junit:$rootProject.ext.junitVersion"
-    testImplementation 'org.mockito:mockito-core:5.5.0'
+    testImplementation 'org.mockito:mockito-core:5.10.0'
     testImplementation('org.mockito:mockito-inline:5.2.0')
     testImplementation "com.squareup.okhttp3:mockwebserver:$rootProject.ext.okHttpVersion"
     testImplementation "androidx.work:work-testing:$workVersion"

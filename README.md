@@ -101,7 +101,7 @@ Check the root `build.gradle` to see all code restrictions for interoperability 
 Fjuul SDK for iOS is written in Swift, and published as an SPM package.
 
 ### Restrictions
-- Fjuul SDK for iOS runs on devices with iOS 10+
+- Fjuul SDK for iOS runs on devices with iOS 11+
 - Fjuul SDK for iOS requires Xcode 12.4+ and Swift 5.2+
 
 ### Distribution

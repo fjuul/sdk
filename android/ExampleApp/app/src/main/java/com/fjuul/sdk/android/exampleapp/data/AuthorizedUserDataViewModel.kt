@@ -16,7 +16,7 @@ class AuthorizedUserDataViewModel : ViewModel() {
     }
 
     fun fetchUserProfile(client: ApiClient, callback: (success: Boolean, exception: Exception?) -> Unit) {
-        UserService(client).profile.enqueue { call, result ->
+        UserService(client).profile.enqueue { _, result ->
             if (result.isError) {
                 callback(false, result.error)
                 return@enqueue

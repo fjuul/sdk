@@ -899,20 +899,6 @@ public class GoogleFitActivitySourceTest {
             }
 
             @Test
-            @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
-            public void isActivityRecognitionPermissionGranted_whenPermissionPresentsInManifestForLollipop_returnsTrue() {
-                // Add ACTIVITY_RECOGNITION permission to the package info
-                final PackageInfo packageInfo =
-                    PackageInfoBuilder.newBuilder().setPackageName(context.getPackageName()).build();
-                packageInfo.requestedPermissions = new String[] {Manifest.permission.ACTIVITY_RECOGNITION};
-                final ShadowPackageManager shadowPackageManager = new ShadowPackageManager();
-                shadowPackageManager.installPackage(packageInfo);
-
-                boolean result = GoogleFitActivitySource.isActivityRecognitionPermissionGranted(context);
-                assertTrue("should be true", result);
-            }
-
-            @Test
             @Config(sdk = Build.VERSION_CODES.P)
             public void isActivityRecognitionPermissionGranted_whenPermissionOnlyPresentsInManifestForPie_returnsFalse() {
                 // Add ACTIVITY_RECOGNITION permission to the package info

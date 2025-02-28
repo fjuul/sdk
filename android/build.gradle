@@ -7,7 +7,7 @@ plugins {
 
 ext {
     compileSdk = 35
-    minSdk = 21
+    minSdk = 26
     targetSdk = 35
 
     okHttpVersion = '4.12.0'

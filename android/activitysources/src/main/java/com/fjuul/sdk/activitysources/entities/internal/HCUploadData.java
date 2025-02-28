@@ -3,44 +3,44 @@ package com.fjuul.sdk.activitysources.entities.internal;
 import java.util.Collections;
 import java.util.List;
 
-import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCCalorieDataPoint;
-import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCHeartRateSummaryDataPoint;
-import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCStepsDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HCCalorieDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HCHeartRateSummaryDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HCStepsDataPoint;
 
 import androidx.annotation.NonNull;
 
-public class GHCUploadData {
+public class HCUploadData {
     @NonNull
-    List<GHCCalorieDataPoint> caloriesData = Collections.emptyList();
+    List<HCCalorieDataPoint> caloriesData = Collections.emptyList();
     @NonNull
-    List<GHCStepsDataPoint> stepsData = Collections.emptyList();
+    List<HCStepsDataPoint> stepsData = Collections.emptyList();
     @NonNull
-    List<GHCHeartRateSummaryDataPoint> heartRateData = Collections.emptyList();
+    List<HCHeartRateSummaryDataPoint> heartRateData = Collections.emptyList();
 
     @NonNull
-    public List<GHCCalorieDataPoint> getCaloriesData() {
+    public List<HCCalorieDataPoint> getCaloriesData() {
         return caloriesData;
     }
 
     @NonNull
-    public List<GHCStepsDataPoint> getStepsData() {
+    public List<HCStepsDataPoint> getStepsData() {
         return stepsData;
     }
 
     @NonNull
-    public List<GHCHeartRateSummaryDataPoint> getHeartRateData() {
+    public List<HCHeartRateSummaryDataPoint> getHeartRateData() {
         return heartRateData;
     }
 
-    public void setCaloriesData(@NonNull List<GHCCalorieDataPoint> caloriesData) {
+    public void setCaloriesData(@NonNull List<HCCalorieDataPoint> caloriesData) {
         this.caloriesData = caloriesData;
     }
 
-    public void setStepsData(@NonNull List<GHCStepsDataPoint> stepsData) {
+    public void setStepsData(@NonNull List<HCStepsDataPoint> stepsData) {
         this.stepsData = stepsData;
     }
 
-    public void setHeartRateData(@NonNull List<GHCHeartRateSummaryDataPoint> heartRateData) {
+    public void setHeartRateData(@NonNull List<HCHeartRateSummaryDataPoint> heartRateData) {
         this.heartRateData = heartRateData;
     }
 
@@ -51,7 +51,7 @@ public class GHCUploadData {
     @Override
     public String toString() {
         //@formatter:off
-        return "GHCUploadData{" +
+        return "HCUploadData{" +
             "calories=" + toString(caloriesData) +
             ", steps=" + toString(stepsData) +
             ", heartRates=" + toString(heartRateData) +

@@ -1,6 +1,5 @@
 package com.fjuul.sdk.activitysources.entities.internal;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,12 +9,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
-import com.fjuul.sdk.activitysources.entities.GoogleHealthConnectIntradaySyncOptions;
-import com.fjuul.sdk.activitysources.entities.GoogleHealthConnectProfileSyncOptions;
-import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCCalorieDataPoint;
-import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCDataConverter;
-import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCHeartRateSummaryDataPoint;
-import com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect.GHCStepsDataPoint;
+import com.fjuul.sdk.activitysources.entities.HealthConnectIntradaySyncOptions;
+import com.fjuul.sdk.activitysources.entities.HealthConnectProfileSyncOptions;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HCCalorieDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HCDataConverter;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HCHeartRateSummaryDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HCStepsDataPoint;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.core.ApiClient;
@@ -33,28 +32,27 @@ import androidx.health.connect.client.records.StepsRecord;
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord;
 import androidx.health.connect.client.records.WeightRecord;
 
-public class GHCDataManager {
+public class HCDataManager {
     private static final int MAX_DAYS = 30; // Don't try to get older data than this
     private static final ExecutorService localBackgroundExecutor = Executors.newCachedThreadPool();
 
-    private static final String PROFILE_CHANGES_TOKEN_KEY = "ghc-profile-changes-token";
-    private static final String INTRADAY_CHANGES_TOKEN_KEY = "ghc-intraday-changes-token";
-    private static final String SESSION_CHANGES_TOKEN_KEY = "ghc-session-changes-token";
+    private static final String PROFILE_CHANGES_TOKEN_KEY = "hc-profile-changes-token";
+    private static final String INTRADAY_CHANGES_TOKEN_KEY = "hc-intraday-changes-token";
 
     private final @NonNull ActivitySourcesService activitySourcesService;
-    private final @NonNull GHCClientWrapper clientWrapper;
+    private final @NonNull HCClientWrapper clientWrapper;
     private final @NonNull ApiClient apiClient;
 
-    public GHCDataManager(@NonNull GHCClientWrapper clientWrapper,
-        @NonNull ActivitySourcesService activitySourcesService,
-        @NonNull ApiClient apiClient) {
+    public HCDataManager(@NonNull HCClientWrapper clientWrapper,
+                         @NonNull ActivitySourcesService activitySourcesService,
+                         @NonNull ApiClient apiClient) {
         this.clientWrapper = clientWrapper;
         this.activitySourcesService = activitySourcesService;
         this.apiClient = apiClient;
     }
 
     @NonNull
-    public Task<Void> syncIntradayMetrics(@NonNull GoogleHealthConnectIntradaySyncOptions options) {
+    public Task<Void> syncIntradayMetrics(@NonNull HealthConnectIntradaySyncOptions options) {
         Logger.get().d("Syncing intraday metrics");
         final Task<Boolean> checkPermissionsTask = checkPermissions();
         final Task<HealthConnectRecords> readTask =
@@ -67,36 +65,36 @@ public class GHCDataManager {
                 Logger.get().d("No new records to send");
                 return Tasks.forResult(null);
             } else {
-                final List<GHCStepsDataPoint> stepsDataPoints = new ArrayList<>();
-                final List<GHCCalorieDataPoint> calorieDataPoints = new ArrayList<>();
-                final List<GHCHeartRateSummaryDataPoint> heartRateSummaryDataPoints =
+                final List<HCStepsDataPoint> stepsDataPoints = new ArrayList<>();
+                final List<HCCalorieDataPoint> calorieDataPoints = new ArrayList<>();
+                final List<HCHeartRateSummaryDataPoint> heartRateSummaryDataPoints =
                     new ArrayList<>();
                 for (Record healthRecord : healthRecords) {
                     if (healthRecord instanceof StepsRecord stepsRecord) {
-                        stepsDataPoints.add(GHCDataConverter.convertRecordToSteps(stepsRecord));
+                        stepsDataPoints.add(HCDataConverter.convertRecordToSteps(stepsRecord));
                     } else if (healthRecord instanceof HeartRateRecord heartRateRecord) {
                         heartRateSummaryDataPoints.add(
-                            GHCDataConverter.convertRecordToHeartRateSummary(heartRateRecord));
+                            HCDataConverter.convertRecordToHeartRateSummary(heartRateRecord));
                     } else if (healthRecord instanceof TotalCaloriesBurnedRecord totalCaloriesBurnedRecord) {
                         calorieDataPoints.add(
-                            GHCDataConverter.convertRecordToCalories(totalCaloriesBurnedRecord));
+                            HCDataConverter.convertRecordToCalories(totalCaloriesBurnedRecord));
                     } else {
                         Logger.get().e("Unexpected record type: %s", healthRecord.getClass().getCanonicalName());
                     }
                 }
-                GHCUploadData uploadData = new GHCUploadData();
+                HCUploadData uploadData = new HCUploadData();
                 uploadData.setStepsData(stepsDataPoints);
                 uploadData.setHeartRateData(heartRateSummaryDataPoints);
                 uploadData.setCaloriesData(calorieDataPoints);
 
-                return sendGHCUploadData(INTRADAY_CHANGES_TOKEN_KEY, nextToken, uploadData).onSuccessTask(
+                return sendHCUploadData(INTRADAY_CHANGES_TOKEN_KEY, nextToken, uploadData).onSuccessTask(
                     localBackgroundExecutor, (apiCallResult) -> Tasks.forResult(apiCallResult.getValue()));
             }
         }));
     }
 
     @NonNull
-    public Task<Void> syncProfile(@NonNull GoogleHealthConnectProfileSyncOptions options) {
+    public Task<Void> syncProfile(@NonNull HealthConnectProfileSyncOptions options) {
         Logger.get().d("Syncing profile");
         final Task<Boolean> checkPermissionsTask = checkPermissions();
         final Task<HealthConnectRecords> readTask =
@@ -105,7 +103,7 @@ public class GHCDataManager {
         return readTask.onSuccessTask(localBackgroundExecutor, (healthConnectRecords -> {
             final String nextToken = healthConnectRecords.getNextToken();
             final List<Record> healthRecords = healthConnectRecords.getRecords();
-            GHCSynchronizableProfileParams profileParams = new GHCSynchronizableProfileParams();
+            HCSynchronizableProfileParams profileParams = new HCSynchronizableProfileParams();
             // We have to go through all the height and weight records and select the most
             // recent values, if any
             Instant newestHeightTime = Instant.ofEpochMilli(0);  // very old
@@ -131,7 +129,7 @@ public class GHCDataManager {
                 Logger.get().d("No new profile data to send");
                 return Tasks.forResult(null);
             } else {
-                return sendGHCProfileParams(nextToken, profileParams).onSuccessTask(
+                return sendHCProfileParams(nextToken, profileParams).onSuccessTask(
                     localBackgroundExecutor, (apiCallResult) -> Tasks.forResult(apiCallResult.getValue()));
             }
         }));
@@ -206,21 +204,21 @@ public class GHCDataManager {
     }
 
     @NonNull
-    private Task<ApiCallResult<Void>> sendGHCUploadData(@NonNull String tokenKey,
-        @NonNull String nextToken,
-        @NonNull GHCUploadData uploadData) {
+    private Task<ApiCallResult<Void>> sendHCUploadData(@NonNull String tokenKey,
+                                                       @NonNull String nextToken,
+                                                       @NonNull HCUploadData uploadData) {
         final TaskCompletionSource<ApiCallResult<Void>> sendDataTaskCompletionSource = new TaskCompletionSource<>();
-        Logger.get().d("Uploading GHC data: %s", uploadData);
-        activitySourcesService.uploadGoogleHealthConnectData(uploadData).enqueue((apiCall, result) -> {
+        Logger.get().d("Uploading HC data: %s", uploadData);
+        activitySourcesService.uploadHealthConnectData(uploadData).enqueue((apiCall, result) -> {
             if (result.isError()) {
-                Logger.get().d("Failed to send GHC data: %s", result.getError().getMessage());
+                Logger.get().d("Failed to send HC data: %s", result.getError().getMessage());
                 final GoogleFitActivitySourceExceptions.CommonException exception =
                     new GoogleFitActivitySourceExceptions.CommonException("Failed to send data to the server",
                         result.getError());
                 sendDataTaskCompletionSource.trySetException(exception);
                 return;
             }
-            Logger.get().d("Succeeded to send GHC data");
+            Logger.get().d("Succeeded to send HC data");
             apiClient.getStorage().set(tokenKey, nextToken);
             sendDataTaskCompletionSource.trySetResult(result);
         });
@@ -228,11 +226,11 @@ public class GHCDataManager {
     }
 
     @NonNull
-    private Task<ApiCallResult<Void>> sendGHCProfileParams(@NonNull String nextToken,
-        @NonNull GHCSynchronizableProfileParams profileParams) {
+    private Task<ApiCallResult<Void>> sendHCProfileParams(@NonNull String nextToken,
+                                                          @NonNull HCSynchronizableProfileParams profileParams) {
         final TaskCompletionSource<ApiCallResult<Void>> sendDataTaskCompletionSource = new TaskCompletionSource<>();
-        Logger.get().d("Updating GHC profile: %s", profileParams);
-        activitySourcesService.updateProfileOnBehalfOfGoogleHealthConnect(profileParams).enqueue((apiCall, result) -> {
+        Logger.get().d("Updating HC profile: %s", profileParams);
+        activitySourcesService.updateProfileOnBehalfOfHealthConnect(profileParams).enqueue((apiCall, result) -> {
             if (result.isError()) {
                 Logger.get().d("failed to send the profile data: %s", result.getError().getMessage());
                 final GoogleFitActivitySourceExceptions.CommonException exception =

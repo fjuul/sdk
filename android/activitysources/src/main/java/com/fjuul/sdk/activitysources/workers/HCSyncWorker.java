@@ -6,7 +6,7 @@ import java.util.List;
 import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig;
-import com.fjuul.sdk.activitysources.entities.GoogleHealthConnectActivitySource;
+import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource;
 import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.UserCredentials;
 
@@ -17,13 +17,13 @@ import androidx.annotation.Nullable;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-public abstract class GHCSyncWorker extends Worker {
+public abstract class HCSyncWorker extends Worker {
     public static final String KEY_USER_TOKEN_ARG = "USER_TOKEN";
     public static final String KEY_USER_SECRET_ARG = "USER_SECRET";
     public static final String KEY_API_KEY_ARG = "API_KEY";
     public static final String KEY_BASE_URL_ARG = "BASE_URL";
 
-    public GHCSyncWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+    public HCSyncWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
     }
 
@@ -64,7 +64,7 @@ public abstract class GHCSyncWorker extends Worker {
         @NonNull ActivitySourcesManager manager) {
         final List<ActivitySourceConnection> currentConnections = manager.getCurrent();
         return currentConnections.stream()
-            .filter(connection -> connection.getActivitySource() instanceof GoogleHealthConnectActivitySource)
+            .filter(connection -> connection.getActivitySource() instanceof HealthConnectActivitySource)
             .findFirst()
             .orElse(null);
     }

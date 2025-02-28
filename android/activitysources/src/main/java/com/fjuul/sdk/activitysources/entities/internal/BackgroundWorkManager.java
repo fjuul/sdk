@@ -89,10 +89,10 @@ public class BackgroundWorkManager {
     }
 
     @SuppressLint("NewApi")
-    public void configureGHCSyncWorks() {
-        switch (config.getGoogleHealthConnectIntradayBackgroundSyncMode()) {
+    public void configureHCSyncWorks() {
+        switch (config.getHealthConnectIntradayBackgroundSyncMode()) {
             case DISABLED: {
-                workScheduler.cancelGHCIntradaySyncWork();
+                workScheduler.cancelHCIntradaySyncWork();
                 break;
             }
             case ENABLED: {
@@ -101,24 +101,24 @@ public class BackgroundWorkManager {
                     .filter(FitnessMetricsType::isIntradayMetricType)
                     .collect(Collectors.toSet());
                 if (intradayMetrics.isEmpty()) {
-                    workScheduler.cancelGHCIntradaySyncWork();
+                    workScheduler.cancelHCIntradaySyncWork();
                 } else {
-                    workScheduler.scheduleGHCIntradaySyncWork(intradayMetrics);
+                    workScheduler.scheduleHCIntradaySyncWork(intradayMetrics);
                 }
                 break;
             }
         }
     }
 
-    public void cancelGHCSyncWorks() {
-        workScheduler.cancelGHCIntradaySyncWork();
+    public void cancelHCSyncWorks() {
+        workScheduler.cancelHCIntradaySyncWork();
     }
 
     @SuppressLint("NewApi")
-    public void configureGHCProfileSyncWork() {
-        switch (config.getGoogleHealthConnectProfileBackgroundSyncMode()) {
+    public void configureHCProfileSyncWork() {
+        switch (config.getHealthConnectProfileBackgroundSyncMode()) {
             case DISABLED:
-                workScheduler.cancelGHCProfileSyncWork();
+                workScheduler.cancelHCProfileSyncWork();
                 break;
             case ENABLED: {
                 final Set<FitnessMetricsType> profileMetrics = config.getCollectableFitnessMetrics()
@@ -126,16 +126,16 @@ public class BackgroundWorkManager {
                     .filter(FitnessMetricsType::isProfileMetricType)
                     .collect(Collectors.toSet());
                 if (profileMetrics.isEmpty()) {
-                    workScheduler.cancelGHCProfileSyncWork();
+                    workScheduler.cancelHCProfileSyncWork();
                 } else {
-                    workScheduler.scheduleGHCProfileSyncWork(profileMetrics);
+                    workScheduler.scheduleHCProfileSyncWork(profileMetrics);
                 }
                 break;
             }
         }
     }
 
-    public void cancelGHCProfileSyncWork() {
-        workScheduler.cancelGHCProfileSyncWork();
+    public void cancelHCProfileSyncWork() {
+        workScheduler.cancelHCProfileSyncWork();
     }
 }

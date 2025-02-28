@@ -1,4 +1,4 @@
-package com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect;
+package com.fjuul.sdk.activitysources.entities.internal.healthconnect;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -7,7 +7,7 @@ import java.util.Locale;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class GHCHeartRateSummaryDataPoint extends GHCDataPoint {
+public class HCHeartRateSummaryDataPoint extends HCDataPoint {
     protected final float avg;
     protected final float min;
     protected final float max;
@@ -24,12 +24,12 @@ public class GHCHeartRateSummaryDataPoint extends GHCDataPoint {
         return max;
     }
 
-    public GHCHeartRateSummaryDataPoint(float avg,
-        float min,
-        float max,
-        @NonNull Date start,
-        @NonNull Date end,
-        @Nullable String dataSource) {
+    public HCHeartRateSummaryDataPoint(float avg,
+                                       float min,
+                                       float max,
+                                       @NonNull Date start,
+                                       @NonNull Date end,
+                                       @Nullable String dataSource) {
         super(start, end, dataSource);
         this.avg = avg;
         this.min = min;
@@ -43,7 +43,7 @@ public class GHCHeartRateSummaryDataPoint extends GHCDataPoint {
         final String startFormatted = dateFormat.format(start);
         final String endFormatted = dateFormat.format(end);
         return String.format(Locale.getDefault(),
-            "GHCHRSummaryDataPoint: avg BPM %f, min BPM %f, max BPM %f, start %s, end %s, dataSource %s",
+            "HCHeartRateSummaryDataPoint: avg BPM %f, min BPM %f, max BPM %f, start %s, end %s, dataSource %s",
             avg,
             min,
             max,

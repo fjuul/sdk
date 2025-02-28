@@ -1,11 +1,11 @@
-package com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect;
+package com.fjuul.sdk.activitysources.entities.internal.healthconnect;
 
 import java.util.Date;
 import java.util.List;
 
 import androidx.annotation.NonNull;
 
-public class GHCDataPointsBatch<T extends GHCDataPoint> {
+public class HCDataPointsBatch<T extends HCDataPoint> {
     @NonNull
     private List<T> points;
     @NonNull
@@ -28,7 +28,7 @@ public class GHCDataPointsBatch<T extends GHCDataPoint> {
         return endTime;
     }
 
-    public GHCDataPointsBatch(@NonNull List<T> points, @NonNull Date startTime, @NonNull Date endTime) {
+    public HCDataPointsBatch(@NonNull List<T> points, @NonNull Date startTime, @NonNull Date endTime) {
         this.points = points;
         this.startTime = startTime;
         this.endTime = endTime;

@@ -1,11 +1,11 @@
-package com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect;
+package com.fjuul.sdk.activitysources.entities.internal.healthconnect;
 
 import java.util.Date;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public abstract class GHCDataPoint {
+public abstract class HCDataPoint {
     @NonNull
     protected final Date start;
     /**
@@ -34,11 +34,11 @@ public abstract class GHCDataPoint {
         return dataSource;
     }
 
-    public GHCDataPoint(@NonNull Date start, @Nullable String dataSource) {
+    public HCDataPoint(@NonNull Date start, @Nullable String dataSource) {
         this(start, null, dataSource);
     }
 
-    public GHCDataPoint(@NonNull Date start, @Nullable Date end, @Nullable String dataSource) {
+    public HCDataPoint(@NonNull Date start, @Nullable Date end, @Nullable String dataSource) {
         this.start = start;
         this.end = end;
         this.dataSource = dataSource;

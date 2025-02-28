@@ -21,7 +21,7 @@ enum class ModuleItemName(val value: String) {
     PROFILE("Profile"),
     ACTIVITY_SOURCES("Activity Sources"),
     GF_SYNC("Google Fit synchronization"),
-    GHC_SYNC("Google Health Connect synchronization"),
+    HC_SYNC("Health Connect synchronization"),
     DAILY_STATS("Daily Stats"),
     AGGREGATED_DAILY_STATS("Aggregated Daily Stats"),
     LOGOUT("Logout")
@@ -50,7 +50,7 @@ class ModulesFragment : Fragment() {
             ModuleItem(ModuleItemName.PROFILE),
             ModuleItem(ModuleItemName.ACTIVITY_SOURCES),
             ModuleItem(ModuleItemName.GF_SYNC),
-            ModuleItem(ModuleItemName.GHC_SYNC),
+            ModuleItem(ModuleItemName.HC_SYNC),
             ModulesSection("Analytics"),
             ModuleItem(ModuleItemName.DAILY_STATS),
             ModuleItem(ModuleItemName.AGGREGATED_DAILY_STATS),
@@ -83,8 +83,8 @@ class ModulesFragment : Fragment() {
                         val action = ModulesFragmentDirections.actionModulesFragmentToGFSyncFragment()
                         findNavController().navigate(action)
                     }
-                    ModuleItemName.GHC_SYNC -> {
-                        val action = ModulesFragmentDirections.actionModulesFragmentToGHCSyncFragment()
+                    ModuleItemName.HC_SYNC -> {
+                        val action = ModulesFragmentDirections.actionModulesFragmentToHCSyncFragment()
                         findNavController().navigate(action)
                     }
                     ModuleItemName.LOGOUT -> {

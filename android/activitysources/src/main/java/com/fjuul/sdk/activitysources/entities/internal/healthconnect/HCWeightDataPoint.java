@@ -1,4 +1,4 @@
-package com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect;
+package com.fjuul.sdk.activitysources.entities.internal.healthconnect;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -6,9 +6,9 @@ import java.util.Locale;
 
 import androidx.annotation.NonNull;
 
-public class GHCHeightDataPoint extends GHCScalarDataPoint<Float> {
-    public GHCHeightDataPoint(@NonNull Float cm, @NonNull Date start, @NonNull String dataSource) {
-        super(cm, start, dataSource);
+public class HCWeightDataPoint extends HCScalarDataPoint<Float> {
+    public HCWeightDataPoint(@NonNull Float kg, @NonNull Date start, @NonNull String dataSource) {
+        super(kg, start, dataSource);
     }
 
     @NonNull
@@ -17,6 +17,6 @@ public class GHCHeightDataPoint extends GHCScalarDataPoint<Float> {
         final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.getDefault());
         final String startFormatted = dateFormat.format(start);
         return String.format(Locale
-            .getDefault(), "GHCHeightDataPoint: cm %.2f, start %s, dataSource %s", value, startFormatted, dataSource);
+            .getDefault(), "HCHeightDataPoint: kg %.1f, start %s, dataSource %s", value, startFormatted, dataSource);
     }
 }

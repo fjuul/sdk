@@ -5,8 +5,8 @@ import java.util.concurrent.ExecutionException;
 import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
-import com.fjuul.sdk.activitysources.entities.GoogleHealthConnectActivitySource;
-import com.fjuul.sdk.activitysources.entities.GoogleHealthConnectProfileSyncOptions;
+import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource;
+import com.fjuul.sdk.activitysources.entities.HealthConnectIntradaySyncOptions;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 
@@ -15,27 +15,29 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.work.WorkerParameters;
 
-public class GHCProfileSyncWorker extends GHCSyncWorker {
-    public static final String KEY_PROFILE_METRICS_ARG = "PROFILE_METRICS";
+public class HCIntradaySyncWorker extends HCSyncWorker {
+    public static final String KEY_INTRADAY_METRICS_ARG = "INTRADAY_METRICS";
 
-    public GHCProfileSyncWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+    public HCIntradaySyncWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
     }
 
+    @SuppressLint("NewApi")
     @NonNull
     @Override
     public Result doWork() {
         final ActivitySourcesManager sourcesManager = getOrInitializeActivitySourcesManager();
-        final ActivitySourceConnection ghcConnection = getGoogleHealthConnectActivitySourceConnection(sourcesManager);
-        if (ghcConnection == null) {
+        final ActivitySourceConnection hcConnection = getGoogleHealthConnectActivitySourceConnection(sourcesManager);
+        if (hcConnection == null) {
+            // TODO: cancel next scheduled tasks because there is not current hc connection
             // NOTE: currently, the task will be canceled on the next initialization of ActivitySourcesManager
             return Result.success();
         }
-        final GoogleHealthConnectActivitySource gfSource =
-            ((GoogleHealthConnectActivitySource) ghcConnection.getActivitySource());
-        final TaskCompletionSource<Boolean> taskCompletionSource = new TaskCompletionSource<>();
-        final GoogleHealthConnectProfileSyncOptions syncOptions = buildProfileSyncOptions();
-        gfSource.syncProfile(syncOptions, (result -> {
+        final HealthConnectActivitySource hcSource =
+            ((HealthConnectActivitySource) hcConnection.getActivitySource());
+        final TaskCompletionSource<Void> taskCompletionSource = new TaskCompletionSource<>();
+        final HealthConnectIntradaySyncOptions syncOptions = buildIntradaySyncOptions();
+        hcSource.syncIntradayMetrics(syncOptions, (result -> {
             if (result.isError() && result.getError() instanceof Exception) {
                 taskCompletionSource.trySetException((Exception) result.getError());
                 return;
@@ -53,14 +55,16 @@ public class GHCProfileSyncWorker extends GHCSyncWorker {
     }
 
     @SuppressLint("NewApi")
-    private GoogleHealthConnectProfileSyncOptions buildProfileSyncOptions() {
-        final String[] rawProfileMetrics = getInputData().getStringArray(KEY_PROFILE_METRICS_ARG);
-        final GoogleHealthConnectProfileSyncOptions.Builder syncOptionsBuilder =
-            new GoogleHealthConnectProfileSyncOptions.Builder();
-        for (final String rawProfileMetric : rawProfileMetrics) {
+    private HealthConnectIntradaySyncOptions buildIntradaySyncOptions() {
+        final String[] rawIntradayMetrics = getInputData().getStringArray(KEY_INTRADAY_METRICS_ARG);
+        final HealthConnectIntradaySyncOptions.Builder syncOptionsBuilder =
+            new HealthConnectIntradaySyncOptions.Builder();
+        for (final String rawIntradayMetric : rawIntradayMetrics) {
             try {
-                final FitnessMetricsType metric = FitnessMetricsType.valueOf(rawProfileMetric);
-                syncOptionsBuilder.include(metric);
+                final FitnessMetricsType metric = FitnessMetricsType.valueOf(rawIntradayMetric);
+                if (metric != null) {
+                    syncOptionsBuilder.include(metric);
+                }
             } catch (Exception e) {}
         }
         return syncOptionsBuilder.build();

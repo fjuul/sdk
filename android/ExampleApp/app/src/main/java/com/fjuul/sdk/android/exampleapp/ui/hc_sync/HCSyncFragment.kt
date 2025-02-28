@@ -1,4 +1,4 @@
-package com.fjuul.sdk.android.exampleapp.ui.ghc_sync
+package com.fjuul.sdk.android.exampleapp.ui.hc_sync
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,16 +9,16 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.fjuul.sdk.android.exampleapp.R
-import com.fjuul.sdk.android.exampleapp.databinding.GhcSyncFragmentBinding
+import com.fjuul.sdk.android.exampleapp.databinding.HcSyncFragmentBinding
 
-class GHCSyncFragment : Fragment() {
+class HCSyncFragment : Fragment() {
 
     companion object {
-        fun newInstance() = GHCSyncFragment()
+        fun newInstance() = HCSyncFragment()
     }
 
-    private lateinit var viewModel: GHCSyncViewModel
-    private lateinit var binding: GhcSyncFragmentBinding
+    private lateinit var viewModel: HCSyncViewModel
+    private lateinit var binding: HcSyncFragmentBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -26,13 +26,13 @@ class GHCSyncFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         //Data binding added because kotlin extension is deprecated
-        binding = GhcSyncFragmentBinding.bind(inflater.inflate(R.layout.ghc_sync_fragment, container, false))
+        binding = HcSyncFragmentBinding.bind(inflater.inflate(R.layout.hc_sync_fragment, container, false))
         return binding.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(GHCSyncViewModel::class.java)
+        viewModel = ViewModelProvider(this).get(HCSyncViewModel::class.java)
 
         binding.intradaySectionText.sectionText.text = "Intraday metrics"
         binding.profileSectionText.sectionText.text = "Profile"

@@ -7,10 +7,10 @@ import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 
 /**
- * A class that encapsulates parameters for syncing intraday data of Google Health Connect. In order to build the
+ * A class that encapsulates parameters for syncing intraday data of Health Connect. In order to build the
  * instance of this class, use {@link Builder}.
  */
-public final class GoogleHealthConnectIntradaySyncOptions {
+public final class HealthConnectIntradaySyncOptions {
     @NonNull
     private final Set<FitnessMetricsType> metrics;
 
@@ -19,13 +19,13 @@ public final class GoogleHealthConnectIntradaySyncOptions {
         return metrics;
     }
 
-    private GoogleHealthConnectIntradaySyncOptions(@NonNull Set<FitnessMetricsType> metrics) {
+    private HealthConnectIntradaySyncOptions(@NonNull Set<FitnessMetricsType> metrics) {
         super();
         this.metrics = metrics;
     }
 
     /**
-     * Builder of {@link GoogleHealthConnectIntradaySyncOptions}. The start date, the end date, and at least one fitness
+     * Builder of {@link HealthConnectIntradaySyncOptions}. The start date, the end date, and at least one fitness
      * metric must be specified during the building.
      */
     public static class Builder {
@@ -52,12 +52,12 @@ public final class GoogleHealthConnectIntradaySyncOptions {
 
         @SuppressLint("NewApi")
         @NonNull
-        public GoogleHealthConnectIntradaySyncOptions build() {
+        public HealthConnectIntradaySyncOptions build() {
             if (metrics.isEmpty()) {
                 throw new IllegalStateException("At least one metric type must be specified");
             }
             Set<FitnessMetricsType> metricsToSync = new HashSet<>(metrics);
-            return new GoogleHealthConnectIntradaySyncOptions(metricsToSync);
+            return new HealthConnectIntradaySyncOptions(metricsToSync);
         }
     }
 }

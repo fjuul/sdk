@@ -5,13 +5,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.fjuul.sdk.activitysources.adapters.GFUploadDataJsonAdapter;
-import com.fjuul.sdk.activitysources.adapters.GHCUploadDataJsonAdapter;
+import com.fjuul.sdk.activitysources.adapters.HCUploadDataJsonAdapter;
 import com.fjuul.sdk.activitysources.entities.ConnectionResult;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.activitysources.entities.internal.GFSynchronizableProfileParams;
 import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
-import com.fjuul.sdk.activitysources.entities.internal.GHCSynchronizableProfileParams;
-import com.fjuul.sdk.activitysources.entities.internal.GHCUploadData;
+import com.fjuul.sdk.activitysources.entities.internal.HCSynchronizableProfileParams;
+import com.fjuul.sdk.activitysources.entities.internal.HCUploadData;
 import com.fjuul.sdk.activitysources.exceptions.ActivitySourcesApiExceptions;
 import com.fjuul.sdk.activitysources.http.ActivitySourcesApiResponseTransformer;
 import com.fjuul.sdk.activitysources.http.apis.ActivitySourcesApi;
@@ -48,7 +48,7 @@ public class ActivitySourcesService {
         OkHttpClient httpClient = client.buildSigningClient();
         Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter())
             .add(new GFUploadDataJsonAdapter())
-            .add(new GHCUploadDataJsonAdapter())
+            .add(new HCUploadDataJsonAdapter())
             .build();
         ActivitySourcesApiResponseTransformer responseTransformer = new ActivitySourcesApiResponseTransformer();
         Retrofit retrofit = new Retrofit.Builder().baseUrl(client.getBaseUrl())
@@ -138,8 +138,8 @@ public class ActivitySourcesService {
      * @return ApiCall for uploading the fitness data
      */
     @NonNull
-    public ApiCall<Void> uploadGoogleHealthConnectData(@NonNull GHCUploadData dataToUpload) {
-        return apiClient.uploadGoogleHealthConnectData(clientBuilder.getUserToken(), dataToUpload);
+    public ApiCall<Void> uploadHealthConnectData(@NonNull HCUploadData dataToUpload) {
+        return apiClient.uploadHealthConnectData(clientBuilder.getUserToken(), dataToUpload);
     }
 
     /**
@@ -150,7 +150,7 @@ public class ActivitySourcesService {
      * @return ApiCall for updating the user profile
      */
     @NonNull
-    public ApiCall<Void> updateProfileOnBehalfOfGoogleHealthConnect(@NonNull GHCSynchronizableProfileParams params) {
-        return apiClient.updateProfileOnBehalfOfGoogleHealthConnect(clientBuilder.getUserToken(), params);
+    public ApiCall<Void> updateProfileOnBehalfOfHealthConnect(@NonNull HCSynchronizableProfileParams params) {
+        return apiClient.updateProfileOnBehalfOfHealthConnect(clientBuilder.getUserToken(), params);
     }
 }

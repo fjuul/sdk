@@ -3,7 +3,7 @@ package com.fjuul.sdk.activitysources.entities.internal;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class GHCSynchronizableProfileParams {
+public class HCSynchronizableProfileParams {
     @Nullable
     private Float height;
     @Nullable
@@ -24,7 +24,7 @@ public class GHCSynchronizableProfileParams {
     @NonNull
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder("GHCSynchronizableProfileParams{");
+        StringBuilder builder = new StringBuilder("HCSynchronizableProfileParams{");
         boolean appended = false;
         if (height != null) {
             builder.append("height=\"").append(height).append("\"");

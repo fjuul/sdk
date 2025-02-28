@@ -27,7 +27,6 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
 import java.io.IOException
-import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.CompletableFuture
 import kotlin.reflect.KClass
@@ -36,11 +35,11 @@ import kotlin.reflect.KClass
 const val MIN_SUPPORTED_SDK = Build.VERSION_CODES.O_MR1
 
 /**
- * A wrapper for methods in the Kotlin Google Health Connect API which wraps the Kotlin
+ * A wrapper for methods in the Kotlin Health Connect API which wraps the Kotlin
  * 'suspend' methods with GlobalScope.future to make them callable from Java. See
  * API guide here: https://developer.android.com/health-and-fitness/guides/health-connect
  */
-class GHCClientWrapper(private val context: Context) {
+class HCClientWrapper(private val context: Context) {
     private val healthConnectClient by lazy { HealthConnectClient.getOrCreate(context) }
     private val profileRecordTypes = setOf(
         HeightRecord::class,

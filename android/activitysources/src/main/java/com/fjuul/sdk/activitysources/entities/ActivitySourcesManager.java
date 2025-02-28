@@ -32,7 +32,7 @@ import androidx.work.WorkManager;
  * connections. This is a high-level entity and entry point of the whole 'activity sources' module. The class designed
  * as the singleton, so you need first to initialize it before getting the instance. For the proper initialization, you
  * have to provide the configured api-client built with the user credentials.<br>
- * One of the main functions of this module is to connect to activity sources. There are local (i.e. Google Fit) and
+ * One of the main functions of this module is to connect to activity sources. There are local (i.e. Health Connect) and
  * external trackers (i.e. Polar, Garmin, Fitbit, etc). External trackers require user authentication in the web
  * browser.<br>
  * To use this module properly when connecting to the external activity source, you need to make sure about an Activity
@@ -131,7 +131,7 @@ public final class ActivitySourcesManager {
             client.getApiKey(),
             client.getBaseUrl());
         GoogleFitActivitySource.initialize(client, config);
-        GoogleHealthConnectActivitySource.initialize(client, config);
+        HealthConnectActivitySource.initialize(client, config);
 
         final BackgroundWorkManager backgroundWorkManager = new BackgroundWorkManager(config, scheduler);
         final ActivitySourceResolver activitySourceResolver = new ActivitySourceResolver();

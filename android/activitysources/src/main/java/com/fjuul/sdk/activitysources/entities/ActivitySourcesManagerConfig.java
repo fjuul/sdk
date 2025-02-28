@@ -34,17 +34,13 @@ public class ActivitySourcesManagerConfig {
     private Duration googleFitSessionsBackgroundSyncMinSessionDuration;
 
     @NonNull
-    private BackgroundSyncMode googleHealthConnectIntradayBackgroundSyncMode;
-    @NonNull
-    private BackgroundSyncMode googleHealthConnectSessionsBackgroundSyncMode;
-    @Nullable
-    private Duration googleHealthConnectSessionsBackgroundSyncMinSessionDuration;
+    private BackgroundSyncMode healthConnectIntradayBackgroundSyncMode;
 
     @NonNull
     private BackgroundSyncMode googleFitProfileBackgroundSyncMode;
 
     @NonNull
-    private BackgroundSyncMode googleHealthConnectProfileBackgroundSyncMode;
+    private BackgroundSyncMode healthConnectProfileBackgroundSyncMode;
 
     @NonNull
     private Set<FitnessMetricsType> collectableFitnessMetrics;
@@ -76,18 +72,8 @@ public class ActivitySourcesManagerConfig {
      * @return background mode
      */
     @NonNull
-    public BackgroundSyncMode getGoogleHealthConnectIntradayBackgroundSyncMode() {
-        return googleHealthConnectIntradayBackgroundSyncMode;
-    }
-
-    /**
-     * Returns the mode that indicates whether sessions of Google Health Connect should be synced in the background.
-     *
-     * @return background mode
-     */
-    @NonNull
-    public BackgroundSyncMode getGoogleHealthConnectSessionsBackgroundSyncMode() {
-        return googleHealthConnectSessionsBackgroundSyncMode;
+    public BackgroundSyncMode getHealthConnectIntradayBackgroundSyncMode() {
+        return healthConnectIntradayBackgroundSyncMode;
     }
 
     /**
@@ -108,8 +94,8 @@ public class ActivitySourcesManagerConfig {
      * @return background mode
      */
     @NonNull
-    public BackgroundSyncMode getGoogleHealthConnectProfileBackgroundSyncMode() {
-        return googleHealthConnectProfileBackgroundSyncMode;
+    public BackgroundSyncMode getHealthConnectProfileBackgroundSyncMode() {
+        return healthConnectProfileBackgroundSyncMode;
     }
 
     /**
@@ -120,16 +106,6 @@ public class ActivitySourcesManagerConfig {
     @Nullable
     public Duration getGoogleFitSessionsBackgroundSyncMinSessionDuration() {
         return googleFitSessionsBackgroundSyncMinSessionDuration;
-    }
-
-    /**
-     * Returns the minimum session duration set for Google Health Connect background synchronization.
-     *
-     * @return duration
-     */
-    @Nullable
-    public Duration getGoogleHealthConnectSessionsBackgroundSyncMinSessionDuration() {
-        return googleHealthConnectSessionsBackgroundSyncMinSessionDuration;
     }
 
     /**
@@ -234,8 +210,8 @@ public class ActivitySourcesManagerConfig {
          * @return configured builder
          */
         @NonNull
-        public Builder enableGoogleHealthConnectProfileBackgroundSync() {
-            config.googleHealthConnectProfileBackgroundSyncMode = BackgroundSyncMode.ENABLED;
+        public Builder enableHealthConnectProfileBackgroundSync() {
+            config.healthConnectProfileBackgroundSyncMode = BackgroundSyncMode.ENABLED;
             return this;
         }
 
@@ -286,27 +262,8 @@ public class ActivitySourcesManagerConfig {
          */
         @SuppressLint("NewApi")
         @NonNull
-        public Builder enableGoogleHealthConnectIntradayBackgroundSync() {
-            config.googleHealthConnectIntradayBackgroundSyncMode = BackgroundSyncMode.ENABLED;
-            return this;
-        }
-
-        /**
-         * Enables background syncing of session data from Google HealthConnect. Sessions with a shorter duration than
-         * the specified one will be ignored in the background synchronization. If sessions are not included in the
-         * collectable fitness metrics, the background synchronization will be disabled.<br>
-         * Note: SDK will schedule background syncs only if there is a current connection to Google HealthConnect. In
-         * other words, this option expresses an intent to have the background synchronization when it's applicable but
-         * it doesn't mean a requirement of the connection to Google HealthConnect.
-         *
-         * @param minSessionDuration min duration for sessions to be synced
-         * @return configured builder
-         */
-        @NonNull
-        public Builder enableGoogleHealthConnectSessionsBackgroundSync(@NonNull Duration minSessionDuration) {
-            Objects.requireNonNull(minSessionDuration, "duration must be not null");
-            config.googleHealthConnectSessionsBackgroundSyncMode = BackgroundSyncMode.ENABLED;
-            config.googleHealthConnectSessionsBackgroundSyncMinSessionDuration = minSessionDuration;
+        public Builder enableHealthConnectIntradayBackgroundSync() {
+            config.healthConnectIntradayBackgroundSyncMode = BackgroundSyncMode.ENABLED;
             return this;
         }
 
@@ -316,15 +273,12 @@ public class ActivitySourcesManagerConfig {
          * other words, this option expresses an intent to have the background synchronization when it's applicable but
          * it doesn't mean a requirement of the connection to Google HealthConnect.
          *
-         * @see #enableGoogleHealthConnectIntradayBackgroundSync
-         * @see #enableGoogleHealthConnectSessionsBackgroundSync
-         * @param minSessionDuration min duration for sessions to be synced
+         * @see #enableHealthConnectIntradayBackgroundSync
          * @return configured builder
          */
         @NonNull
-        public Builder enableGoogleHealthConnectBackgroundSync(@NonNull Duration minSessionDuration) {
-            enableGoogleHealthConnectIntradayBackgroundSync();
-            enableGoogleHealthConnectSessionsBackgroundSync(minSessionDuration);
+        public Builder enableGoogleHealthConnectBackgroundSync() {
+            enableHealthConnectIntradayBackgroundSync();
             return this;
         }
 
@@ -335,20 +289,8 @@ public class ActivitySourcesManagerConfig {
          * @return configured builder
          */
         @NonNull
-        public Builder disableGoogleHealthConnectIntradayBackgroundSync() {
-            config.googleHealthConnectIntradayBackgroundSyncMode = BackgroundSyncMode.DISABLED;
-            return this;
-        }
-
-        /**
-         * Disables background syncing of session data from Google HealthConnect.
-         *
-         * @return configured builder
-         */
-        @NonNull
-        public Builder disableGoogleHealthConnectSessionsBackgroundSync() {
-            config.googleHealthConnectSessionsBackgroundSyncMode = BackgroundSyncMode.DISABLED;
-            config.googleHealthConnectSessionsBackgroundSyncMinSessionDuration = null;
+        public Builder disableHealthConnectIntradayBackgroundSync() {
+            config.healthConnectIntradayBackgroundSyncMode = BackgroundSyncMode.DISABLED;
             return this;
         }
 
@@ -358,9 +300,8 @@ public class ActivitySourcesManagerConfig {
          * @return configured builder
          */
         @NonNull
-        public Builder disableGoogleHealthConnectBackgroundSync() {
-            disableGoogleHealthConnectIntradayBackgroundSync();
-            disableGoogleHealthConnectSessionsBackgroundSync();
+        public Builder disableHealthConnectBackgroundSync() {
+            disableHealthConnectIntradayBackgroundSync();
             return this;
         }
 
@@ -381,8 +322,8 @@ public class ActivitySourcesManagerConfig {
          * @return configured builder
          */
         @NonNull
-        public Builder disableGoogleHealthConnectProfileBackgroundSync() {
-            config.googleHealthConnectProfileBackgroundSyncMode = BackgroundSyncMode.DISABLED;
+        public Builder disableHealthConnectProfileBackgroundSync() {
+            config.healthConnectProfileBackgroundSyncMode = BackgroundSyncMode.DISABLED;
             return this;
         }
 
@@ -395,9 +336,9 @@ public class ActivitySourcesManagerConfig {
         @NonNull
         public Builder disableBackgroundSync() {
             disableGoogleFitBackgroundSync();
-            disableGoogleHealthConnectBackgroundSync();
+            disableHealthConnectBackgroundSync();
             disableGoogleFitProfileBackgroundSync();
-            disableGoogleHealthConnectProfileBackgroundSync();
+            disableHealthConnectProfileBackgroundSync();
             return this;
         }
 
@@ -412,11 +353,9 @@ public class ActivitySourcesManagerConfig {
             config.googleFitIntradayBackgroundSyncMode = BackgroundSyncMode.UNTOUCHED;
             config.googleFitSessionsBackgroundSyncMode = BackgroundSyncMode.UNTOUCHED;
             config.googleFitSessionsBackgroundSyncMinSessionDuration = null;
-            config.googleHealthConnectIntradayBackgroundSyncMode = BackgroundSyncMode.UNTOUCHED;
-            config.googleHealthConnectSessionsBackgroundSyncMode = BackgroundSyncMode.UNTOUCHED;
-            config.googleHealthConnectSessionsBackgroundSyncMinSessionDuration = null;
+            config.healthConnectIntradayBackgroundSyncMode = BackgroundSyncMode.UNTOUCHED;
             config.googleFitProfileBackgroundSyncMode = BackgroundSyncMode.UNTOUCHED;
-            config.googleHealthConnectProfileBackgroundSyncMode = BackgroundSyncMode.UNTOUCHED;
+            config.healthConnectProfileBackgroundSyncMode = BackgroundSyncMode.UNTOUCHED;
             return this;
         }
 
@@ -457,12 +396,10 @@ public class ActivitySourcesManagerConfig {
                 "GoogleFit sessions background sync mode must be set");
             Objects.requireNonNull(config.googleFitProfileBackgroundSyncMode,
                 "GoogleFit profile background sync mode must be set");
-            Objects.requireNonNull(config.googleHealthConnectIntradayBackgroundSyncMode,
-                "Google Health Connect intraday background sync mode must be set");
-            Objects.requireNonNull(config.googleHealthConnectSessionsBackgroundSyncMode,
-                "Google Health Connect sessions background sync mode must be set");
-            Objects.requireNonNull(config.googleHealthConnectProfileBackgroundSyncMode,
-                "Google Health Connect profile background sync mode must be set");
+            Objects.requireNonNull(config.healthConnectIntradayBackgroundSyncMode,
+                "Health Connect intraday background sync mode must be set");
+            Objects.requireNonNull(config.healthConnectProfileBackgroundSyncMode,
+                "Health Connect profile background sync mode must be set");
             Objects.requireNonNull(config.collectableFitnessMetrics, "Collectable fitness metrics must be set");
             this.created = true;
             return config;
@@ -485,9 +422,8 @@ public class ActivitySourcesManagerConfig {
             new ActivitySourcesManagerConfig.Builder().enableGoogleFitIntradayBackgroundSync()
                 .disableGoogleFitSessionsBackgroundSync()
                 .enableGoogleFitProfileBackgroundSync()
-                .enableGoogleHealthConnectIntradayBackgroundSync()
-                .disableGoogleHealthConnectSessionsBackgroundSync()
-                .enableGoogleHealthConnectProfileBackgroundSync()
+                .enableHealthConnectIntradayBackgroundSync()
+                .enableHealthConnectProfileBackgroundSync()
                 .setCollectableFitnessMetrics(fitnessMetrics)
                 .build();
         return config;

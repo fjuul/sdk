@@ -1,4 +1,4 @@
-package com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect;
+package com.fjuul.sdk.activitysources.entities.internal.healthconnect;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.Date;
@@ -6,7 +6,7 @@ import java.util.Date;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public abstract class GHCScalarDataPoint<TValue extends Number> extends GHCDataPoint {
+public abstract class HCScalarDataPoint<TValue extends Number> extends HCDataPoint {
     @NonNull
     protected final TValue value;
 
@@ -15,15 +15,15 @@ public abstract class GHCScalarDataPoint<TValue extends Number> extends GHCDataP
         return value;
     }
 
-    public GHCScalarDataPoint(@NonNull TValue value, @NonNull Date start, @Nullable String dataSource) {
+    public HCScalarDataPoint(@NonNull TValue value, @NonNull Date start, @Nullable String dataSource) {
         super(start, dataSource);
         this.value = value;
     }
 
-    public GHCScalarDataPoint(@NonNull TValue value,
-        @NonNull Date start,
-        @Nullable Date end,
-        @Nullable String dataSource) {
+    public HCScalarDataPoint(@NonNull TValue value,
+                             @NonNull Date start,
+                             @Nullable Date end,
+                             @Nullable String dataSource) {
         super(start, end, dataSource);
         this.value = value;
     }
@@ -33,7 +33,7 @@ public abstract class GHCScalarDataPoint<TValue extends Number> extends GHCDataP
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        final GHCScalarDataPoint<?> that = (GHCScalarDataPoint<?>) o;
+        final HCScalarDataPoint<?> that = (HCScalarDataPoint<?>) o;
 
         Class<TValue> valueClass =
             (Class<TValue>) ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
@@ -42,7 +42,7 @@ public abstract class GHCScalarDataPoint<TValue extends Number> extends GHCDataP
         if (!valueClass.equals(thatValueClass)) {
             return false;
         }
-        final GHCScalarDataPoint<TValue> thatCasted = (GHCScalarDataPoint<TValue>) o;
+        final HCScalarDataPoint<TValue> thatCasted = (HCScalarDataPoint<TValue>) o;
 
         if (valueClass.equals(Float.class)) {
             return Math.abs((Float) value - (Float) thatCasted.value) <= 0.0001;

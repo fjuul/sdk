@@ -7,14 +7,14 @@ import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 
 /**
- * A class that encapsulates parameters for syncing body parameters of the user profile from Google Fit. In order to
+ * A class that encapsulates parameters for syncing body parameters of the user profile from Health Connect. In order to
  * build the instance of this class, use {@link Builder}.
  */
-public class GoogleHealthConnectProfileSyncOptions {
+public class HealthConnectProfileSyncOptions {
     @NonNull
     private final Set<FitnessMetricsType> metrics;
 
-    public GoogleHealthConnectProfileSyncOptions(@NonNull Set<FitnessMetricsType> metrics) {
+    public HealthConnectProfileSyncOptions(@NonNull Set<FitnessMetricsType> metrics) {
         this.metrics = metrics;
     }
 
@@ -24,7 +24,7 @@ public class GoogleHealthConnectProfileSyncOptions {
     }
 
     /**
-     * Builder of {@link GoogleHealthConnectProfileSyncOptions}. At least one fitness metric must be specified during
+     * Builder of {@link HealthConnectProfileSyncOptions}. At least one fitness metric must be specified during
      * the building.
      */
     public static class Builder {
@@ -49,12 +49,12 @@ public class GoogleHealthConnectProfileSyncOptions {
 
         @SuppressLint("NewApi")
         @NonNull
-        public GoogleHealthConnectProfileSyncOptions build() {
+        public HealthConnectProfileSyncOptions build() {
             if (metrics.isEmpty()) {
                 throw new IllegalStateException("At least one metric type must be specified");
             }
             final Set<FitnessMetricsType> metricsToSync = new HashSet<>(metrics);
-            return new GoogleHealthConnectProfileSyncOptions(metricsToSync);
+            return new HealthConnectProfileSyncOptions(metricsToSync);
         }
     }
 }

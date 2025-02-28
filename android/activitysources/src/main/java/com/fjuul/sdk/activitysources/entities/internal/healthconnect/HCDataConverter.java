@@ -1,4 +1,4 @@
-package com.fjuul.sdk.activitysources.entities.internal.googlehealthconnect;
+package com.fjuul.sdk.activitysources.entities.internal.healthconnect;
 
 import java.util.Date;
 
@@ -7,27 +7,27 @@ import androidx.health.connect.client.records.HeartRateRecord;
 import androidx.health.connect.client.records.StepsRecord;
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord;
 
-public class GHCDataConverter {
+public class HCDataConverter {
     @NonNull
-    public static GHCCalorieDataPoint convertRecordToCalories(@NonNull TotalCaloriesBurnedRecord record) {
+    public static HCCalorieDataPoint convertRecordToCalories(@NonNull TotalCaloriesBurnedRecord record) {
         final Date start = Date.from(record.getStartTime());
         final Date end = Date.from(record.getEndTime());
         final double kcals = record.getEnergy().getKilocalories();
         final String dataSourceId = record.getMetadata().getDataOrigin().getPackageName();
-        return new GHCCalorieDataPoint((float) kcals, start, end, dataSourceId);
+        return new HCCalorieDataPoint((float) kcals, start, end, dataSourceId);
     }
 
     @NonNull
-    public static GHCStepsDataPoint convertRecordToSteps(@NonNull StepsRecord record) {
+    public static HCStepsDataPoint convertRecordToSteps(@NonNull StepsRecord record) {
         final Date start = Date.from(record.getStartTime());
         final Date end = Date.from(record.getEndTime());
         final long steps = record.getCount();
         final String dataSourceId = record.getMetadata().getDataOrigin().getPackageName();
-        return new GHCStepsDataPoint((int) steps, start, end, dataSourceId);
+        return new HCStepsDataPoint((int) steps, start, end, dataSourceId);
     }
 
     @NonNull
-    public static GHCHeartRateSummaryDataPoint convertRecordToHeartRateSummary(@NonNull HeartRateRecord record) {
+    public static HCHeartRateSummaryDataPoint convertRecordToHeartRateSummary(@NonNull HeartRateRecord record) {
         final Date start = Date.from(record.getStartTime());
         final Date end = Date.from(record.getEndTime());
         float total = 0;
@@ -45,7 +45,7 @@ public class GHCDataConverter {
         }
         float avg = total / record.getSamples().size();
         final String dataSourceId = record.getMetadata().getDataOrigin().getPackageName();
-        return new GHCHeartRateSummaryDataPoint(avg, min, max, start, end, dataSourceId);
+        return new HCHeartRateSummaryDataPoint(avg, min, max, start, end, dataSourceId);
     }
 
 }

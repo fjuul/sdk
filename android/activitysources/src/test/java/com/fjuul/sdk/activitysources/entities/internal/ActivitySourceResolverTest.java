@@ -20,7 +20,6 @@ import com.fjuul.sdk.activitysources.entities.GarminActivitySource;
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
 import com.fjuul.sdk.activitysources.entities.OuraActivitySource;
 import com.fjuul.sdk.activitysources.entities.PolarActivitySource;
-import com.fjuul.sdk.activitysources.entities.StravaActivitySource;
 import com.fjuul.sdk.activitysources.entities.SuuntoActivitySource;
 import com.fjuul.sdk.activitysources.entities.UnknownActivitySource;
 import com.fjuul.sdk.activitysources.entities.WithingsActivitySource;
@@ -68,15 +67,6 @@ public class ActivitySourceResolverTest {
                 staticMockGF.when(() -> GoogleFitActivitySource.getInstance()).thenReturn(mockedGF);
                 final ActivitySource result = subject.getInstanceByTrackerValue("oura");
                 assertThat(result, instanceOf(OuraActivitySource.class));
-            }
-        }
-
-        @Test
-        public void getInstanceByTrackerValue_whenInputValueIsStrava_returnsStravaActivitySource() {
-            try (final MockedStatic<GoogleFitActivitySource> staticMockGF = mockStatic(GoogleFitActivitySource.class)) {
-                staticMockGF.when(() -> GoogleFitActivitySource.getInstance()).thenReturn(mockedGF);
-                final ActivitySource result = subject.getInstanceByTrackerValue("strava");
-                assertThat(result, instanceOf(StravaActivitySource.class));
             }
         }
 

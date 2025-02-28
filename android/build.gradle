@@ -2,7 +2,7 @@
 plugins {
     id 'com.android.application' version '8.8.2' apply false
     id 'com.android.library' version '8.8.2' apply false
-    id "com.diffplug.gradle.spotless" version "6.21.0" apply false
+    id "com.diffplug.gradle.spotless" version "6.25.0" apply false
 }
 
 ext {
@@ -48,7 +48,7 @@ subprojects {
             target fileTree('./ExampleApp') {
                 include '**/*.kt'
             }
-            // version and userData are both optional
+            // version and editorConfigOverride are both optional
             // NOTE: keep synced with editorconfig!
             def styles = [
                 indent_size               : '4',
@@ -58,7 +58,7 @@ subprojects {
                 trim_trailing_whitespace  : 'true',
                 end_of_line               : 'lf'
             ]
-            ktlint('0.48.1').userData(styles)
+            ktlint('1.1.1').editorConfigOverride(styles)
         }
 
         spotlessJava.dependsOn 'spotlessGroovyGradle'

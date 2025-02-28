@@ -48,8 +48,7 @@ public class PersistentStorage implements IStorage {
     @Override
     public synchronized boolean remove() {
         final boolean editorResult = getPreferences().edit().clear().commit();
-        boolean deleteFileResult = false;
-        deleteFileResult = context.deleteSharedPreferences(getSharedPrefsName());
+        boolean deleteFileResult = context.deleteSharedPreferences(getSharedPrefsName());
         preferences = null;
         return editorResult && deleteFileResult;
     }

@@ -20,7 +20,6 @@ import com.fjuul.sdk.activitysources.entities.GarminActivitySource
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource
 import com.fjuul.sdk.activitysources.entities.OuraActivitySource
 import com.fjuul.sdk.activitysources.entities.PolarActivitySource
-import com.fjuul.sdk.activitysources.entities.StravaActivitySource
 import com.fjuul.sdk.activitysources.entities.SuuntoActivitySource
 import com.fjuul.sdk.activitysources.entities.WithingsActivitySource
 import com.fjuul.sdk.android.exampleapp.R
@@ -130,7 +129,6 @@ class ActivitySourcesFragment : Fragment() {
                 ActivitySourcesItem.OURA,
                 ActivitySourcesItem.POLAR,
                 ActivitySourcesItem.GOOGLE_FIT,
-                ActivitySourcesItem.STRAVA,
                 ActivitySourcesItem.SUUNTO,
                 ActivitySourcesItem.WITHINGS,
                 ActivitySourcesItem.DISCONNECT
@@ -143,7 +141,6 @@ class ActivitySourcesFragment : Fragment() {
                 ActivitySourcesItem.OURA -> OuraActivitySource.getInstance()
                 ActivitySourcesItem.POLAR -> PolarActivitySource.getInstance()
                 ActivitySourcesItem.GARMIN -> GarminActivitySource.getInstance()
-                ActivitySourcesItem.STRAVA -> StravaActivitySource.getInstance()
                 ActivitySourcesItem.SUUNTO -> SuuntoActivitySource.getInstance()
                 ActivitySourcesItem.WITHINGS -> WithingsActivitySource.getInstance()
                 ActivitySourcesItem.GOOGLE_FIT -> GoogleFitActivitySource.getInstance()

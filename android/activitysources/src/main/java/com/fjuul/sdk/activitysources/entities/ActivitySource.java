@@ -10,7 +10,6 @@ import androidx.annotation.NonNull;
  * @see GoogleFitActivitySource
  * @see OuraActivitySource
  * @see PolarActivitySource
- * @see StravaActivitySource
  * @see SuuntoActivitySource
  * @see WithingsActivitySource
  */

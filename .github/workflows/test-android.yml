@@ -40,6 +40,6 @@ jobs:
       timeout-minutes: 15
       uses: reactivecircus/android-emulator-runner@v2
       with:
-        api-level: 21
+        api-level: 26
         working-directory: ./android/ExampleApp
         script: ./gradlew app:connectedAndroidTest

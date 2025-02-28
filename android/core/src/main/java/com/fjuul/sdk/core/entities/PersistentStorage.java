@@ -1,6 +1,5 @@
 package com.fjuul.sdk.core.entities;
 
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;

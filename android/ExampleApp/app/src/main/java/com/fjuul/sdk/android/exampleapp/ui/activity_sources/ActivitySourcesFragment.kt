@@ -182,7 +182,7 @@ class ActivitySourcesFragment : Fragment() {
         const val TAG = "ActivitySourcesFragment"
 
         @JvmStatic
-        fun newInstance(param1: String, param2: String) =
+        fun newInstance() =
             ActivitySourcesFragment().apply {
                 arguments = Bundle()
             }

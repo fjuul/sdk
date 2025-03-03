@@ -86,5 +86,6 @@ class SDKConfigViewModel(private val appStorage: AppStorage) : ViewModel() {
 }
 
 class SDKConfigViewModelFactory(private val appStorage: AppStorage) : ViewModelProvider.NewInstanceFactory() {
+    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T = SDKConfigViewModel(appStorage) as T
 }

@@ -33,10 +33,10 @@ class DailyStatsViewModel : ViewModel() {
 
     fun setupDateRange(startDate: LocalDate? = null, endDate: LocalDate? = null) {
         if (startDate != null) {
-            _startDate.value = startDate!!
+            _startDate.value = startDate
         }
         if (endDate != null) {
-            _endDate.value = endDate!!
+            _endDate.value = endDate
         }
         requestData()
     }

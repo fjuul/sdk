@@ -11,7 +11,6 @@ import androidx.annotation.NonNull;
  * @see HealthConnectActivitySource
  * @see OuraActivitySource
  * @see PolarActivitySource
- * @see StravaActivitySource
  * @see SuuntoActivitySource
  * @see WithingsActivitySource
  */

@@ -14,7 +14,6 @@ enum class ActivitySourcesItem(val label: String) {
     POLAR("Polar"),
     GOOGLE_FIT("Google Fit"),
     HEALTH_CONNECT("Health Connect"),
-    STRAVA("Strava"),
     SUUNTO("Suunto"),
     WITHINGS("Withings"),
     DISCONNECT("Disconnect all"),

@@ -170,8 +170,7 @@ class UserProfileFragment : Fragment() {
                             return@enqueue
                         }
                         val creationResult = result.value!!
-                        val token = creationResult.user.token
-                        sdkConfigViewModel.postUserCredentials(UserCredentials(token, creationResult.secret))
+                        sdkConfigViewModel.postUserCredentials(UserCredentials(creationResult.user.token, creationResult.secret))
                         val action = UserProfileFragmentDirections.actionCreateUserFragmentToLoginFragment()
                         findNavController().navigate(action)
                     }

@@ -30,10 +30,10 @@ class ActivitySourcesViewModel : ViewModel() {
 
     fun connect(activitySource: ActivitySource) {
         val manager = ActivitySourcesManager.getInstance()
-        manager.connect(activitySource) { result ->
+        manager.connect(activitySource) lit@{ result ->
             if (result.isError) {
                 _errorMessage.postValue(result.error!!.message)
-                return@connect
+                return@lit
             }
             _connectionIntent.postValue(Pair(activitySource, result.value!!))
         }
@@ -53,10 +53,10 @@ class ActivitySourcesViewModel : ViewModel() {
         // NOTE: currently only one connection can be active
         val connection = connections.first()
         val manager = ActivitySourcesManager.getInstance()
-        manager.disconnect(connection) { result ->
+        manager.disconnect(connection) lit@{ result ->
             if (result.isError) {
                 _errorMessage.postValue(result.error?.message)
-                return@disconnect
+                return@lit
             }
             _currentConnections.postValue(manager.current)
         }
@@ -69,10 +69,10 @@ class ActivitySourcesViewModel : ViewModel() {
             _errorMessage.value = "No appropriate source connection to disconnect"
             return
         }
-        manager.disconnect(sourceConnection) { result ->
+        manager.disconnect(sourceConnection) lit@{ result ->
             if (result.isError) {
                 _errorMessage.postValue(result.error?.message)
-                return@disconnect
+                return@lit
             }
             _currentConnections.postValue(manager.current)
         }

@@ -35,11 +35,10 @@ public class DiskPersistor: Persistor {
                 }
                 return
             }
-            let mutableData = NSMutableData()
-            let archiver = NSKeyedArchiver(forWritingWith: mutableData)
+            let archiver = NSKeyedArchiver(requiringSecureCoding: false)
             try archiver.encodeEncodable(unwrapped, forKey: NSKeyedArchiveRootObjectKey)
             archiver.finishEncoding()
-            try mutableData.write(to: fullPath, options: .atomic)
+            try archiver.encodedData.write(to: fullPath, options: .atomic)
         } catch {
             DataLogger.shared.error("Error while reading persisted object: \(error)")
         }
@@ -52,7 +51,8 @@ public class DiskPersistor: Persistor {
                 return nil
             }
             let data = try Data(contentsOf: path)
-            let unarchiver = NSKeyedUnarchiver(forReadingWith: data)
+            let unarchiver = try NSKeyedUnarchiver(forReadingFrom: data)
+            unarchiver.requiresSecureCoding = false
             return try unarchiver.decodeTopLevelDecodable(T.self, forKey: NSKeyedArchiveRootObjectKey)
         } catch {
             DataLogger.shared.error("Error while reading persisted object: \(error)")

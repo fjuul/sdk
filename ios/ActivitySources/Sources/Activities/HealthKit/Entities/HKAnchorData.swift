@@ -51,33 +51,46 @@ public struct HKAnchorData: Codable, Equatable {
             }
 
             if let value = valueRaw {
-                return NSKeyedUnarchiver.unarchiveObject(with: value) as? HKQueryAnchor
+                do {
+                    let decoded = try NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSNull.self, HKQueryAnchor.self], from: value)
+                    if decoded is NSNull {
+                        return nil
+                    }
+                    return decoded as? HKQueryAnchor
+                } catch {
+                    DataLogger.shared.error("Error while getting anchor data: \(error)")
+                    return nil
+                }
             } else {
                 return nil
             }
         }
         set(newValue) {
-            let newValueRaw = NSKeyedArchiver.archivedData(withRootObject: newValue as Any)
+            do {
+                let newValueRaw = try NSKeyedArchiver.archivedData(withRootObject: newValue as Any, requiringSecureCoding: false)
 
-            switch key {
-            case .activeEnergyBurned:
-                activeEnergyBurnedRaw = newValueRaw
-            case .stepCount:
-                stepCountRaw = newValueRaw
-            case .distanceCycling:
-                distanceCyclingRaw = newValueRaw
-            case .distanceWalkingRunning:
-                distanceWalkingRunningRaw = newValueRaw
-            case .heartRate:
-                heartRateRaw = newValueRaw
-            case .restingHeartRate:
-                restingHeartRateRaw = newValueRaw
-            case .workout:
-                workoutRaw = newValueRaw
-            case .bodyMass:
-                bodyMassRaw = newValueRaw
-            case .height:
-                heightRaw = newValueRaw
+                switch key {
+                case .activeEnergyBurned:
+                    activeEnergyBurnedRaw = newValueRaw
+                case .stepCount:
+                    stepCountRaw = newValueRaw
+                case .distanceCycling:
+                    distanceCyclingRaw = newValueRaw
+                case .distanceWalkingRunning:
+                    distanceWalkingRunningRaw = newValueRaw
+                case .heartRate:
+                    heartRateRaw = newValueRaw
+                case .restingHeartRate:
+                    restingHeartRateRaw = newValueRaw
+                case .workout:
+                    workoutRaw = newValueRaw
+                case .bodyMass:
+                    bodyMassRaw = newValueRaw
+                case .height:
+                    heightRaw = newValueRaw
+                }
+            } catch {
+                DataLogger.shared.error("Error while setting anchor data: \(error)")
             }
         }
     }

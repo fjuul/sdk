@@ -19,7 +19,7 @@ extension SigningKey: AuthenticationCredential {
 
 }
 
-extension Optional: AuthenticationCredential where Wrapped == SigningKey {
+extension Optional: @retroactive AuthenticationCredential where Wrapped == SigningKey {
 
     public var requiresRefresh: Bool {
         guard let value = self else {

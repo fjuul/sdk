@@ -110,8 +110,8 @@ final class ActivitySourcesApiTests: XCTestCase {
 
         stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/connections/\(TrackerValue.POLAR.value)")) { request in
             XCTAssertEqual(request.httpMethod, "POST")
-            let stubData = "{ \"message\": \"Response status code was unacceptable: 409.\" }".data(using: String.Encoding.utf8)
-            return HTTPStubsResponse(data: stubData!, statusCode: 409, headers: nil)
+            let stubData = Data("{ \"message\": \"Response status code was unacceptable: 409.\" }".utf8)
+            return HTTPStubsResponse(data: stubData, statusCode: 409, headers: nil)
         }
 
         sut.connect(trackerValue: TrackerValue.POLAR) { result in

@@ -20,8 +20,8 @@ final class ApiClientTests: XCTestCase {
     override func setUp() {
         super.setUp()
         stub(condition: isHost("foo")) { _ in
-            let stubData = "".data(using: String.Encoding.utf8)
-            return HTTPStubsResponse(data: stubData!, statusCode: 200, headers: nil)
+            let stubData = Data("".utf8)
+            return HTTPStubsResponse(data: stubData, statusCode: 200, headers: nil)
         }
         stub(condition: isHost("apibase") && isPath("/sdk/signing/v1/issue-key/user")) { _ in
             let stubData = self.signingKeyResponse.data(using: String.Encoding.utf8)

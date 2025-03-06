@@ -57,7 +57,7 @@ final class URLRequestSiginigTests: XCTestCase {
     func testPostRequestWithJsonBody() throws {
 
         var request = try URLRequest(url: "https://fjuul.dev.api/analytics/v1/dailyStats/userToken/2020-01-15", method: .post)
-        request.httpBody = "{\"hello\":\"world\",\"foo\":\"bar\"}".data(using: String.Encoding.utf8)
+        request.httpBody = Data("{\"hello\":\"world\",\"foo\":\"bar\"}".utf8)
         request.signWith(key: signingKey, forDate: fixedDate)
 
         XCTAssertEqual(

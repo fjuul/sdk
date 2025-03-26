@@ -15,4 +15,4 @@ Utilities/Docker/*.tar.gz
 .swiftpm
 /build
 *.pyc
-/android/ExampleApp/.idea
+/android/.idea

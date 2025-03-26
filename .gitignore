@@ -1,18 +1,23 @@
-# Swift Package Manager
-.build
-DerivedData
-/.previous-build
-xcuserdata
-.DS_Store
-*~
-\#*
-.\#*
-.*.sw[nop]
-*.xcscmblueprint
-/default.profraw
-*.xcodeproj
-Utilities/Docker/*.tar.gz
-.swiftpm
-/build
+# Android Studio / IntelliJ
+.idea/
+*.iml
+.gradle/
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Health Connect specific
+android/.idea/
+
+# Kotlin / Java build
+*.class
+*.log
 *.pyc
-/android/.idea
+*.jar
+*.war
+*.ear
+
+# OS junk
+.DS_Store
+Thumbs.db

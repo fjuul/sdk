@@ -5,8 +5,8 @@ import java.util.Map;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.activitysources.entities.internal.GFSynchronizableProfileParams;
 import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
-import com.fjuul.sdk.activitysources.entities.internal.HCSynchronizableProfileParams;
-import com.fjuul.sdk.activitysources.entities.internal.HCUploadData;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.data.HCSynchronizableProfileParams;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.data.HCUploadData;
 import com.fjuul.sdk.core.http.utils.ApiCall;
 
 import androidx.annotation.NonNull;

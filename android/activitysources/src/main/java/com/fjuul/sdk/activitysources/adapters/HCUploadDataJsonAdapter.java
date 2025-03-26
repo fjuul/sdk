@@ -6,10 +6,10 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.fjuul.sdk.activitysources.entities.internal.HCUploadData;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HCDataPoint;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HCHeartRateSummaryDataPoint;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HCScalarDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.data.HCUploadData;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.data.HCDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.data.HCHeartRateSummaryDataPoint;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.data.HCScalarDataPoint;
 import com.fjuul.sdk.activitysources.json.HCUploadDataJson;
 import com.fjuul.sdk.activitysources.json.HCUploadDataJson.HCIntradayHeartRateSampleEntryJson;
 import com.fjuul.sdk.activitysources.json.HCUploadDataJson.HCIntradaySampleEntryJson;

@@ -8,8 +8,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import com.fjuul.sdk.activitysources.entities.internal.HCClientWrapper;
-import com.fjuul.sdk.activitysources.entities.internal.HCDataManager;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HCDataManager;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectService;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.Callback;
@@ -28,7 +28,7 @@ public class HealthConnectActivitySource extends ActivitySource {
     private static volatile HealthConnectActivitySource instance;
     private final @NonNull ActivitySourcesService sourcesService;
     private final @NonNull ApiClient apiClient;
-    private final @NonNull HCClientWrapper clientWrapper;
+    private final @NonNull HealthConnectService hcService;
     private final @NonNull ExecutorService localSequentialBackgroundExecutor;
 
     static synchronized void initialize(@NonNull ApiClient client, @NonNull ActivitySourcesManagerConfig config) {
@@ -47,7 +47,7 @@ public class HealthConnectActivitySource extends ActivitySource {
         this.sourcesService = sourcesService;
         this.apiClient = apiClient;
         Context context = apiClient.getAppContext();
-        this.clientWrapper = new HCClientWrapper(context);
+        this.hcService = new HealthConnectService(context);
         this.localSequentialBackgroundExecutor = localSequentialBackgroundExecutor;
     }
 
@@ -63,7 +63,7 @@ public class HealthConnectActivitySource extends ActivitySource {
     public void syncIntradayMetrics(@NonNull final HealthConnectIntradaySyncOptions options,
         @Nullable final Callback<Void> callback) {
         Logger.get().d("Syncing intraday metrics");
-        HCDataManager dataManager = new HCDataManager(clientWrapper, sourcesService, apiClient);
+        HCDataManager dataManager = new HCDataManager(apiClient.getAppContext(), hcService, sourcesService, apiClient);
         performTaskAlongWithCallback(() -> dataManager.syncIntradayMetrics(options), callback);
     }
 
@@ -79,7 +79,7 @@ public class HealthConnectActivitySource extends ActivitySource {
     public void syncProfile(@NonNull final HealthConnectProfileSyncOptions options,
         @Nullable final Callback<Void> callback) {
         Logger.get().d("Syncing profile");
-        HCDataManager dataManager = new HCDataManager(clientWrapper, sourcesService, apiClient);
+        HCDataManager dataManager = new HCDataManager(apiClient.getAppContext(), hcService, sourcesService, apiClient);
         performTaskAlongWithCallback(() -> dataManager.syncProfile(options), callback);
     }
 

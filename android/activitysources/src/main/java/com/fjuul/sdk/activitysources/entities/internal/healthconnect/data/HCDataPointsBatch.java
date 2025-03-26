@@ -1,4 +1,4 @@
-package com.fjuul.sdk.activitysources.entities.internal.healthconnect;
+package com.fjuul.sdk.activitysources.entities.internal.healthconnect.data;
 
 import java.util.Date;
 import java.util.List;

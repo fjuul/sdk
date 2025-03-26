@@ -1,4 +1,4 @@
-package com.fjuul.sdk.activitysources.entities.internal;
+package com.fjuul.sdk.activitysources.entities.internal.healthconnect.data;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

@@ -1,11 +1,7 @@
-package com.fjuul.sdk.activitysources.entities.internal;
+package com.fjuul.sdk.activitysources.entities.internal.healthconnect.data;
 
 import java.util.Collections;
 import java.util.List;
-
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HCCalorieDataPoint;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HCHeartRateSummaryDataPoint;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HCStepsDataPoint;
 
 import androidx.annotation.NonNull;
 

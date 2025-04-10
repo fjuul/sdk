@@ -9,8 +9,11 @@ public class HCHeightDataPoint extends HCDataPoint {
     private final float height;
 
     public HCHeightDataPoint(@NonNull Date start, float height, @Nullable String dataSource) {
-        super(start, null, dataSource);
+        super(start, null);
         this.height = height;
+        if (dataSource != null) {
+            addDataSource(dataSource);
+        }
     }
 
     public float getHeight() {

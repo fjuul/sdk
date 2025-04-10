@@ -9,8 +9,11 @@ public class HCWeightDataPoint extends HCDataPoint {
     private final float weight;
 
     public HCWeightDataPoint(@NonNull Date start, float weight, @Nullable String dataSource) {
-        super(start, null, dataSource);
+        super(start, null);
         this.weight = weight;
+        if (dataSource != null) {
+            addDataSource(dataSource);
+        }
     }
 
     public float getWeight() {

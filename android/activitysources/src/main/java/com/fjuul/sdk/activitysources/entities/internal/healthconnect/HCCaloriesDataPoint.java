@@ -10,9 +10,12 @@ public class HCCaloriesDataPoint extends HCDataPoint {
     private final float activeCalories;
 
     public HCCaloriesDataPoint(@NonNull Date start, @NonNull Date end, float totalCalories, float activeCalories, @Nullable String dataSource) {
-        super(start, end, dataSource);
+        super(start, end);
         this.totalCalories = totalCalories;
         this.activeCalories = activeCalories;
+        if (dataSource != null) {
+            addDataSource(dataSource);
+        }
     }
 
     public float getTotalCalories() {

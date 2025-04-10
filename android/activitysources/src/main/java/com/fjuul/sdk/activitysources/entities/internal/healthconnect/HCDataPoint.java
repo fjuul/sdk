@@ -1,17 +1,25 @@
 package com.fjuul.sdk.activitysources.entities.internal.healthconnect;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 public abstract class HCDataPoint {
     @NonNull
-    protected final Date start;
+    private final Date start;
     @Nullable
-    protected final Date end;
-    @Nullable
-    protected final String dataSource;
+    private final Date end;
+    @NonNull
+    private final Set<String> dataSources;
+
+    public HCDataPoint(@NonNull Date start, @Nullable Date end) {
+        this.start = start;
+        this.end = end;
+        this.dataSources = new HashSet<>();
+    }
 
     @NonNull
     public Date getStart() {
@@ -23,18 +31,20 @@ public abstract class HCDataPoint {
         return end;
     }
 
-    @Nullable
-    public String getDataSource() {
-        return dataSource;
+    @NonNull
+    public Set<String> getDataSources() {
+        return dataSources;
     }
 
-    public HCDataPoint(@NonNull Date start, @Nullable String dataSource) {
-        this(start, null, dataSource);
+    public void addDataSource(@NonNull String source) {
+        dataSources.add(source);
     }
 
-    public HCDataPoint(@NonNull Date start, @Nullable Date end, @Nullable String dataSource) {
-        this.start = start;
-        this.end = end;
-        this.dataSource = dataSource;
+    public void addDataSources(@NonNull Set<String> sources) {
+        dataSources.addAll(sources);
+    }
+
+    public boolean isDaily() {
+        return end == null;
     }
 } 

@@ -5,6 +5,9 @@ import java.util.Map;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.activitysources.entities.internal.GFSynchronizableProfileParams;
 import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectDailiesData;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectIntradayData;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectProfileData;
 import com.fjuul.sdk.core.http.utils.ApiCall;
 
 import androidx.annotation.NonNull;
@@ -44,4 +47,16 @@ public interface ActivitySourcesApi {
     @NonNull
     ApiCall<Void> updateProfileOnBehalfOfGoogleFit(@Path("userToken") @NonNull String userToken,
         @Body @NonNull GFSynchronizableProfileParams params);
+
+    @NonNull
+    @POST("/sdk/activity-sources/v1/{userToken}/healthconnect")
+    ApiCall<Void> uploadHealthConnectData(@Path("userToken") @NonNull String userToken, @Body @NonNull HealthConnectIntradayData data);
+
+    @NonNull
+    @POST("/sdk/activity-sources/v1/{userToken}/healthconnect/dailies")
+    ApiCall<Void> uploadHealthConnectDailies(@Path("userToken") @NonNull String userToken, @Body @NonNull HealthConnectDailiesData data);
+
+    @NonNull
+    @PUT("/sdk/activity-sources/v1/{userToken}/healthconnect/profile")
+    ApiCall<Void> updateHealthConnectProfile(@Path("userToken") @NonNull String userToken, @Body @NonNull HealthConnectProfileData healthProfile);
 }

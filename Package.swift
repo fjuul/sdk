@@ -1,4 +1,4 @@
-// swift-tools-version:5.2
+// swift-tools-version:5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -7,8 +7,8 @@ let package = Package(
     name: "Fjuul SDK",
     platforms: [
         // required to run tests depending on Alamofire
-        .macOS(.v10_12),
-        .iOS(.v11)
+        .macOS(.v10_13),
+        .iOS(.v12)
     ],
     products: [
         .library(name: "FjuulCore", targets: ["FjuulCore"]),
@@ -19,7 +19,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/Alamofire/Alamofire.git", .upToNextMajor(from: "5.4.1")),
         .package(url: "https://github.com/AliSoftware/OHHTTPStubs.git", .upToNextMajor(from: "9.1.0")),
-        .package(name: "swiftymocky", url: "https://github.com/MakeAWishFoundation/SwiftyMocky", .upToNextMajor(from: "4.0.3")),
+        .package(url: "https://github.com/MakeAWishFoundation/SwiftyMocky", .upToNextMajor(from: "4.0.3")),
         .package(url: "https://github.com/apple/swift-log.git", .upToNextMajor(from: "1.4.0")),
     ],
     targets: [

@@ -1,8 +1,8 @@
 import Foundation
 import Alamofire
 
-/// Alamofire adapter for add User-Agent header to requests
-class UserAgentAdapter: RequestAdapter {
+/// Alamofire adapter for adding User-Agent header to requests
+final class UserAgentAdapter: RequestAdapter {
     let sdkVersion: String
 
     init(sdkVersion: String) {

@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/tadija/AEXML.git",
         "state": {
           "branch": null,
-          "revision": "38f7d00b23ecd891e1ee656fa6aeebd6ba04ecc3",
-          "version": "4.6.1"
+          "revision": "db806756c989760b35108146381535aec231092b",
+          "version": "4.7.0"
         }
       },
       {
@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/Alamofire/Alamofire.git",
         "state": {
           "branch": null,
-          "revision": "f82c23a8a7ef8dc1a49a8bfc6a96883e79121864",
-          "version": "5.5.0"
+          "revision": "513364f870f6bfc468f9d2ff0a95caccc10044c5",
+          "version": "5.10.2"
         }
       },
       {
@@ -87,8 +87,8 @@
         "repositoryURL": "https://github.com/apple/swift-log.git",
         "state": {
           "branch": null,
-          "revision": "5d66f7ba25daf4f94100e7022febf3c75e37a6c7",
-          "version": "1.4.2"
+          "revision": "3d8596ed08bd13520157f0355e35caed215ffbfa",
+          "version": "1.6.3"
         }
       },
       {
@@ -96,8 +96,8 @@
         "repositoryURL": "https://github.com/MakeAWishFoundation/SwiftyMocky",
         "state": {
           "branch": null,
-          "revision": "9be502288a23e4ec6a198cfad88af969f96e1d52",
-          "version": "4.1.0"
+          "revision": "1e81c0c566c26d2d4e4cc2d799afad7d3ef931ab",
+          "version": "4.2.0"
         }
       },
       {
@@ -105,8 +105,8 @@
         "repositoryURL": "https://github.com/tuist/xcodeproj",
         "state": {
           "branch": null,
-          "revision": "c75c3acc25460195cfd203a04dde165395bf00e0",
-          "version": "8.7.1"
+          "revision": "b1caa062d4aaab3e3d2bed5fe0ac5f8ce9bf84f4",
+          "version": "8.27.7"
         }
       },
       {

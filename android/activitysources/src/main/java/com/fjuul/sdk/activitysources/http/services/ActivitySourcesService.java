@@ -9,6 +9,9 @@ import com.fjuul.sdk.activitysources.entities.ConnectionResult;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.activitysources.entities.internal.GFSynchronizableProfileParams;
 import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectDailiesData;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectIntradayData;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectProfileData;
 import com.fjuul.sdk.activitysources.exceptions.ActivitySourcesApiExceptions;
 import com.fjuul.sdk.activitysources.http.ActivitySourcesApiResponseTransformer;
 import com.fjuul.sdk.activitysources.http.apis.ActivitySourcesApi;
@@ -126,5 +129,20 @@ public class ActivitySourcesService {
     @NonNull
     public ApiCall<Void> updateProfileOnBehalfOfGoogleFit(@NonNull GFSynchronizableProfileParams params) {
         return apiClient.updateProfileOnBehalfOfGoogleFit(clientBuilder.getUserToken(), params);
+    }
+
+    @NonNull
+    public ApiCall<Void> uploadHealthConnectData(@NonNull HealthConnectIntradayData data) {
+        return apiClient.uploadHealthConnectData(clientBuilder.getUserToken(), data);
+    }
+
+    @NonNull
+    public ApiCall<Void> uploadHealthConnectDailies(@NonNull HealthConnectDailiesData data) {
+        return apiClient.uploadHealthConnectDailies(clientBuilder.getUserToken(), data);
+    }
+
+    @NonNull
+    public ApiCall<Void> updateHealthConnectProfile(@NonNull HealthConnectProfileData profileData) {
+        return apiClient.updateHealthConnectProfile(clientBuilder.getUserToken(), profileData);
     }
 }

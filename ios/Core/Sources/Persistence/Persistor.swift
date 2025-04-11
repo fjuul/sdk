@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol Persistor {
+public protocol Persistor: Sendable {
     static func remove(matchKey: String) -> Bool
 
     func get<T: Decodable>(key: String) -> T?

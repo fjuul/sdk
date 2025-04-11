@@ -1,10 +1,10 @@
 import Foundation
 import Alamofire
 
-class HmacCredentialStore {
+final class HmacCredentialStore: Sendable {
 
     private let lookupKey: String
-    private var persistor: Persistor
+    private let persistor: Persistor
 
     init(userToken: String, persistor: Persistor) {
         self.persistor = persistor

@@ -1,6 +1,6 @@
 import Foundation
 
-public class InMemoryPersistor: Persistor {
+public class InMemoryPersistor: Persistor, @unchecked Sendable {
 
     var store: [String: Any] = [:]
 

@@ -1,6 +1,6 @@
 import Foundation
 
-public struct UserCredentials: CustomStringConvertible, Codable {
+public struct UserCredentials: CustomStringConvertible, Codable, Sendable {
 
     let token: String
     let secret: String

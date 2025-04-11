@@ -1,7 +1,7 @@
 import Foundation
 import Alamofire
 
-class BearerAuthenticationAdapter: RequestAdapter {
+final class BearerAuthenticationAdapter: RequestAdapter {
 
     let userCredentials: UserCredentials
 

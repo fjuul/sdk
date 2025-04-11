@@ -44,6 +44,11 @@ android {
     }
 }
 
+tasks.withType(Javadoc) {
+    excludes = ['**/*.kt']
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
 dependencies {
     def workVersion = "2.10.0"
 

@@ -50,16 +50,6 @@ struct AggregatedDailyStatsScreen: View {
                             Text("\(self.formatTime(time: stats.high.seconds))")
                         }
                         HStack {
-                            Image(systemName: "flame")
-                                .frame(width: 30, height: 10, alignment: .leading)
-                            Text("activeKcal \(stats.activeKcal, specifier: "%.1f")")
-                        }
-                        HStack {
-                            Image(systemName: "bolt.heart")
-                                .frame(width: 30, height: 10, alignment: .leading)
-                            Text("bmr \(stats.bmr, specifier: "%.1f")")
-                        }
-                        HStack {
                             Image(systemName: "figure.walk")
                                 .frame(width: 30, height: 10, alignment: .leading)
                             Text("steps \(stats.steps, specifier: "%.1f")")

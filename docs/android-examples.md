@@ -242,8 +242,6 @@ dailyStats.forEach { item ->
         |low: ${item.low.metMinutes} metMinutes;
         |moderate: ${item.moderate.metMinutes} metMinutes;
         |high: ${item.high.metMinutes} metMinutes;
-        |activeKcal: ${item.activeKcal} kcal;
-        |bmr: ${item.bmr};
         |steps: ${item.steps}""".trimMargin()
         println(formattedItem)
 }
@@ -265,8 +263,6 @@ statsSums.forEach { item ->
         |low: ${item.low.metMinutes} metMinutes;
         |moderate: ${item.moderate.metMinutes} metMinutes;
         |high: ${item.high.metMinutes} metMinutes;
-        |activeKcal: ${item.activeKcal} kcal;
-        |bmr: ${item.bmr};
         |steps: ${item.steps}""".trimMargin()
         println(formattedItem)
 }

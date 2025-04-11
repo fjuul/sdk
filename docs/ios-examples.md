@@ -262,8 +262,6 @@ apiClient.analytics.aggregatedDailyStats(from: fromDate, to: toDate, aggregation
     case .success(let statsAvgs):
         // returns an object of daily stats' averages for requested period
         //{
-        //    "activeKcal": 300,
-        //    "bmr": 1700,
         //    "steps": 8600,
         //    "low": { "seconds": 1800, "metMinutes": 20 },
         //    "moderate": { "seconds": 1200, "metMinutes": 10 },

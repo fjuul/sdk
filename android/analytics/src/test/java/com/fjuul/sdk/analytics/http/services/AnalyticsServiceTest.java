@@ -75,10 +75,16 @@ public class AnalyticsServiceTest {
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK)
             .setHeader("Content-Type", "application/json")
-            .setBody("{\n" + "" + "\"date\": \"2020-03-10\",\n" + "\"activeKcal\": 0,\n" + "\"bmr\": 0,\n"
-                + "\"steps\": 8522,\n" + "\"low\": { \"seconds\": 1800, \"metMinutes\": 20 },\n"
-                + "\"moderate\": { \"seconds\": 1200, \"metMinutes\": 10 },\n"
-                + "\"high\": { \"seconds\": 180, \"metMinutes\": 15 }\n" + "}");
+            .setBody("""
+                {
+                "date": "2020-03-10",
+                "activeKcal": 0,
+                "bmr": 0,
+                "steps": 8522,
+                "low": { "seconds": 1800, "metMinutes": 20 },
+                "moderate": { "seconds": 1200, "metMinutes": 10 },
+                "high": { "seconds": 180, "metMinutes": 15 }
+                }""");
         mockWebServer.enqueue(mockResponse);
 
         ApiCallResult<DailyStats> result = analyticsService.getDailyStats(LocalDate.parse("2020-03-10")).execute();
@@ -90,13 +96,14 @@ public class AnalyticsServiceTest {
         assertFalse("success result", result.isError());
         DailyStats dailyStats = result.getValue();
 
+        assertNotNull(dailyStats);
         assertEquals("2020-03-10", dailyStats.getDate());
         assertEquals(8522, dailyStats.getSteps());
-        assertEquals(20, dailyStats.getLow().getMetMinutes(), 0.0001);
+        assertEquals(20, dailyStats.getLow().getMetMinutes());
         assertEquals(1800, dailyStats.getLow().getSeconds());
-        assertEquals(10, dailyStats.getModerate().getMetMinutes(), 0.0001);
+        assertEquals(10, dailyStats.getModerate().getMetMinutes());
         assertEquals(1200, dailyStats.getModerate().getSeconds());
-        assertEquals(15, dailyStats.getHigh().getMetMinutes(), 0.0001);
+        assertEquals(15, dailyStats.getHigh().getMetMinutes());
         assertEquals(180, dailyStats.getHigh().getSeconds());
     }
 
@@ -107,14 +114,27 @@ public class AnalyticsServiceTest {
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK)
             .setHeader("Content-Type", "application/json")
-            .setBody("[ \n" + "{\n" + "\"date\": \"2020-03-10\",\n" + "\"activeKcal\": 0,\n" + "\"bmr\": 0,\n"
-                + "\"steps\": 8900,\n" + "\"low\": { \"seconds\": 1800, \"metMinutes\": 20 },\n"
-                + "\"moderate\": { \"seconds\": 1200, \"metMinutes\": 10 },\n"
-                + "\"high\": { \"seconds\": 180, \"metMinutes\": 15 }\n" + "}, \n" + "{\n"
-                + "\"date\": \"2020-03-11\",\n" + "\"activeKcal\": 0,\n" + "\"bmr\": 0,\n" + "\"steps\": 9010,\n"
-                + "\"low\": { \"seconds\": 100, \"metMinutes\": 2.1 },\n"
-                + "\"moderate\": { \"seconds\": 120, \"metMinutes\": 2.3 },\n"
-                + "\"high\": { \"seconds\": 30, \"metMinutes\": 3.4 }\n" + " " + "} \n" + "]");
+            .setBody("""
+                [\s
+                {
+                "date": "2020-03-10",
+                "activeKcal": 0,
+                "bmr": 0,
+                "steps": 8900,
+                "low": { "seconds": 1800, "metMinutes": 20 },
+                "moderate": { "seconds": 1200, "metMinutes": 10 },
+                "high": { "seconds": 180, "metMinutes": 15 }
+                },\s
+                {
+                "date": "2020-03-11",
+                "activeKcal": 0,
+                "bmr": 0,
+                "steps": 9010,
+                "low": { "seconds": 100, "metMinutes": 2 },
+                "moderate": { "seconds": 120, "metMinutes": 2 },
+                "high": { "seconds": 30, "metMinutes": 3 }
+                 }\s
+                ]""");
         mockWebServer.enqueue(mockResponse);
 
         ApiCallResult<DailyStats[]> result =
@@ -127,24 +147,25 @@ public class AnalyticsServiceTest {
 
         assertFalse("success result", result.isError());
         DailyStats[] dailyStatsRange = result.getValue();
+        assertNotNull(dailyStatsRange);
         DailyStats firstDailyStats = dailyStatsRange[0];
         assertEquals("2020-03-10", firstDailyStats.getDate());
         assertEquals(8900, firstDailyStats.getSteps());
-        assertEquals(20, firstDailyStats.getLow().getMetMinutes(), 0.0001);
+        assertEquals(20, firstDailyStats.getLow().getMetMinutes());
         assertEquals(1800, firstDailyStats.getLow().getSeconds());
-        assertEquals(10, firstDailyStats.getModerate().getMetMinutes(), 0.0001);
+        assertEquals(10, firstDailyStats.getModerate().getMetMinutes());
         assertEquals(1200, firstDailyStats.getModerate().getSeconds());
-        assertEquals(15, firstDailyStats.getHigh().getMetMinutes(), 0.0001);
+        assertEquals(15, firstDailyStats.getHigh().getMetMinutes());
         assertEquals(180, firstDailyStats.getHigh().getSeconds());
 
         DailyStats secondDailyStats = dailyStatsRange[1];
         assertEquals("2020-03-11", secondDailyStats.getDate());
         assertEquals(9010, secondDailyStats.getSteps());
-        assertEquals(2.1, secondDailyStats.getLow().getMetMinutes(), 0.0001);
+        assertEquals(2, secondDailyStats.getLow().getMetMinutes());
         assertEquals(100, secondDailyStats.getLow().getSeconds());
-        assertEquals(2.3, secondDailyStats.getModerate().getMetMinutes(), 0.0001);
+        assertEquals(2, secondDailyStats.getModerate().getMetMinutes());
         assertEquals(120, secondDailyStats.getModerate().getSeconds());
-        assertEquals(3.4, secondDailyStats.getHigh().getMetMinutes(), 0.0001);
+        assertEquals(3, secondDailyStats.getHigh().getMetMinutes());
         assertEquals(30, secondDailyStats.getHigh().getSeconds());
     }
 
@@ -155,10 +176,15 @@ public class AnalyticsServiceTest {
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_OK)
             .setHeader("Content-Type", "application/json")
-            .setBody("{\n" + "\"activeKcal\": 0,\n" + "\"bmr\": 0,\n" + "\"steps\": 10103,\n"
-                + "\"low\": { \"seconds\": 2222, \"metMinutes\": 32 },\n"
-                + "\"moderate\": { \"seconds\": 1980, \"metMinutes\": 44 },\n"
-                + "\"high\": { \"seconds\": 600, \"metMinutes\": 9 }\n" + "}");
+            .setBody("""
+                {
+                "activeKcal": 0,
+                "bmr": 0,
+                "steps": 10103,
+                "low": { "seconds": 2222, "metMinutes": 32 },
+                "moderate": { "seconds": 1980, "metMinutes": 44 },
+                "high": { "seconds": 600, "metMinutes": 9 }
+                }""");
         mockWebServer.enqueue(mockResponse);
 
         ApiCallResult<AggregatedDailyStats> result = analyticsService
@@ -173,17 +199,18 @@ public class AnalyticsServiceTest {
         assertFalse("success result", result.isError());
         AggregatedDailyStats aggregatedStats = result.getValue();
 
+        assertNotNull(aggregatedStats);
         assertEquals(10103, aggregatedStats.getSteps());
-        assertEquals(32, aggregatedStats.getLow().getMetMinutes(), 0.0001);
+        assertEquals(32, aggregatedStats.getLow().getMetMinutes());
         assertEquals(2222, aggregatedStats.getLow().getSeconds());
-        assertEquals(44, aggregatedStats.getModerate().getMetMinutes(), 0.0001);
+        assertEquals(44, aggregatedStats.getModerate().getMetMinutes());
         assertEquals(1980, aggregatedStats.getModerate().getSeconds());
-        assertEquals(9, aggregatedStats.getHigh().getMetMinutes(), 0.0001);
+        assertEquals(9, aggregatedStats.getHigh().getMetMinutes());
         assertEquals(600, aggregatedStats.getHigh().getSeconds());
     }
 
     @Test
-    public void getDailyStats_EmptyKeystoreWithUnauthorizedException_ReturnsErrorResult() throws IOException {
+    public void getDailyStats_EmptyKeystoreWithUnauthorizedException_ReturnsErrorResult() {
         clientBuilder.setKeystore(testKeystore);
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
@@ -198,6 +225,7 @@ public class AnalyticsServiceTest {
         Exception exception = result.getError();
         assertThat(exception, IsInstanceOf.instanceOf(ApiExceptions.UnauthorizedException.class));
         ApiExceptions.UnauthorizedException authException = (ApiExceptions.UnauthorizedException) exception;
+        assertNotNull(authException);
         assertEquals("has wrong_credentials error code",
             ApiExceptions.UnauthorizedException.ErrorCode.wrong_credentials,
             authException.getErrorCode());
@@ -205,7 +233,7 @@ public class AnalyticsServiceTest {
     }
 
     @Test
-    public void getDailyStats_ResponseWithUnauthorizedException_ReturnsErrorResult() throws IOException {
+    public void getDailyStats_ResponseWithUnauthorizedException_ReturnsErrorResult() {
         clientBuilder.setKeystore(testKeystore);
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
@@ -219,12 +247,13 @@ public class AnalyticsServiceTest {
         Exception exception = result.getError();
         assertThat(exception, IsInstanceOf.instanceOf(ApiExceptions.UnauthorizedException.class));
         ApiExceptions.UnauthorizedException authException = (ApiExceptions.UnauthorizedException) exception;
+        assertNotNull(authException);
         assertNull("has wrong_credentials error code", authException.getErrorCode());
         assertEquals("has error message from response body", "Unauthorized request", authException.getMessage());
     }
 
     @Test
-    public void getDailyStats_ResponseWithUnauthorizedExceptionWithCode_ReturnsErrorResult() throws IOException {
+    public void getDailyStats_ResponseWithUnauthorizedExceptionWithCode_ReturnsErrorResult() {
         clientBuilder.setKeystore(testKeystore);
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
@@ -239,6 +268,7 @@ public class AnalyticsServiceTest {
         Exception exception = result.getError();
         assertThat(exception, IsInstanceOf.instanceOf(ApiExceptions.UnauthorizedException.class));
         ApiExceptions.UnauthorizedException authException = (ApiExceptions.UnauthorizedException) exception;
+        assertNotNull(authException);
         assertEquals("has wrong_credentials error code",
             ApiExceptions.UnauthorizedException.ErrorCode.wrong_credentials,
             authException.getErrorCode());
@@ -246,7 +276,7 @@ public class AnalyticsServiceTest {
     }
 
     @Test
-    public void getDailyStats_ResponseWithClockSkewException_ReturnsErrorResult() throws IOException {
+    public void getDailyStats_ResponseWithClockSkewException_ReturnsErrorResult() {
         clientBuilder.setKeystore(testKeystore);
         analyticsService = new AnalyticsService(clientBuilder.build());
         MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
@@ -261,6 +291,7 @@ public class AnalyticsServiceTest {
         Exception exception = result.getError();
         assertThat(exception, IsInstanceOf.instanceOf(ApiExceptions.UnauthorizedException.class));
         ApiExceptions.UnauthorizedException authException = (ApiExceptions.UnauthorizedException) exception;
+        assertNotNull(authException);
         assertEquals("has wrong_credentials error code",
             ApiExceptions.UnauthorizedException.ErrorCode.clock_skew,
             authException.getErrorCode());

@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.fjuul.sdk.android.exampleapp.R
@@ -13,11 +14,6 @@ import com.fjuul.sdk.android.exampleapp.databinding.HealthConnectSyncFragmentBin
 import java.time.LocalDate
 
 class HealthConnectSyncFragment : Fragment() {
-
-    companion object {
-        fun newInstance() = HealthConnectSyncFragment()
-    }
-
     private lateinit var viewModel: HealthConnectSyncViewModel
     private lateinit var binding: HealthConnectSyncFragmentBinding
 
@@ -26,17 +22,22 @@ class HealthConnectSyncFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = HealthConnectSyncFragmentBinding.bind(inflater.inflate(R.layout.health_connect_sync_fragment, container, false))
+        binding = HealthConnectSyncFragmentBinding.bind(
+            inflater.inflate(
+                R.layout.health_connect_sync_fragment,
+                container,
+                false
+            )
+        )
         return binding.root
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(this).get(HealthConnectSyncViewModel::class.java)
 
-        binding.intradaySectionText.sectionText.text = "Intraday metrics"
-        binding.sessionsSectionText.sectionText.text = "Sessions"
+        binding.intradaySectionText.sectionText.text = "Intraday"
+        binding.dailySectionText.sectionText.text = "Daily"
         binding.profileSectionText.sectionText.text = "Profile"
 
         viewModel.startDate.observe(viewLifecycleOwner) { date ->
@@ -45,14 +46,14 @@ class HealthConnectSyncFragment : Fragment() {
         viewModel.endDate.observe(viewLifecycleOwner) {
             binding.endDateValueText.text = it.toString()
         }
-        viewModel.syncingIntradayMetrics.observe(viewLifecycleOwner) { syncing ->
-            binding.intradaySyncProgressBar.visibility = if (syncing) View.VISIBLE else View.INVISIBLE
+        viewModel.syncingIntradayData.observe(viewLifecycleOwner) { syncing ->
+            binding.intradaySyncProgressBar.isVisible = syncing
         }
-        viewModel.syncingSessions.observe(viewLifecycleOwner) { syncing ->
-            binding.sessionsSyncProgressBar.visibility = if (syncing) View.VISIBLE else View.INVISIBLE
+        viewModel.syncingDailyData.observe(viewLifecycleOwner) { syncing ->
+            binding.dailySyncProgressBar.isVisible = syncing
         }
-        viewModel.syncingProfile.observe(viewLifecycleOwner) { syncing ->
-            binding.profileSyncProgressBar.visibility = if (syncing) View.VISIBLE else View.INVISIBLE
+        viewModel.syncingProfileData.observe(viewLifecycleOwner) { syncing ->
+            binding.profileSyncProgressBar.isVisible = syncing
         }
         viewModel.errorMessage.observe(viewLifecycleOwner) {
             it?.let { error ->
@@ -90,29 +91,17 @@ class HealthConnectSyncFragment : Fragment() {
             ).show()
         }
 
-        binding.minSessionDurationTextEdit.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus && binding.minSessionDurationTextEdit.text.isNullOrEmpty()) {
-                binding.minSessionDurationTextEdit.setText("3")
-            }
-        }
-
         binding.runIntradaySyncButton.setOnClickListener {
-            val calories = binding.caloriesCheckBox.isChecked
-            val steps = binding.stepsCheckBox.isChecked
+            val totalCalories = binding.totalCaloriesCheckBox.isChecked
+            val activeCalories = binding.activeCaloriesCheckBox.isChecked
             val heartRate = binding.heartRateCheckBox.isChecked
-            val distance = binding.distanceCheckBox.isChecked
-            viewModel.runIntradaySync(calories, heartRate, steps, distance)
+            viewModel.runIntradaySync(totalCalories, activeCalories, heartRate)
         }
 
-        binding.runSessionsSyncButton.setOnClickListener {
-            val minutesDurationText = binding.minSessionDurationTextEdit.text.toString()
-            val minSessionDuration = try {
-                val minutes = minutesDurationText.toInt()
-                if (minutes > 0) java.time.Duration.ofMinutes(minutes.toLong()) else null
-            } catch (exc: Exception) { null }
-
-            if (minSessionDuration == null) return@setOnClickListener
-            viewModel.runSessionsSync(minSessionDuration)
+        binding.runDailySyncButton.setOnClickListener {
+            val steps = binding.stepsCheckBox.isChecked
+            val restingHeartRate = binding.restingHeartRateCheckBox.isChecked
+            viewModel.runDailySync(steps, restingHeartRate)
         }
 
         binding.runProfileSyncButton.setOnClickListener {

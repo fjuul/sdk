@@ -129,6 +129,7 @@ class ActivitySourcesFragment : Fragment() {
                 ActivitySourcesItem.OURA,
                 ActivitySourcesItem.POLAR,
                 ActivitySourcesItem.GOOGLE_FIT,
+                ActivitySourcesItem.HEALTH_CONNECT,
                 ActivitySourcesItem.SUUNTO,
                 ActivitySourcesItem.WITHINGS,
                 ActivitySourcesItem.DISCONNECT

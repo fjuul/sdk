@@ -33,7 +33,7 @@ class HealthConnectSyncViewModel : ViewModel() {
         _errorMessage.postValue(null)
     }
 
-    fun runIntradaySync(totalCalories: Boolean, activeCalories: Boolean, heartRate: Boolean) {
+    fun runIntradaySync(calories: Boolean, heartRate: Boolean) {
         // TODO: Implement Health Connect  Intraday sync logic
     }
 

@@ -130,18 +130,11 @@
             app:layout_constraintTop_toBottomOf="@id/intraday_section_text">
 
             <CheckBox
-                android:id="@+id/total_calories_check_box"
+                android:id="@+id/calories_check_box"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
-                android:text="Total Calories" />
-
-            <CheckBox
-                android:id="@+id/active_calories_check_box"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="Active Calories" />
+                android:text="Calories" />
 
             <CheckBox
                 android:id="@+id/heart_rate_check_box"

@@ -19,19 +19,19 @@ final class AnalyticsApiTests: XCTestCase {
     let singleDailyStatsResponse = """
         {
             \"date\":\"2020-06-10\",
-            \"low\":{\"seconds\":180,\"metMinutes\":8.24},
-            \"moderate\":{\"seconds\":1260,\"metMinutes\":89.8},
-            \"high\":{\"seconds\":540,\"metMinutes\":63.23},
-            \"bmr\":1755.64,\"activeKcal\":755.64,\"steps\":10000
+            \"low\":{\"seconds\":180,\"metMinutes\":8},
+            \"moderate\":{\"seconds\":1260,\"metMinutes\":89},
+            \"high\":{\"seconds\":540,\"metMinutes\":63},
+            \"bmr\":0,\"activeKcal\":0,\"steps\":10000
         }
     """
 
     let aggregatedDailyStatsResponse = """
         {
-            \"low\":{\"seconds\":80,\"metMinutes\":4.44},
-            \"moderate\":{\"seconds\":160,\"metMinutes\":5.58},
-            \"high\":{\"seconds\":110,\"metMinutes\":6.23},
-            \"bmr\":705.64,\"activeKcal\":255.64,\"steps\":7400
+            \"low\":{\"seconds\":80,\"metMinutes\":4},
+            \"moderate\":{\"seconds\":160,\"metMinutes\":5},
+            \"high\":{\"seconds\":110,\"metMinutes\":6},
+            \"bmr\":0,\"activeKcal\":0,\"steps\":7400
         }
     """
 

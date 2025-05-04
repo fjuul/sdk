@@ -69,8 +69,6 @@ class AggregatedDailyStatsFragment : Fragment() {
  low: ${it.low.metMinutes} metMinutes;
  moderate: ${it.moderate.metMinutes} metMinutes;
  high: ${it.high.metMinutes} metMinutes;
- activeKcal: ${it.activeKcal} kcal;
- bmr: ${it.bmr};
  steps: ${it.steps}"""
         }
 

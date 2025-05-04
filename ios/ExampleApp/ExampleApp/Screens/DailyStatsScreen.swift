@@ -31,38 +31,28 @@ struct DailyStatsScreen: View {
                             HStack {
                                 Image(systemName: "bolt")
                                     .frame(width: 30, height: 10, alignment: .leading)
-                                Text("low \(each.low.metMinutes, specifier: "%.1f")")
+                                Text("low \(each.low.metMinutes)")
                                 Spacer()
                                 Text("\(self.formatTime(time: each.low.seconds))")
                             }
                             HStack {
                                 Image(systemName: "bolt")
                                     .frame(width: 30, height: 10, alignment: .leading)
-                                Text("mod \(each.moderate.metMinutes, specifier: "%.1f")")
+                                Text("mod \(each.moderate.metMinutes)")
                                 Spacer()
                                 Text("\(self.formatTime(time: each.moderate.seconds))")
                             }
                             HStack {
                                 Image(systemName: "bolt")
                                     .frame(width: 30, height: 10, alignment: .leading)
-                                Text("high \(each.high.metMinutes, specifier: "%.1f")")
+                                Text("high \(each.high.metMinutes)")
                                 Spacer()
                                 Text("\(self.formatTime(time: each.high.seconds))")
                             }
                             HStack {
-                                Image(systemName: "flame")
-                                    .frame(width: 30, height: 10, alignment: .leading)
-                                Text("activeKcal \(each.activeKcal, specifier: "%.1f")")
-                            }
-                            HStack {
-                                Image(systemName: "bolt.heart")
-                                    .frame(width: 30, height: 10, alignment: .leading)
-                                Text("bmr \(each.bmr, specifier: "%.1f")")
-                            }
-                            HStack {
                                 Image(systemName: "figure.walk")
                                     .frame(width: 30, height: 10, alignment: .leading)
-                                Text("steps \(each.steps, specifier: "%d")")
+                                Text("steps \(each.steps)")
                             }
                         }.padding(.top, 5)
                     }

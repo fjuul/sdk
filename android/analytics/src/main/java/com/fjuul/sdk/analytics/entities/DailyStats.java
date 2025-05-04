@@ -5,8 +5,6 @@ import androidx.annotation.NonNull;
 public class DailyStats {
     @NonNull
     String date;
-    float activeKcal;
-    float bmr;
     int steps;
 
     @NonNull
@@ -19,14 +17,6 @@ public class DailyStats {
     @NonNull
     public String getDate() {
         return date;
-    }
-
-    public float getActiveKcal() {
-        return activeKcal;
-    }
-
-    public float getBmr() {
-        return bmr;
     }
 
     public int getSteps() {

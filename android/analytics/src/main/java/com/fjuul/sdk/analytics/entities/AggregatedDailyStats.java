@@ -4,8 +4,6 @@ import androidx.annotation.NonNull;
 
 public class AggregatedDailyStats {
 
-    float activeKcal;
-    float bmr;
     int steps;
 
     @NonNull
@@ -14,14 +12,6 @@ public class AggregatedDailyStats {
     ActivityMeasure moderate;
     @NonNull
     ActivityMeasure high;
-
-    public float getActiveKcal() {
-        return activeKcal;
-    }
-
-    public float getBmr() {
-        return bmr;
-    }
 
     public int getSteps() {
         return steps;

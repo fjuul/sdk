@@ -132,7 +132,7 @@ public final class ActivitySourcesManager {
             client.getApiKey(),
             client.getBaseUrl());
         GoogleFitActivitySource.initialize(client, config);
-        HealthConnectActivitySource.initialize(client.getAppContext(), sourcesService);
+        HealthConnectActivitySource.initialize(client, config);
 
         final BackgroundWorkManager backgroundWorkManager = new BackgroundWorkManager(config, scheduler);
         final ActivitySourceResolver activitySourceResolver = new ActivitySourceResolver();
@@ -231,6 +231,10 @@ public final class ActivitySourcesManager {
     public void connect(@NonNull final ActivitySource activitySource, @NonNull final Callback<Intent> callback) {
         if (activitySource instanceof GoogleFitActivitySource) {
             final Intent intent = ((GoogleFitActivitySource) activitySource).buildIntentRequestingFitnessPermissions();
+            callback.onResult(Result.value(intent));
+            return;
+        } else if (activitySource instanceof HealthConnectActivitySource) {
+            final Intent intent = ((HealthConnectActivitySource) activitySource).buildRequestPermissionsIntent();
             callback.onResult(Result.value(intent));
             return;
         }

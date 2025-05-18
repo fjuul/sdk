@@ -19,7 +19,6 @@ class HealthConnectDataManager(
     private val activitySourcesService: ActivitySourcesService
 ) {
     private val permissionManager = HealthConnectPermissionManager(context)
-    private val client = HealthConnectClient(context, permissionManager)
     private val logger = Logger.get()
 
     /**
@@ -28,47 +27,7 @@ class HealthConnectDataManager(
      */
     suspend fun uploadIntradayData(startTime: Long, endTime: Long) {
         try {
-            permissionManager.ensurePermissions()
 
-            val steps = client.readSteps(startTime, endTime)
-            val heartRate = client.readHeartRate(startTime, endTime)
-            val calories = client.readCalories(startTime, endTime)
-
-            val sources = (steps.mapNotNull { it.dataSource } +
-                heartRate.mapNotNull { it.dataSource } +
-                calories.mapNotNull { it.dataSource }).toSet()
-
-            val entries = buildList {
-                addAll(steps.map {
-                    HealthConnectIntradayEntry(
-                        start = it.startTime,
-                        value = it.count.toDouble()
-                    )
-                })
-                addAll(heartRate.map {
-                    HealthConnectIntradayEntry(
-                        start = it.startTime,
-                        min = it.beatsPerMinute.toDouble(),
-                        avg = it.beatsPerMinute.toDouble(),
-                        max = it.beatsPerMinute.toDouble()
-                    )
-                })
-                addAll(calories.map {
-                    HealthConnectIntradayEntry(
-                        start = it.startTime,
-                        value = it.calories
-                    )
-                })
-            }
-
-            if (entries.isNotEmpty()) {
-                activitySourcesService.uploadHealthConnectData(
-                    HealthConnectIntradayData(
-                        dataOrigins = sources.toList(),
-                        entries = entries
-                    )
-                )
-            }
         } catch (e: HealthConnectPermissionsNotGrantedException) {
             throw e
         } catch (e: Exception) {
@@ -82,39 +41,7 @@ class HealthConnectDataManager(
      */
     suspend fun uploadDailyData(date: Date) {
         try {
-            permissionManager.ensurePermissions()
 
-            val startTime = date.time
-            val endTime = startTime + 24 * 60 * 60 * 1000
-
-            val steps = client.readSteps(startTime, endTime)
-            val heartRate = client.readHeartRate(startTime, endTime)
-
-            if (steps.isEmpty() && heartRate.isEmpty()) return
-
-            val sources = (steps.mapNotNull { it.dataSource } +
-                heartRate.mapNotNull { it.dataSource }).toSet()
-
-            val dailySteps = if (steps.isNotEmpty()) steps.sumOf { it.count }.toInt() else null
-            val restingHeartRate = if (heartRate.isNotEmpty()) {
-                val rates = heartRate.map { it.beatsPerMinute.toDouble() }
-                RestingHeartRate(
-                    min = rates.min(),
-                    avg = rates.average(),
-                    max = rates.max()
-                )
-            } else null
-
-            if (dailySteps != null || restingHeartRate != null) {
-                activitySourcesService.uploadHealthConnectDailies(
-                    HealthConnectDailiesData(
-                        date = date,
-                        dataOrigins = sources.toList(),
-                        steps = dailySteps,
-                        restingHeartRate = restingHeartRate
-                    )
-                )
-            }
         } catch (e: HealthConnectPermissionsNotGrantedException) {
             throw e
         } catch (e: Exception) {
@@ -127,11 +54,7 @@ class HealthConnectDataManager(
      */
     suspend fun uploadProfileData() {
         try {
-            permissionManager.ensurePermissions()
-            val profile = client.readProfileData()
-            if (profile.weight != null || profile.height != null) {
-                activitySourcesService.updateHealthConnectProfile(profile)
-            }
+
         } catch (e: HealthConnectPermissionsNotGrantedException) {
             throw e
         } catch (e: Exception) {

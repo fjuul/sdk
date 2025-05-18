@@ -18,6 +18,7 @@ import com.fjuul.sdk.activitysources.entities.ActivitySource;
 import com.fjuul.sdk.activitysources.entities.FitbitActivitySource;
 import com.fjuul.sdk.activitysources.entities.GarminActivitySource;
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
+import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource;
 import com.fjuul.sdk.activitysources.entities.OuraActivitySource;
 import com.fjuul.sdk.activitysources.entities.PolarActivitySource;
 import com.fjuul.sdk.activitysources.entities.SuuntoActivitySource;
@@ -96,6 +97,21 @@ public class ActivitySourceResolverTest {
                 assertThat(result, instanceOf(FitbitActivitySource.class));
             }
         }
+
+        @Test
+        public void getInstanceByTrackerValue_whenInputValueIsHealthconnect_returnsHealthConnectActivitySource() {
+            try (
+                final MockedStatic<HealthConnectActivitySource> staticMockHC = mockStatic(HealthConnectActivitySource.class)
+            ) {
+                HealthConnectActivitySource mockedHC = mock(HealthConnectActivitySource.class);
+                staticMockHC.when(() -> HealthConnectActivitySource.getInstance()).thenReturn(mockedHC);
+
+                final ActivitySource result = subject.getInstanceByTrackerValue("healthconnect");
+                assertThat(result, instanceOf(HealthConnectActivitySource.class));
+                assertEquals(mockedHC, result);
+            }
+        }
+
 
         @Test
         public void getInstanceByTrackerValue_whenInputValueIsGooglefit_returnsGooglefitActivitySource() {

@@ -11,6 +11,7 @@ import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceWorkScheduler;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourcesStateStore;
 import com.fjuul.sdk.activitysources.entities.internal.BackgroundWorkManager;
+import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.Callback;
@@ -131,6 +132,7 @@ public final class ActivitySourcesManager {
             client.getApiKey(),
             client.getBaseUrl());
         GoogleFitActivitySource.initialize(client, config);
+        HealthConnectActivitySource.initialize(client.getAppContext(), sourcesService);
 
         final BackgroundWorkManager backgroundWorkManager = new BackgroundWorkManager(config, scheduler);
         final ActivitySourceResolver activitySourceResolver = new ActivitySourceResolver();
@@ -373,12 +375,25 @@ public final class ActivitySourcesManager {
                 .findFirst())
             .orElse(null);
         // TODO: move out the line with configuring the profile sync work when there will be other local activity
+        final TrackerConnection hcTrackerConnection = Optional.ofNullable(trackerConnections)
+            .flatMap(connections -> connections.stream()
+                .filter(c -> c.getTracker().equals(TrackerValue.HEALTH_CONNECT.getValue()))
+                .findFirst())
+            .orElse(null);
+
+
         if (gfTrackerConnection != null) {
             backgroundWorkManager.configureProfileSyncWork();
             backgroundWorkManager.configureGFSyncWorks();
         } else {
             backgroundWorkManager.cancelGFSyncWorks();
             backgroundWorkManager.cancelProfileSyncWork();
+        }
+
+        if (hcTrackerConnection != null) {
+           // implement background work for the health connect
+        } else {
+            // cancel background work for the health connect
         }
 
         final GoogleFitActivitySource googleFit = (GoogleFitActivitySource) activitySourceResolver

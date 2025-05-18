@@ -18,6 +18,7 @@ import androidx.lifecycle.Observer
 import com.fjuul.sdk.activitysources.entities.FitbitActivitySource
 import com.fjuul.sdk.activitysources.entities.GarminActivitySource
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource
+import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource
 import com.fjuul.sdk.activitysources.entities.OuraActivitySource
 import com.fjuul.sdk.activitysources.entities.PolarActivitySource
 import com.fjuul.sdk.activitysources.entities.SuuntoActivitySource
@@ -55,7 +56,16 @@ class ActivitySourcesFragment : Fragment() {
                     }
                     model.fetchCurrentConnections()
                 }
-            }
+            } else if (requestCode == HEALTH_CONNECT_PERMISSIONS_REQUEST_CODE) {
+                if (resultCode == Activity.RESULT_OK) {
+                    HealthConnectActivitySource.getInstance().handlePermissionsResult { result ->
+                        if (result.isError) {
+                            model.postErrorMessage(result.error?.message ?: "Something went wrong")
+                            return@handlePermissionsResult
+                        }
+                        model.fetchCurrentConnections()
+                    }
+                }
             // TODO: else show the error message
         }
     }
@@ -145,6 +155,7 @@ class ActivitySourcesFragment : Fragment() {
                 ActivitySourcesItem.SUUNTO -> SuuntoActivitySource.getInstance()
                 ActivitySourcesItem.WITHINGS -> WithingsActivitySource.getInstance()
                 ActivitySourcesItem.GOOGLE_FIT -> GoogleFitActivitySource.getInstance()
+                ActivitySourcesItem.HEALTH_CONNECT -> HealthConnectActivitySource.getInstance()
                 else -> {
                     model.disconnect()
                     return@setOnItemClickListener
@@ -158,6 +169,20 @@ class ActivitySourcesFragment : Fragment() {
                         if (which == 0) {
                             val intent = activitySource.buildIntentRequestingFitnessPermissions()
                             startActivityForResult(intent, RE_GOOGLE_SIGN_IN_REQUEST_CODE)
+                        } else if (which == 1) {
+                            model.disconnect(activitySource)
+                        }
+                    }
+                    .create()
+                    .show()
+            } else if (model.isConnected(activitySource) && activitySource is HealthConnectActivitySource) {
+                val menus = arrayOf("Request permissions", "Disconnect")
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Health Connect")
+                    .setItems(menus) { _, which ->
+                        if (which == 0) {
+                            val intent = activitySource.buildRequestPermissionsIntent()
+                            startActivityForResult(intent, HEALTH_CONNECT_PERMISSIONS_REQUEST_CODE)
                         } else if (which == 1) {
                             model.disconnect(activitySource)
                         }
@@ -179,7 +204,8 @@ class ActivitySourcesFragment : Fragment() {
     companion object {
         const val GOOGLE_SIGN_IN_REQUEST_CODE = 61076
         const val RE_GOOGLE_SIGN_IN_REQUEST_CODE = 61077
-        const val ACTIVITY_RECOGNITION_PERMISSION_REQUEST_CODE = 33221
+            const val HEALTH_CONNECT_PERMISSIONS_REQUEST_CODE = 61078
+            const val ACTIVITY_RECOGNITION_PERMISSION_REQUEST_CODE = 33221
         const val TAG = "ActivitySourcesFragment"
 
         @JvmStatic

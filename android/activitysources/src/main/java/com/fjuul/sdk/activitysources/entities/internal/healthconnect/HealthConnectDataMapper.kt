@@ -4,6 +4,10 @@ import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import java.time.temporal.ChronoUnit
 import java.util.Date
 
+/**
+ * Converts raw HealthConnectDataPoint values into uploadable payloads.
+ * Handles aggregation logic and DTO construction.
+ */
 object HealthConnectDataMapper {
 
     fun toCumulativePayload(
@@ -74,9 +78,7 @@ object HealthConnectDataMapper {
         )
     }
 
-    fun toProfilePayload(
-        points: List<HealthConnectDataPoint>
-    ): HealthConnectProfilePayload? {
+    fun toProfilePayload(points: List<HealthConnectDataPoint>): HealthConnectProfilePayload? {
         val latestHeight = points.filter { it.type == FitnessMetricsType.HEIGHT }
             .maxByOrNull { it.startTime }?.value
 

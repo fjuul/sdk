@@ -11,7 +11,7 @@ import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceWorkScheduler;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourcesStateStore;
 import com.fjuul.sdk.activitysources.entities.internal.BackgroundWorkManager;
-import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectActivitySource;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.Callback;
@@ -231,10 +231,6 @@ public final class ActivitySourcesManager {
     public void connect(@NonNull final ActivitySource activitySource, @NonNull final Callback<Intent> callback) {
         if (activitySource instanceof GoogleFitActivitySource) {
             final Intent intent = ((GoogleFitActivitySource) activitySource).buildIntentRequestingFitnessPermissions();
-            callback.onResult(Result.value(intent));
-            return;
-        } else if (activitySource instanceof HealthConnectActivitySource) {
-            final Intent intent = ((HealthConnectActivitySource) activitySource).buildRequestPermissionsIntent();
             callback.onResult(Result.value(intent));
             return;
         }

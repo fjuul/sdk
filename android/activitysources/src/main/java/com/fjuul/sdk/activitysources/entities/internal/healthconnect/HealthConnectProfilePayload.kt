@@ -3,10 +3,12 @@ package com.fjuul.sdk.activitysources.entities.internal.healthconnect
 import com.squareup.moshi.JsonClass
 
 /**
- * User profile data payload.
+ * Represents user profile data (biometrics) synced from Health Connect.
  *
- * @property height height in meters (optional)
- * @property weight weight in kilograms (optional)
+ * Both values are optional and will be omitted if null.
+ *
+ * @param height height in meters (optional)
+ * @param weight weight in kilograms (optional)
  */
 @JsonClass(generateAdapter = true)
 data class HealthConnectProfilePayload(

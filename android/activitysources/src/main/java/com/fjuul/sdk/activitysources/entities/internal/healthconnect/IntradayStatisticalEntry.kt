@@ -6,10 +6,10 @@ import java.util.Date
 /**
  * Represents a statistical intraday entry (e.g. heart rate).
  *
- * @property start start timestamp of the measurement interval
- * @property min minimum value
- * @property avg average value
- * @property max maximum value
+ * @param start start timestamp of the window
+ * @param min minimum value in that window
+ * @param avg average value
+ * @param max maximum value
  */
 @JsonClass(generateAdapter = true)
 data class IntradayStatisticalEntry(
@@ -18,3 +18,4 @@ data class IntradayStatisticalEntry(
     val avg: Double,
     val max: Double
 )
+

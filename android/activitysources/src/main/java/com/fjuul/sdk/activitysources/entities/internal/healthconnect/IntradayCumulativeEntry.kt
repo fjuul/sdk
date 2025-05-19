@@ -4,10 +4,10 @@ import com.squareup.moshi.JsonClass
 import java.util.Date
 
 /**
- * Represents a cumulative intraday entry (e.g. calories burned).
+ * Represents a cumulative intraday entry (e.g. calories).
  *
- * @property start start timestamp of the measurement interval
- * @property value total value during the interval
+ * @param start start timestamp of the measurement window
+ * @param value summed value during that window
  */
 @JsonClass(generateAdapter = true)
 data class IntradayCumulativeEntry(

@@ -3,11 +3,11 @@ package com.fjuul.sdk.activitysources.entities.internal.healthconnect
 import com.squareup.moshi.JsonClass
 
 /**
- * Represents a statistical daily value (used in daily payload).
+ * Represents a statistical value for daily metrics (e.g. resting heart rate).
  *
- * @property min minimum value
- * @property avg average value
- * @property max maximum value
+ * @param min minimum value recorded
+ * @param avg average value
+ * @param max maximum value
  */
 @JsonClass(generateAdapter = true)
 data class StatisticalValue(

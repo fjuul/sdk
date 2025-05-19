@@ -1,71 +1,42 @@
 package com.fjuul.sdk.activitysources.entities.internal.healthconnect
 
 import android.content.Context
-import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
-import androidx.health.connect.client.records.HeartRateRecord
-import androidx.health.connect.client.records.HeightRecord
-import androidx.health.connect.client.records.StepsRecord
-import androidx.health.connect.client.records.WeightRecord
-import com.fjuul.sdk.activitysources.exceptions.HealthConnectActivitySourceExceptions.CommonException
-import com.fjuul.sdk.activitysources.exceptions.HealthConnectActivitySourceExceptions.HealthConnectPermissionsNotGrantedException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import androidx.health.connect.client.records.*
 
 /**
- * Manages Health Connect permissions.
- * Handles permission checking and validation.
+ * Manages permission logic for Health Connect, dynamically based on requested sync options.
  */
-class HealthConnectPermissionManager(private val context: Context) {
-    private val healthConnectClient: HealthConnectClient by lazy {
-        HealthConnectClient.getOrCreate(context)
-    }
+class HealthConnectPermissionManager {
 
-    private val requiredPermissions = setOf(
-        HealthPermission.getReadPermission(StepsRecord::class),
-        HealthPermission.getReadPermission(HeartRateRecord::class),
-        HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class),
-        HealthPermission.getReadPermission(WeightRecord::class),
-        HealthPermission.getReadPermission(HeightRecord::class)
-    )
+    fun getPermissionsToRequest(options: HealthConnectSyncOptions): Set<String> {
+        val permissions = mutableSetOf<String>()
 
-    /**
-     * Checks if all required permissions are granted.
-     *
-     * @return true if all permissions are granted, false otherwise
-     * @throws CommonException if there's an error checking permissions
-     */
-    suspend fun hasAllPermissions(): Boolean = withContext(Dispatchers.IO) {
-        try {
-            val grantedPermissions = healthConnectClient.permissionController.getGrantedPermissions()
-            val missingPermissions = requiredPermissions - grantedPermissions
-            if (missingPermissions.isNotEmpty()) {
-                Log.w(TAG, "Missing Health Connect permissions: ${missingPermissions.joinToString()}")
-            }
-            grantedPermissions.containsAll(requiredPermissions)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to check Health Connect permissions", e)
-            throw CommonException("Failed to check Health Connect permissions: ${e.message}")
+        if (options.readSteps) {
+            permissions += HealthPermission.getReadPermission(StepsRecord::class)
         }
-    }
-
-    /**
-     * Ensures all required permissions are granted.
-     *
-     * @throws HealthConnectPermissionsNotGrantedException if any required permission is not granted
-     */
-    suspend fun ensurePermissions() {
-        if (!hasAllPermissions()) {
-            val grantedPermissions = healthConnectClient.permissionController.getGrantedPermissions()
-            val missingPermissions = requiredPermissions - grantedPermissions
-            Log.e(TAG, "Missing Health Connect permissions: ${missingPermissions.joinToString()}")
-            throw HealthConnectPermissionsNotGrantedException("Missing Health Connect permissions: ${missingPermissions.joinToString()}")
+        if (options.readCalories) {
+            permissions += HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class)
         }
+        if (options.readHeartRate) {
+            permissions += HealthPermission.getReadPermission(HeartRateRecord::class)
+        }
+        if (options.readHeight) {
+            permissions += HealthPermission.getReadPermission(HeightRecord::class)
+        }
+        if (options.readWeight) {
+            permissions += HealthPermission.getReadPermission(WeightRecord::class)
+        }
+
+        return permissions
     }
 
-    companion object {
-        private const val TAG = "HealthConnectPermissionManager"
+    suspend fun hasAllPermissions(context: Context, options: HealthConnectSyncOptions): Boolean {
+        val client = HealthConnectClient.getOrCreate(context)
+        val granted = client.permissionController.getGrantedPermissions()
+        val required = getPermissionsToRequest(options)
+        return granted.containsAll(required)
     }
-} 
+}
+

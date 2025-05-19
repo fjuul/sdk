@@ -12,17 +12,9 @@ import kotlinx.coroutines.withContext
 import java.time.Instant
 
 /**
- * A low-level wrapper around Android's HealthConnectClient.
- *
- * Provides a single entry point to read Health Connect data records based on the provided sync options.
- * The output is a unified list of HealthConnectDataPoint, each tagged with its corresponding FitnessMetricsType.
- *
- * This abstraction allows the upper layers (DataManager, ActivitySource) to remain decoupled from Android APIs.
- *
- * Use-case:
- * val result = HealthConnectClientWrapper.read(context, options)
+ * Low-level access to Android Health Connect API.
+ * Translates raw records into internal HealthConnectDataPoint format.
  */
-
 object HealthConnectClientWrapper {
 
     suspend fun read(
@@ -38,10 +30,8 @@ object HealthConnectClientWrapper {
             val result = mutableListOf<HealthConnectDataPoint>()
 
             if (options.readSteps) {
-                val steps = client.readRecords(
-                    ReadRecordsRequest(StepsRecord::class, timeFilter)
-                ).records
-                result += steps.map {
+                val records = client.readRecords(ReadRecordsRequest(StepsRecord::class, timeFilter)).records
+                result += records.map {
                     HealthConnectDataPoint(
                         type = FitnessMetricsType.INTRADAY_STEPS,
                         startTime = it.startTime,
@@ -52,10 +42,8 @@ object HealthConnectClientWrapper {
             }
 
             if (options.readCalories) {
-                val cals = client.readRecords(
-                    ReadRecordsRequest(TotalCaloriesBurnedRecord::class, timeFilter)
-                ).records
-                result += cals.map {
+                val records = client.readRecords(ReadRecordsRequest(TotalCaloriesBurnedRecord::class, timeFilter)).records
+                result += records.map {
                     HealthConnectDataPoint(
                         type = FitnessMetricsType.INTRADAY_CALORIES,
                         startTime = it.startTime,
@@ -66,10 +54,8 @@ object HealthConnectClientWrapper {
             }
 
             if (options.readHeartRate) {
-                val hrs = client.readRecords(
-                    ReadRecordsRequest(HeartRateRecord::class, timeFilter)
-                ).records
-                result += hrs.flatMap { record ->
+                val records = client.readRecords(ReadRecordsRequest(HeartRateRecord::class, timeFilter)).records
+                result += records.flatMap { record ->
                     record.samples.map {
                         HealthConnectDataPoint(
                             type = FitnessMetricsType.INTRADAY_HEART_RATE,
@@ -82,10 +68,8 @@ object HealthConnectClientWrapper {
             }
 
             if (options.readHeight) {
-                val heights = client.readRecords(
-                    ReadRecordsRequest(HeightRecord::class, timeFilter)
-                ).records
-                result += heights.map {
+                val records = client.readRecords(ReadRecordsRequest(HeightRecord::class, timeFilter)).records
+                result += records.map {
                     HealthConnectDataPoint(
                         type = FitnessMetricsType.HEIGHT,
                         startTime = it.time,
@@ -96,10 +80,8 @@ object HealthConnectClientWrapper {
             }
 
             if (options.readWeight) {
-                val weights = client.readRecords(
-                    ReadRecordsRequest(WeightRecord::class, timeFilter)
-                ).records
-                result += weights.map {
+                val records = client.readRecords(ReadRecordsRequest(WeightRecord::class, timeFilter)).records
+                result += records.map {
                     HealthConnectDataPoint(
                         type = FitnessMetricsType.WEIGHT,
                         startTime = it.time,
@@ -115,4 +97,3 @@ object HealthConnectClientWrapper {
         }
     }
 }
-

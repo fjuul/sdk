@@ -3,12 +3,12 @@ package com.fjuul.sdk.activitysources.entities.internal.healthconnect
 import com.squareup.moshi.JsonClass
 
 /**
- * Daily summary payload.
+ * Represents a daily summary payload for Health Connect.
  *
- * @property date day for which data is reported, format: YYYY-MM-DD
- * @property dataOrigins source packages contributing to the data
- * @property steps total steps for the day (optional)
- * @property restingHeartRate resting heart rate statistics (optional)
+ * @param date string in YYYY-MM-DD format
+ * @param dataOrigins list of source packages (e.g. ["healthconnect"])
+ * @param steps optional total steps for the day
+ * @param restingHeartRate optional statistical summary of resting HR
  */
 @JsonClass(generateAdapter = true)
 data class HealthConnectDailiesPayload(
@@ -17,3 +17,4 @@ data class HealthConnectDailiesPayload(
     val steps: Int? = null,
     val restingHeartRate: StatisticalValue? = null
 )
+

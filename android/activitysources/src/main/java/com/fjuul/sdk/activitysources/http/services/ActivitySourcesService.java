@@ -1,17 +1,17 @@
 package com.fjuul.sdk.activitysources.http.services;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import androidx.annotation.NonNull;
 
 import com.fjuul.sdk.activitysources.adapters.GFUploadDataJsonAdapter;
 import com.fjuul.sdk.activitysources.entities.ConnectionResult;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.activitysources.entities.internal.GFSynchronizableProfileParams;
 import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectDailiesData;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectIntradayData;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectProfileData;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectDailiesPayload;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectIntradayPayload;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectProfilePayload;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.IntradayCumulativeEntry;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.IntradayStatisticalEntry;
 import com.fjuul.sdk.activitysources.exceptions.ActivitySourcesApiExceptions;
 import com.fjuul.sdk.activitysources.http.ActivitySourcesApiResponseTransformer;
 import com.fjuul.sdk.activitysources.http.apis.ActivitySourcesApi;
@@ -21,7 +21,10 @@ import com.fjuul.sdk.core.http.utils.ApiCallAdapterFactory;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
-import androidx.annotation.NonNull;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;
@@ -72,9 +75,9 @@ public class ActivitySourcesService {
      * In case of an attempt to connect to the already connected tracker, the api call result will have
      * {@link ActivitySourcesApiExceptions.SourceAlreadyConnectedException}.
      *
+     * @return ApiCall for the connection creation.
      * @see ConnectionResult
      * @see ActivitySourcesApiExceptions.SourceAlreadyConnectedException
-     * @return ApiCall for the connection creation.
      */
     @NonNull
     public ApiCall<ConnectionResult> connect(@NonNull String activitySource) {
@@ -131,18 +134,47 @@ public class ActivitySourcesService {
         return apiClient.updateProfileOnBehalfOfGoogleFit(clientBuilder.getUserToken(), params);
     }
 
+    /**
+     * Build the call to upload cumulative intraday data from Health Connect (e.g. total calories).
+     *
+     * @param data payload of cumulative intraday entries
+     * @return ApiCall for uploading the data
+     */
     @NonNull
-    public ApiCall<Void> uploadHealthConnectData(@NonNull HealthConnectIntradayData data) {
-        return apiClient.uploadHealthConnectData(clientBuilder.getUserToken(), data);
+    public ApiCall<Void> uploadHealthConnectCumulativeData(@NonNull HealthConnectIntradayPayload<IntradayCumulativeEntry> data) {
+        return apiClient.uploadHealthConnectCumulativeIntraday(getUserToken(), data);
     }
 
+    /**
+     * Build the call to upload statistical intraday data from Health Connect (e.g. heart rate).
+     *
+     * @param data payload of statistical intraday entries
+     * @return ApiCall for uploading the data
+     */
     @NonNull
-    public ApiCall<Void> uploadHealthConnectDailies(@NonNull HealthConnectDailiesData data) {
-        return apiClient.uploadHealthConnectDailies(clientBuilder.getUserToken(), data);
+    public ApiCall<Void> uploadHealthConnectStatisticalData(@NonNull HealthConnectIntradayPayload<IntradayStatisticalEntry> data) {
+        return apiClient.uploadHealthConnectStatisticalIntraday(getUserToken(), data);
     }
 
+    /**
+     * Build the call to upload daily summary data from Health Connect (e.g. steps, resting HR).
+     *
+     * @param data daily payload
+     * @return ApiCall for uploading daily summary
+     */
     @NonNull
-    public ApiCall<Void> updateHealthConnectProfile(@NonNull HealthConnectProfileData profileData) {
-        return apiClient.updateHealthConnectProfile(clientBuilder.getUserToken(), profileData);
+    public ApiCall<Void> uploadHealthConnectDailies(@NonNull HealthConnectDailiesPayload data) {
+        return apiClient.uploadHealthConnectDailies(getUserToken(), data);
+    }
+
+    /**
+     * Build the call to update user profile from Health Connect (e.g. weight, height).
+     *
+     * @param data profile payload
+     * @return ApiCall for updating user profile
+     */
+    @NonNull
+    public ApiCall<Void> updateHealthConnectProfile(@NonNull HealthConnectProfilePayload data) {
+        return apiClient.updateHealthConnectProfile(getUserToken(), data);
     }
 }

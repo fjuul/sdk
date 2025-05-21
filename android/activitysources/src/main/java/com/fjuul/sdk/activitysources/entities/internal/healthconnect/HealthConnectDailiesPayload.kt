@@ -1,7 +1,5 @@
 package com.fjuul.sdk.activitysources.entities.internal.healthconnect
 
-import com.squareup.moshi.JsonClass
-
 /**
  * Represents a daily summary payload for Health Connect.
  *
@@ -10,7 +8,6 @@ import com.squareup.moshi.JsonClass
  * @param steps optional total steps for the day
  * @param restingHeartRate optional statistical summary of resting HR
  */
-@JsonClass(generateAdapter = true)
 data class HealthConnectDailiesPayload(
     val date: String,
     val dataOrigins: List<String>,

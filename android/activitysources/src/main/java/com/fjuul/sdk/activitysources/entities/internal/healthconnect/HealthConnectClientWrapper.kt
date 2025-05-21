@@ -7,9 +7,8 @@ import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.core.entities.Result
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.time.Instant
+import java.time.LocalTime
+import java.time.ZoneId
 
 /**
  * Low-level access to Android Health Connect API.
@@ -20,16 +19,22 @@ object HealthConnectClientWrapper {
     suspend fun read(
         context: Context,
         options: HealthConnectSyncOptions
-    ): Result<List<HealthConnectDataPoint>> = withContext(Dispatchers.IO) {
-        return@withContext try {
+    ): Result<List<HealthConnectDataPoint>>{
+        return try {
             val client = HealthConnectClient.getOrCreate(context)
-            val start = Instant.ofEpochMilli(options.timeRangeStart)
-            val end = Instant.ofEpochMilli(options.timeRangeEnd)
+            val zone = ZoneId.systemDefault()
+            val start = options.timeRangeStart
+                .atStartOfDay(zone)
+                .toInstant()
+            val end = options.timeRangeEnd
+                .atTime(LocalTime.MAX)
+                .atZone(zone)
+                .toInstant()
             val timeFilter = TimeRangeFilter.between(start, end)
 
             val result = mutableListOf<HealthConnectDataPoint>()
 
-            if (options.readSteps) {
+            if (options.readSteps == true) {
                 val records = client.readRecords(ReadRecordsRequest(StepsRecord::class, timeFilter)).records
                 result += records.map {
                     HealthConnectDataPoint(
@@ -41,7 +46,7 @@ object HealthConnectClientWrapper {
                 }
             }
 
-            if (options.readCalories) {
+            if (options.readCalories == true) {
                 val records = client.readRecords(ReadRecordsRequest(TotalCaloriesBurnedRecord::class, timeFilter)).records
                 result += records.map {
                     HealthConnectDataPoint(
@@ -53,7 +58,7 @@ object HealthConnectClientWrapper {
                 }
             }
 
-            if (options.readHeartRate) {
+            if (options.readHeartRate == true) {
                 val records = client.readRecords(ReadRecordsRequest(HeartRateRecord::class, timeFilter)).records
                 result += records.flatMap { record ->
                     record.samples.map {
@@ -67,7 +72,7 @@ object HealthConnectClientWrapper {
                 }
             }
 
-            if (options.readHeight) {
+            if (options.readHeight == true) {
                 val records = client.readRecords(ReadRecordsRequest(HeightRecord::class, timeFilter)).records
                 result += records.map {
                     HealthConnectDataPoint(
@@ -79,7 +84,7 @@ object HealthConnectClientWrapper {
                 }
             }
 
-            if (options.readWeight) {
+            if (options.readWeight == true) {
                 val records = client.readRecords(ReadRecordsRequest(WeightRecord::class, timeFilter)).records
                 result += records.map {
                     HealthConnectDataPoint(

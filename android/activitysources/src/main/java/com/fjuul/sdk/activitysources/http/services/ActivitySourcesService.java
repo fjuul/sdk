@@ -20,6 +20,7 @@ import com.fjuul.sdk.core.http.utils.ApiCall;
 import com.fjuul.sdk.core.http.utils.ApiCallAdapterFactory;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -51,6 +52,7 @@ public class ActivitySourcesService {
         OkHttpClient httpClient = client.buildSigningClient();
         Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter())
             .add(new GFUploadDataJsonAdapter())
+            .add(new KotlinJsonAdapterFactory())
             .build();
         ActivitySourcesApiResponseTransformer responseTransformer = new ActivitySourcesApiResponseTransformer();
         Retrofit retrofit = new Retrofit.Builder().baseUrl(client.getBaseUrl())

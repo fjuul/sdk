@@ -1,5 +1,11 @@
 package com.fjuul.sdk.activitysources.utils
+import com.fjuul.sdk.core.entities.Callback
 import com.fjuul.sdk.core.entities.Result
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.getOrThrow
 import kotlin.Result as KtResult
 import kotlin.runCatching
 
@@ -31,3 +37,24 @@ inline fun <T : Any> KtResult<T>.toResult(): Result<T> = fold(
  */
 inline fun <T : Any> runCatchingResult(block: () -> T): Result<T> =
     runCatching(block).toResult()
+
+
+/**
+ * Launches the given suspend [block] on [Dispatchers.IO], captures any exception
+ * into a Result, and then delivers it back on [Dispatchers.Main] via [callback].
+ */
+fun <T> runAndCallback(
+    block: suspend () -> Result<T>,
+    callback: Callback<T>
+) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val result: Result<T> = try {
+            block()
+        } catch (e: Throwable) {
+            Result.error(e)
+        }
+        withContext(Dispatchers.Main) {
+            callback.onResult(result)
+        }
+    }
+}

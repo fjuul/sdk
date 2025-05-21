@@ -3,17 +3,11 @@ package com.fjuul.sdk.android.exampleapp.ui.healthconnectsync
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import java.time.LocalDate
-
-import androidx.lifecycle.viewModelScope
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
-import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectSyncOptions
+import com.fjuul.sdk.core.entities.Callback
 import java.time.LocalDate
-import java.time.ZoneId
-import java.util.Date
 
 class HealthConnectSyncViewModel : ViewModel() {
     private val _startDate = MutableLiveData(LocalDate.now())
@@ -44,70 +38,137 @@ class HealthConnectSyncViewModel : ViewModel() {
     }
 
     fun runIntradaySync(calories: Boolean, heartRate: Boolean) {
-        val manager = ActivitySourcesManager.getInstance()
-        val connection = manager.current.find { it.activitySource is HealthConnectActivitySource }
+        // 1) Check active connection
+        val connection = ActivitySourcesManager.getInstance().current
+            .find { it.activitySource is HealthConnectActivitySource }
         if (connection == null) {
             _errorMessage.value = "No active Health Connect connection"
             return
         }
-        val source = connection.activitySource as HealthConnectActivitySource
-        val start = _startDate.value!!.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        val end = _endDate.value!!.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        _syncingIntradayData.postValue(true)
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                source.uploadIntradayData(start, end)
-            } catch (e: Exception) {
-                _errorMessage.postValue(e.message)
-            } finally {
-                _syncingIntradayData.postValue(false)
-            }
+
+        // 2) Build epoch-millis time range from LiveData<LocalDate>
+        val start = _startDate.value ?: run {
+            _errorMessage.value = "Start date is not set"
+            return
         }
+        val end = _endDate.value ?: run {
+            _errorMessage.value = "End date is not set"
+            return
+        }
+
+        // 3) Construct sync options
+        val options = HealthConnectSyncOptions(
+            readCalories = calories,
+            readHeartRate = heartRate,
+            timeRangeStart = start,
+            timeRangeEnd = end
+        )
+
+        // 4) Signal UI
+        _syncingIntradayData.value = true
+
+        // 5) Call SDK
+        (connection.activitySource as HealthConnectActivitySource)
+            .syncIntraday(options, object : Callback<Unit> {
+                override fun onResult(result: com.fjuul.sdk.core.entities.Result<Unit>) {
+                    // always back on main
+                    _syncingIntradayData.postValue(false)
+                    if (result.isError) {
+                        _errorMessage.postValue(
+                            result.error?.message ?: "Unknown error during sync"
+                        )
+                    }
+                }
+            })
     }
 
     fun runDailySync(steps: Boolean, restingHeartRate: Boolean) {
-        val manager = ActivitySourcesManager.getInstance()
-        val connection = manager.current.find { it.activitySource is HealthConnectActivitySource }
+        // 1) Check active connection
+        val connection = ActivitySourcesManager.getInstance().current
+            .find { it.activitySource is HealthConnectActivitySource }
         if (connection == null) {
             _errorMessage.value = "No active Health Connect connection"
             return
         }
-        val source = connection.activitySource as HealthConnectActivitySource
-        val startDate = _startDate.value!!
-        val endDate = _endDate.value!!
-        _syncingDailyData.postValue(true)
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                var date = startDate
-                while (!date.isAfter(endDate)) {
-                    source.uploadDailyData(Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant()))
-                    date = date.plusDays(1)
-                }
-            } catch (e: Exception) {
-                _errorMessage.postValue(e.message)
-            } finally {
-                _syncingDailyData.postValue(false)
-            }
+
+        // 2) Build epoch-millis time range from LiveData<LocalDate>
+        val start = _startDate.value ?: run {
+            _errorMessage.value = "Start date is not set"
+            return
         }
+        val end = _endDate.value ?: run {
+            _errorMessage.value = "End date is not set"
+            return
+        }
+
+        // 3) Construct sync options
+        val options = HealthConnectSyncOptions(
+            readSteps = steps,
+            readHeartRate = restingHeartRate,
+            timeRangeStart = start,
+            timeRangeEnd = end
+        )
+
+        // 4) Signal UI
+        _syncingDailyData.value = true
+
+        // 5) Call SDK
+        (connection.activitySource as HealthConnectActivitySource)
+            .syncDaily(options, object : Callback<Unit> {
+                override fun onResult(result: com.fjuul.sdk.core.entities.Result<Unit>) {
+                    // always back on main
+                    _syncingDailyData.postValue(false)
+                    if (result.isError) {
+                        _errorMessage.postValue(
+                            result.error?.message ?: "Unknown error during sync"
+                        )
+                    }
+                }
+            })
     }
 
     fun runProfileSync(height: Boolean, weight: Boolean) {
-        val manager = ActivitySourcesManager.getInstance()
-        val connection = manager.current.find { it.activitySource is HealthConnectActivitySource }
+        // 1) Check active connection
+        val connection = ActivitySourcesManager.getInstance().current
+            .find { it.activitySource is HealthConnectActivitySource }
         if (connection == null) {
             _errorMessage.value = "No active Health Connect connection"
             return
         }
-        val source = connection.activitySource as HealthConnectActivitySource
-        _syncingProfileData.postValue(true)
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                source.uploadProfileData()
-            } catch (e: Exception) {
-                _errorMessage.postValue(e.message)
-            } finally {
-                _syncingProfileData.postValue(false)
-            }
+
+        // 2) Build epoch-millis time range from LiveData<LocalDate>
+        val start = _startDate.value ?: run {
+            _errorMessage.value = "Start date is not set"
+            return
         }
+        val end = _endDate.value ?: run {
+            _errorMessage.value = "End date is not set"
+            return
+        }
+
+        // 3) Construct sync options
+        val options = HealthConnectSyncOptions(
+            readWeight = weight,
+            readHeight = height,
+            timeRangeStart = start,
+            timeRangeEnd = end
+        )
+
+        // 4) Signal UI
+        _syncingProfileData.value = true
+
+        // 5) Call SDK
+        (connection.activitySource as HealthConnectActivitySource)
+            .syncProfile(options, object : Callback<Boolean> {
+                override fun onResult(result: com.fjuul.sdk.core.entities.Result<Boolean>) {
+                    // always back on main
+                    _syncingProfileData.postValue(false)
+                    if (result.isError) {
+                        _errorMessage.postValue(
+                            result.error?.message ?: "Unknown error during sync"
+                        )
+                    }
+                }
+            })
     }
 }

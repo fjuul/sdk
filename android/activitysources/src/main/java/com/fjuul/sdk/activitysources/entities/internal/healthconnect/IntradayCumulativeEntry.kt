@@ -1,6 +1,5 @@
 package com.fjuul.sdk.activitysources.entities.internal.healthconnect
 
-import com.squareup.moshi.JsonClass
 import java.util.Date
 
 /**
@@ -9,7 +8,6 @@ import java.util.Date
  * @param start start timestamp of the measurement window
  * @param value summed value during that window
  */
-@JsonClass(generateAdapter = true)
 data class IntradayCumulativeEntry(
     val start: Date,
     val value: Double

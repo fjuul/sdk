@@ -6,11 +6,9 @@ import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConne
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectPermissionManager
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectSyncOptions
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService
+import com.fjuul.sdk.activitysources.utils.runAndCallback
 import com.fjuul.sdk.core.ApiClient
 import com.fjuul.sdk.core.entities.Callback
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 /**
  * [ActivitySource] implementation for Android Health Connect.
@@ -94,12 +92,8 @@ class HealthConnectActivitySource private constructor(
      * @param options  The [HealthConnectSyncOptions] specifying time ranges & metrics.
      * @param callback Receives a [Result]<Unit> indicating success or failure(exception).
      */
-    fun syncIntraday(options: HealthConnectSyncOptions, callback: Callback<Unit>) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val result = dataManager.syncIntraday(options)
-            callback.onResult(result)
-        }
-    }
+    fun syncIntraday(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
+        runAndCallback({ dataManager.syncIntraday(options) }, callback)
 
     /**
      * Starts a daily data synchronization (steps, resting heart rate).
@@ -107,12 +101,8 @@ class HealthConnectActivitySource private constructor(
      * @param options  The [HealthConnectSyncOptions] specifying date range & metrics.
      * @param callback Receives a [Result]<Unit> indicating success or failure(exception).
      */
-    fun syncDaily(options: HealthConnectSyncOptions, callback: Callback<Unit>) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val result = dataManager.syncDaily(options)
-            callback.onResult(result)
-        }
-    }
+    fun syncDaily(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
+        runAndCallback({ dataManager.syncDaily(options) }, callback)
 
     /**
      * Starts a profile data synchronization (height, weight).
@@ -121,12 +111,9 @@ class HealthConnectActivitySource private constructor(
      * @param callback Receives a [Result]<Boolean> where `true` indicates data updated,
      *                 `false` means no changes, or failure(exception).
      */
-    fun syncProfile(options: HealthConnectSyncOptions, callback: Callback<Boolean>) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val result = dataManager.syncProfile(options)
-            callback.onResult(result)
-        }
-    }
+    fun syncProfile(options: HealthConnectSyncOptions, callback: Callback<Boolean>) =
+        runAndCallback({ dataManager.syncProfile(options) }, callback)
+
 
     companion object {
         @Volatile

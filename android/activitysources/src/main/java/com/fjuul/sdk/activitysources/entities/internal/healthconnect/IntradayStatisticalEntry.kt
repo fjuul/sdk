@@ -1,6 +1,5 @@
 package com.fjuul.sdk.activitysources.entities.internal.healthconnect
 
-import com.squareup.moshi.JsonClass
 import java.util.Date
 
 /**
@@ -11,7 +10,6 @@ import java.util.Date
  * @param avg average value
  * @param max maximum value
  */
-@JsonClass(generateAdapter = true)
 data class IntradayStatisticalEntry(
     val start: Date,
     val min: Double,

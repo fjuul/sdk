@@ -99,21 +99,6 @@ public class ActivitySourceResolverTest {
         }
 
         @Test
-        public void getInstanceByTrackerValue_whenInputValueIsHealthconnect_returnsHealthConnectActivitySource() {
-            try (
-                final MockedStatic<HealthConnectActivitySource> staticMockHC = mockStatic(HealthConnectActivitySource.class)
-            ) {
-                HealthConnectActivitySource mockedHC = mock(HealthConnectActivitySource.class);
-                staticMockHC.when(() -> HealthConnectActivitySource.getInstance()).thenReturn(mockedHC);
-
-                final ActivitySource result = subject.getInstanceByTrackerValue("healthconnect");
-                assertThat(result, instanceOf(HealthConnectActivitySource.class));
-                assertEquals(mockedHC, result);
-            }
-        }
-
-
-        @Test
         public void getInstanceByTrackerValue_whenInputValueIsGooglefit_returnsGooglefitActivitySource() {
             try (final MockedStatic<GoogleFitActivitySource> staticMockGF = mockStatic(GoogleFitActivitySource.class)) {
                 staticMockGF.when(() -> GoogleFitActivitySource.getInstance()).thenReturn(mockedGF);

@@ -11,6 +11,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -30,8 +32,14 @@ class ActivitySourcesFragment : Fragment() {
     private lateinit var sourcesList: ListView
 
     private val model: ActivitySourcesViewModel by viewModels()
+    private lateinit var hcPermsLauncher: ActivityResultLauncher<Set<String>>
 
-    override fun onCreateView(
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        initHealthConnectPermissionsLauncher(HealthConnectActivitySource.getInstance())
+    }
+
+        override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -52,20 +60,14 @@ class ActivitySourcesFragment : Fragment() {
                         return@handleGoogleSignInResult
                     }
                     if (!GoogleFitActivitySource.getInstance().isActivityRecognitionPermissionGranted) {
-                        requestPermissions(arrayOf(Manifest.permission.ACTIVITY_RECOGNITION), ACTIVITY_RECOGNITION_PERMISSION_REQUEST_CODE)
+                        requestPermissions(
+                            arrayOf(Manifest.permission.ACTIVITY_RECOGNITION),
+                            ACTIVITY_RECOGNITION_PERMISSION_REQUEST_CODE
+                        )
                     }
                     model.fetchCurrentConnections()
                 }
-            } else if (requestCode == HEALTH_CONNECT_PERMISSIONS_REQUEST_CODE) {
-                if (resultCode == Activity.RESULT_OK) {
-                    HealthConnectActivitySource.getInstance().handlePermissionsResult { result ->
-                        if (result.isError) {
-                            model.postErrorMessage(result.error?.message ?: "Something went wrong")
-                            return@handlePermissionsResult
-                        }
-                        model.fetchCurrentConnections()
-                    }
-                }
+            }
             // TODO: else show the error message
         }
     }
@@ -181,9 +183,8 @@ class ActivitySourcesFragment : Fragment() {
                     .setTitle("Health Connect")
                     .setItems(menus) { _, which ->
                         if (which == 0) {
-                            val intent = activitySource.buildRequestPermissionsIntent()
-                            startActivityForResult(intent, HEALTH_CONNECT_PERMISSIONS_REQUEST_CODE)
-                        } else if (which == 1) {
+                            hcPermsLauncher.launch(activitySource.getAllRequiredPermissions())
+                        } else {
                             model.disconnect(activitySource)
                         }
                     }
@@ -197,6 +198,34 @@ class ActivitySourcesFragment : Fragment() {
         }
     }
 
+    // for testing HealthConnectPermissions logic
+    private fun initHealthConnectPermissionsLauncher(activitySource: HealthConnectActivitySource) {
+        hcPermsLauncher = registerForActivityResult(
+            activitySource.requestPermissionsContract()
+        ) { grantedPermissions ->
+            // Compute which permissions were denied
+            val required = activitySource.getAllRequiredPermissions()
+            val denied = required - grantedPermissions
+
+            if (denied.isEmpty()) {
+                // All required permissions were granted
+                Toast.makeText(
+                    requireContext(),
+                    "Health Connect: all permissions granted",
+                    Toast.LENGTH_SHORT
+                ).show()
+                model.fetchCurrentConnections()
+            } else {
+                // Some permissions were denied
+                Toast.makeText(
+                    requireContext(),
+                    "Health Connect: permissions denied: ${denied.joinToString()}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
     fun refreshCurrentConnections() {
         model.fetchCurrentConnections()
     }
@@ -204,8 +233,7 @@ class ActivitySourcesFragment : Fragment() {
     companion object {
         const val GOOGLE_SIGN_IN_REQUEST_CODE = 61076
         const val RE_GOOGLE_SIGN_IN_REQUEST_CODE = 61077
-            const val HEALTH_CONNECT_PERMISSIONS_REQUEST_CODE = 61078
-            const val ACTIVITY_RECOGNITION_PERMISSION_REQUEST_CODE = 33221
+        const val ACTIVITY_RECOGNITION_PERMISSION_REQUEST_CODE = 33221
         const val TAG = "ActivitySourcesFragment"
 
         @JvmStatic

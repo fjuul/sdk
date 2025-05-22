@@ -31,6 +31,7 @@ public class TrackerValueTest {
                         TrackerValue.SUUNTO,
                         TrackerValue.WITHINGS,
                         TrackerValue.GOOGLE_FIT));
+                    ));
             }
         }
 

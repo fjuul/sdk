@@ -51,18 +51,22 @@ public interface ActivitySourcesApi {
         @Body @NonNull GFSynchronizableProfileParams params);
 
     @POST("/sdk/activity-sources/v1/{userToken}/healthconnect/intraday/cumulative")
+    @NonNull
     ApiCall<Void> uploadHealthConnectCumulativeIntraday(@Path("userToken") @NonNull String userToken,
         @Body @NonNull HealthConnectIntradayPayload<IntradayCumulativeEntry> data);
 
     @POST("/sdk/activity-sources/v1/{userToken}/healthconnect/intraday/statistical")
+    @NonNull
     ApiCall<Void> uploadHealthConnectStatisticalIntraday(@Path("userToken") @NonNull String userToken,
         @Body @NonNull HealthConnectIntradayPayload<IntradayStatisticalEntry> data);
 
     @POST("/sdk/activity-sources/v1/{userToken}/healthconnect/dailies")
+    @NonNull
     ApiCall<Void> uploadHealthConnectDailies(@Path("userToken") @NonNull String userToken,
         @Body @NonNull HealthConnectDailiesPayload data);
 
     @PUT("/sdk/activity-sources/v1/{userToken}/healthconnect/profile")
+    @NonNull
     ApiCall<Void> updateHealthConnectProfile(@Path("userToken") @NonNull String userToken,
         @Body @NonNull HealthConnectProfilePayload data);
 }

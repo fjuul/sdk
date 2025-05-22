@@ -1,6 +1,8 @@
 package com.fjuul.sdk.activitysources.http.services;
 
-import androidx.annotation.NonNull;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.fjuul.sdk.activitysources.adapters.GFUploadDataJsonAdapter;
 import com.fjuul.sdk.activitysources.entities.ConnectionResult;
@@ -22,10 +24,7 @@ import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
+import androidx.annotation.NonNull;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;
@@ -143,7 +142,8 @@ public class ActivitySourcesService {
      * @return ApiCall for uploading the data
      */
     @NonNull
-    public ApiCall<Void> uploadHealthConnectCumulativeData(@NonNull HealthConnectIntradayPayload<IntradayCumulativeEntry> data) {
+    public ApiCall<Void> uploadHealthConnectCumulativeData(
+        @NonNull HealthConnectIntradayPayload<IntradayCumulativeEntry> data) {
         return apiClient.uploadHealthConnectCumulativeIntraday(getUserToken(), data);
     }
 
@@ -154,7 +154,8 @@ public class ActivitySourcesService {
      * @return ApiCall for uploading the data
      */
     @NonNull
-    public ApiCall<Void> uploadHealthConnectStatisticalData(@NonNull HealthConnectIntradayPayload<IntradayStatisticalEntry> data) {
+    public ApiCall<Void> uploadHealthConnectStatisticalData(
+        @NonNull HealthConnectIntradayPayload<IntradayStatisticalEntry> data) {
         return apiClient.uploadHealthConnectStatisticalIntraday(getUserToken(), data);
     }
 

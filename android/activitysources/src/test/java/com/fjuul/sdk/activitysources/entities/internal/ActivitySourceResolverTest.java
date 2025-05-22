@@ -18,7 +18,6 @@ import com.fjuul.sdk.activitysources.entities.ActivitySource;
 import com.fjuul.sdk.activitysources.entities.FitbitActivitySource;
 import com.fjuul.sdk.activitysources.entities.GarminActivitySource;
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
-import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource;
 import com.fjuul.sdk.activitysources.entities.OuraActivitySource;
 import com.fjuul.sdk.activitysources.entities.PolarActivitySource;
 import com.fjuul.sdk.activitysources.entities.SuuntoActivitySource;

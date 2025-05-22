@@ -3,6 +3,10 @@ package com.fjuul.sdk.android.exampleapp.ui.healthconnectsync
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
+import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectSyncOptions
+import com.fjuul.sdk.core.entities.Callback
 import java.time.LocalDate
 
 class HealthConnectSyncViewModel : ViewModel() {
@@ -34,14 +38,137 @@ class HealthConnectSyncViewModel : ViewModel() {
     }
 
     fun runIntradaySync(calories: Boolean, heartRate: Boolean) {
-        // TODO: Implement Health Connect  Intraday sync logic
+        // 1) Check active connection
+        val connection = ActivitySourcesManager.getInstance().current
+            .find { it.activitySource is HealthConnectActivitySource }
+        if (connection == null) {
+            _errorMessage.value = "No active Health Connect connection"
+            return
+        }
+
+        // 2) Build epoch-millis time range from LiveData<LocalDate>
+        val start = _startDate.value ?: run {
+            _errorMessage.value = "Start date is not set"
+            return
+        }
+        val end = _endDate.value ?: run {
+            _errorMessage.value = "End date is not set"
+            return
+        }
+
+        // 3) Construct sync options
+        val options = HealthConnectSyncOptions(
+            readCalories = calories,
+            readHeartRate = heartRate,
+            timeRangeStart = start,
+            timeRangeEnd = end
+        )
+
+        // 4) Signal UI
+        _syncingIntradayData.value = true
+
+        // 5) Call SDK
+        (connection.activitySource as HealthConnectActivitySource)
+            .syncIntraday(options, object : Callback<Unit> {
+                override fun onResult(result: com.fjuul.sdk.core.entities.Result<Unit>) {
+                    // always back on main
+                    _syncingIntradayData.postValue(false)
+                    if (result.isError) {
+                        _errorMessage.postValue(
+                            result.error?.message ?: "Unknown error during sync"
+                        )
+                    }
+                }
+            })
     }
 
     fun runDailySync(steps: Boolean, restingHeartRate: Boolean) {
-        // TODO: Implement Health Connect Daily sync logic
+        // 1) Check active connection
+        val connection = ActivitySourcesManager.getInstance().current
+            .find { it.activitySource is HealthConnectActivitySource }
+        if (connection == null) {
+            _errorMessage.value = "No active Health Connect connection"
+            return
+        }
+
+        // 2) Build epoch-millis time range from LiveData<LocalDate>
+        val start = _startDate.value ?: run {
+            _errorMessage.value = "Start date is not set"
+            return
+        }
+        val end = _endDate.value ?: run {
+            _errorMessage.value = "End date is not set"
+            return
+        }
+
+        // 3) Construct sync options
+        val options = HealthConnectSyncOptions(
+            readSteps = steps,
+            readHeartRate = restingHeartRate,
+            timeRangeStart = start,
+            timeRangeEnd = end
+        )
+
+        // 4) Signal UI
+        _syncingDailyData.value = true
+
+        // 5) Call SDK
+        (connection.activitySource as HealthConnectActivitySource)
+            .syncDaily(options, object : Callback<Unit> {
+                override fun onResult(result: com.fjuul.sdk.core.entities.Result<Unit>) {
+                    // always back on main
+                    _syncingDailyData.postValue(false)
+                    if (result.isError) {
+                        _errorMessage.postValue(
+                            result.error?.message ?: "Unknown error during sync"
+                        )
+                    }
+                }
+            })
     }
 
     fun runProfileSync(height: Boolean, weight: Boolean) {
-        // TODO: Implement Health Connect profile sync logic
+        // 1) Check active connection
+        val connection = ActivitySourcesManager.getInstance().current
+            .find { it.activitySource is HealthConnectActivitySource }
+        if (connection == null) {
+            _errorMessage.value = "No active Health Connect connection"
+            return
+        }
+
+        // 2) Build epoch-millis time range from LiveData<LocalDate>
+        val start = _startDate.value ?: run {
+            _errorMessage.value = "Start date is not set"
+            return
+        }
+        val end = _endDate.value ?: run {
+            _errorMessage.value = "End date is not set"
+            return
+        }
+
+        // 3) Construct sync options
+        val options = HealthConnectSyncOptions(
+            readWeight = weight,
+            readHeight = height,
+            timeRangeStart = start,
+            timeRangeEnd = end
+        )
+
+        // 4) Signal UI
+        _syncingProfileData.value = true
+
+        // 5) Call SDK
+        (connection.activitySource as HealthConnectActivitySource)
+            .syncProfile(options, object : Callback<Boolean> {
+                override fun onResult(result: com.fjuul.sdk.core.entities.Result<Boolean>) {
+                    // always back on main
+                    _syncingProfileData.postValue(false)
+                    if (result.isError) {
+                        _errorMessage.postValue(
+                            result.error?.message ?: "Unknown error during sync"
+                        )
+                    }
+                }
+            })
     }
 }

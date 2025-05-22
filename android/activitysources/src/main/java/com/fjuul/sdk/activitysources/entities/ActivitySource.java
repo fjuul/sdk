@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
  * @see FitbitActivitySource
  * @see GarminActivitySource
  * @see GoogleFitActivitySource
+ * @see HealthConnectActivitySource
  * @see OuraActivitySource
  * @see PolarActivitySource
  * @see SuuntoActivitySource

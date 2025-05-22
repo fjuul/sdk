@@ -31,8 +31,7 @@ public class TrackerValueTest {
                         TrackerValue.SUUNTO,
                         TrackerValue.WITHINGS,
                         TrackerValue.GOOGLE_FIT,
-                        TrackerValue.HEALTH_CONNECT
-                    ));
+                        TrackerValue.HEALTH_CONNECT));
             }
         }
 

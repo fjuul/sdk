@@ -56,7 +56,7 @@ class HealthConnectPermissionManager(
      */
     fun getPermissionsToRequest(metrics: Set<FitnessMetricsType>): Set<String> {
         val permissions = mutableSetOf<String>()
-        if (metrics.contains(FitnessMetricsType.INTRADAY_STEPS)) {
+        if (metrics.contains(FitnessMetricsType.STEPS)) {
             permissions += HealthPermission.getReadPermission(StepsRecord::class)
         }
         if (metrics.contains(FitnessMetricsType.INTRADAY_CALORIES)) {

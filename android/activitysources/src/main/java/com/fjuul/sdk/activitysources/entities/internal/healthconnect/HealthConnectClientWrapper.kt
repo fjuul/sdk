@@ -38,7 +38,7 @@ object HealthConnectClientWrapper {
                 val records = client.readRecords(ReadRecordsRequest(StepsRecord::class, timeFilter)).records
                 result += records.map {
                     HealthConnectDataPoint(
-                        type = FitnessMetricsType.INTRADAY_STEPS,
+                        type = FitnessMetricsType.STEPS,
                         startTime = it.startTime,
                         endTime = it.endTime,
                         value = it.count.toDouble()

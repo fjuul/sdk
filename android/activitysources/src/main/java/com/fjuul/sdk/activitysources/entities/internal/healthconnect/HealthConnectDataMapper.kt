@@ -56,7 +56,7 @@ object HealthConnectDataMapper {
         date: String,
         dataOrigins: List<String>
     ): HealthConnectDailiesPayload {
-        val steps = points.filter { it.type == FitnessMetricsType.INTRADAY_STEPS }
+        val steps = points.filter { it.type == FitnessMetricsType.STEPS }
             .sumOf { it.value.toInt() }
             .takeIf { it > 0 }
 

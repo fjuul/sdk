@@ -33,4 +33,9 @@ sealed class HealthConnectException(message: String) : FjuulException(message) {
     class NoMetricsSelectedException: HealthConnectException(
         "No metrics selected metrics"
     )
+
+    /** Thrown when a requested metric is not supported by Health Connect. */
+    class UnsupportedMetricException(metricName: String) : HealthConnectException(
+        "Metric '$metricName' is not supported by Health Connect"
+    )
 }

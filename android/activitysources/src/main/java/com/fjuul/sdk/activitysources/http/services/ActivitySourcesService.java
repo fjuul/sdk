@@ -9,11 +9,9 @@ import com.fjuul.sdk.activitysources.entities.ConnectionResult;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.activitysources.entities.internal.GFSynchronizableProfileParams;
 import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectDailiesPayload;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectIntradayPayload;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectProfilePayload;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.IntradayCumulativeEntry;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.IntradayStatisticalEntry;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectDailiesData;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectIntradayData;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectProfileData;
 import com.fjuul.sdk.activitysources.exceptions.ActivitySourcesApiExceptions;
 import com.fjuul.sdk.activitysources.http.ActivitySourcesApiResponseTransformer;
 import com.fjuul.sdk.activitysources.http.apis.ActivitySourcesApi;
@@ -136,48 +134,35 @@ public class ActivitySourcesService {
     }
 
     /**
-     * Build the call to upload cumulative intraday data from Health Connect (e.g. total calories).
+     * Uploads intraday time-series data from Health Connect, such as hourly aggregated metrics.
      *
-     * @param data payload of cumulative intraday entries
-     * @return ApiCall for uploading the data
+     * @param data the intraday payload containing hourly data buckets
+     * @return an ApiCall for performing the intraday data upload
      */
     @NonNull
-    public ApiCall<Void> uploadHealthConnectCumulativeData(
-        @NonNull HealthConnectIntradayPayload<IntradayCumulativeEntry> data) {
-        return apiClient.uploadHealthConnectCumulativeIntraday(getUserToken(), data);
+    public ApiCall<Void> uploadHealthConnectIntraday(@NonNull HealthConnectIntradayData data) {
+        return apiClient.uploadHealthConnectIntraday(getUserToken(), data);
     }
 
     /**
-     * Build the call to upload statistical intraday data from Health Connect (e.g. heart rate).
+     * Uploads daily summary data from Health Connect, such as steps and resting heart rate.
      *
-     * @param data payload of statistical intraday entries
-     * @return ApiCall for uploading the data
+     * @param data the daily payload containing aggregated data buckets
+     * @return an ApiCall for performing the daily data upload
      */
     @NonNull
-    public ApiCall<Void> uploadHealthConnectStatisticalData(
-        @NonNull HealthConnectIntradayPayload<IntradayStatisticalEntry> data) {
-        return apiClient.uploadHealthConnectStatisticalIntraday(getUserToken(), data);
-    }
-
-    /**
-     * Build the call to upload daily summary data from Health Connect (e.g. steps, resting HR).
-     *
-     * @param data daily payload
-     * @return ApiCall for uploading daily summary
-     */
-    @NonNull
-    public ApiCall<Void> uploadHealthConnectDailies(@NonNull HealthConnectDailiesPayload data) {
+    public ApiCall<Void> uploadHealthConnectDailies(@NonNull HealthConnectDailiesData data) {
         return apiClient.uploadHealthConnectDailies(getUserToken(), data);
     }
 
     /**
-     * Build the call to update user profile from Health Connect (e.g. weight, height).
+     * Uploads profile data from Health Connect, such as height and weight.
      *
-     * @param data profile payload
-     * @return ApiCall for updating user profile
+     * @param data the profile payload containing height and weight records
+     * @return an ApiCall for performing the profile data upload
      */
     @NonNull
-    public ApiCall<Void> updateHealthConnectProfile(@NonNull HealthConnectProfilePayload data) {
-        return apiClient.updateHealthConnectProfile(getUserToken(), data);
+    public ApiCall<Void> uploadHealthConnectProfile(@NonNull HealthConnectProfileData data) {
+        return apiClient.uploadHealthConnectProfile(getUserToken(), data);
     }
 }

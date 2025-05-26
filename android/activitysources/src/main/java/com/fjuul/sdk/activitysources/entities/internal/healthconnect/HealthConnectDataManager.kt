@@ -1,126 +1,140 @@
 package com.fjuul.sdk.activitysources.entities.internal.healthconnect
 
-import android.content.Context
+
+import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.aggregate.AggregateMetric
+import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
+import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
+import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
+import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.HeightRecord
+import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
+import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.request.AggregateGroupByDurationRequest
+import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
+import androidx.health.connect.client.request.ReadRecordsRequest
+import androidx.health.connect.client.response.ReadRecordsResponse
+import androidx.health.connect.client.time.TimeRangeFilter
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService
-import com.fjuul.sdk.core.entities.Result
-import java.time.Instant
-import java.time.LocalTime
-import java.time.ZoneId
+import java.time.Duration
+import java.time.Period
+import java.time.ZoneOffset
 
 /**
- * Handles the core logic for reading Health Connect data and uploading it to the backend.
- *
- * This class delegates:
- * - reading raw records to HealthConnectClientWrapper
- * - data aggregation and transformation to HealthConnectDataMapper
- * - actual HTTP uploads to ActivitySourcesService
- *
- * It provides methods to sync:
- * - Intraday data (e.g. calories, heart rate) in 1-hour batches
- * - Daily summaries (e.g. steps, resting heart rate)
- * - User profile data (e.g. height, weight)
- *
- * All methods are suspend and return Fjuul-style Result<T>.
- *
- * This class is used internally by HealthConnectActivitySource and not exposed directly.
+ * Reads aggregated data from Health Connect and uploads it via ActivitySourcesService.
  */
 class HealthConnectDataManager(
-    private val context: Context,
+    private val client: HealthConnectClient,
     private val service: ActivitySourcesService
 ) {
-    private val origins = listOf("healthconnect")
 
-    suspend fun syncIntraday(options: HealthConnectSyncOptions): Result<Unit> {
-        val zone = ZoneId.systemDefault()
-        var cursor = options.timeRangeStart.atStartOfDay(zone).toInstant()
-        val endInstant = options.timeRangeEnd
-            .atTime(LocalTime.MAX)
-            .atZone(zone)
-            .toInstant()
+    /**
+     * Synchronizes intraday metrics in hourly buckets.
+     */
+    suspend fun syncIntraday(options: HealthConnectSyncOptions) {
+        if (options.metrics.isEmpty()) {
+            throw HealthConnectException.NoMetricsSelectedException()
+        }
+        val metrics = options.metrics.flatMap { it.toAggregateMetrics() }.toSet()
+        val start = options.timeRangeStart.atStartOfDay().toInstant(ZoneOffset.UTC)
+        val end = options.timeRangeEnd.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
 
-        while (cursor.isBefore(endInstant)) {
-            val batchEnd = cursor.plusSeconds(3600).coerceAtMost(endInstant)
-            val batchOptions = options.copy(
-                timeRangeStart = cursor.atZone(zone).toLocalDate(),
-                timeRangeEnd   = batchEnd.atZone(zone).toLocalDate()
+        val intradayResponse: List<AggregationResultGroupedByDuration> =
+            client.aggregateGroupByDuration(
+                AggregateGroupByDurationRequest(
+                    metrics = metrics,
+                    timeRangeFilter = TimeRangeFilter.between(start, end),
+                    timeRangeSlicer = Duration.ofHours(1)
+                )
             )
 
-            val result = HealthConnectClientWrapper.read(context, batchOptions)
-            if (result.isError) {
-                return Result.error(result.error ?: Exception("Failed to read intraday data"))
-            }
-            val points = result.value
-                ?: return Result.error(Exception("No data returned from Health Connect"))
-
-            if (options.metrics.contains(FitnessMetricsType.INTRADAY_CALORIES) == true) {
-                HealthConnectDataMapper.toCumulativePayload(
-                    points,
-                    FitnessMetricsType.INTRADAY_CALORIES,
-                    origins
-                )?.let {
-                    val res = service.uploadHealthConnectCumulativeData(it).execute()
-                    if (res.isError) {
-                        return Result.error(res.error ?: Exception("Failed to upload calories"))
-                    }
-                }
-            }
-
-            if (options.metrics.contains(FitnessMetricsType.INTRADAY_HEART_RATE) == true) {
-                HealthConnectDataMapper.toStatisticalPayload(
-                    points,
-                    FitnessMetricsType.INTRADAY_HEART_RATE,
-                    origins
-                )?.let {
-                    val res = service.uploadHealthConnectStatisticalData(it).execute()
-                    if (res.isError) {
-                        return Result.error(res.error ?: Exception("Failed to upload heart rate"))
-                    }
-                }
-            }
-
-            cursor = batchEnd
-        }
-
-        return Result.value(Unit)
-    }
-
-    suspend fun syncDaily(options: HealthConnectSyncOptions): Result<Unit> {
-        val result = HealthConnectClientWrapper.read(context, options)
-        if (result.isError) {
-            return Result.error(result.error ?: Exception("Failed to read daily data"))
-        }
-        val points = result.value
-            ?: return Result.error(Exception("No daily data returned"))
-
-        val payload = HealthConnectDataMapper.toDailyPayload(
-            points,
-            options.timeRangeStart.toString(),
-            origins
+        service.uploadHealthConnectIntraday(
+            HealthConnectIntradayData(intradayStats = intradayResponse)
         )
-        val res = service.uploadHealthConnectDailies(payload).execute()
-        if (res.isError) {
-            return Result.error(res.error ?: Exception("Failed to upload daily"))
-        }
-
-        return Result.value(Unit)
     }
 
-    suspend fun syncProfile(options: HealthConnectSyncOptions): Result<Boolean> {
-        val result = HealthConnectClientWrapper.read(context, options)
-        if (result.isError) {
-            return Result.error(result.error ?: Exception("Failed to read profile data"))
+    /**
+     * Synchronizes daily metrics in one-day buckets.
+     */
+    suspend fun syncDaily(options: HealthConnectSyncOptions) {
+        if (options.metrics.isEmpty()) {
+            throw HealthConnectException.NoMetricsSelectedException()
         }
-        val points = result.value
-            ?: return Result.error(Exception("No profile data returned"))
+        val metrics = options.metrics.flatMap { it.toAggregateMetrics() }.toSet()
+        val start = options.timeRangeStart.atStartOfDay().toInstant(ZoneOffset.UTC)
+        val end = options.timeRangeEnd.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
 
-        val payload = HealthConnectDataMapper.toProfilePayload(points)
-            ?: return Result.value(false)
-        val res = service.updateHealthConnectProfile(payload).execute()
-        if (res.isError) {
-            return Result.error(res.error ?: Exception("Failed to upload profile"))
-        }
+        val dailyResponse: List<AggregationResultGroupedByPeriod> =
+            client.aggregateGroupByPeriod(
+                AggregateGroupByPeriodRequest(
+                    metrics = metrics,
+                    timeRangeFilter = TimeRangeFilter.between(start, end),
+                    timeRangeSlicer = Period.ofDays(1)
+                )
+            )
 
-        return Result.value(true)
+        service.uploadHealthConnectDailies(
+            HealthConnectDailiesData(dailyStats = dailyResponse)
+        )
     }
+
+    /**
+     * Synchronizes profile data (height & weight).
+     */
+    suspend fun syncProfile(options: HealthConnectSyncOptions) {
+        val start = options.timeRangeStart.atStartOfDay().toInstant(ZoneOffset.UTC)
+        val end = options.timeRangeEnd.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
+
+        // Read height records
+        val heightsResponse: ReadRecordsResponse<HeightRecord> =
+            client.readRecords(
+                ReadRecordsRequest(
+                    recordType = HeightRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(start, end)
+                )
+            )
+        val heights: List<HeightRecord> = heightsResponse.records
+
+        // Read weight records
+        val weightsResponse: ReadRecordsResponse<WeightRecord> =
+            client.readRecords(
+                ReadRecordsRequest(
+                    recordType = WeightRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(start, end)
+                )
+            )
+        val weights: List<WeightRecord> = weightsResponse.records
+
+        service.uploadHealthConnectProfile(
+            HealthConnectProfileData(
+                heights = heights,
+                weights = weights
+            )
+        )
+    }
+}
+
+
+/**
+ * Maps our enum values to Health Connect aggregate metrics.
+ * Throws UnsupportedMetricException for any metric that cannot be aggregated.
+ */
+fun FitnessMetricsType.toAggregateMetrics(): Set<AggregateMetric<*>> = when (this) {
+    // Daily steps aggregation
+    FitnessMetricsType.STEPS -> setOf(StepsRecord.COUNT_TOTAL)
+
+    // Intraday calories: both total and active
+    FitnessMetricsType.INTRADAY_CALORIES -> setOf(
+        TotalCaloriesBurnedRecord.ENERGY_TOTAL, ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL
+    )
+
+    // Intraday heart rate statistics (average)
+    FitnessMetricsType.INTRADAY_HEART_RATE -> setOf(HeartRateRecord.BPM_AVG)
+
+    // The following metrics are not supported for aggregate queries:
+    FitnessMetricsType.INTRADAY_STEPS, FitnessMetricsType.WORKOUTS, FitnessMetricsType.HEIGHT, FitnessMetricsType.WEIGHT -> throw HealthConnectException.UnsupportedMetricException(
+        this.name
+    )
 }

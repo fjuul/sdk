@@ -5,11 +5,9 @@ import java.util.Map;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.activitysources.entities.internal.GFSynchronizableProfileParams;
 import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectDailiesPayload;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectIntradayPayload;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectProfilePayload;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.IntradayCumulativeEntry;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.IntradayStatisticalEntry;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectDailiesData;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectIntradayData;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectProfileData;
 import com.fjuul.sdk.core.http.utils.ApiCall;
 
 import androidx.annotation.NonNull;
@@ -50,23 +48,18 @@ public interface ActivitySourcesApi {
     ApiCall<Void> updateProfileOnBehalfOfGoogleFit(@Path("userToken") @NonNull String userToken,
         @Body @NonNull GFSynchronizableProfileParams params);
 
-    @POST("/sdk/activity-sources/v1/{userToken}/healthconnect/intraday/cumulative")
+    @POST("/sdk/activity-sources/v1/{userToken}/healthconnect")
     @NonNull
-    ApiCall<Void> uploadHealthConnectCumulativeIntraday(@Path("userToken") @NonNull String userToken,
-        @Body @NonNull HealthConnectIntradayPayload<IntradayCumulativeEntry> data);
-
-    @POST("/sdk/activity-sources/v1/{userToken}/healthconnect/intraday/statistical")
-    @NonNull
-    ApiCall<Void> uploadHealthConnectStatisticalIntraday(@Path("userToken") @NonNull String userToken,
-        @Body @NonNull HealthConnectIntradayPayload<IntradayStatisticalEntry> data);
+    ApiCall<Void> uploadHealthConnectIntraday(@Path("userToken") @NonNull String userToken,
+        @Body @NonNull HealthConnectIntradayData data);
 
     @POST("/sdk/activity-sources/v1/{userToken}/healthconnect/dailies")
     @NonNull
     ApiCall<Void> uploadHealthConnectDailies(@Path("userToken") @NonNull String userToken,
-        @Body @NonNull HealthConnectDailiesPayload data);
+        @Body @NonNull HealthConnectDailiesData data);
 
     @PUT("/sdk/activity-sources/v1/{userToken}/healthconnect/profile")
     @NonNull
-    ApiCall<Void> updateHealthConnectProfile(@Path("userToken") @NonNull String userToken,
-        @Body @NonNull HealthConnectProfilePayload data);
+    ApiCall<Void> uploadHealthConnectProfile(@Path("userToken") @NonNull String userToken,
+        @Body @NonNull HealthConnectProfileData data);
 }

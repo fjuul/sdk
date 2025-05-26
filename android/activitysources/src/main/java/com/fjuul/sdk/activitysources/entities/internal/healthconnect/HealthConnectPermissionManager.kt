@@ -15,7 +15,6 @@ import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.WeightRecord
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.utils.runAsyncAndCallback
-import com.fjuul.sdk.activitysources.utils.runCatchingAndCallback
 import com.fjuul.sdk.core.entities.Callback
 
 private const val MIN_SUPPORTED_SDK = Build.VERSION_CODES.O_MR1
@@ -54,6 +53,7 @@ class HealthConnectPermissionManager(
             HealthConnectClient.getSdkStatus(context) == SDK_AVAILABLE -> Unit
             Build.VERSION.SDK_INT >= MIN_SUPPORTED_SDK ->
                 throw HealthConnectException.NotInstalledException()
+
             else ->
                 throw HealthConnectException.NotSupportedException()
         }

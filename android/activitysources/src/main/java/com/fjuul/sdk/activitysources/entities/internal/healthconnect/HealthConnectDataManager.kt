@@ -53,7 +53,7 @@ class HealthConnectDataManager(
             val points = result.value
                 ?: return Result.error(Exception("No data returned from Health Connect"))
 
-            if (options.readCalories == true) {
+            if (options.metrics.contains(FitnessMetricsType.INTRADAY_CALORIES) == true) {
                 HealthConnectDataMapper.toCumulativePayload(
                     points,
                     FitnessMetricsType.INTRADAY_CALORIES,
@@ -66,7 +66,7 @@ class HealthConnectDataManager(
                 }
             }
 
-            if (options.readHeartRate == true) {
+            if (options.metrics.contains(FitnessMetricsType.INTRADAY_HEART_RATE) == true) {
                 HealthConnectDataMapper.toStatisticalPayload(
                     points,
                     FitnessMetricsType.INTRADAY_HEART_RATE,

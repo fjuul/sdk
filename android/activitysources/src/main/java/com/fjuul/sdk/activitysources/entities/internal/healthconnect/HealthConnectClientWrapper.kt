@@ -19,7 +19,7 @@ object HealthConnectClientWrapper {
     suspend fun read(
         context: Context,
         options: HealthConnectSyncOptions
-    ): Result<List<HealthConnectDataPoint>>{
+    ): Result<List<HealthConnectDataPoint>> {
         return try {
             val client = HealthConnectClient.getOrCreate(context)
             val zone = ZoneId.systemDefault()
@@ -34,8 +34,9 @@ object HealthConnectClientWrapper {
 
             val result = mutableListOf<HealthConnectDataPoint>()
 
-            if (options.readSteps == true) {
-                val records = client.readRecords(ReadRecordsRequest(StepsRecord::class, timeFilter)).records
+            if (options.metrics.contains(FitnessMetricsType.STEPS) == true) {
+                val records =
+                    client.readRecords(ReadRecordsRequest(StepsRecord::class, timeFilter)).records
                 result += records.map {
                     HealthConnectDataPoint(
                         type = FitnessMetricsType.STEPS,
@@ -46,8 +47,13 @@ object HealthConnectClientWrapper {
                 }
             }
 
-            if (options.readCalories == true) {
-                val records = client.readRecords(ReadRecordsRequest(TotalCaloriesBurnedRecord::class, timeFilter)).records
+            if (options.metrics.contains(FitnessMetricsType.INTRADAY_CALORIES) == true) {
+                val records = client.readRecords(
+                    ReadRecordsRequest(
+                        TotalCaloriesBurnedRecord::class,
+                        timeFilter
+                    )
+                ).records
                 result += records.map {
                     HealthConnectDataPoint(
                         type = FitnessMetricsType.INTRADAY_CALORIES,
@@ -58,8 +64,13 @@ object HealthConnectClientWrapper {
                 }
             }
 
-            if (options.readHeartRate == true) {
-                val records = client.readRecords(ReadRecordsRequest(HeartRateRecord::class, timeFilter)).records
+            if (options.metrics.contains(FitnessMetricsType.INTRADAY_HEART_RATE) == true) {
+                val records = client.readRecords(
+                    ReadRecordsRequest(
+                        HeartRateRecord::class,
+                        timeFilter
+                    )
+                ).records
                 result += records.flatMap { record ->
                     record.samples.map {
                         HealthConnectDataPoint(
@@ -72,8 +83,9 @@ object HealthConnectClientWrapper {
                 }
             }
 
-            if (options.readHeight == true) {
-                val records = client.readRecords(ReadRecordsRequest(HeightRecord::class, timeFilter)).records
+            if (options.metrics.contains(FitnessMetricsType.HEIGHT) == true) {
+                val records =
+                    client.readRecords(ReadRecordsRequest(HeightRecord::class, timeFilter)).records
                 result += records.map {
                     HealthConnectDataPoint(
                         type = FitnessMetricsType.HEIGHT,
@@ -84,8 +96,9 @@ object HealthConnectClientWrapper {
                 }
             }
 
-            if (options.readWeight == true) {
-                val records = client.readRecords(ReadRecordsRequest(WeightRecord::class, timeFilter)).records
+            if (options.metrics.contains(FitnessMetricsType.WEIGHT) == true) {
+                val records =
+                    client.readRecords(ReadRecordsRequest(WeightRecord::class, timeFilter)).records
                 result += records.map {
                     HealthConnectDataPoint(
                         type = FitnessMetricsType.WEIGHT,

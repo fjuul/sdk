@@ -183,7 +183,7 @@ class ActivitySourcesFragment : Fragment() {
                     .setTitle("Health Connect")
                     .setItems(menus) { _, which ->
                         if (which == 0) {
-                            hcPermsLauncher.launch(activitySource.getAllRequiredPermissions())
+                            hcPermsLauncher.launch(activitySource.getPermissionManager().requiredPermissions())
                         } else {
                             model.disconnect(activitySource)
                         }
@@ -201,10 +201,10 @@ class ActivitySourcesFragment : Fragment() {
     // for testing HealthConnectPermissions logic
     private fun initHealthConnectPermissionsLauncher(activitySource: HealthConnectActivitySource) {
         hcPermsLauncher = registerForActivityResult(
-            activitySource.requestPermissionsContract()
+            activitySource.getPermissionManager().requestPermissionsContract()
         ) { grantedPermissions ->
             // Compute which permissions were denied
-            val required = activitySource.getAllRequiredPermissions()
+            val required = activitySource.getPermissionManager().requiredPermissions()
             val denied = required - grantedPermissions
 
             if (denied.isEmpty()) {

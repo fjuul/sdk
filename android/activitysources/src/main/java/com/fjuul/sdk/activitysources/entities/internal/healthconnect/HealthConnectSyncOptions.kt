@@ -1,5 +1,6 @@
 package com.fjuul.sdk.activitysources.entities.internal.healthconnect
 
+import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import java.time.LocalDate
 
 /**
@@ -9,11 +10,7 @@ import java.time.LocalDate
  * This object is passed from ViewModel/UI to ActivitySource.
  */
 data class HealthConnectSyncOptions(
-    val readSteps: Boolean? = false,
-    val readCalories: Boolean? = false,
-    val readHeartRate: Boolean? = false,
-    val readHeight: Boolean? = false,
-    val readWeight: Boolean? = false,
+    val metrics: Set<FitnessMetricsType>,
     val timeRangeStart: LocalDate,
     val timeRangeEnd: LocalDate
 )

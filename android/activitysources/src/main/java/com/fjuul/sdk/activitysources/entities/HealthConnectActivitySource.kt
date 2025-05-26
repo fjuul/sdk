@@ -1,12 +1,13 @@
 package com.fjuul.sdk.activitysources.entities
 
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.health.connect.client.HealthConnectClient
+import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource.Companion.getInstance
+import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource.Companion.initialize
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectDataManager
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectPermissionManager
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectSyncOptions
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService
-import com.fjuul.sdk.activitysources.utils.runAndCallback
+import com.fjuul.sdk.activitysources.utils.runAsyncAndCallback
 import com.fjuul.sdk.core.ApiClient
 import com.fjuul.sdk.core.entities.Callback
 
@@ -28,64 +29,6 @@ class HealthConnectActivitySource private constructor(
     private val permissionManager: HealthConnectPermissionManager
 ) : ActivitySource() {
 
-    override fun getTrackerValue(): TrackerValue = TrackerValue.HEALTH_CONNECT
-
-    /**
-     * Returns the [ActivityResultContract] used to request Health Connect permissions
-     * for a set of permission strings.
-     *
-     * Client code should register this with [registerForActivityResult].
-     */
-    fun requestPermissionsContract(): ActivityResultContract<Set<String>, Set<String>> =
-        permissionManager.requestPermissions()
-
-    /**
-     * Returns the full set of Health Connect permission strings that this SDK
-     * is configured to request.
-     *
-     * @return A [Set] of permission strings corresponding to the SDK’s metrics.
-     */
-    fun getAllRequiredPermissions(): Set<String> =
-        permissionManager.getAllRequiredPermissions()
-
-    /**
-     * Asynchronously checks whether *all* of the SDK’s required Health Connect permissions
-     * have already been granted.
-     *
-     * @param callback Receives a [Result] containing `true` if all are granted,
-     *                 `false` if any are missing, or failure(exception).
-     */
-    fun areAllPermissionsGranted(callback: Callback<Boolean>) =
-        permissionManager.areAllPermissionsGranted(callback)
-
-    /**
-     * Asynchronously checks whether the specified subset of [metrics] has all required permissions.
-     *
-     * @param metrics  The subset of [FitnessMetricsType] to verify.
-     * @param callback Receives a [Result] containing `true` if all are granted,
-     *                 `false` if any are missing, or failure(exception).
-     */
-    fun areRequiredPermissionsGranted(
-        metrics: Set<FitnessMetricsType>,
-        callback: Callback<Boolean>
-    ) = permissionManager.areRequiredPermissionsGranted(metrics, callback)
-
-    /**
-     * Asynchronously retrieves the set of already-granted Health Connect permission strings.
-     *
-     * @param callback Receives a [Result] with the granted strings or failure(exception).
-     */
-    fun getGrantedPermissions(callback: Callback<Set<String>>) =
-        permissionManager.getGrantedPermissions(callback)
-
-    /**
-     * Asynchronously revokes *all* Health Connect permissions that this app has granted.
-     *
-     * @param callback Receives a [Result] indicating success or the thrown exception.
-     */
-    fun revokeAllPermissions(callback: Callback<Unit>) =
-        permissionManager.revokeAllPermissions(callback)
-
     /**
      * Starts an intraday data synchronization (calories, heart rate).
      *
@@ -93,7 +36,11 @@ class HealthConnectActivitySource private constructor(
      * @param callback Receives a [Result]<Unit> indicating success or failure(exception).
      */
     fun syncIntraday(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
-        runAndCallback({ dataManager.syncIntraday(options) }, callback)
+        runAsyncAndCallback({
+            permissionManager.ensureSdkAvailable()
+            permissionManager.ensurePermissionsGranted(options.metrics)
+            dataManager.syncIntraday(options)
+        }, callback)
 
     /**
      * Starts a daily data synchronization (steps, resting heart rate).
@@ -102,18 +49,29 @@ class HealthConnectActivitySource private constructor(
      * @param callback Receives a [Result]<Unit> indicating success or failure(exception).
      */
     fun syncDaily(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
-        runAndCallback({ dataManager.syncDaily(options) }, callback)
+        runAsyncAndCallback({
+            permissionManager.ensureSdkAvailable()
+            permissionManager.ensurePermissionsGranted(options.metrics)
+            dataManager.syncDaily(options)
+        }, callback)
 
     /**
      * Starts a profile data synchronization (height, weight).
      *
      * @param options  The [HealthConnectSyncOptions] specifying which fields to sync.
-     * @param callback Receives a [Result]<Boolean> where `true` indicates data updated,
-     *                 `false` means no changes, or failure(exception).
+     * @param callback Receives a [Result]<Unit> indicating success or failure(exception).
      */
-    fun syncProfile(options: HealthConnectSyncOptions, callback: Callback<Boolean>) =
-        runAndCallback({ dataManager.syncProfile(options) }, callback)
+    fun syncProfile(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
+        runAsyncAndCallback({
+            permissionManager.ensureSdkAvailable()
+            permissionManager.ensurePermissionsGranted(options.metrics)
+            dataManager.syncProfile(options)
+        }, callback)
 
+
+    override fun getTrackerValue(): TrackerValue = TrackerValue.HEALTH_CONNECT
+
+    fun getPermissionManager(): HealthConnectPermissionManager = permissionManager
 
     companion object {
         @Volatile

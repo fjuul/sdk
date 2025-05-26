@@ -4,10 +4,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
+import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectSyncOptions
 import com.fjuul.sdk.core.entities.Callback
 import java.time.LocalDate
+import java.util.Collections.emptySet
 
 class HealthConnectSyncViewModel : ViewModel() {
     private val _startDate = MutableLiveData(LocalDate.now())
@@ -56,10 +58,13 @@ class HealthConnectSyncViewModel : ViewModel() {
             return
         }
 
+        val metricsToTrack = mutableSetOf<FitnessMetricsType>()
+        if (calories) metricsToTrack.add(FitnessMetricsType.INTRADAY_CALORIES)
+        if (heartRate) metricsToTrack.add(FitnessMetricsType.INTRADAY_HEART_RATE)
+
         // 3) Construct sync options
         val options = HealthConnectSyncOptions(
-            readCalories = calories,
-            readHeartRate = heartRate,
+            metrics = metricsToTrack,
             timeRangeStart = start,
             timeRangeEnd = end
         )
@@ -101,10 +106,13 @@ class HealthConnectSyncViewModel : ViewModel() {
             return
         }
 
+        val metricsToTrack = mutableSetOf<FitnessMetricsType>()
+        if (steps) metricsToTrack.add(FitnessMetricsType.STEPS)
+        if (restingHeartRate) metricsToTrack.add(FitnessMetricsType.HEIGHT)
+
         // 3) Construct sync options
         val options = HealthConnectSyncOptions(
-            readSteps = steps,
-            readHeartRate = restingHeartRate,
+            metrics = metricsToTrack,
             timeRangeStart = start,
             timeRangeEnd = end
         )
@@ -145,11 +153,13 @@ class HealthConnectSyncViewModel : ViewModel() {
             _errorMessage.value = "End date is not set"
             return
         }
+        val metricsToTrack = mutableSetOf<FitnessMetricsType>()
+        if (weight) metricsToTrack.add(FitnessMetricsType.WEIGHT)
+        if (height) metricsToTrack.add(FitnessMetricsType.HEIGHT)
 
         // 3) Construct sync options
         val options = HealthConnectSyncOptions(
-            readWeight = weight,
-            readHeight = height,
+            metrics = metricsToTrack,
             timeRangeStart = start,
             timeRangeEnd = end
         )
@@ -159,8 +169,8 @@ class HealthConnectSyncViewModel : ViewModel() {
 
         // 5) Call SDK
         (connection.activitySource as HealthConnectActivitySource)
-            .syncProfile(options, object : Callback<Boolean> {
-                override fun onResult(result: com.fjuul.sdk.core.entities.Result<Boolean>) {
+            .syncProfile(options, object : Callback<Unit> {
+                override fun onResult(result: com.fjuul.sdk.core.entities.Result<Unit>) {
                     // always back on main
                     _syncingProfileData.postValue(false)
                     if (result.isError) {

@@ -3,10 +3,8 @@ package com.fjuul.sdk.activitysources.entities.internal.healthconnect
 import android.content.Context
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContract
-import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.HealthConnectClient.Companion.SDK_AVAILABLE
-import androidx.health.connect.client.HealthConnectFeatures
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
@@ -16,22 +14,19 @@ import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.WeightRecord
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
-import com.fjuul.sdk.activitysources.utils.runCatchingResult
+import com.fjuul.sdk.activitysources.utils.runAsyncAndCallback
+import com.fjuul.sdk.activitysources.utils.runCatchingAndCallback
 import com.fjuul.sdk.core.entities.Callback
-import com.fjuul.sdk.core.entities.Result
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 private const val MIN_SUPPORTED_SDK = Build.VERSION_CODES.O_MR1
 
 /**
- * Manages Health Connect permissions and availability checks based on a set of fitness metrics.
+ * Manages Health Connect SDK availability and user permissions based on
+ * the configured set of fitness metrics.
  *
- * @param context              Android context used to initialize [HealthConnectClient].
- * @param healthConnectClient  Pre-initialized [HealthConnectClient] for all data & permission calls.
- * @param allAvailableMetrics  The complete set of metrics that the SDK may request permissions for.
+ * @param context             Application context used for HealthConnectClient.
+ * @param healthConnectClient Pre-initialized HealthConnectClient for all data and permission operations.
+ * @param allAvailableMetrics          The complete set of metrics that this SDK may request permissions for.
  */
 class HealthConnectPermissionManager(
     private val context: Context,
@@ -40,157 +35,85 @@ class HealthConnectPermissionManager(
 ) {
 
     /**
-     * Returns the [ActivityResultContract] that initiates a Health Connect permission request
-     * for an arbitrary set of permission strings.
-     *
-     * Clients should use this contract with [registerForActivityResult].
+     * Returns the ActivityResultContract to request Health Connect permissions.
      */
-    fun requestPermissions(): ActivityResultContract<Set<String>, Set<String>> =
+    fun requestPermissionsContract(): ActivityResultContract<Set<String>, Set<String>> =
         PermissionController.createRequestPermissionResultContract()
 
     /**
-     * Computes the minimal set of Health Connect permission strings required
-     * to read the given [metrics].
-     *
-     * @param metrics The subset of [FitnessMetricsType] for which read access is needed.
-     * @return A [Set] of permission strings from [HealthPermission.getReadPermission].
+     * Returns all permission strings required for the configured metrics.
      */
-    fun getPermissionsToRequest(metrics: Set<FitnessMetricsType>): Set<String> {
-        val permissions = mutableSetOf<String>()
-        if (metrics.contains(FitnessMetricsType.STEPS)) {
-            permissions += HealthPermission.getReadPermission(StepsRecord::class)
-        }
-        if (metrics.contains(FitnessMetricsType.INTRADAY_CALORIES)) {
-            permissions += HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class)
-            permissions += HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class)
-        }
-        if (metrics.contains(FitnessMetricsType.INTRADAY_HEART_RATE)) {
-            permissions += HealthPermission.getReadPermission(HeartRateRecord::class)
-        }
-        if (metrics.contains(FitnessMetricsType.HEIGHT)) {
-            permissions += HealthPermission.getReadPermission(HeightRecord::class)
-        }
-        if (metrics.contains(FitnessMetricsType.WEIGHT)) {
-            permissions += HealthPermission.getReadPermission(WeightRecord::class)
-        }
-        return permissions
-    }
+    fun requiredPermissions(): Set<String> =
+        permissionsForMetrics(allAvailableMetrics)
 
     /**
-     * Returns the full set of required permissions for the SDK's configured metrics.
-     *
-     * @return A [Set] of all permission strings for [allAvailableMetrics].
+     * Throws if Health Connect SDK is not installed or not supported.
      */
-    fun getAllRequiredPermissions(): Set<String> =
-        getPermissionsToRequest(allAvailableMetrics)
-
-    /**
-     * Checks whether the Health Connect app is installed, supported by the OS, or not supported.
-     *
-     * @return One of [HealthConnectAvailability.INSTALLED], [SUPPORTED], or [NOT_SUPPORTED].
-     */
-    fun getAvailability(): HealthConnectAvailability = when {
-        isInstalled() -> HealthConnectAvailability.INSTALLED
-        isSupported() -> HealthConnectAvailability.SUPPORTED
-        else -> HealthConnectAvailability.NOT_SUPPORTED
-    }
-
-    /**
-     * Asynchronously verifies whether *all* of the SDK's required permissions are granted.
-     *
-     * @param callback Receives a [Result] containing `true` if all are granted,
-     *                 `false` if any are missing, or an exception if the check fails.
-     */
-    fun areAllPermissionsGranted(callback: Callback<Boolean>) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val result: Result<Boolean> = runCatchingResult {
-                val granted = healthConnectClient.permissionController.getGrantedPermissions()
-                val required = getPermissionsToRequest(allAvailableMetrics)
-                granted.containsAll(required)
-            }
-            withContext(Dispatchers.Main) {
-                callback.onResult(result)
-            }
+    fun ensureSdkAvailable() {
+        when {
+            HealthConnectClient.getSdkStatus(context) == SDK_AVAILABLE -> Unit
+            Build.VERSION.SDK_INT >= MIN_SUPPORTED_SDK ->
+                throw HealthConnectException.NotInstalledException()
+            else ->
+                throw HealthConnectException.NotSupportedException()
         }
     }
 
     /**
-     * Asynchronously verifies whether the specified subset of [metrics] has all required permissions.
-     *
-     * @param metrics  Subset of [FitnessMetricsType] to check.
-     * @param callback Receives a [Result] containing `true` if all are granted,
-     *                 `false` if any are missing, or an exception if the check fails.
+     * Checks asynchronously if permissions for the given metrics are all granted.
+     * Delivers `true` to the callback if all are granted, or an exception if any are missing.
      */
-    fun areRequiredPermissionsGranted(
+    fun checkPermissions(
         metrics: Set<FitnessMetricsType>,
         callback: Callback<Boolean>
-    ) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val result: Result<Boolean> = runCatchingResult {
-                val granted = healthConnectClient.permissionController.getGrantedPermissions()
-                val required = getPermissionsToRequest(metrics)
-                granted.containsAll(required)
-            }
-            withContext(Dispatchers.Main) {
-                callback.onResult(result)
-            }
+    ) = runAsyncAndCallback({
+        val granted = healthConnectClient.permissionController.getGrantedPermissions()
+        val required = permissionsForMetrics(metrics)
+        if (!granted.containsAll(required)) {
+            throw HealthConnectException.PermissionsNotGrantedException()
+        }
+        true
+    }, callback)
+
+    /**
+     * Suspends and throws if permissions for the given metrics are not granted.
+     */
+    suspend fun ensurePermissionsGranted(metrics: Set<FitnessMetricsType>) {
+        val granted = healthConnectClient.permissionController.getGrantedPermissions()
+        val required = permissionsForMetrics(metrics)
+        if (!granted.containsAll(required)) {
+            throw HealthConnectException.PermissionsNotGrantedException()
         }
     }
 
     /**
-     * Asynchronously returns the full set of already-granted Health Connect permissions.
-     *
-     * @param callback Receives a [Result] with the granted permission strings,
-     *                 or an exception if the query fails.
+     * Revokes all Health Connect permissions asynchronously.
      */
-    fun getGrantedPermissions(callback: Callback<Set<String>>) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val result: Result<Set<String>> = runCatchingResult {
-                healthConnectClient.permissionController.getGrantedPermissions()
-            }
-            withContext(Dispatchers.Main) {
-                callback.onResult(result)
-            }
-        }
-    }
+    fun revokeAllPermissions(callback: Callback<Unit>) =
+        runAsyncAndCallback({
+            healthConnectClient.permissionController.revokeAllPermissions()
+        }, callback)
 
     /**
-     * Asynchronously revokes *all* Health Connect permissions for this app.
-     *
-     * @param callback Receives a [Result] indicating success or the thrown exception.
+     * Builds the set of Health Connect permission strings required for the specified metrics.
      */
-    fun revokeAllPermissions(callback: Callback<Unit>) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val result: Result<Unit> = runCatchingResult {
-                healthConnectClient.permissionController.revokeAllPermissions()
+    private fun permissionsForMetrics(metrics: Set<FitnessMetricsType>): Set<String> =
+        buildSet {
+            if (FitnessMetricsType.STEPS in metrics) {
+                add(HealthPermission.getReadPermission(StepsRecord::class))
             }
-            withContext(Dispatchers.Main) {
-                callback.onResult(result)
+            if (FitnessMetricsType.INTRADAY_CALORIES in metrics) {
+                add(HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class))
+                add(HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class))
+            }
+            if (FitnessMetricsType.INTRADAY_HEART_RATE in metrics) {
+                add(HealthPermission.getReadPermission(HeartRateRecord::class))
+            }
+            if (FitnessMetricsType.HEIGHT in metrics) {
+                add(HealthPermission.getReadPermission(HeightRecord::class))
+            }
+            if (FitnessMetricsType.WEIGHT in metrics) {
+                add(HealthPermission.getReadPermission(WeightRecord::class))
             }
         }
-    }
-
-    @ChecksSdkIntAtLeast(api = MIN_SUPPORTED_SDK)
-    private fun isSupported(): Boolean =
-        Build.VERSION.SDK_INT >= MIN_SUPPORTED_SDK
-
-    private fun isInstalled(): Boolean =
-        HealthConnectClient.getSdkStatus(context) == SDK_AVAILABLE
-
-    private fun isFeatureAvailable(feature: Int): Boolean =
-        healthConnectClient.features.getFeatureStatus(feature) == HealthConnectFeatures.FEATURE_STATUS_AVAILABLE
-}
-
-/**
- * Indicates Health Connect installation/support status on the device.
- */
-enum class HealthConnectAvailability {
-    /** Health Connect app is installed and available. */
-    INSTALLED,
-
-    /** Health Connect is supported by the OS but not installed. */
-    SUPPORTED,
-
-    /** Health Connect is not supported on this OS version. */
-    NOT_SUPPORTED
 }

@@ -1,55 +1,50 @@
 package com.fjuul.sdk.activitysources.utils
+
 import com.fjuul.sdk.core.entities.Callback
 import com.fjuul.sdk.core.entities.Result
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.getOrThrow
-import kotlin.Result as KtResult
-import kotlin.runCatching
 
 /**
- * Convert a Kotlin standard library [kotlin.Result] into the SDK’s own [Result].
- *
- * This preserves both success and failure states:
- * - On success, wraps the value in [Result.value].
- * - On failure, wraps the exception in [Result.error].
- *
- * @receiver The `kotlin.Result<T>` to adapt.
- * @return A `com.fjuul.sdk.core.entities.Result<T>` with the same outcome.
+ * Synchronous dispatch: block returns a Result<T> directly,
+ * and is passed to the callback without additional wrapping.
  */
-inline fun <T : Any> KtResult<T>.toResult(): Result<T> = fold(
-    onSuccess  = { v -> Result.value(v) },
-    onFailure  = { e -> Result.error(e) }
-)
+inline fun <T : Any> runResultAndCallback(
+    block: () -> Result<T>,
+    callback: Callback<T>
+) {
+    callback.onResult(block())
+}
 
 /**
- * Execute the given [block] catching any thrown exception, and return
- * its result as the SDK’s [Result] type.
- *
- * Equivalent to `runCatching { block() }.toResult()`.
- *
- * @param block A lambda whose return value or thrown exception
- *              will be wrapped in [Result].
- * @return A `Result<T>` whose value is the block’s return on success,
- *         or whose error is the thrown exception on failure.
+ * Synchronous dispatch with exception catching: block returns T,
+ * exceptions are caught and wrapped into Result.error, success into Result.value.
  */
-inline fun <T : Any> runCatchingResult(block: () -> T): Result<T> =
-    runCatching(block).toResult()
-
+inline fun <T : Any> runCatchingAndCallback(
+    block: () -> T,
+    callback: Callback<T>
+) {
+    val result: Result<T> = runCatching(block).fold(
+        onSuccess = { v -> Result.value(v) },
+        onFailure = { e -> Result.error(e) }
+    )
+    callback.onResult(result)
+}
 
 /**
- * Launches the given suspend [block] on [Dispatchers.IO], captures any exception
- * into a Result, and then delivers it back on [Dispatchers.Main] via [callback].
+ * Asynchronous dispatch: suspend block returns T,
+ * exceptions are caught and wrapped into Result.error, success into Result.value,
+ * then delivered on Dispatchers.Main.
  */
-fun <T> runAndCallback(
-    block: suspend () -> Result<T>,
+inline fun <T : Any> runAsyncAndCallback(
+    crossinline block: suspend () -> T,
     callback: Callback<T>
 ) {
     CoroutineScope(Dispatchers.IO).launch {
         val result: Result<T> = try {
-            block()
+            Result.value(block())
         } catch (e: Throwable) {
             Result.error(e)
         }

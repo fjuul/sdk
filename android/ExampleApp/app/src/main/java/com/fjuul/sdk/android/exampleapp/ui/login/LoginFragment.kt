@@ -43,6 +43,7 @@ class LoginFragment : Fragment() {
             FitnessMetricsType.INTRADAY_CALORIES,
             FitnessMetricsType.INTRADAY_HEART_RATE,
             FitnessMetricsType.INTRADAY_STEPS,
+            FitnessMetricsType.STEPS, // Health Connect API only
             FitnessMetricsType.WORKOUTS,
             FitnessMetricsType.HEIGHT,
             FitnessMetricsType.WEIGHT

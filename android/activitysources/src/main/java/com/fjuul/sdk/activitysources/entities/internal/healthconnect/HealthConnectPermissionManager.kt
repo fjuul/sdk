@@ -9,6 +9,7 @@ import androidx.health.connect.client.HealthConnectClient.Companion.SDK_AVAILABL
 import androidx.health.connect.client.HealthConnectFeatures
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeightRecord
 import androidx.health.connect.client.records.StepsRecord
@@ -61,6 +62,7 @@ class HealthConnectPermissionManager(
         }
         if (metrics.contains(FitnessMetricsType.INTRADAY_CALORIES)) {
             permissions += HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class)
+            permissions += HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class)
         }
         if (metrics.contains(FitnessMetricsType.INTRADAY_HEART_RATE)) {
             permissions += HealthPermission.getReadPermission(HeartRateRecord::class)
@@ -75,7 +77,7 @@ class HealthConnectPermissionManager(
     }
 
     /**
-     * Returns the full set of required permissions for the SDK’s configured metrics.
+     * Returns the full set of required permissions for the SDK's configured metrics.
      *
      * @return A [Set] of all permission strings for [allAvailableMetrics].
      */
@@ -94,7 +96,7 @@ class HealthConnectPermissionManager(
     }
 
     /**
-     * Asynchronously verifies whether *all* of the SDK’s required permissions are granted.
+     * Asynchronously verifies whether *all* of the SDK's required permissions are granted.
      *
      * @param callback Receives a [Result] containing `true` if all are granted,
      *                 `false` if any are missing, or an exception if the check fails.

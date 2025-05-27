@@ -128,41 +128,48 @@ class HealthConnectDataManager(
         }
     }
 
-    /** Synchronize height & weight profile records. */
+    /** Sync only the latest height (in cm) & weight (in kg). */
     suspend fun syncProfile(options: HealthConnectSyncOptions) {
         val zone = ZoneOffset.UTC
         val start = options.timeRangeStart.atStartOfDay().toInstant(zone)
         val end = options.timeRangeEnd.plusDays(1).atStartOfDay().toInstant(zone)
 
-        val heightsResponse: ReadRecordsResponse<HeightRecord> =
-            client.readRecords(
-                ReadRecordsRequest(
-                    recordType = HeightRecord::class,
-                    timeRangeFilter = TimeRangeFilter.between(start, end)
-                )
+        // read all height records
+        val heightsResp: ReadRecordsResponse<HeightRecord> = client.readRecords(
+            ReadRecordsRequest(
+                recordType = HeightRecord::class,
+                timeRangeFilter = TimeRangeFilter.between(start, end)
             )
-        val weightsResponse: ReadRecordsResponse<WeightRecord> =
-            client.readRecords(
-                ReadRecordsRequest(
-                    recordType = WeightRecord::class,
-                    timeRangeFilter = TimeRangeFilter.between(start, end)
-                )
+        )
+        // read all weight records
+        val weightsResp: ReadRecordsResponse<WeightRecord> = client.readRecords(
+            ReadRecordsRequest(
+                recordType = WeightRecord::class,
+                timeRangeFilter = TimeRangeFilter.between(start, end)
             )
+        )
 
-        val heights = heightsResponse.records.map {
-            ProfileRecord(time = it.time.toString(), value = it.height.inMeters)
-        }
-        val weights = weightsResponse.records.map {
-            ProfileRecord(time = it.time.toString(), value = it.weight.inKilograms)
-        }
+        // pick most recent height in meters → convert to cm
+        val latestHeightCm: Double? = heightsResp.records
+            .maxByOrNull { it.time }
+            ?.height
+            ?.inMeters
+            ?.times(100.0)
 
-        val result = service
-            .uploadHealthConnectProfile(HealthConnectProfilePayload(heights, weights))
-            .execute()
+        // pick most recent weight in kg
+        val latestWeightKg: Double? = weightsResp.records
+            .maxByOrNull { it.time }
+            ?.weight
+            ?.inKilograms
 
-        if (result.isError) {
-            throw result.error!!
-        }
+        if (latestHeightCm == null && latestWeightKg == null) return
+
+        service.uploadHealthConnectProfile(
+            HealthConnectProfilePayload(
+                height = latestHeightCm,
+                weight = latestWeightKg
+            )
+        ).execute()
     }
 }
 

@@ -38,17 +38,8 @@ data class HealthConnectDailiesPayload(
     val entries: List<DailyEntry>
 )
 
-/**
- * Single profile measurement (timestamp + value).
- * `time` is ISO datetime string.
- */
-data class ProfileRecord(
-    val time: String,
-    val value: Double
-)
-
 /** Payload for profile upload. */
 data class HealthConnectProfilePayload(
-    val heights: List<ProfileRecord>,
-    val weights: List<ProfileRecord>
+    val height: Double? = null, // in cm
+    val weight: Double? = null  // in kg
 )

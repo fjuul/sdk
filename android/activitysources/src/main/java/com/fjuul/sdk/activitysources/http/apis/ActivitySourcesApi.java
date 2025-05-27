@@ -50,13 +50,13 @@ public interface ActivitySourcesApi {
 
     @POST("/sdk/activity-sources/v1/{userToken}/healthconnect")
     ApiCall<Void> uploadHealthConnectIntraday(@Path("userToken") String userToken,
-        @Body HealthConnectIntradayPayload data);
+        @NonNull @Body HealthConnectIntradayPayload data);
 
     @POST("/sdk/activity-sources/v1/{userToken}/healthconnect/dailies")
     ApiCall<Void> uploadHealthConnectDailies(@Path("userToken") String userToken,
-        @Body HealthConnectDailiesPayload data);
+        @NonNull @Body HealthConnectDailiesPayload data);
 
     @PUT("/sdk/activity-sources/v1/{userToken}/healthconnect/profile")
     ApiCall<Void> uploadHealthConnectProfile(@Path("userToken") String userToken,
-        @Body HealthConnectProfilePayload data);
+        @NonNull @Body HealthConnectProfilePayload data);
 }

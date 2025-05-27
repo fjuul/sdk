@@ -16,6 +16,12 @@ public enum FitnessMetricsType {
      * information.
      */
     STEPS,
+    /**
+     * Represents the user's resting heart rate aggregated daily from Health Connect API. This metric provides a
+     * statistical summary (min, avg, max BPM) for each day and is used to sync resting heart rate as a daily data
+     * point.
+     */
+    RESTING_HEART_RATE,
     WORKOUTS,
 
     HEIGHT,

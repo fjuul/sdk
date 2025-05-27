@@ -5,6 +5,7 @@ import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
+import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeightRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.StepsRecord
@@ -20,12 +21,14 @@ import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService
 import com.fjuul.sdk.activitysources.utils.roundTo
 import java.time.Duration
+import java.time.Instant
+import java.time.LocalDate
 import java.time.Period
 import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit
 
 class HealthConnectDataManager(
-    private val client: HealthConnectClient,
-    private val service: ActivitySourcesService
+    private val client: HealthConnectClient, private val service: ActivitySourcesService
 ) {
     /** Synchronize hourly intraday aggregates, split per day. */
     suspend fun syncIntraday(options: HealthConnectSyncOptions) {
@@ -33,19 +36,18 @@ class HealthConnectDataManager(
 
         val metricsSet = options.metrics.flatMap { it.toAggregateMetrics() }.toSet()
         val zone = ZoneOffset.UTC
+        // Define 3-day window: from 3 days ago at start of day (UTC) until now
+        val nowInstant = Instant.now()
+        val startInstant = LocalDate.now().minusDays(3).atStartOfDay().toInstant(zone)
 
-        // fetch all hourly buckets in the full range
-        val allBuckets: List<AggregationResultGroupedByDuration> =
-            client.aggregateGroupByDuration(
-                AggregateGroupByDurationRequest(
-                    metrics = metricsSet,
-                    timeRangeFilter = TimeRangeFilter.between(
-                        options.timeRangeStart.atStartOfDay().toInstant(zone),
-                        options.timeRangeEnd.plusDays(1).atStartOfDay().toInstant(zone)
-                    ),
-                    timeRangeSlicer = Duration.ofHours(1)
-                )
+        // fetch minute-level buckets for today
+        val allBuckets: List<AggregationResultGroupedByDuration> = client.aggregateGroupByDuration(
+            AggregateGroupByDurationRequest(
+                metrics = metricsSet,
+                timeRangeFilter = TimeRangeFilter.between(startInstant, nowInstant),
+                timeRangeSlicer = Duration.ofMinutes(1)
             )
+        )
 
         // map each bucket → IntradayEntry with ISO timestamp
         val allEntries = allBuckets.map { bucket ->
@@ -56,24 +58,28 @@ class HealthConnectDataManager(
             bucket.result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.let { e: Energy ->
                 map["activeCalories"] = e.inKilocalories
             }
-            bucket.result[RestingHeartRateRecord.BPM_MIN]?.let { map["heartRateMin"] = it.toDouble() }
-            bucket.result[RestingHeartRateRecord.BPM_AVG]?.let { map["heartRateAvg"] = it.toDouble() }
-            bucket.result[RestingHeartRateRecord.BPM_MAX]?.let { map["heartRateMax"] = it.toDouble() }
+            bucket.result[HeartRateRecord.BPM_MIN]?.let {
+                map["heartRateMin"] = it.toDouble()
+            }
+            bucket.result[HeartRateRecord.BPM_AVG]?.let {
+                map["heartRateAvg"] = it.toDouble()
+            }
+            bucket.result[HeartRateRecord.BPM_MAX]?.let {
+                map["heartRateMax"] = it.toDouble()
+            }
 
             IntradayEntry(
                 start = bucket.startTime.toString(), // ISO 8601
-                dataOrigins = bucket.result.dataOrigins.map { it.packageName },
-                metrics = map
+                dataOrigins = bucket.result.dataOrigins.map { it.packageName }, metrics = map
             )
         }
 
         // group by local date and upload one batch per day
-        allEntries
-            .groupBy { it.start.substring(0, 10) /* "YYYY-MM-DD" */ }
+        allEntries.groupBy { it.start.substring(0, 10) /* "YYYY-MM-DD" */ }
             .forEach { (_, entriesForDate) ->
-                val result = service
-                    .uploadHealthConnectIntraday(HealthConnectIntradayPayload(entriesForDate))
-                    .execute()
+                val result =
+                    service.uploadHealthConnectIntraday(HealthConnectIntradayPayload(entriesForDate))
+                        .execute()
 
                 if (result.isError) {
                     throw result.error!!
@@ -87,18 +93,17 @@ class HealthConnectDataManager(
 
         val metricsSet = options.metrics.flatMap { it.toAggregateMetrics() }.toSet()
 
-        // use LocalDateTime for period-based aggregation
-        val startDateTime = options.timeRangeStart.atStartOfDay()
-        val endDateTime = options.timeRangeEnd.plusDays(1).atStartOfDay()
+        // today's bounds in local time
+        val todayStart = LocalDate.now().atStartOfDay()
+        val tomorrowStart = todayStart.plusDays(1)
 
-        val raw: List<AggregationResultGroupedByPeriod> =
-            client.aggregateGroupByPeriod(
-                AggregateGroupByPeriodRequest(
-                    metrics = metricsSet,
-                    timeRangeFilter = TimeRangeFilter.between(startDateTime, endDateTime),
-                    timeRangeSlicer = Period.ofDays(1)
-                )
+        val raw: List<AggregationResultGroupedByPeriod> = client.aggregateGroupByPeriod(
+            AggregateGroupByPeriodRequest(
+                metrics = metricsSet,
+                timeRangeFilter = TimeRangeFilter.between(todayStart, tomorrowStart),
+                timeRangeSlicer = Period.ofDays(1)
             )
+        )
 
         val entries = raw.map { bucket ->
             val minHr = bucket.result[RestingHeartRateRecord.BPM_MIN]
@@ -106,9 +111,7 @@ class HealthConnectDataManager(
             val maxHr = bucket.result[RestingHeartRateRecord.BPM_MAX]
             val stat = if (minHr != null || avgHr != null || maxHr != null) {
                 StatisticalAggregateValue(
-                    min = minHr?.toDouble(),
-                    avg = avgHr?.toDouble(),
-                    max = maxHr?.toDouble()
+                    min = minHr?.toDouble(), avg = avgHr?.toDouble(), max = maxHr?.toDouble()
                 )
             } else null
 
@@ -120,9 +123,8 @@ class HealthConnectDataManager(
             )
         }
 
-        val result = service
-            .uploadHealthConnectDailies(HealthConnectDailiesPayload(entries))
-            .execute()
+        val result =
+            service.uploadHealthConnectDailies(HealthConnectDailiesPayload(entries)).execute()
 
         if (result.isError) {
             throw result.error!!
@@ -131,46 +133,47 @@ class HealthConnectDataManager(
 
     /** Sync only the latest height (in cm) & weight (in kg). */
     suspend fun syncProfile(options: HealthConnectSyncOptions) {
-        val zone = ZoneOffset.UTC
-        val start = options.timeRangeStart.atStartOfDay().toInstant(zone)
-        val end = options.timeRangeEnd.plusDays(1).atStartOfDay().toInstant(zone)
+        if (options.metrics.isEmpty()) throw HealthConnectException.NoMetricsSelectedException()
+
+        // read all available records (Health Connect default history window)
+        val now = Instant.now()
+        val thirtyDaysAgo = now.minus(30, ChronoUnit.DAYS)
+        var heightsResp: ReadRecordsResponse<HeightRecord>? = null
+        var weightsResp: ReadRecordsResponse<WeightRecord>? = null
 
         // read all height records
-        val heightsResp: ReadRecordsResponse<HeightRecord> = client.readRecords(
-            ReadRecordsRequest(
-                recordType = HeightRecord::class,
-                timeRangeFilter = TimeRangeFilter.between(start, end)
+        if (options.metrics.contains(FitnessMetricsType.HEIGHT)) {
+            heightsResp = client.readRecords(
+                ReadRecordsRequest(
+                    recordType = HeightRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(thirtyDaysAgo, now)
+                )
             )
-        )
+        }
         // read all weight records
-        val weightsResp: ReadRecordsResponse<WeightRecord> = client.readRecords(
-            ReadRecordsRequest(
-                recordType = WeightRecord::class,
-                timeRangeFilter = TimeRangeFilter.between(start, end)
+        if (options.metrics.contains(FitnessMetricsType.WEIGHT)) {
+            weightsResp = client.readRecords(
+                ReadRecordsRequest(
+                    recordType = WeightRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(thirtyDaysAgo, now)
+                )
             )
-        )
+        }
 
         // pick most recent height in meters → convert to cm
-        val latestHeightCm: Double? = heightsResp.records
-            .maxByOrNull { it.time }
-            ?.height
-            ?.inMeters
-            ?.times(100.0)
-            ?.roundTo(2)
+        val latestHeightCm: Double? =
+            heightsResp?.records?.maxByOrNull { it.time }?.height?.inMeters?.times(100.0)
+                ?.roundTo(2)
 
         // pick most recent weight in kg
-        val latestWeightKg: Double? = weightsResp.records
-            .maxByOrNull { it.time }
-            ?.weight
-            ?.inKilograms
-            ?.roundTo(2)
+        val latestWeightKg: Double? =
+            weightsResp?.records?.maxByOrNull { it.time }?.weight?.inKilograms?.roundTo(2)
 
         if (latestHeightCm == null && latestWeightKg == null) return
 
         val result = service.uploadHealthConnectProfile(
             HealthConnectProfilePayload(
-                height = latestHeightCm,
-                weight = latestWeightKg
+                height = latestHeightCm, weight = latestWeightKg
             )
         ).execute()
 
@@ -182,17 +185,21 @@ class HealthConnectDataManager(
 
 /** Map our enum to Health Connect aggregate metrics. */
 fun FitnessMetricsType.toAggregateMetrics(): Set<AggregateMetric<*>> = when (this) {
-    FitnessMetricsType.STEPS -> setOf(StepsRecord.COUNT_TOTAL)
     FitnessMetricsType.INTRADAY_CALORIES -> setOf(
-        TotalCaloriesBurnedRecord.ENERGY_TOTAL,
-        ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL
+        TotalCaloriesBurnedRecord.ENERGY_TOTAL, ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL
     )
 
     FitnessMetricsType.INTRADAY_HEART_RATE -> setOf(
+        HeartRateRecord.BPM_MIN, HeartRateRecord.BPM_AVG, HeartRateRecord.BPM_MAX
+    )
+
+    FitnessMetricsType.RESTING_HEART_RATE -> setOf(
         RestingHeartRateRecord.BPM_MIN,
         RestingHeartRateRecord.BPM_AVG,
         RestingHeartRateRecord.BPM_MAX
     )
+
+    FitnessMetricsType.STEPS -> setOf(StepsRecord.COUNT_TOTAL)
 
     else -> throw HealthConnectException.UnsupportedMetricException(this.name)
 }

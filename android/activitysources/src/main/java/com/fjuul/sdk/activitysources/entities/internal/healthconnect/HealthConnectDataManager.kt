@@ -70,9 +70,13 @@ class HealthConnectDataManager(
         allEntries
             .groupBy { it.start.substring(0, 10) /* "YYYY-MM-DD" */ }
             .forEach { (_, entriesForDate) ->
-                service.uploadHealthConnectIntraday(
-                    HealthConnectIntradayPayload(entriesForDate)
-                )
+                val result = service
+                    .uploadHealthConnectIntraday(HealthConnectIntradayPayload(entriesForDate))
+                    .execute()
+
+                if (result.isError) {
+                    throw result.error!!
+                }
             }
     }
 
@@ -115,7 +119,13 @@ class HealthConnectDataManager(
             )
         }
 
-        service.uploadHealthConnectDailies(HealthConnectDailiesPayload(entries))
+        val result = service
+            .uploadHealthConnectDailies(HealthConnectDailiesPayload(entries))
+            .execute()
+
+        if (result.isError) {
+            throw result.error!!
+        }
     }
 
     /** Synchronize height & weight profile records. */
@@ -146,9 +156,13 @@ class HealthConnectDataManager(
             ProfileRecord(time = it.time.toString(), value = it.weight.inKilograms)
         }
 
-        service.uploadHealthConnectProfile(
-            HealthConnectProfilePayload(heights, weights)
-        )
+        val result = service
+            .uploadHealthConnectProfile(HealthConnectProfilePayload(heights, weights))
+            .execute()
+
+        if (result.isError) {
+            throw result.error!!
+        }
     }
 }
 

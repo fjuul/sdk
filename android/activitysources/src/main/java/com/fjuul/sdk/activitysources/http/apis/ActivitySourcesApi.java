@@ -49,14 +49,14 @@ public interface ActivitySourcesApi {
         @Body @NonNull GFSynchronizableProfileParams params);
 
     @POST("/sdk/activity-sources/v1/{userToken}/healthconnect")
-    ApiCall<Void> uploadHealthConnectIntraday(@Path("userToken") String userToken,
+    ApiCall<Void> uploadHealthConnectIntraday(@NonNull @Path("userToken") String userToken,
         @NonNull @Body HealthConnectIntradayPayload data);
 
     @POST("/sdk/activity-sources/v1/{userToken}/healthconnect/dailies")
-    ApiCall<Void> uploadHealthConnectDailies(@Path("userToken") String userToken,
+    ApiCall<Void> uploadHealthConnectDailies(@NonNull @Path("userToken") String userToken,
         @NonNull @Body HealthConnectDailiesPayload data);
 
     @PUT("/sdk/activity-sources/v1/{userToken}/healthconnect/profile")
-    ApiCall<Void> uploadHealthConnectProfile(@Path("userToken") String userToken,
+    ApiCall<Void> uploadHealthConnectProfile(@NonNull @Path("userToken") String userToken,
         @NonNull @Body HealthConnectProfilePayload data);
 }

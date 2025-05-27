@@ -18,12 +18,14 @@ import com.fjuul.sdk.activitysources.http.apis.ActivitySourcesApi;
 import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.http.utils.ApiCall;
 import com.fjuul.sdk.core.http.utils.ApiCallAdapterFactory;
+import com.fjuul.sdk.core.utils.Logger;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory;
 
 import androidx.annotation.NonNull;
 import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;
 
@@ -46,7 +48,10 @@ public class ActivitySourcesService {
      */
     public ActivitySourcesService(@NonNull ApiClient client) {
         this.clientBuilder = client;
-        OkHttpClient httpClient = client.buildSigningClient();
+        HttpLoggingInterceptor logging =
+            new HttpLoggingInterceptor(message -> Logger.get().d("HTTP LOGS: %s", message));
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+        OkHttpClient httpClient = client.buildSigningClient().newBuilder().addInterceptor(logging).build();;
         Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter())
             .add(new GFUploadDataJsonAdapter())
             .add(new KotlinJsonAdapterFactory())

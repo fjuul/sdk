@@ -32,7 +32,7 @@ class HealthConnectActivitySource private constructor(
     /**
      * Starts an intraday data synchronization (calories, heart rate).
      *
-     * @param options  The [HealthConnectSyncOptions] specifying time ranges & metrics.
+     * @param options  The [HealthConnectSyncOptions] specifying metrics.
      * @param callback Receives a [Result]<Unit> indicating success or failure(exception).
      */
     fun syncIntraday(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
@@ -45,7 +45,7 @@ class HealthConnectActivitySource private constructor(
     /**
      * Starts a daily data synchronization (steps, resting heart rate).
      *
-     * @param options  The [HealthConnectSyncOptions] specifying date range & metrics.
+     * @param options  The [HealthConnectSyncOptions] specifying metrics.
      * @param callback Receives a [Result]<Unit> indicating success or failure(exception).
      */
     fun syncDaily(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
@@ -58,7 +58,7 @@ class HealthConnectActivitySource private constructor(
     /**
      * Starts a profile data synchronization (height, weight).
      *
-     * @param options  The [HealthConnectSyncOptions] specifying which fields to sync.
+     * @param options  The [HealthConnectSyncOptions] specifying metrics.
      * @param callback Receives a [Result]<Unit> indicating success or failure(exception).
      */
     fun syncProfile(options: HealthConnectSyncOptions, callback: Callback<Unit>) =

@@ -16,7 +16,6 @@ import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.response.ReadRecordsResponse
 import androidx.health.connect.client.time.TimeRangeFilter
-import androidx.health.connect.client.units.Energy
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService
 import com.fjuul.sdk.activitysources.utils.roundTo
@@ -30,60 +29,78 @@ import java.time.temporal.ChronoUnit
 class HealthConnectDataManager(
     private val client: HealthConnectClient, private val service: ActivitySourcesService
 ) {
-    /** Synchronize hourly intraday aggregates, split per day. */
+    /**
+     * Synchronize intraday data aggregated into 1-minute buckets,
+     * then upload per day with separate "cumulative" and "statistical" sections.
+     */
     suspend fun syncIntraday(options: HealthConnectSyncOptions) {
         if (options.metrics.isEmpty()) throw HealthConnectException.NoMetricsSelectedException()
 
+        // map fitness metric types to Health Connect metrics
         val metricsSet = options.metrics.flatMap { it.toAggregateMetrics() }.toSet()
         val zone = ZoneOffset.UTC
-        // Define 3-day window: from 3 days ago at start of day (UTC) until now
-        val nowInstant = Instant.now()
-        val startInstant = LocalDate.now().minusDays(3).atStartOfDay().toInstant(zone)
 
-        // fetch minute-level buckets for today
-        val allBuckets: List<AggregationResultGroupedByDuration> = client.aggregateGroupByDuration(
+        // define window: from 2 days ago start-of-day until now
+        val now = Instant.now()
+        val start = LocalDate.now().minusDays(2).atStartOfDay().toInstant(zone)
+
+        // read 1-minute buckets for all selected metrics
+        val buckets: List<AggregationResultGroupedByDuration> = client.aggregateGroupByDuration(
             AggregateGroupByDurationRequest(
                 metrics = metricsSet,
-                timeRangeFilter = TimeRangeFilter.between(startInstant, nowInstant),
+                timeRangeFilter = TimeRangeFilter.between(start, now),
                 timeRangeSlicer = Duration.ofMinutes(1)
             )
         )
 
-        // map each bucket → IntradayEntry with ISO timestamp
-        val allEntries = allBuckets.map { bucket ->
-            val map = mutableMapOf<String, Double>()
-            bucket.result[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.let { e: Energy ->
-                map["caloriesTotal"] = e.inKilocalories
-            }
-            bucket.result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.let { e: Energy ->
-                map["activeCalories"] = e.inKilocalories
-            }
-            bucket.result[HeartRateRecord.BPM_MIN]?.let {
-                map["heartRateMin"] = it.toDouble()
-            }
-            bucket.result[HeartRateRecord.BPM_AVG]?.let {
-                map["heartRateAvg"] = it.toDouble()
-            }
-            bucket.result[HeartRateRecord.BPM_MAX]?.let {
-                map["heartRateMax"] = it.toDouble()
-            }
+        // group buckets by date string "YYYY-MM-DD"
+        buckets
+            .sortedBy { it.startTime }
+            .groupBy { it.startTime.atZone(zone).toLocalDate().toString() }
+            .forEach { (_, dayBuckets) ->
+                // build cumulative entries ( total and active calories)
+                val cumEntries = dayBuckets.map { bucket ->
+                    CumulativeEntry(
+                        start = bucket.startTime.toString(),
+                        totalCalories = bucket.result[TotalCaloriesBurnedRecord.ENERGY_TOTAL]
+                            ?.inKilocalories
+                            ?.roundTo(2),
+                        activeCalories = bucket.result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]
+                            ?.inKilocalories
+                            ?.roundTo(2)
+                    )
+                }.filter { it.totalCalories != null || it.activeCalories != null }
 
-            IntradayEntry(
-                start = bucket.startTime.toString(), // ISO 8601
-                dataOrigins = bucket.result.dataOrigins.map { it.packageName }, metrics = map
-            )
-        }
-
-        // group by local date and upload one batch per day
-        allEntries.groupBy { it.start.substring(0, 10) /* "YYYY-MM-DD" */ }
-            .forEach { (_, entriesForDate) ->
-                val result =
-                    service.uploadHealthConnectIntraday(HealthConnectIntradayPayload(entriesForDate))
-                        .execute()
-
-                if (result.isError) {
-                    throw result.error!!
+                // build statistical entries (e.g. heart rate)
+                val statEntries = dayBuckets.mapNotNull { bucket ->
+                    val min = bucket.result[HeartRateRecord.BPM_MIN]?.toDouble()
+                    val avg = bucket.result[HeartRateRecord.BPM_AVG]?.toDouble()
+                    val max = bucket.result[HeartRateRecord.BPM_MAX]?.toDouble()
+                    if (min != null || avg != null || max != null) {
+                        StatisticalEntry(
+                            start = bucket.startTime.toString(),
+                            min = min ?: 0.0,
+                            avg = avg ?: 0.0,
+                            max = max ?: 0.0
+                        )
+                    } else null
                 }
+                // collect distinct sources
+                val origins = dayBuckets
+                    .flatMap { it.result.dataOrigins.map { od -> od.packageName } }
+                    .distinct()
+
+                // assemble payload
+                val payload = HealthConnectIntradayPayload(
+                    cumulative = cumEntries.takeIf { it.isNotEmpty() }
+                        ?.let { IntradayDataBase(origins, it) },
+                    statistical = statEntries.takeIf { it.isNotEmpty() }
+                        ?.let { IntradayDataBase(origins, it) }
+                )
+
+                // upload and throw on error
+                val result = service.uploadHealthConnectIntraday(payload).execute()
+                if (result.isError) throw result.error!!
             }
     }
 
@@ -110,8 +127,11 @@ class HealthConnectDataManager(
             val avgHr = bucket.result[RestingHeartRateRecord.BPM_AVG]
             val maxHr = bucket.result[RestingHeartRateRecord.BPM_MAX]
             val stat = if (minHr != null || avgHr != null || maxHr != null) {
-                StatisticalAggregateValue(
-                    min = minHr?.toDouble(), avg = avgHr?.toDouble(), max = maxHr?.toDouble()
+                StatisticalEntry(
+                    start = null,
+                    min = minHr?.toDouble(),
+                    avg = avgHr?.toDouble(),
+                    max = maxHr?.toDouble()
                 )
             } else null
 

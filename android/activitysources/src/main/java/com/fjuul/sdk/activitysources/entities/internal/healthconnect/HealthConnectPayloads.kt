@@ -1,36 +1,50 @@
 package com.fjuul.sdk.activitysources.entities.internal.healthconnect
 
 /**
- * Single intraday entry with ISO timestamp, sources and metric values.
- * `start` is ISO datetime string, e.g. "2025-05-27T12:00:00Z"
+ * Single cumulative intraday entry: timestamp + total value.
  */
-data class IntradayEntry(
-    val start: String,
-    val dataOrigins: List<String>,
-    val metrics: Map<String, Double>
+data class CumulativeEntry(
+    val start: String,  // ISO datetime
+    val totalCalories: Double? = null,
+    val activeCalories: Double? = null
 )
 
-/** Payload for intraday upload. */
-data class HealthConnectIntradayPayload(
-    val entries: List<IntradayEntry>
+/**
+ * Single statistical intraday entry: timestamp + min/avg/max.
+ */
+data class StatisticalEntry(
+    val start: String? = null,  // ISO datetime, e.g. "2025-05-27T00:00:00Z"
+    val min: Double? = null,
+    val avg: Double? = null,
+    val max: Double? = null
+)
+
+/**
+ * Generic container for intraday data of type T (either CumulativeEntry or StatisticalEntry).
+ */
+data class IntradayDataBase<TEntry>(
+    val dataOrigins: List<String>,
+    val entries: List<TEntry>
 )
 
 /**
  * Single daily summary record.
  * `date` is ISO date string, e.g. "2025-05-27"
+ * restingHeartRate is a StatisticalEntry with null `start`.
  */
 data class DailyEntry(
     val date: String,
     val dataOrigins: List<String>,
     val steps: Long? = null,
-    val restingHeartRate: StatisticalAggregateValue? = null
+    val restingHeartRate: StatisticalEntry? = null
 )
 
-/** Statistical aggregate for heart-rate. */
-data class StatisticalAggregateValue(
-    val min: Double?,
-    val avg: Double?,
-    val max: Double?
+/**
+ * Payload for intraday upload, containing optional cumulative and/or statistical data.
+ */
+data class HealthConnectIntradayPayload(
+    val cumulative: IntradayDataBase<CumulativeEntry>?,
+    val statistical: IntradayDataBase<StatisticalEntry>?
 )
 
 /** Payload for daily upload. */

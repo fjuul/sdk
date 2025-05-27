@@ -24,9 +24,9 @@ private const val MIN_SUPPORTED_SDK = Build.VERSION_CODES.O_MR1
  * Manages Health Connect SDK availability and user permissions based on
  * the configured set of fitness metrics.
  *
- * @param context             Application context used for HealthConnectClient.
+ * @param context Application context used for HealthConnectClient.
  * @param healthConnectClient Pre-initialized HealthConnectClient for all data and permission operations.
- * @param allAvailableMetrics          The complete set of metrics that this SDK may request permissions for.
+ * @param allAvailableMetrics The complete set of metrics that this SDK may request permissions for.
  */
 class HealthConnectPermissionManager(
     private val context: Context,

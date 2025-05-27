@@ -6,6 +6,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 /**
  * Synchronous dispatch: block returns a Result<T> directly,
@@ -52,4 +54,8 @@ inline fun <T : Any> runAsyncAndCallback(
             callback.onResult(result)
         }
     }
+}
+
+fun Double.roundTo(decimals: Int): Double {
+    return BigDecimal(this).setScale(decimals, RoundingMode.HALF_UP).toDouble()
 }

@@ -5,8 +5,8 @@ import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
-import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeightRecord
+import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.WeightRecord
@@ -18,6 +18,7 @@ import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.health.connect.client.units.Energy
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService
+import com.fjuul.sdk.activitysources.utils.roundTo
 import java.time.Duration
 import java.time.Period
 import java.time.ZoneOffset
@@ -55,9 +56,9 @@ class HealthConnectDataManager(
             bucket.result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.let { e: Energy ->
                 map["activeCalories"] = e.inKilocalories
             }
-            bucket.result[HeartRateRecord.BPM_MIN]?.let { map["heartRateMin"] = it.toDouble() }
-            bucket.result[HeartRateRecord.BPM_AVG]?.let { map["heartRateAvg"] = it.toDouble() }
-            bucket.result[HeartRateRecord.BPM_MAX]?.let { map["heartRateMax"] = it.toDouble() }
+            bucket.result[RestingHeartRateRecord.BPM_MIN]?.let { map["heartRateMin"] = it.toDouble() }
+            bucket.result[RestingHeartRateRecord.BPM_AVG]?.let { map["heartRateAvg"] = it.toDouble() }
+            bucket.result[RestingHeartRateRecord.BPM_MAX]?.let { map["heartRateMax"] = it.toDouble() }
 
             IntradayEntry(
                 start = bucket.startTime.toString(), // ISO 8601
@@ -100,9 +101,9 @@ class HealthConnectDataManager(
             )
 
         val entries = raw.map { bucket ->
-            val minHr = bucket.result[HeartRateRecord.BPM_MIN]
-            val avgHr = bucket.result[HeartRateRecord.BPM_AVG]
-            val maxHr = bucket.result[HeartRateRecord.BPM_MAX]
+            val minHr = bucket.result[RestingHeartRateRecord.BPM_MIN]
+            val avgHr = bucket.result[RestingHeartRateRecord.BPM_AVG]
+            val maxHr = bucket.result[RestingHeartRateRecord.BPM_MAX]
             val stat = if (minHr != null || avgHr != null || maxHr != null) {
                 StatisticalAggregateValue(
                     min = minHr?.toDouble(),
@@ -155,21 +156,27 @@ class HealthConnectDataManager(
             ?.height
             ?.inMeters
             ?.times(100.0)
+            ?.roundTo(2)
 
         // pick most recent weight in kg
         val latestWeightKg: Double? = weightsResp.records
             .maxByOrNull { it.time }
             ?.weight
             ?.inKilograms
+            ?.roundTo(2)
 
         if (latestHeightCm == null && latestWeightKg == null) return
 
-        service.uploadHealthConnectProfile(
+        val result = service.uploadHealthConnectProfile(
             HealthConnectProfilePayload(
                 height = latestHeightCm,
                 weight = latestWeightKg
             )
         ).execute()
+
+        if (result.isError) {
+            throw result.error!!
+        }
     }
 }
 
@@ -182,9 +189,9 @@ fun FitnessMetricsType.toAggregateMetrics(): Set<AggregateMetric<*>> = when (thi
     )
 
     FitnessMetricsType.INTRADAY_HEART_RATE -> setOf(
-        HeartRateRecord.BPM_MIN,
-        HeartRateRecord.BPM_AVG,
-        HeartRateRecord.BPM_MAX
+        RestingHeartRateRecord.BPM_MIN,
+        RestingHeartRateRecord.BPM_AVG,
+        RestingHeartRateRecord.BPM_MAX
     )
 
     else -> throw HealthConnectException.UnsupportedMetricException(this.name)

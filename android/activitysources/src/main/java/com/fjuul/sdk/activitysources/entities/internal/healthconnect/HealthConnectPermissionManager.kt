@@ -8,8 +8,8 @@ import androidx.health.connect.client.HealthConnectClient.Companion.SDK_AVAILABL
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
-import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeightRecord
+import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.WeightRecord
@@ -107,7 +107,7 @@ class HealthConnectPermissionManager(
                 add(HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class))
             }
             if (FitnessMetricsType.INTRADAY_HEART_RATE in metrics) {
-                add(HealthPermission.getReadPermission(HeartRateRecord::class))
+                add(HealthPermission.getReadPermission(RestingHeartRateRecord::class))
             }
             if (FitnessMetricsType.HEIGHT in metrics) {
                 add(HealthPermission.getReadPermission(HeightRecord::class))

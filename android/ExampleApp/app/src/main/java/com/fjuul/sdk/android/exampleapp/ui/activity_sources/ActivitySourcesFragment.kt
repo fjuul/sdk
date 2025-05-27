@@ -214,7 +214,6 @@ class ActivitySourcesFragment : Fragment() {
                     "Health Connect: all permissions granted",
                     Toast.LENGTH_SHORT
                 ).show()
-                model.fetchCurrentConnections()
             } else {
                 // Some permissions were denied
                 Toast.makeText(

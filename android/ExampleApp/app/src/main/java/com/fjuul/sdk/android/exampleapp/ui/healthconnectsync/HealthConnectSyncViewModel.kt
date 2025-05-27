@@ -9,7 +9,6 @@ import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectSyncOptions
 import com.fjuul.sdk.core.entities.Callback
 import java.time.LocalDate
-import java.util.Collections.emptySet
 
 class HealthConnectSyncViewModel : ViewModel() {
     private val _startDate = MutableLiveData(LocalDate.now())
@@ -108,7 +107,7 @@ class HealthConnectSyncViewModel : ViewModel() {
 
         val metricsToTrack = mutableSetOf<FitnessMetricsType>()
         if (steps) metricsToTrack.add(FitnessMetricsType.STEPS)
-        if (restingHeartRate) metricsToTrack.add(FitnessMetricsType.HEIGHT)
+        if (restingHeartRate) metricsToTrack.add(FitnessMetricsType.INTRADAY_HEART_RATE)
 
         // 3) Construct sync options
         val options = HealthConnectSyncOptions(

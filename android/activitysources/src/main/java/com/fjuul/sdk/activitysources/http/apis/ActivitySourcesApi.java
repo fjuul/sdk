@@ -5,9 +5,9 @@ import java.util.Map;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.activitysources.entities.internal.GFSynchronizableProfileParams;
 import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectDailiesData;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectIntradayData;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectProfileData;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectDailiesPayload;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectIntradayPayload;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectProfilePayload;
 import com.fjuul.sdk.core.http.utils.ApiCall;
 
 import androidx.annotation.NonNull;
@@ -49,17 +49,14 @@ public interface ActivitySourcesApi {
         @Body @NonNull GFSynchronizableProfileParams params);
 
     @POST("/sdk/activity-sources/v1/{userToken}/healthconnect")
-    @NonNull
-    ApiCall<Void> uploadHealthConnectIntraday(@Path("userToken") @NonNull String userToken,
-        @Body @NonNull HealthConnectIntradayData data);
+    ApiCall<Void> uploadHealthConnectIntraday(@Path("userToken") String userToken,
+        @Body HealthConnectIntradayPayload data);
 
     @POST("/sdk/activity-sources/v1/{userToken}/healthconnect/dailies")
-    @NonNull
-    ApiCall<Void> uploadHealthConnectDailies(@Path("userToken") @NonNull String userToken,
-        @Body @NonNull HealthConnectDailiesData data);
+    ApiCall<Void> uploadHealthConnectDailies(@Path("userToken") String userToken,
+        @Body HealthConnectDailiesPayload data);
 
     @PUT("/sdk/activity-sources/v1/{userToken}/healthconnect/profile")
-    @NonNull
-    ApiCall<Void> uploadHealthConnectProfile(@Path("userToken") @NonNull String userToken,
-        @Body @NonNull HealthConnectProfileData data);
+    ApiCall<Void> uploadHealthConnectProfile(@Path("userToken") String userToken,
+        @Body HealthConnectProfilePayload data);
 }

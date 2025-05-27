@@ -1,36 +1,54 @@
 package com.fjuul.sdk.activitysources.entities.internal.healthconnect
 
-
-import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
-import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
-import androidx.health.connect.client.records.HeightRecord
-import androidx.health.connect.client.records.WeightRecord
-
 /**
- * Payload for intraday synchronization.
- *
- * @property intradayStats List of hourly aggregated data buckets returned by Health Connect.
+ * Single intraday entry with ISO timestamp, sources and metric values.
+ * `start` is ISO datetime string, e.g. "2025-05-27T12:00:00Z"
  */
-data class HealthConnectIntradayData(
-    val intradayStats: List<AggregationResultGroupedByDuration>
+data class IntradayEntry(
+    val start: String,
+    val dataOrigins: List<String>,
+    val metrics: Map<String, Double>
+)
+
+/** Payload for intraday upload. */
+data class HealthConnectIntradayPayload(
+    val entries: List<IntradayEntry>
 )
 
 /**
- * Payload for daily synchronization.
- *
- * @property dailyStats List of daily aggregated data buckets returned by Health Connect.
+ * Single daily summary record.
+ * `date` is ISO date string, e.g. "2025-05-27"
  */
-data class HealthConnectDailiesData(
-    val dailyStats: List<AggregationResultGroupedByPeriod>
+data class DailyEntry(
+    val date: String,
+    val dataOrigins: List<String>,
+    val steps: Long? = null,
+    val restingHeartRate: StatisticalAggregateValue? = null
+)
+
+/** Statistical aggregate for heart-rate. */
+data class StatisticalAggregateValue(
+    val min: Double?,
+    val avg: Double?,
+    val max: Double?
+)
+
+/** Payload for daily upload. */
+data class HealthConnectDailiesPayload(
+    val entries: List<DailyEntry>
 )
 
 /**
- * Payload for profile synchronization.
- *
- * @property heights List of height records returned by Health Connect.
- * @property weights List of weight records returned by Health Connect.
+ * Single profile measurement (timestamp + value).
+ * `time` is ISO datetime string.
  */
-data class HealthConnectProfileData(
-    val heights: List<HeightRecord>,
-    val weights: List<WeightRecord>
+data class ProfileRecord(
+    val time: String,
+    val value: Double
+)
+
+/** Payload for profile upload. */
+data class HealthConnectProfilePayload(
+    val heights: List<ProfileRecord>,
+    val weights: List<ProfileRecord>
 )

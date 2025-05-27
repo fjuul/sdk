@@ -9,9 +9,9 @@ import com.fjuul.sdk.activitysources.entities.ConnectionResult;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.activitysources.entities.internal.GFSynchronizableProfileParams;
 import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectDailiesData;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectIntradayData;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectProfileData;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectDailiesPayload;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectIntradayPayload;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectProfilePayload;
 import com.fjuul.sdk.activitysources.exceptions.ActivitySourcesApiExceptions;
 import com.fjuul.sdk.activitysources.http.ActivitySourcesApiResponseTransformer;
 import com.fjuul.sdk.activitysources.http.apis.ActivitySourcesApi;
@@ -136,33 +136,33 @@ public class ActivitySourcesService {
     /**
      * Uploads intraday time-series data from Health Connect, such as hourly aggregated metrics.
      *
-     * @param data the intraday payload containing hourly data buckets
+     * @param payload the intraday payload containing hourly data buckets
      * @return an ApiCall for performing the intraday data upload
      */
     @NonNull
-    public ApiCall<Void> uploadHealthConnectIntraday(@NonNull HealthConnectIntradayData data) {
-        return apiClient.uploadHealthConnectIntraday(getUserToken(), data);
+    public ApiCall<Void> uploadHealthConnectIntraday(@NonNull HealthConnectIntradayPayload payload) {
+        return apiClient.uploadHealthConnectIntraday(getUserToken(), payload);
     }
 
     /**
      * Uploads daily summary data from Health Connect, such as steps and resting heart rate.
      *
-     * @param data the daily payload containing aggregated data buckets
+     * @param payload the daily payload containing aggregated data buckets
      * @return an ApiCall for performing the daily data upload
      */
     @NonNull
-    public ApiCall<Void> uploadHealthConnectDailies(@NonNull HealthConnectDailiesData data) {
-        return apiClient.uploadHealthConnectDailies(getUserToken(), data);
+    public ApiCall<Void> uploadHealthConnectDailies(@NonNull HealthConnectDailiesPayload payload) {
+        return apiClient.uploadHealthConnectDailies(getUserToken(), payload);
     }
 
     /**
      * Uploads profile data from Health Connect, such as height and weight.
      *
-     * @param data the profile payload containing height and weight records
+     * @param payload the profile payload containing height and weight records
      * @return an ApiCall for performing the profile data upload
      */
     @NonNull
-    public ApiCall<Void> uploadHealthConnectProfile(@NonNull HealthConnectProfileData data) {
-        return apiClient.uploadHealthConnectProfile(getUserToken(), data);
+    public ApiCall<Void> uploadHealthConnectProfile(@NonNull HealthConnectProfilePayload payload) {
+        return apiClient.uploadHealthConnectProfile(getUserToken(), payload);
     }
 }

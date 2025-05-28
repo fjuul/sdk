@@ -9,6 +9,19 @@ public enum FitnessMetricsType {
     INTRADAY_CALORIES,
     INTRADAY_HEART_RATE,
     INTRADAY_STEPS,
+    /**
+     * Represents the total number of steps taken during a specific time period. This metric is specifically used for
+     * Health Connect API integration to track step count data. Unlike INTRADAY_STEPS which is used for intraday step
+     * tracking, this metric is optimized for Health Connect's data structure and provides aggregated step count
+     * information.
+     */
+    STEPS,
+    /**
+     * Represents the user's resting heart rate aggregated daily from Health Connect API. This metric provides a
+     * statistical summary (min, avg, max BPM) for each day and is used to sync resting heart rate as a daily data
+     * point.
+     */
+    RESTING_HEART_RATE,
     WORKOUTS,
 
     HEIGHT,

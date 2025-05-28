@@ -1,6 +1,5 @@
 package com.fjuul.sdk.android.exampleapp.ui.healthconnectsync
 
-import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,7 +10,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.fjuul.sdk.android.exampleapp.R
 import com.fjuul.sdk.android.exampleapp.databinding.HealthConnectSyncFragmentBinding
-import java.time.LocalDate
 
 class HealthConnectSyncFragment : Fragment() {
     private lateinit var viewModel: HealthConnectSyncViewModel
@@ -40,12 +38,6 @@ class HealthConnectSyncFragment : Fragment() {
         binding.dailySectionText.sectionText.text = "Daily"
         binding.profileSectionText.sectionText.text = "Profile"
 
-        viewModel.startDate.observe(viewLifecycleOwner) { date ->
-            binding.startDateValueText.text = date.toString()
-        }
-        viewModel.endDate.observe(viewLifecycleOwner) {
-            binding.endDateValueText.text = it.toString()
-        }
         viewModel.syncingIntradayData.observe(viewLifecycleOwner) { syncing ->
             binding.intradaySyncProgressBar.isVisible = syncing
         }
@@ -63,32 +55,6 @@ class HealthConnectSyncFragment : Fragment() {
                     .show()
                 viewModel.resetErrorMessage()
             }
-        }
-
-        binding.startDateInputLayout.setOnClickListener {
-            val date = viewModel.startDate.value ?: LocalDate.now()
-            DatePickerDialog(
-                requireContext(),
-                { _, year, month, dayOfMonth ->
-                    viewModel.setupDateRange(startDate = LocalDate.of(year, month + 1, dayOfMonth))
-                },
-                date.year,
-                date.monthValue - 1,
-                date.dayOfMonth
-            ).show()
-        }
-
-        binding.endDateInputLayout.setOnClickListener {
-            val date = viewModel.endDate.value ?: LocalDate.now()
-            DatePickerDialog(
-                requireContext(),
-                { _, year, month, dayOfMonth ->
-                    viewModel.setupDateRange(endDate = LocalDate.of(year, month + 1, dayOfMonth))
-                },
-                date.year,
-                date.monthValue - 1,
-                date.dayOfMonth
-            ).show()
         }
 
         binding.runIntradaySyncButton.setOnClickListener {

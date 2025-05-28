@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.library'
+    id 'org.jetbrains.kotlin.android' version '1.9.0'
 }
 apply from: "${rootDir}/gradle/publish.gradle"
 
@@ -29,6 +30,9 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
     testOptions {
         unitTests {
             includeAndroidResources = true
@@ -40,15 +44,27 @@ android {
     }
 }
 
+tasks.withType(Javadoc) {
+    excludes = ['**/*.kt']
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
 dependencies {
     def workVersion = "2.10.0"
 
     implementation "androidx.annotation:annotation:$rootProject.ext.androidXAnnotationVersion"
     implementation "androidx.core:core:$rootProject.ext.androidXCoreVersion"
 
+    // Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"
+
+    // HealthConnect dependencies
+    implementation "androidx.health.connect:connect-client:1.1.0-alpha12"
     implementation 'com.google.android.gms:play-services-auth:21.3.0'
     implementation 'com.google.android.gms:play-services-fitness:21.1.0'
     implementation "androidx.work:work-runtime:$workVersion"
+    implementation "com.google.guava:guava:32.1.3-android"
+    implementation "androidx.concurrent:concurrent-futures:1.1.0"
 
     // TODO: specify an exact version for the Core package
     api project(':core')

@@ -50,15 +50,26 @@ class ActivitySourcesViewModel : ViewModel() {
             _errorMessage.value = "No tracker connections"
             return
         }
-        // NOTE: currently only one connection can be active
-        val connection = connections.first()
         val manager = ActivitySourcesManager.getInstance()
-        manager.disconnect(connection) lit@{ result ->
-            if (result.isError) {
-                _errorMessage.postValue(result.error?.message)
-                return@lit
+        var remaining = connections.size
+        var anyError = false
+        val errorMessages = mutableListOf<String>()
+        connections.forEach { connection ->
+            manager.disconnect(connection) lit@{ result ->
+                if (result.isError) {
+                    anyError = true
+                    result.error?.message?.let { errorMessages.add(it) }
+                }
+                remaining--
+                if (remaining == 0) {
+                    _currentConnections.postValue(manager.current)
+                    if (anyError) {
+                        _errorMessage.postValue(errorMessages.joinToString("\n"))
+                    } else {
+                        _errorMessage.postValue(null)
+                    }
+                }
             }
-            _currentConnections.postValue(manager.current)
         }
     }
 

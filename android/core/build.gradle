@@ -62,10 +62,13 @@ dependencies {
             prefer okHttpVersion
         }
     }
+    // used for logs from okhttp
+    api "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
 
     api "com.squareup.retrofit2:retrofit:$retrofitVersion"
     api "com.squareup.retrofit2:converter-moshi:$retrofitVersion"
     api 'com.squareup.moshi:moshi:1.15.1'
+    api 'com.squareup.moshi:moshi-kotlin:1.15.0'
     api 'com.squareup.moshi:moshi-adapters:1.15.1'
     api 'com.jakewharton.timber:timber:5.0.1'
 

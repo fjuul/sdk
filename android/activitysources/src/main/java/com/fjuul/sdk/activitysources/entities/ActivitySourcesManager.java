@@ -131,6 +131,7 @@ public final class ActivitySourcesManager {
             client.getApiKey(),
             client.getBaseUrl());
         GoogleFitActivitySource.initialize(client, config);
+        HealthConnectActivitySource.initialize(client, config);
 
         final BackgroundWorkManager backgroundWorkManager = new BackgroundWorkManager(config, scheduler);
         final ActivitySourceResolver activitySourceResolver = new ActivitySourceResolver();
@@ -373,6 +374,7 @@ public final class ActivitySourcesManager {
                 .findFirst())
             .orElse(null);
         // TODO: move out the line with configuring the profile sync work when there will be other local activity
+
         if (gfTrackerConnection != null) {
             backgroundWorkManager.configureProfileSyncWork();
             backgroundWorkManager.configureGFSyncWorks();

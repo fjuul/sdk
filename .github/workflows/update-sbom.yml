@@ -17,7 +17,7 @@ jobs:
     name: update-sbom
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Note: setup-java is required to inject a valid settings.xml consuming the GitHub credentials
       - name: Set up JDK
         uses: actions/setup-java@v4

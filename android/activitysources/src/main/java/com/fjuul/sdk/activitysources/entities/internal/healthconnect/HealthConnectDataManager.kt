@@ -44,6 +44,8 @@ class HealthConnectDataManager(
         private const val HEART_RATE_CHANGES_TOKEN = "HEART_RATE_CHANGES_TOKEN"
         private const val TOTAL_CALORIES_CHANGES_TOKEN = "TOTAL_CALORIES_CHANGES_TOKEN"
         private const val ACTIVE_CALORIES_CHANGES_TOKEN = "ACTIVE_CALORIES_CHANGES_TOKEN"
+        private const val RESTING_HEART_RATE_TOKEN = "RESTING_HEART_RATE_TOKEN"
+        private const val STEPS_TOKEN = "STEPS_TOKEN"
     }
 
     /**
@@ -56,28 +58,23 @@ class HealthConnectDataManager(
         if (options.metrics.isEmpty()) throw HealthConnectException.NoMetricsSelectedException()
 
         var heartRateTimeChanges = listOf<Instant>()
+        var heartRateChangesToken = storage.get(HEART_RATE_CHANGES_TOKEN)
         if (options.metrics.contains(FitnessMetricsType.INTRADAY_HEART_RATE)) {
-            var heartRateChangesToken = storage.get(HEART_RATE_CHANGES_TOKEN)
-
             if (heartRateChangesToken.isNullOrEmpty()) {
                 heartRateChangesToken = client.getChangesToken(
                     ChangesTokenRequest(recordTypes = setOf(HeartRateRecord::class))
                 )
             }
 
-            // return if heart rate changes token is empty
-            if (heartRateChangesToken.isEmpty()) return
-
-            heartRateTimeChanges = getTimeChangesList(heartRateChangesToken) {
-                storage.set(HEART_RATE_CHANGES_TOKEN, heartRateChangesToken)
+            heartRateTimeChanges = getTimeChangesList(heartRateChangesToken) { changedToken ->
+                heartRateChangesToken = changedToken
             }
         }
 
         var caloriesTimeChanges = mutableListOf<Instant>()
+        var activeCaloriesChangesToken = storage.get(ACTIVE_CALORIES_CHANGES_TOKEN)
+        var totalCaloriesChangesToken = storage.get(TOTAL_CALORIES_CHANGES_TOKEN)
         if (options.metrics.contains(FitnessMetricsType.INTRADAY_CALORIES)) {
-            var activeCaloriesChangesToken = storage.get(ACTIVE_CALORIES_CHANGES_TOKEN)
-            var totalCaloriesChangesToken = storage.get(TOTAL_CALORIES_CHANGES_TOKEN)
-
             if (activeCaloriesChangesToken.isNullOrEmpty()) {
                 activeCaloriesChangesToken = client.getChangesToken(
                     ChangesTokenRequest(recordTypes = setOf(ActiveCaloriesBurnedRecord::class))
@@ -91,14 +88,15 @@ class HealthConnectDataManager(
             }
 
             if (activeCaloriesChangesToken.isNotEmpty()) {
-                caloriesTimeChanges = getTimeChangesList(activeCaloriesChangesToken) {
-                    storage.set(ACTIVE_CALORIES_CHANGES_TOKEN, activeCaloriesChangesToken)
-                }
+                caloriesTimeChanges =
+                    getTimeChangesList(activeCaloriesChangesToken) { changedToken ->
+                        activeCaloriesChangesToken = changedToken
+                    }
             }
 
             if (totalCaloriesChangesToken.isNotEmpty()) {
-                caloriesTimeChanges.addAll(getTimeChangesList(totalCaloriesChangesToken) {
-                    storage.set(TOTAL_CALORIES_CHANGES_TOKEN, totalCaloriesChangesToken)
+                caloriesTimeChanges.addAll(getTimeChangesList(totalCaloriesChangesToken) { changedToken ->
+                    totalCaloriesChangesToken = changedToken
                 })
             }
         }
@@ -107,14 +105,19 @@ class HealthConnectDataManager(
             val heartRateMetric =
                 setOf(FitnessMetricsType.INTRADAY_HEART_RATE).flatMap { it.toAggregateMetrics() }
                     .toSet()
-            syncChangedBuckets(heartRateMetric, heartRateTimeChanges)
+            syncIntradayChangedBuckets(heartRateMetric, heartRateTimeChanges) {
+                storage.set(HEART_RATE_CHANGES_TOKEN, heartRateChangesToken)
+            }
         }
 
         if (caloriesTimeChanges.isNotEmpty()) {
             val caloriesRateMetric =
                 setOf(FitnessMetricsType.INTRADAY_CALORIES).flatMap { it.toAggregateMetrics() }
                     .toSet()
-            syncChangedBuckets(caloriesRateMetric, caloriesTimeChanges)
+            syncIntradayChangedBuckets(caloriesRateMetric, caloriesTimeChanges) {
+                storage.set(ACTIVE_CALORIES_CHANGES_TOKEN, activeCaloriesChangesToken)
+                storage.set(TOTAL_CALORIES_CHANGES_TOKEN, totalCaloriesChangesToken)
+            }
         }
     }
 
@@ -141,92 +144,111 @@ class HealthConnectDataManager(
         return timeChangesList
     }
 
-    private suspend fun syncChangedBuckets(
+    private suspend fun syncIntradayChangedBuckets(
         metrics: Set<AggregateMetric<*>>,
-        timeChanges: List<Instant>
+        timeChanges: List<Instant>,
+        onSuccess: () -> Unit,
     ) {
-        val start = timeChanges.sorted()[0]
+        var start = timeChanges.sorted()[0]
         val zone = ZoneOffset.UTC
         val now = Instant.now()
-        // Read 1-minute buckets
-        val buckets: List<AggregationResultGroupedByDuration> = client.aggregateGroupByDuration(
-            AggregateGroupByDurationRequest(
-                metrics = metrics,
-                timeRangeFilter = TimeRangeFilter.between(start, now),
-                timeRangeSlicer = Duration.ofMinutes(1)
-            )
-        )
-        if (buckets.isEmpty()) return
 
-        val changedBuckets = mutableListOf<AggregationResultGroupedByDuration>()
-        timeChanges
-            .sorted()
-            .forEach { time ->
-                buckets.firstOrNull { (it.startTime > time && it.endTime < time) || it.startTime == time || it.endTime == time }
-                    ?.let { changedBucket ->
-                        changedBuckets.add(changedBucket)
-                    }
-            }
+        val days = mutableListOf<Instant>()
+        while (start < now) {
+            days.add(start)
+            start = start.plus(Duration.ofDays(1))
+        }
+        days.add(now)
 
-
-        // Group by date and upload
-        changedBuckets
-            .toSet()
-            .sortedBy { it.startTime }
-            .groupBy { it.startTime.atZone(zone).toLocalDate().toString() }
-            .forEach { (_, dayBuckets) ->
-                // Collect all distinct data origins for this day
-                val origins = dayBuckets
-                    .flatMap { it.result.dataOrigins.map { od -> od.packageName } }
-                    .distinct()
-
-                // Build cumulative calorie entries
-                val totalEntries = dayBuckets.mapNotNull { b ->
-                    b.result[TotalCaloriesBurnedRecord.ENERGY_TOTAL]
-                        ?.inKilocalories
-                        ?.roundTo(2)
-                        ?.let { ValueEntry(b.startTime.toString(), it) }
-                }
-                val activeEntries = dayBuckets.mapNotNull { bucket ->
-                    bucket.result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]
-                        ?.inKilocalories
-                        ?.roundTo(2)
-                        ?.let { ValueEntry(bucket.startTime.toString(), it) }
-                }
-
-                // Build statistical heart-rate entries
-                val hrEntries = dayBuckets.mapNotNull { b ->
-                    val min = b.result[HeartRateRecord.BPM_MIN]?.toDouble()
-                    val avg = b.result[HeartRateRecord.BPM_AVG]?.toDouble()
-                    val max = b.result[HeartRateRecord.BPM_MAX]?.toDouble()
-                    if (min != null || avg != null || max != null) {
-                        HeartRateEntry(
-                            start = b.startTime.toString(),
-                            min = min ?: 0.0,
-                            avg = avg ?: 0.0,
-                            max = max ?: 0.0
-                        )
-                    } else null
-                }
-
-                // Skip if nothing to send
-                if (totalEntries.isEmpty() && activeEntries.isEmpty() && hrEntries.isEmpty()) return@forEach
-
-                // Assemble payload
-                val payload = HealthConnectIntradayPayload(
-                    totalCalories = totalEntries.takeIf { it.isNotEmpty() }
-                        ?.let { MetricData(origins, it) },
-                    activeCalories = activeEntries.takeIf { it.isNotEmpty() }
-                        ?.let { MetricData(origins, it) },
-                    heartrate = hrEntries.takeIf { it.isNotEmpty() }
-                        ?.let { MetricData(origins, it) }
+        for (i in 1..<days.size - 2) {
+            // Read 1-minute buckets by every day
+            val buckets: List<AggregationResultGroupedByDuration> = client.aggregateGroupByDuration(
+                AggregateGroupByDurationRequest(
+                    metrics = metrics,
+                    timeRangeFilter = TimeRangeFilter.between(days[i], days[i + 1]),
+                    timeRangeSlicer = Duration.ofMinutes(1)
                 )
+            )
+            if (buckets.isEmpty()) return
 
-                // Upload and check for errors
-                service.uploadHealthConnectIntraday(payload)
-                    .execute()
-                    .let { if (it.isError) throw it.error!! }
-            }
+            val changedBuckets = mutableListOf<AggregationResultGroupedByDuration>()
+            timeChanges
+                .sorted()
+                .forEach { time ->
+                    buckets.firstOrNull { (it.startTime > time && it.endTime < time) || it.startTime == time || it.endTime == time }
+                        ?.let { changedBucket ->
+                            changedBuckets.add(changedBucket)
+                        }
+                }
+
+
+            // Group by date and upload
+            changedBuckets
+                .toSet()
+                .sortedBy { it.startTime }
+                .groupBy { it.startTime.atZone(zone).toLocalDate().toString() }
+                .forEach { (_, dayBuckets) ->
+                    // Collect all distinct data origins for this day
+                    val origins = dayBuckets
+                        .flatMap { it.result.dataOrigins.map { od -> od.packageName } }
+                        .distinct()
+
+                    // Build cumulative calorie entries
+                    val totalEntries = dayBuckets.mapNotNull { b ->
+                        b.result[TotalCaloriesBurnedRecord.ENERGY_TOTAL]
+                            ?.inKilocalories
+                            ?.roundTo(2)
+                            ?.let { ValueEntry(b.startTime.toString(), it) }
+                    }
+                    val activeEntries = dayBuckets.mapNotNull { bucket ->
+                        bucket.result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]
+                            ?.inKilocalories
+                            ?.roundTo(2)
+                            ?.let { ValueEntry(bucket.startTime.toString(), it) }
+                    }
+
+                    // Build statistical heart-rate entries
+                    val hrEntries = dayBuckets.mapNotNull { b ->
+                        val min = b.result[HeartRateRecord.BPM_MIN]?.toDouble()
+                        val avg = b.result[HeartRateRecord.BPM_AVG]?.toDouble()
+                        val max = b.result[HeartRateRecord.BPM_MAX]?.toDouble()
+                        if (min != null || avg != null || max != null) {
+                            HeartRateEntry(
+                                start = b.startTime.toString(),
+                                min = min ?: 0.0,
+                                avg = avg ?: 0.0,
+                                max = max ?: 0.0
+                            )
+                        } else null
+                    }
+
+                    // Skip if nothing to send
+                    if (totalEntries.isEmpty() && activeEntries.isEmpty() && hrEntries.isEmpty()) return@forEach
+
+                    // Assemble payload
+                    val payload = HealthConnectIntradayPayload(
+                        totalCalories = totalEntries.takeIf { it.isNotEmpty() }
+                            ?.let { MetricData(origins, it) },
+                        activeCalories = activeEntries.takeIf { it.isNotEmpty() }
+                            ?.let { MetricData(origins, it) },
+                        heartrate = hrEntries.takeIf { it.isNotEmpty() }
+                            ?.let { MetricData(origins, it) }
+                    )
+
+                    // Upload and check for errors
+                    service.uploadHealthConnectIntraday(payload)
+                        .execute()
+                        .let {
+                            if (it.isError) {
+                                it.error?.let { error ->
+                                    throw error
+                                }
+                            } else {
+                                onSuccess()
+                            }
+                        }
+                }
+        }
     }
 
     /**
@@ -239,8 +261,59 @@ class HealthConnectDataManager(
     suspend fun syncDaily(options: HealthConnectSyncOptions) {
         if (options.metrics.isEmpty()) throw HealthConnectException.NoMetricsSelectedException()
 
-        val metrics = options.metrics.flatMap { it.toAggregateMetrics() }.toSet()
+        var restingHeartRateTimeChanges = listOf<Instant>()
+        var restingHeartRateChangesToken = storage.get(RESTING_HEART_RATE_TOKEN)
+        if (options.metrics.contains(FitnessMetricsType.RESTING_HEART_RATE)) {
+            if (restingHeartRateChangesToken.isNullOrEmpty()) {
+                restingHeartRateChangesToken = client.getChangesToken(
+                    ChangesTokenRequest(recordTypes = setOf(RestingHeartRateRecord::class))
+                )
+            }
 
+            restingHeartRateTimeChanges =
+                getTimeChangesList(restingHeartRateChangesToken) { changedToken ->
+                    restingHeartRateChangesToken = changedToken
+                }
+        }
+
+        var stepsCountTimeChanges = listOf<Instant>()
+        var stepsCountChangesToken = storage.get(STEPS_TOKEN)
+        if (options.metrics.contains(FitnessMetricsType.STEPS)) {
+            if (stepsCountChangesToken.isNullOrEmpty()) {
+                stepsCountChangesToken = client.getChangesToken(
+                    ChangesTokenRequest(recordTypes = setOf(StepsRecord::class))
+                )
+            }
+
+            stepsCountTimeChanges = getTimeChangesList(stepsCountChangesToken) { changedToken ->
+                stepsCountChangesToken = changedToken
+            }
+        }
+
+        if (restingHeartRateTimeChanges.isNotEmpty()) {
+            val heartRateMetric =
+                setOf(FitnessMetricsType.RESTING_HEART_RATE).flatMap { it.toAggregateMetrics() }
+                    .toSet()
+            syncDailyChangedBuckets(heartRateMetric, restingHeartRateTimeChanges) {
+                storage.set(HEART_RATE_CHANGES_TOKEN, restingHeartRateChangesToken)
+            }
+        }
+
+        if (stepsCountTimeChanges.isNotEmpty()) {
+            val heartRateMetric =
+                setOf(FitnessMetricsType.STEPS).flatMap { it.toAggregateMetrics() }
+                    .toSet()
+            syncIntradayChangedBuckets(heartRateMetric, stepsCountTimeChanges) {
+                storage.set(HEART_RATE_CHANGES_TOKEN, stepsCountChangesToken)
+            }
+        }
+    }
+
+    private suspend fun syncDailyChangedBuckets(
+        metrics: Set<AggregateMetric<*>>,
+        timeChanges: List<Instant>,
+        onSuccess: () -> Unit,
+    ) {
         // Define the time window for today
         val todayStart = LocalDate.now().atStartOfDay()
         val tomorrowStart = todayStart.plusDays(1)
@@ -254,8 +327,26 @@ class HealthConnectDataManager(
             )
         )
 
+        if (buckets.isEmpty()) return
+
+        val changedBuckets = mutableListOf<AggregationResultGroupedByPeriod>()
+        timeChanges
+            .sorted()
+            .forEach { time ->
+                buckets.firstOrNull {
+                    (it.startTime.toInstant(ZoneOffset.UTC) > time && it.endTime.toInstant(
+                        ZoneOffset.UTC
+                    ) < time) ||
+                        it.startTime.toInstant(ZoneOffset.UTC) == time || it.endTime.toInstant(
+                        ZoneOffset.UTC
+                    ) == time
+                }?.let { changedBucket ->
+                    changedBuckets.add(changedBucket)
+                }
+            }
+
         // Transform each non-empty bucket into a DailyEntry
-        val entries = buckets.mapNotNull { b ->
+        val entries = changedBuckets.mapNotNull { b ->
             // Extract step count, if available
             val steps = b.result[StepsRecord.COUNT_TOTAL]
 
@@ -281,7 +372,15 @@ class HealthConnectDataManager(
 
         service.uploadHealthConnectDailies(HealthConnectDailiesPayload(entries))
             .execute()
-            .let { if (it.isError) throw it.error!! }
+            .let {
+                if (it.isError) {
+                    it.error?.let { error ->
+                        throw error
+                    }
+                } else {
+                    onSuccess()
+                }
+            }
     }
 
     /**

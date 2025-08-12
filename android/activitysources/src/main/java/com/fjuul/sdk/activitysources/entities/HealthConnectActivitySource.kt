@@ -91,7 +91,7 @@ class HealthConnectActivitySource private constructor(
                 val context = apiClient.appContext.applicationContext
                 val hcClient = HealthConnectClient.getOrCreate(context)
                 val service = ActivitySourcesService(apiClient)
-                val dataMgr = HealthConnectDataManager(hcClient, service)
+                val dataMgr = HealthConnectDataManager(hcClient, service, apiClient.storage)
                 val permMgr = HealthConnectPermissionManager(
                     context = context,
                     healthConnectClient = hcClient,

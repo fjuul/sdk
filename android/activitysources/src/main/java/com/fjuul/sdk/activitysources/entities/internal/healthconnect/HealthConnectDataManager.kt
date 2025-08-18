@@ -25,6 +25,7 @@ import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.Period
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 
@@ -44,8 +45,8 @@ class HealthConnectDataManager(
         private const val HEART_RATE_CHANGES_TOKEN = "HEART_RATE_CHANGES_TOKEN"
         private const val TOTAL_CALORIES_CHANGES_TOKEN = "TOTAL_CALORIES_CHANGES_TOKEN"
         private const val ACTIVE_CALORIES_CHANGES_TOKEN = "ACTIVE_CALORIES_CHANGES_TOKEN"
-        private const val RESTING_HEART_RATE_TOKEN = "RESTING_HEART_RATE_TOKEN"
-        private const val STEPS_TOKEN = "STEPS_TOKEN"
+        private const val RESTING_HEART_RATE_CHANGES_TOKEN = "RESTING_HEART_RATE_CHANGES_TOKEN"
+        private const val STEPS_CHANGES_TOKEN = "STEPS_CHANGES_TOKEN"
     }
 
     /**
@@ -111,10 +112,10 @@ class HealthConnectDataManager(
         }
 
         if (caloriesTimeChanges.isNotEmpty()) {
-            val caloriesRateMetric =
+            val caloriesMetric =
                 setOf(FitnessMetricsType.INTRADAY_CALORIES).flatMap { it.toAggregateMetrics() }
                     .toSet()
-            syncIntradayChangedBuckets(caloriesRateMetric, caloriesTimeChanges) {
+            syncIntradayChangedBuckets(caloriesMetric, caloriesTimeChanges) {
                 storage.set(ACTIVE_CALORIES_CHANGES_TOKEN, activeCaloriesChangesToken)
                 storage.set(TOTAL_CALORIES_CHANGES_TOKEN, totalCaloriesChangesToken)
             }
@@ -262,7 +263,7 @@ class HealthConnectDataManager(
         if (options.metrics.isEmpty()) throw HealthConnectException.NoMetricsSelectedException()
 
         var restingHeartRateTimeChanges = listOf<Instant>()
-        var restingHeartRateChangesToken = storage.get(RESTING_HEART_RATE_TOKEN)
+        var restingHeartRateChangesToken = storage.get(RESTING_HEART_RATE_CHANGES_TOKEN)
         if (options.metrics.contains(FitnessMetricsType.RESTING_HEART_RATE)) {
             if (restingHeartRateChangesToken.isNullOrEmpty()) {
                 restingHeartRateChangesToken = client.getChangesToken(
@@ -277,7 +278,7 @@ class HealthConnectDataManager(
         }
 
         var stepsCountTimeChanges = listOf<Instant>()
-        var stepsCountChangesToken = storage.get(STEPS_TOKEN)
+        var stepsCountChangesToken = storage.get(STEPS_CHANGES_TOKEN)
         if (options.metrics.contains(FitnessMetricsType.STEPS)) {
             if (stepsCountChangesToken.isNullOrEmpty()) {
                 stepsCountChangesToken = client.getChangesToken(
@@ -300,11 +301,11 @@ class HealthConnectDataManager(
         }
 
         if (stepsCountTimeChanges.isNotEmpty()) {
-            val heartRateMetric =
+            val stepsMetric =
                 setOf(FitnessMetricsType.STEPS).flatMap { it.toAggregateMetrics() }
                     .toSet()
-            syncIntradayChangedBuckets(heartRateMetric, stepsCountTimeChanges) {
-                storage.set(HEART_RATE_CHANGES_TOKEN, stepsCountChangesToken)
+            syncIntradayChangedBuckets(stepsMetric, stepsCountTimeChanges) {
+                storage.set(STEPS_CHANGES_TOKEN, stepsCountChangesToken)
             }
         }
     }
@@ -329,16 +330,18 @@ class HealthConnectDataManager(
 
         if (buckets.isEmpty()) return
 
+        val localZoneOffset = ZoneId.systemDefault().rules.getOffset(todayStart)
+
         val changedBuckets = mutableListOf<AggregationResultGroupedByPeriod>()
         timeChanges
             .sorted()
             .forEach { time ->
                 buckets.firstOrNull {
-                    (it.startTime.toInstant(ZoneOffset.UTC) > time && it.endTime.toInstant(
-                        ZoneOffset.UTC
+                    (it.startTime.toInstant(localZoneOffset) > time && it.endTime.toInstant(
+                        localZoneOffset
                     ) < time) ||
-                        it.startTime.toInstant(ZoneOffset.UTC) == time || it.endTime.toInstant(
-                        ZoneOffset.UTC
+                        it.startTime.toInstant(localZoneOffset) == time || it.endTime.toInstant(
+                        localZoneOffset
                     ) == time
                 }?.let { changedBucket ->
                     changedBuckets.add(changedBucket)

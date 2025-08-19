@@ -67,7 +67,10 @@ class HealthConnectDataManager(
                 )
             }
 
-            heartRateTimeChanges = getTimeChangesList(heartRateChangesToken) { changedToken ->
+            heartRateTimeChanges = getTimeChangesList(
+                heartRateChangesToken,
+                FitnessMetricsType.INTRADAY_HEART_RATE
+            ) { changedToken ->
                 heartRateChangesToken = changedToken
             }
         }
@@ -90,15 +93,22 @@ class HealthConnectDataManager(
 
             if (activeCaloriesChangesToken.isNotEmpty()) {
                 caloriesTimeChanges =
-                    getTimeChangesList(activeCaloriesChangesToken) { changedToken ->
+                    getTimeChangesList(
+                        activeCaloriesChangesToken,
+                        FitnessMetricsType.INTRADAY_CALORIES
+                    ) { changedToken ->
                         activeCaloriesChangesToken = changedToken
                     }
             }
 
             if (totalCaloriesChangesToken.isNotEmpty()) {
-                caloriesTimeChanges.addAll(getTimeChangesList(totalCaloriesChangesToken) { changedToken ->
-                    totalCaloriesChangesToken = changedToken
-                })
+                caloriesTimeChanges.addAll(
+                    getTimeChangesList(
+                        totalCaloriesChangesToken,
+                        FitnessMetricsType.INTRADAY_CALORIES
+                    ) { changedToken ->
+                        totalCaloriesChangesToken = changedToken
+                    })
             }
         }
 
@@ -124,7 +134,8 @@ class HealthConnectDataManager(
 
     private suspend fun getTimeChangesList(
         token: String,
-        onTokenSave: (String) -> Unit
+        type: FitnessMetricsType,
+        onTokenSave: (String) -> Unit,
     ): MutableList<Instant> {
         val timeChangesList = mutableListOf<Instant>()
         var nextChangesToken = token
@@ -133,7 +144,41 @@ class HealthConnectDataManager(
             response.changes.forEach { change ->
                 when (change) {
                     is UpsertionChange -> {
-                        timeChangesList.add(change.record.metadata.lastModifiedTime)
+                        when (val record = change.record) {
+                            is HeartRateRecord -> {
+                                if (type == FitnessMetricsType.INTRADAY_HEART_RATE) {
+                                    timeChangesList.add(record.startTime)
+                                    timeChangesList.add(record.endTime)
+                                }
+                            }
+
+                            is ActiveCaloriesBurnedRecord -> {
+                                if (type == FitnessMetricsType.INTRADAY_CALORIES) {
+                                    timeChangesList.add(record.startTime)
+                                    timeChangesList.add(record.endTime)
+                                }
+                            }
+
+                            is TotalCaloriesBurnedRecord -> {
+                                if (type == FitnessMetricsType.INTRADAY_CALORIES) {
+                                    timeChangesList.add(record.startTime)
+                                    timeChangesList.add(record.endTime)
+                                }
+                            }
+
+                            is RestingHeartRateRecord -> {
+                                if (type == FitnessMetricsType.RESTING_HEART_RATE) {
+                                    timeChangesList.add(record.time)
+                                }
+                            }
+
+                            is StepsRecord -> {
+                                if (type == FitnessMetricsType.STEPS) {
+                                    timeChangesList.add(record.startTime)
+                                    timeChangesList.add(record.endTime)
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -161,7 +206,7 @@ class HealthConnectDataManager(
         }
         days.add(now)
 
-        for (i in 1..<days.size - 2) {
+        for (i in 1..<days.size - 1) {
             // Read 1-minute buckets by every day
             val buckets: List<AggregationResultGroupedByDuration> = client.aggregateGroupByDuration(
                 AggregateGroupByDurationRequest(
@@ -181,7 +226,6 @@ class HealthConnectDataManager(
                             changedBuckets.add(changedBucket)
                         }
                 }
-
 
             // Group by date and upload
             changedBuckets
@@ -272,7 +316,10 @@ class HealthConnectDataManager(
             }
 
             restingHeartRateTimeChanges =
-                getTimeChangesList(restingHeartRateChangesToken) { changedToken ->
+                getTimeChangesList(
+                    restingHeartRateChangesToken,
+                    FitnessMetricsType.RESTING_HEART_RATE
+                ) { changedToken ->
                     restingHeartRateChangesToken = changedToken
                 }
         }
@@ -286,7 +333,10 @@ class HealthConnectDataManager(
                 )
             }
 
-            stepsCountTimeChanges = getTimeChangesList(stepsCountChangesToken) { changedToken ->
+            stepsCountTimeChanges = getTimeChangesList(
+                stepsCountChangesToken,
+                FitnessMetricsType.STEPS
+            ) { changedToken ->
                 stepsCountChangesToken = changedToken
             }
         }
@@ -304,7 +354,7 @@ class HealthConnectDataManager(
             val stepsMetric =
                 setOf(FitnessMetricsType.STEPS).flatMap { it.toAggregateMetrics() }
                     .toSet()
-            syncIntradayChangedBuckets(stepsMetric, stepsCountTimeChanges) {
+            syncDailyChangedBuckets(stepsMetric, stepsCountTimeChanges) {
                 storage.set(STEPS_CHANGES_TOKEN, stepsCountChangesToken)
             }
         }
@@ -438,7 +488,13 @@ class HealthConnectDataManager(
             HealthConnectProfilePayload(height = latestHeightCm, weight = latestWeightKg)
         )
             .execute()
-            .let { if (it.isError) throw it.error!! }
+            .let {
+                if (it.isError) {
+                    it.error?.let { error ->
+                        throw error
+                    }
+                }
+            }
     }
 }
 

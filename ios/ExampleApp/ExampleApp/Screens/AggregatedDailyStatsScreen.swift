@@ -54,6 +54,11 @@ struct AggregatedDailyStatsScreen: View {
                                 .frame(width: 30, height: 10, alignment: .leading)
                             Text("steps \(stats.steps)")
                         }
+                        HStack {
+                            Image(systemName: "pencil.and.list.clipboard")
+                                .frame(width: 30, height: 10, alignment: .leading)
+                            Text("sources \(stats.contributingSources.joined(separator: ", "))")
+                        }
                     }.padding(.top, 5)
                 }
             }

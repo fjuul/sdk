@@ -83,7 +83,8 @@ public class AnalyticsServiceTest {
                 "steps": 8522,
                 "low": { "seconds": 1800, "metMinutes": 20 },
                 "moderate": { "seconds": 1200, "metMinutes": 10 },
-                "high": { "seconds": 180, "metMinutes": 15 }
+                "high": { "seconds": 180, "metMinutes": 15 },
+                "contributingSources": ["fitbit", "garmin"]
                 }""");
         mockWebServer.enqueue(mockResponse);
 
@@ -105,6 +106,7 @@ public class AnalyticsServiceTest {
         assertEquals(1200, dailyStats.getModerate().getSeconds());
         assertEquals(15, dailyStats.getHigh().getMetMinutes());
         assertEquals(180, dailyStats.getHigh().getSeconds());
+        assertArrayEquals(new String[] { "fitbit", "garmin" }, dailyStats.getContributingSources());
     }
 
     @Test
@@ -123,7 +125,8 @@ public class AnalyticsServiceTest {
                 "steps": 8900,
                 "low": { "seconds": 1800, "metMinutes": 20 },
                 "moderate": { "seconds": 1200, "metMinutes": 10 },
-                "high": { "seconds": 180, "metMinutes": 15 }
+                "high": { "seconds": 180, "metMinutes": 15 },
+                "contributingSources": ["polar"]
                 },\s
                 {
                 "date": "2020-03-11",
@@ -132,7 +135,8 @@ public class AnalyticsServiceTest {
                 "steps": 9010,
                 "low": { "seconds": 100, "metMinutes": 2 },
                 "moderate": { "seconds": 120, "metMinutes": 2 },
-                "high": { "seconds": 30, "metMinutes": 3 }
+                "high": { "seconds": 30, "metMinutes": 3 },
+                "contributingSources": ["healthconnect"]
                  }\s
                 ]""");
         mockWebServer.enqueue(mockResponse);
@@ -157,6 +161,7 @@ public class AnalyticsServiceTest {
         assertEquals(1200, firstDailyStats.getModerate().getSeconds());
         assertEquals(15, firstDailyStats.getHigh().getMetMinutes());
         assertEquals(180, firstDailyStats.getHigh().getSeconds());
+        assertArrayEquals(new String[] { "polar" }, firstDailyStats.getContributingSources());
 
         DailyStats secondDailyStats = dailyStatsRange[1];
         assertEquals("2020-03-11", secondDailyStats.getDate());
@@ -167,6 +172,8 @@ public class AnalyticsServiceTest {
         assertEquals(120, secondDailyStats.getModerate().getSeconds());
         assertEquals(3, secondDailyStats.getHigh().getMetMinutes());
         assertEquals(30, secondDailyStats.getHigh().getSeconds());
+        assertArrayEquals(new String[] { "healthconnect" }, secondDailyStats.getContributingSources());
+
     }
 
     @Test
@@ -183,7 +190,8 @@ public class AnalyticsServiceTest {
                 "steps": 10103,
                 "low": { "seconds": 2222, "metMinutes": 32 },
                 "moderate": { "seconds": 1980, "metMinutes": 44 },
-                "high": { "seconds": 600, "metMinutes": 9 }
+                "high": { "seconds": 600, "metMinutes": 9 },
+                "contributingSources": ["suunto", "withings"]
                 }""");
         mockWebServer.enqueue(mockResponse);
 
@@ -207,6 +215,7 @@ public class AnalyticsServiceTest {
         assertEquals(1980, aggregatedStats.getModerate().getSeconds());
         assertEquals(9, aggregatedStats.getHigh().getMetMinutes());
         assertEquals(600, aggregatedStats.getHigh().getSeconds());
+        assertArrayEquals(new String[] { "suunto", "withings" }, aggregatedStats.getContributingSources());
     }
 
     @Test

@@ -13,6 +13,9 @@ public class AggregatedDailyStats {
     @NonNull
     ActivityMeasure high;
 
+    @NonNull
+    String[] contributingSources;
+
     public int getSteps() {
         return steps;
     }
@@ -30,5 +33,10 @@ public class AggregatedDailyStats {
     @NonNull
     public ActivityMeasure getHigh() {
         return high;
+    }
+
+    @NonNull
+    public String[] getContributingSources() {
+        return contributingSources;
     }
 }

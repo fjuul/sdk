@@ -8,4 +8,6 @@ public struct AggregatedDailyStats: Codable {
     public let moderate: ActivityMeasure
     public let high: ActivityMeasure
 
+    public let contributingSources: [String]
+
 }

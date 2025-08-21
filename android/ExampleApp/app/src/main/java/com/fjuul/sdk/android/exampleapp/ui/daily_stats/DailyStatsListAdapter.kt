@@ -34,7 +34,8 @@ class DailyStatsListAdapter(context: Context, var dataSource: Array<DailyStats>)
 |low: ${item.low.metMinutes} metMinutes;
 |moderate: ${item.moderate.metMinutes} metMinutes;
 |high: ${item.high.metMinutes} metMinutes;
-|steps: ${item.steps}""".trimMargin()
+|steps: ${item.steps}
+|sources: ${item.contributingSources.joinToString(separator = ", ")};""".trimMargin()
         return rowView
     }
 }

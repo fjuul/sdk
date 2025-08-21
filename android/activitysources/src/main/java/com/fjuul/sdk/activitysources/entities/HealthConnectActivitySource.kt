@@ -10,6 +10,7 @@ import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService
 import com.fjuul.sdk.activitysources.utils.runAsyncAndCallback
 import com.fjuul.sdk.core.ApiClient
 import com.fjuul.sdk.core.entities.Callback
+import java.util.Date
 
 /**
  * [ActivitySource] implementation for Android Health Connect.
@@ -29,6 +30,8 @@ class HealthConnectActivitySource private constructor(
     private val permissionManager: HealthConnectPermissionManager
 ) : ActivitySource() {
 
+    var lowerDateBoundary: Date? = null
+
     /**
      * Starts an intraday data synchronization (calories, heart rate).
      *
@@ -39,7 +42,7 @@ class HealthConnectActivitySource private constructor(
         runAsyncAndCallback({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
-            dataManager.syncIntraday(options)
+            dataManager.syncIntraday(options, lowerDateBoundary)
         }, callback)
 
     /**
@@ -52,7 +55,7 @@ class HealthConnectActivitySource private constructor(
         runAsyncAndCallback({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
-            dataManager.syncDaily(options)
+            dataManager.syncDaily(options, lowerDateBoundary)
         }, callback)
 
     /**

@@ -1,10 +1,13 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.work.WorkManager;
 
 import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthenticationFlowRequired;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
@@ -19,13 +22,11 @@ import com.fjuul.sdk.core.exceptions.FjuulException;
 import com.fjuul.sdk.core.utils.Logger;
 import com.google.android.gms.tasks.Task;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.work.WorkManager;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The `ActivitySourcesManager` encapsulates connection to fitness trackers, access to current user's tracker
@@ -51,7 +52,7 @@ import androidx.work.WorkManager;
  *    </intent-filter>
  * }
  * </pre>
- *
+ * <p>
  * where `YOUR_SCHEME` is the scheme provided to you or coordinated with you by Fjuul. For detailed instructions, you
  * can follow the official <a href="https://developer.android.com/training/app-links/deep-linking">guide</a>.</li>
  * <li>it has a `launchMode` declaration with the value `singleTask` or `singleTop` in AndroidManifest to return back
@@ -76,11 +77,11 @@ public final class ActivitySourcesManager {
     private volatile static ActivitySourcesManager instance;
 
     ActivitySourcesManager(@NonNull ActivitySourcesManagerConfig config,
-        @NonNull BackgroundWorkManager backgroundWorkManager,
-        @NonNull ActivitySourcesService sourcesService,
-        @NonNull ActivitySourcesStateStore stateStore,
-        @NonNull ActivitySourceResolver activitySourceResolver,
-        @NonNull CopyOnWriteArrayList<TrackerConnection> connections) {
+                           @NonNull BackgroundWorkManager backgroundWorkManager,
+                           @NonNull ActivitySourcesService sourcesService,
+                           @NonNull ActivitySourcesStateStore stateStore,
+                           @NonNull ActivitySourceResolver activitySourceResolver,
+                           @NonNull CopyOnWriteArrayList<TrackerConnection> connections) {
         this.config = config;
         this.backgroundWorkManager = backgroundWorkManager;
         this.sourcesService = sourcesService;
@@ -118,7 +119,7 @@ public final class ActivitySourcesManager {
      */
     @SuppressLint("NewApi")
     public static synchronized void initialize(@NonNull ApiClient client,
-        @NonNull ActivitySourcesManagerConfig config) {
+                                               @NonNull ActivitySourcesManagerConfig config) {
         final ActivitySourcesStateStore stateStore = new ActivitySourcesStateStore(client.getStorage());
         final List<TrackerConnection> storedConnections = stateStore.getConnections();
         final CopyOnWriteArrayList<TrackerConnection> currentConnections =
@@ -221,11 +222,11 @@ public final class ActivitySourcesManager {
      * list. Therefore, after a user succeeds in the connection, please invoke refreshing current connections of the
      * user via the {@link #refreshCurrent} method.
      *
+     * @param activitySource instance of ActivitySource to connect
+     * @param callback       callback bringing the connecting intent
      * @see ActivitySourcesManager#refreshCurrent
      * @see ExternalAuthenticationFlowHandler
      * @see GoogleFitActivitySource
-     * @param activitySource instance of ActivitySource to connect
-     * @param callback callback bringing the connecting intent
      */
     public void connect(@NonNull final ActivitySource activitySource, @NonNull final Callback<Intent> callback) {
         if (activitySource instanceof GoogleFitActivitySource) {
@@ -256,11 +257,11 @@ public final class ActivitySourcesManager {
      * GoogleFitActivitySource, this will revoke GoogleFit OAuth permissions.
      *
      * @param sourceConnection current connection to disconnect
-     * @param callback callback bringing the operation result
+     * @param callback         callback bringing the operation result
      */
     @SuppressLint("NewApi")
     public void disconnect(@NonNull final ActivitySourceConnection sourceConnection,
-        @NonNull final Callback<Void> callback) {
+                           @NonNull final Callback<Void> callback) {
         // TODO: validate if sourceConnection was already ended ?
         final Runnable runnableDisconnect = () -> {
             sourcesService.disconnect(sourceConnection).enqueue((call, apiCallResult) -> {
@@ -306,8 +307,8 @@ public final class ActivitySourcesManager {
      * should use this method to work with their instances (for example, GoogleFitActivitySource) by getting them with
      * the {@link ActivitySourceConnection#getActivitySource()} method.
      *
-     * @see #refreshCurrent(Callback)
      * @return list of activity source connections
+     * @see #refreshCurrent(Callback)
      */
     @SuppressLint("NewApi")
     @NonNull
@@ -368,6 +369,11 @@ public final class ActivitySourcesManager {
 
     @SuppressLint("NewApi")
     private void configureExternalStateByConnections(@Nullable List<TrackerConnection> trackerConnections) {
+        configureGoogleFitState(trackerConnections);
+        configureHealthConnectState(trackerConnections);
+    }
+
+    private void configureGoogleFitState(@Nullable List<TrackerConnection> trackerConnections) {
         final TrackerConnection gfTrackerConnection = Optional.ofNullable(trackerConnections)
             .flatMap(connections -> connections.stream()
                 .filter(c -> c.getTracker().equals(TrackerValue.GOOGLE_FIT.getValue()))
@@ -389,6 +395,22 @@ public final class ActivitySourcesManager {
             googleFit.setLowerDateBoundary(gfTrackerConnection.getCreatedAt());
         } else {
             googleFit.setLowerDateBoundary(null);
+        }
+    }
+
+    private void configureHealthConnectState(@Nullable List<TrackerConnection> trackerConnections) {
+        final TrackerConnection hcTrackerConnection = Optional.ofNullable(trackerConnections)
+            .flatMap(connections -> connections.stream()
+                .filter(c -> c.getTracker().equals(TrackerValue.HEALTH_CONNECT.getValue()))
+                .findFirst())
+            .orElse(null);
+
+        final HealthConnectActivitySource healthConnect = (HealthConnectActivitySource) activitySourceResolver
+            .getInstanceByTrackerValue(TrackerValue.HEALTH_CONNECT.getValue());
+        if (hcTrackerConnection != null) {
+            healthConnect.setLowerDateBoundary(hcTrackerConnection.getCreatedAt());
+        } else {
+            healthConnect.setLowerDateBoundary(null);
         }
     }
 }

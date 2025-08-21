@@ -354,8 +354,8 @@ class HealthConnectDataManager(
                     uploadIntradayBuckets(buckets)
                 }
             } else {
-                val startTime = days[i].atZone(zone).toLocalDateTime()
-                val endTime = days[i + 1].atZone(zone).toLocalDateTime()
+                val startTime = days[i].atZone(zone).toLocalDate().atStartOfDay()
+                val endTime = startTime.plusDays(1)
                 val buckets: List<AggregationResultGroupedByPeriod> = client.aggregateGroupByPeriod(
                     AggregateGroupByPeriodRequest(
                         metrics = metrics,

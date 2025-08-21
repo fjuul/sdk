@@ -1,13 +1,10 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.work.WorkManager;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthenticationFlowRequired;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
@@ -22,11 +19,13 @@ import com.fjuul.sdk.core.exceptions.FjuulException;
 import com.fjuul.sdk.core.utils.Logger;
 import com.google.android.gms.tasks.Task;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.work.WorkManager;
 
 /**
  * The `ActivitySourcesManager` encapsulates connection to fitness trackers, access to current user's tracker
@@ -52,7 +51,6 @@ import java.util.stream.Stream;
  *    </intent-filter>
  * }
  * </pre>
- * <p>
  * where `YOUR_SCHEME` is the scheme provided to you or coordinated with you by Fjuul. For detailed instructions, you
  * can follow the official <a href="https://developer.android.com/training/app-links/deep-linking">guide</a>.</li>
  * <li>it has a `launchMode` declaration with the value `singleTask` or `singleTop` in AndroidManifest to return back
@@ -222,8 +220,6 @@ public final class ActivitySourcesManager {
      * list. Therefore, after a user succeeds in the connection, please invoke refreshing current connections of the
      * user via the {@link #refreshCurrent} method.
      *
-     * @param activitySource instance of ActivitySource to connect
-     * @param callback       callback bringing the connecting intent
      * @see ActivitySourcesManager#refreshCurrent
      * @see ExternalAuthenticationFlowHandler
      * @see GoogleFitActivitySource
@@ -257,11 +253,11 @@ public final class ActivitySourcesManager {
      * GoogleFitActivitySource, this will revoke GoogleFit OAuth permissions.
      *
      * @param sourceConnection current connection to disconnect
-     * @param callback         callback bringing the operation result
+     * @param callback callback bringing the operation result
      */
     @SuppressLint("NewApi")
     public void disconnect(@NonNull final ActivitySourceConnection sourceConnection,
-                           @NonNull final Callback<Void> callback) {
+        @NonNull final Callback<Void> callback) {
         // TODO: validate if sourceConnection was already ended ?
         final Runnable runnableDisconnect = () -> {
             sourcesService.disconnect(sourceConnection).enqueue((call, apiCallResult) -> {
@@ -307,7 +303,6 @@ public final class ActivitySourcesManager {
      * should use this method to work with their instances (for example, GoogleFitActivitySource) by getting them with
      * the {@link ActivitySourceConnection#getActivitySource()} method.
      *
-     * @return list of activity source connections
      * @see #refreshCurrent(Callback)
      */
     @SuppressLint("NewApi")

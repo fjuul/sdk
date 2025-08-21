@@ -75,11 +75,11 @@ public final class ActivitySourcesManager {
     private volatile static ActivitySourcesManager instance;
 
     ActivitySourcesManager(@NonNull ActivitySourcesManagerConfig config,
-    @NonNull BackgroundWorkManager backgroundWorkManager,
-    @NonNull ActivitySourcesService sourcesService,
-    @NonNull ActivitySourcesStateStore stateStore,
-    @NonNull ActivitySourceResolver activitySourceResolver,
-    @NonNull CopyOnWriteArrayList<TrackerConnection> connections) {
+        @NonNull BackgroundWorkManager backgroundWorkManager,
+        @NonNull ActivitySourcesService sourcesService,
+        @NonNull ActivitySourcesStateStore stateStore,
+        @NonNull ActivitySourceResolver activitySourceResolver,
+        @NonNull CopyOnWriteArrayList<TrackerConnection> connections) {
         this.config = config;
         this.backgroundWorkManager = backgroundWorkManager;
         this.sourcesService = sourcesService;

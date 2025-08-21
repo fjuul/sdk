@@ -16,7 +16,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
-    - run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+    - run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
     - name: lint
       run: |
         (cd ios; swiftlint)
@@ -25,7 +25,7 @@ jobs:
         set -o pipefail && xcodebuild \
           -scheme "Fjuul SDK-Package" \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.2' \
+          -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5' \
           test | xcpretty
     - name: xcode test ExampleApp
       run: |
@@ -33,5 +33,5 @@ jobs:
           -workspace ios/SDK.xcworkspace \
           -scheme ExampleApp \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.2' \
+          -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5' \
           test | xcpretty

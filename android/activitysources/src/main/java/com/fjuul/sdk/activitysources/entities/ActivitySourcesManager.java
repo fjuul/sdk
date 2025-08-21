@@ -51,6 +51,7 @@ import androidx.work.WorkManager;
  *    </intent-filter>
  * }
  * </pre>
+ *
  * where `YOUR_SCHEME` is the scheme provided to you or coordinated with you by Fjuul. For detailed instructions, you
  * can follow the official <a href="https://developer.android.com/training/app-links/deep-linking">guide</a>.</li>
  * <li>it has a `launchMode` declaration with the value `singleTask` or `singleTop` in AndroidManifest to return back
@@ -223,6 +224,8 @@ public final class ActivitySourcesManager {
      * @see ActivitySourcesManager#refreshCurrent
      * @see ExternalAuthenticationFlowHandler
      * @see GoogleFitActivitySource
+     * @param activitySource instance of ActivitySource to connect
+     * @param callback callback bringing the connecting intent
      */
     public void connect(@NonNull final ActivitySource activitySource, @NonNull final Callback<Intent> callback) {
         if (activitySource instanceof GoogleFitActivitySource) {
@@ -304,6 +307,7 @@ public final class ActivitySourcesManager {
      * the {@link ActivitySourceConnection#getActivitySource()} method.
      *
      * @see #refreshCurrent(Callback)
+     * @return list of activity source connections
      */
     @SuppressLint("NewApi")
     @NonNull

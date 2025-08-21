@@ -322,6 +322,7 @@ class HealthConnectDataManager(
         isIntradaySync: Boolean,
         onSuccess: () -> Unit,
     ) {
+        val zone = ZoneOffset.UTC
         val now = Instant.now()
         val thirtyDaysAgo = now.minus(Duration.ofDays(THIRTY_DAYS))
         var start =
@@ -340,21 +341,29 @@ class HealthConnectDataManager(
 
         for (i in 0..<days.size - 1) {
             // Read 1-minute buckets by every day
-            val buckets: List<AggregationResultGroupedByDuration> =
-                client.aggregateGroupByDuration(
-                    AggregateGroupByDurationRequest(
+            if (isIntradaySync) {
+                val buckets: List<AggregationResultGroupedByDuration> =
+                    client.aggregateGroupByDuration(
+                        AggregateGroupByDurationRequest(
+                            metrics = metrics,
+                            timeRangeFilter = TimeRangeFilter.between(days[i], days[i + 1]),
+                            timeRangeSlicer = Duration.ofMinutes(1)
+                        )
+                    )
+                if (buckets.isNotEmpty()) {
+                    uploadIntradayBuckets(buckets)
+                }
+            } else {
+                val startTime = days[i].atZone(zone).toLocalDateTime()
+                val endTime = days[i + 1].atZone(zone).toLocalDateTime()
+                val buckets: List<AggregationResultGroupedByPeriod> = client.aggregateGroupByPeriod(
+                    AggregateGroupByPeriodRequest(
                         metrics = metrics,
-                        timeRangeFilter = TimeRangeFilter.between(days[i], days[i + 1]),
-                        timeRangeSlicer = Duration.ofMinutes(1)
+                        timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
+                        timeRangeSlicer = Period.ofDays(1)
                     )
                 )
-
-            if (buckets.isNotEmpty()) {
-                if (isIntradaySync) {
-                    uploadIntradayBuckets(buckets)
-                } else {
-                    uploadDailyBucketsByDuration(buckets)
-                }
+                uploadDailyBucketsByPeriod(buckets) {}
             }
         }
 
@@ -469,43 +478,6 @@ class HealthConnectDataManager(
                 }
 
             uploadDailyBucketsByPeriod(changedBuckets.toSet().toList(), onSuccess)
-        }
-    }
-
-    private fun uploadDailyBucketsByDuration(buckets: List<AggregationResultGroupedByDuration>) {
-        // Transform each non-empty bucket into a DailyEntry
-        val entries = buckets.mapNotNull { b ->
-            // Extract step count, if available
-            val steps = b.result[StepsRecord.COUNT_TOTAL]
-
-            // Extract resting heart rate stats, if any values present
-            val minHr = b.result[RestingHeartRateRecord.BPM_MIN]?.toDouble()
-            val avgHr = b.result[RestingHeartRateRecord.BPM_AVG]?.toDouble()
-            val maxHr = b.result[RestingHeartRateRecord.BPM_MAX]?.toDouble()
-            val hrEntry = if (minHr != null || avgHr != null || maxHr != null) {
-                HeartRateEntry(start = null, min = minHr, avg = avgHr, max = maxHr)
-            } else null
-
-            if (steps == null && hrEntry == null) return@mapNotNull null
-
-            DailyEntry(
-                date = b.startTime.atZone(ZoneOffset.UTC).toLocalDate().toString(),
-                dataOrigins = b.result.dataOrigins.map { it.packageName },
-                steps = steps,
-                restingHeartRate = hrEntry
-            )
-        }
-
-        if (entries.isNotEmpty()) {
-            service.uploadHealthConnectDailies(HealthConnectDailiesPayload(entries))
-                .execute()
-                .let {
-                    if (it.isError) {
-                        it.error?.let { error ->
-                            throw error
-                        }
-                    }
-                }
         }
     }
 

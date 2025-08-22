@@ -172,6 +172,7 @@ public class ActivitySourcesManagerTest {
             ActivitySourcesStateStore mockedStateStore;
             ActivitySourceResolver activitySourceResolver;
             GoogleFitActivitySource mockedGoogleFit;
+            HealthConnectActivitySource mockedHealthConnect;
 
             @Before
             public void beforeTest() {
@@ -180,8 +181,10 @@ public class ActivitySourcesManagerTest {
                 mockedSourcesService = mock(ActivitySourcesService.class);
                 mockedStateStore = mock(ActivitySourcesStateStore.class);
                 mockedGoogleFit = mock(GoogleFitActivitySource.class);
+                mockedHealthConnect = mock(HealthConnectActivitySource.class);
                 activitySourceResolver = mock(ActivitySourceResolver.class);
                 when(activitySourceResolver.getInstanceByTrackerValue("googlefit")).thenReturn(mockedGoogleFit);
+                when(activitySourceResolver.getInstanceByTrackerValue("healthconnect")).thenReturn(mockedHealthConnect);
             }
 
             @Test
@@ -386,7 +389,9 @@ public class ActivitySourcesManagerTest {
                 }).when(mockedGetConnectionsApiCall).enqueue(any());
                 when(mockedSourcesService.getCurrentConnections()).thenReturn(mockedGetConnectionsApiCall);
                 GoogleFitActivitySource googleFitStub = mock(GoogleFitActivitySource.class);
+                final HealthConnectActivitySource healthConnect = mock(HealthConnectActivitySource.class);
                 when(mockedActivitySourceResolver.getInstanceByTrackerValue("googlefit")).thenReturn(googleFitStub);
+                when(mockedActivitySourceResolver.getInstanceByTrackerValue("healthconnect")).thenReturn(healthConnect);
 
                 subject.refreshCurrent(null);
 
@@ -439,8 +444,10 @@ public class ActivitySourcesManagerTest {
                 when(mockedSourcesService.getCurrentConnections()).thenReturn(mockedGetConnectionsApiCall);
                 final PolarActivitySource polarStub = mock(PolarActivitySource.class);
                 final GoogleFitActivitySource googleFitStub = mock(GoogleFitActivitySource.class);
+                final HealthConnectActivitySource healthConnect = mock(HealthConnectActivitySource.class);
                 when(mockedActivitySourceResolver.getInstanceByTrackerValue("polar")).thenReturn(polarStub);
                 when(mockedActivitySourceResolver.getInstanceByTrackerValue("googlefit")).thenReturn(googleFitStub);
+                when(mockedActivitySourceResolver.getInstanceByTrackerValue("healthconnect")).thenReturn(healthConnect);
                 final Callback<List<ActivitySourceConnection>> mockedCallback = mock(Callback.class);
 
                 subject.refreshCurrent(mockedCallback);

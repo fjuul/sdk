@@ -54,6 +54,7 @@ class HealthConnectDataManager(
         private const val RESTING_HEART_RATE_CHANGES_TOKEN = "RESTING_HEART_RATE_CHANGES_TOKEN"
         private const val STEPS_CHANGES_TOKEN = "STEPS_CHANGES_TOKEN"
         private const val THIRTY_DAYS = 30L
+        private const val ZERO = 0
     }
 
     /**
@@ -412,7 +413,8 @@ class HealthConnectDataManager(
         onSuccess: () -> Unit,
     ) {
         val zone = ZoneOffset.UTC
-        val now = Instant.now()
+        val now = Instant.now().atZone(zone).toLocalDateTime().withSecond(ZERO).withNano(ZERO)
+            .toInstant(zone)
         val thirtyDaysAgo = now.minus(Duration.ofDays(THIRTY_DAYS))
         var start =
             if (lowerDateBoundary != null && lowerDateBoundary.toInstant() > thirtyDaysAgo) {

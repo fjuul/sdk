@@ -8,6 +8,7 @@ import androidx.health.connect.client.changes.UpsertionChange
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeightRecord
+import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
@@ -21,6 +22,9 @@ import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService
 import com.fjuul.sdk.activitysources.utils.roundTo
 import com.fjuul.sdk.core.entities.IStorage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -29,6 +33,7 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.Date
+import kotlin.reflect.KClass
 
 /**
  * Handles synchronization of Health Connect data:
@@ -61,13 +66,13 @@ class HealthConnectDataManager(
         if (options.metrics.isEmpty()) throw HealthConnectException.NoMetricsSelectedException()
 
         var heartRateTimeChanges = listOf<Instant>()
-        var heartRateChangesToken = storage.get(HEART_RATE_CHANGES_TOKEN)
+        var storedHeartRateChangesToken = storage.get(HEART_RATE_CHANGES_TOKEN)
         val heartRateMetric =
             setOf(FitnessMetricsType.INTRADAY_HEART_RATE).flatMap { it.toAggregateMetrics() }
                 .toSet()
         if (options.metrics.contains(FitnessMetricsType.INTRADAY_HEART_RATE)) {
-            if (heartRateChangesToken.isNullOrEmpty()) {
-                heartRateChangesToken = client.getChangesToken(
+            if (storedHeartRateChangesToken.isNullOrEmpty()) {
+                val heartRateChangesToken = client.getChangesToken(
                     ChangesTokenRequest(recordTypes = setOf(HeartRateRecord::class))
                 )
 
@@ -76,11 +81,23 @@ class HealthConnectDataManager(
                 }
             }
 
-            heartRateTimeChanges = getTimeChangesList(
-                heartRateChangesToken,
-                FitnessMetricsType.INTRADAY_HEART_RATE
-            ) { changedToken ->
-                heartRateChangesToken = changedToken
+            if (!storedHeartRateChangesToken.isNullOrEmpty()) {
+                heartRateTimeChanges = getTimeChangesList(
+                    token = storedHeartRateChangesToken,
+                    type = FitnessMetricsType.INTRADAY_HEART_RATE,
+                    onTokenSave = { changedToken ->
+                        storedHeartRateChangesToken = changedToken
+                    },
+                    onChangesTokenExpired = {
+                        tokenExpired(
+                            recordTypes = setOf(HeartRateRecord::class),
+                            metrics = heartRateMetric,
+                            changesTokenKey = HEART_RATE_CHANGES_TOKEN,
+                            lowerDateBoundary = lowerDateBoundary,
+                            isIntradaySync = true
+                        )
+                    },
+                )
             }
         }
 
@@ -105,32 +122,56 @@ class HealthConnectDataManager(
                 val totalCaloriesChangesToken = client.getChangesToken(
                     ChangesTokenRequest(recordTypes = setOf(TotalCaloriesBurnedRecord::class))
                 )
-                storage.set(TOTAL_CALORIES_CHANGES_TOKEN, totalCaloriesChangesToken)
+
+                makeFullSync(caloriesMetric, lowerDateBoundary, true) {
+                    storage.set(TOTAL_CALORIES_CHANGES_TOKEN, totalCaloriesChangesToken)
+                }
             }
 
             if (!storedActiveCaloriesChangesToken.isNullOrEmpty()) {
                 caloriesTimeChanges =
                     getTimeChangesList(
-                        storedActiveCaloriesChangesToken,
-                        FitnessMetricsType.INTRADAY_CALORIES
-                    ) { changedToken ->
-                        storedActiveCaloriesChangesToken = changedToken
-                    }
+                        token = storedActiveCaloriesChangesToken,
+                        type = FitnessMetricsType.INTRADAY_CALORIES,
+                        onTokenSave = { changedToken ->
+                            storedActiveCaloriesChangesToken = changedToken
+                        },
+                        onChangesTokenExpired = {
+                            tokenExpired(
+                                recordTypes = setOf(ActiveCaloriesBurnedRecord::class),
+                                metrics = caloriesMetric,
+                                changesTokenKey = ACTIVE_CALORIES_CHANGES_TOKEN,
+                                lowerDateBoundary = lowerDateBoundary,
+                                isIntradaySync = true
+                            )
+                        },
+                    )
             }
 
             if (!storedTotalCaloriesChangesToken.isNullOrEmpty()) {
                 caloriesTimeChanges.addAll(
                     getTimeChangesList(
-                        storedTotalCaloriesChangesToken,
-                        FitnessMetricsType.INTRADAY_CALORIES
-                    ) { changedToken ->
-                        storedTotalCaloriesChangesToken = changedToken
-                    })
+                        token = storedTotalCaloriesChangesToken,
+                        type = FitnessMetricsType.INTRADAY_CALORIES,
+                        onTokenSave = { changedToken ->
+                            storedTotalCaloriesChangesToken = changedToken
+                        },
+                        onChangesTokenExpired = {
+                            tokenExpired(
+                                recordTypes = setOf(TotalCaloriesBurnedRecord::class),
+                                metrics = caloriesMetric,
+                                changesTokenKey = TOTAL_CALORIES_CHANGES_TOKEN,
+                                lowerDateBoundary = lowerDateBoundary,
+                                isIntradaySync = true
+                            )
+                        },
+                    )
+                )
             }
         }
 
         syncIntradayChangedBuckets(heartRateMetric, heartRateTimeChanges) {
-            storage.set(HEART_RATE_CHANGES_TOKEN, heartRateChangesToken)
+            storage.set(HEART_RATE_CHANGES_TOKEN, storedHeartRateChangesToken)
         }
 
         syncIntradayChangedBuckets(caloriesMetric, caloriesTimeChanges) {
@@ -167,11 +208,21 @@ class HealthConnectDataManager(
 
             restingHeartRateTimeChanges =
                 getTimeChangesList(
-                    restingHeartRateChangesToken,
-                    FitnessMetricsType.RESTING_HEART_RATE
-                ) { changedToken ->
-                    restingHeartRateChangesToken = changedToken
-                }
+                    token = restingHeartRateChangesToken,
+                    type = FitnessMetricsType.RESTING_HEART_RATE,
+                    onTokenSave = { changedToken ->
+                        restingHeartRateChangesToken = changedToken
+                    },
+                    onChangesTokenExpired = {
+                        tokenExpired(
+                            recordTypes = setOf(RestingHeartRateRecord::class),
+                            metrics = heartRateMetric,
+                            changesTokenKey = RESTING_HEART_RATE_CHANGES_TOKEN,
+                            lowerDateBoundary = lowerDateBoundary,
+                            isIntradaySync = false
+                        )
+                    },
+                )
         }
 
         val stepsMetric =
@@ -191,11 +242,21 @@ class HealthConnectDataManager(
             }
 
             stepsCountTimeChanges = getTimeChangesList(
-                stepsCountChangesToken,
-                FitnessMetricsType.STEPS
-            ) { changedToken ->
-                stepsCountChangesToken = changedToken
-            }
+                token = stepsCountChangesToken,
+                type = FitnessMetricsType.STEPS,
+                onTokenSave = { changedToken ->
+                    stepsCountChangesToken = changedToken
+                },
+                onChangesTokenExpired = {
+                    tokenExpired(
+                        recordTypes = setOf(StepsRecord::class),
+                        metrics = stepsMetric,
+                        changesTokenKey = STEPS_CHANGES_TOKEN,
+                        lowerDateBoundary = lowerDateBoundary,
+                        isIntradaySync = false
+                    )
+                },
+            )
         }
 
         if (restingHeartRateTimeChanges.isNotEmpty()) {
@@ -211,15 +272,43 @@ class HealthConnectDataManager(
         }
     }
 
+    private fun tokenExpired(
+        recordTypes: Set<KClass<out Record>>,
+        metrics: Set<AggregateMetric<*>>,
+        changesTokenKey: String,
+        lowerDateBoundary: Date?,
+        isIntradaySync: Boolean,
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val changesToken = client.getChangesToken(
+                ChangesTokenRequest(
+                    recordTypes = recordTypes
+                )
+            )
+
+            makeFullSync(metrics, lowerDateBoundary, isIntradaySync) {
+                storage.set(
+                    changesTokenKey,
+                    changesToken
+                )
+            }
+        }
+    }
+
     private suspend fun getTimeChangesList(
         token: String,
         type: FitnessMetricsType,
         onTokenSave: (String) -> Unit,
+        onChangesTokenExpired: () -> Unit,
     ): MutableList<Instant> {
         val timeChangesList = mutableListOf<Instant>()
         var nextChangesToken = token
         do {
             val response = client.getChanges(nextChangesToken)
+            if (response.changesTokenExpired) {
+                onChangesTokenExpired()
+                return mutableListOf()
+            }
             response.changes.forEach { change ->
                 when (change) {
                     is UpsertionChange -> {

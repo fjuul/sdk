@@ -430,7 +430,7 @@ class HealthConnectDataManager(
         }
         days.add(now)
 
-        for (i in 0..<days.size - 1) {
+        for (i in 0..<days.size) {
             // Read 1-minute buckets by every day
             if (isIntradaySync) {
                 val buckets: List<AggregationResultGroupedByDuration> =

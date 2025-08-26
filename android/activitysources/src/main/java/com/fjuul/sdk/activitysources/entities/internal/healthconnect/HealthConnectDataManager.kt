@@ -53,6 +53,7 @@ class HealthConnectDataManager(
         private const val ACTIVE_CALORIES_CHANGES_TOKEN = "ACTIVE_CALORIES_CHANGES_TOKEN"
         private const val RESTING_HEART_RATE_CHANGES_TOKEN = "RESTING_HEART_RATE_CHANGES_TOKEN"
         private const val STEPS_CHANGES_TOKEN = "STEPS_CHANGES_TOKEN"
+        private const val TWENTY_NINE_DAYS = 29L
         private const val THIRTY_DAYS = 30L
         private const val ZERO = 0
     }
@@ -61,27 +62,36 @@ class HealthConnectDataManager(
      * Synchronize intraday data: fetches 1-minute buckets over the last 2 days for all requested metrics,
      * groups them by local date, and uploads each day as a separate payload.
      *
+     * @param options contains options that we need to sync
+     * @param lowerDateBoundary contains first date of application sync
      * @throws HealthConnectException.NoMetricsSelectedException if no metrics are selected or on upload error.
      */
     suspend fun syncIntraday(options: HealthConnectSyncOptions, lowerDateBoundary: Date?) {
         if (options.metrics.isEmpty()) throw HealthConnectException.NoMetricsSelectedException()
 
         var heartRateTimeChanges = listOf<Instant>()
+        // get heartRate changesToken from our storage
         var storedHeartRateChangesToken = storage.get(HEART_RATE_CHANGES_TOKEN)
         val heartRateMetric =
             setOf(FitnessMetricsType.INTRADAY_HEART_RATE).flatMap { it.toAggregateMetrics() }
                 .toSet()
         if (options.metrics.contains(FitnessMetricsType.INTRADAY_HEART_RATE)) {
+            // if our heartRate changesToken is empty we need to make Full Sync of daily sync.
+            // After that if everything is good we get last changes token from Health Connect and
+            // save it.
             if (storedHeartRateChangesToken.isNullOrEmpty()) {
-                val heartRateChangesToken = client.getChangesToken(
-                    ChangesTokenRequest(recordTypes = setOf(HeartRateRecord::class))
-                )
-
                 makeFullSync(heartRateMetric, lowerDateBoundary, true) {
-                    storage.set(HEART_RATE_CHANGES_TOKEN, heartRateChangesToken)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val heartRateChangesToken = client.getChangesToken(
+                            ChangesTokenRequest(recordTypes = setOf(HeartRateRecord::class))
+                        )
+                        storage.set(HEART_RATE_CHANGES_TOKEN, heartRateChangesToken)
+                    }
                 }
             }
 
+            // If our changes token from storage is not empty we need to get time changes list.
+            // method getTimeChangesList has callback when onChangesTokenExpired.
             if (!storedHeartRateChangesToken.isNullOrEmpty()) {
                 heartRateTimeChanges = getTimeChangesList(
                     token = storedHeartRateChangesToken,
@@ -110,22 +120,26 @@ class HealthConnectDataManager(
                 .toSet()
         if (options.metrics.contains(FitnessMetricsType.INTRADAY_CALORIES)) {
             if (storedActiveCaloriesChangesToken.isNullOrEmpty()) {
-                val activeCaloriesChangesToken = client.getChangesToken(
-                    ChangesTokenRequest(recordTypes = setOf(ActiveCaloriesBurnedRecord::class))
-                )
-
                 makeFullSync(caloriesMetric, lowerDateBoundary, true) {
-                    storage.set(ACTIVE_CALORIES_CHANGES_TOKEN, activeCaloriesChangesToken)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val activeCaloriesChangesToken = client.getChangesToken(
+                            ChangesTokenRequest(recordTypes = setOf(ActiveCaloriesBurnedRecord::class))
+                        )
+                        storage.set(ACTIVE_CALORIES_CHANGES_TOKEN, activeCaloriesChangesToken)
+                    }
+
                 }
             }
 
             if (storedTotalCaloriesChangesToken.isNullOrEmpty()) {
-                val totalCaloriesChangesToken = client.getChangesToken(
-                    ChangesTokenRequest(recordTypes = setOf(TotalCaloriesBurnedRecord::class))
-                )
-
                 makeFullSync(caloriesMetric, lowerDateBoundary, true) {
-                    storage.set(TOTAL_CALORIES_CHANGES_TOKEN, totalCaloriesChangesToken)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val totalCaloriesChangesToken = client.getChangesToken(
+                            ChangesTokenRequest(recordTypes = setOf(TotalCaloriesBurnedRecord::class))
+                        )
+                        storage.set(TOTAL_CALORIES_CHANGES_TOKEN, totalCaloriesChangesToken)
+                    }
+
                 }
             }
 
@@ -186,6 +200,7 @@ class HealthConnectDataManager(
      * build payload entries for each day, and upload if there is any data.
      *
      * @param options contains the set of metrics to sync
+     * @param lowerDateBoundary contains first date of application sync
      * @throws HealthConnectException if no metrics are selected or upload fails
      */
     suspend fun syncDaily(options: HealthConnectSyncOptions, lowerDateBoundary: Date?) {
@@ -273,6 +288,15 @@ class HealthConnectDataManager(
         }
     }
 
+    /**
+     * Makes full sync when token expires and saves last changes token in our storage.
+     *
+     * @param recordTypes contains type of records that we need to collect
+     * @param metrics contains the set of metrics to sync
+     * @param changesTokenKey contains key of token that we need to save in storage
+     * @param lowerDateBoundary contains first date of application sync
+     * @param isIntradaySync Boolean variable that get us is it intraday sync or not
+     */
     private fun tokenExpired(
         recordTypes: Set<KClass<out Record>>,
         metrics: Set<AggregateMetric<*>>,
@@ -280,6 +304,8 @@ class HealthConnectDataManager(
         lowerDateBoundary: Date?,
         isIntradaySync: Boolean,
     ) {
+        // If token expired we need to make full sync and save our last changes token when
+        // everything is success
         CoroutineScope(Dispatchers.IO).launch {
             val changesToken = client.getChangesToken(
                 ChangesTokenRequest(
@@ -296,6 +322,14 @@ class HealthConnectDataManager(
         }
     }
 
+    /**
+     * Get list of time changes intervals.
+     *
+     * @param token contains last saved token
+     * @param type contains metric that we need to get
+     * @param onTokenSave callback when needs to save last changesToken
+     * @param onChangesTokenExpired callback when changesToken expired
+     */
     private suspend fun getTimeChangesList(
         token: String,
         type: FitnessMetricsType,
@@ -359,6 +393,13 @@ class HealthConnectDataManager(
         return timeChangesList
     }
 
+    /**
+     * Get list of time changes intervals.
+     *
+     * @param metrics contains last saved token
+     * @param timeChanges contains metric that we need to get
+     * @param onSuccess callback when needs to save last changesToken
+     */
     private suspend fun syncIntradayChangedBuckets(
         metrics: Set<AggregateMetric<*>>,
         timeChanges: List<Instant>,
@@ -406,6 +447,15 @@ class HealthConnectDataManager(
         }
     }
 
+    /**
+     * Make a full from first day of register app or during 30 days. Why 30 days? Because time of
+     * changeToken expiration is 30 days.
+     *
+     * @param metrics contains metrics for HealthConnect that we need to sync
+     * @param lowerDateBoundary contains first date of application sync
+     * @param isIntradaySync boolean variable returns true if it is intraday sync
+     * @param onSuccess callback when needs to save last changesToken
+     */
     private suspend fun makeFullSync(
         metrics: Set<AggregateMetric<*>>,
         lowerDateBoundary: Date?,
@@ -415,7 +465,10 @@ class HealthConnectDataManager(
         val zone = ZoneOffset.UTC
         val now = Instant.now().atZone(zone).toLocalDateTime().withSecond(ZERO).withNano(ZERO)
             .toInstant(zone)
-        val thirtyDaysAgo = now.minus(Duration.ofDays(THIRTY_DAYS))
+        // For daily sync we need to make sync during 29 days because HealthConnect returns us not
+        // full aggregate data for first day
+        val minusDays = if (isIntradaySync) THIRTY_DAYS else TWENTY_NINE_DAYS
+        val thirtyDaysAgo = now.minus(Duration.ofDays(minusDays))
         var start =
             if (lowerDateBoundary != null && lowerDateBoundary.toInstant() > thirtyDaysAgo) {
                 lowerDateBoundary.toInstant()
@@ -423,6 +476,7 @@ class HealthConnectDataManager(
                 thirtyDaysAgo
             }
 
+        // create a list of days
         val days = mutableListOf<Instant>()
         while (start < now) {
             days.add(start)
@@ -430,14 +484,18 @@ class HealthConnectDataManager(
         }
         days.add(now)
 
+        // make sync day by day because HealthConnect has 5000 buckets limit and if there will be
+        // more than 5000 buckets - we will get an exception
         for (i in 0..<days.size) {
             // Read 1-minute buckets by every day
             if (isIntradaySync) {
+                val startTime = days[i].atZone(zone).toLocalDate().atStartOfDay()
+                val endTime = startTime.plusDays(1)
                 val buckets: List<AggregationResultGroupedByDuration> =
                     client.aggregateGroupByDuration(
                         AggregateGroupByDurationRequest(
                             metrics = metrics,
-                            timeRangeFilter = TimeRangeFilter.between(days[i], days[i + 1]),
+                            timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
                             timeRangeSlicer = Duration.ofMinutes(1)
                         )
                     )
@@ -445,6 +503,7 @@ class HealthConnectDataManager(
                     uploadIntradayBuckets(buckets)
                 }
             } else {
+                // Read aggregate data day by day
                 val startTime = days[i].atZone(zone).toLocalDate().atStartOfDay()
                 val endTime = startTime.plusDays(1)
                 val buckets: List<AggregationResultGroupedByPeriod> = client.aggregateGroupByPeriod(
@@ -461,6 +520,12 @@ class HealthConnectDataManager(
         onSuccess()
     }
 
+    /**
+     * Uploads intraday buckets. Get buckets, sort them by time, find total calories, active
+     * calories, heart rate and upload them if they are not empty
+     *
+     * @param buckets list of updated buckets
+     */
     private fun uploadIntradayBuckets(buckets: List<AggregationResultGroupedByDuration>) {
         val zone = ZoneOffset.UTC
 
@@ -531,6 +596,13 @@ class HealthConnectDataManager(
             }
     }
 
+    /**
+     * Sync daily changed buckets.
+     *
+     * @param metrics contains metrics for HealthConnect that we need to sync
+     * @param timeChanges contains metric that we need to get
+     * @param onSuccess callback when upload did successful
+     */
     private suspend fun syncDailyChangedBuckets(
         metrics: Set<AggregateMetric<*>>,
         timeChanges: List<Instant>,
@@ -551,6 +623,7 @@ class HealthConnectDataManager(
 
         val localZoneOffset = ZoneId.systemDefault().rules.getOffset(todayStart)
 
+        // upload buckets by day period
         if (buckets.isNotEmpty()) {
             val changedBuckets = mutableListOf<AggregationResultGroupedByPeriod>()
             timeChanges
@@ -572,6 +645,12 @@ class HealthConnectDataManager(
         }
     }
 
+    /**
+     * Upload daily buckets by day period.
+     *
+     * @param buckets contains buckets that we need to upload
+     * @param onSuccess callback when upload did successful
+     */
     private fun uploadDailyBucketsByPeriod(
         buckets: List<AggregationResultGroupedByPeriod>,
         onSuccess: () -> Unit,

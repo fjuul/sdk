@@ -1,10 +1,13 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.work.WorkManager;
 
 import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthenticationFlowRequired;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
@@ -20,13 +23,11 @@ import com.fjuul.sdk.core.exceptions.FjuulException;
 import com.fjuul.sdk.core.utils.Logger;
 import com.google.android.gms.tasks.Task;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.work.WorkManager;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The `ActivitySourcesManager` encapsulates connection to fitness trackers, access to current user's tracker
@@ -150,7 +151,7 @@ public final class ActivitySourcesManager {
             client.getBaseUrl());
         if (isGoogleFitInit) {
             GoogleFitActivitySource.initialize(client, config);
-        } else  {
+        } else {
             HealthConnectActivitySource.initialize(client, config);
         }
 
@@ -284,11 +285,11 @@ public final class ActivitySourcesManager {
      * GoogleFitActivitySource, this will revoke GoogleFit OAuth permissions.
      *
      * @param sourceConnection current connection to disconnect
-     * @param callback callback bringing the operation result
+     * @param callback         callback bringing the operation result
      */
     @SuppressLint("NewApi")
     public void disconnect(@NonNull final ActivitySourceConnection sourceConnection,
-        @NonNull final Callback<Void> callback) {
+                           @NonNull final Callback<Void> callback) {
         // TODO: validate if sourceConnection was already ended ?
         final Runnable runnableDisconnect = () -> {
             sourcesService.disconnect(sourceConnection).enqueue((call, apiCallResult) -> {

@@ -1,14 +1,13 @@
 package com.fjuul.sdk.activitysources.entities.internal;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig;
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
 
 public class BackgroundWorkManager {
     @NonNull
@@ -17,7 +16,7 @@ public class BackgroundWorkManager {
     private final ActivitySourceWorkScheduler workScheduler;
 
     public BackgroundWorkManager(@NonNull ActivitySourcesManagerConfig config,
-                                 @NonNull ActivitySourceWorkScheduler workScheduler) {
+        @NonNull ActivitySourceWorkScheduler workScheduler) {
         this.config = config;
         this.workScheduler = workScheduler;
     }
@@ -74,7 +73,8 @@ public class BackgroundWorkManager {
             case ENABLED: {
                 final Set<FitnessMetricsType> intradayMetrics = config.getCollectableHCFitnessMetrics()
                     .stream()
-                    .filter(type -> FitnessMetricsType.isIntradayMetricType(type) || FitnessMetricsType.isDailyMetricType(type))
+                    .filter(type -> FitnessMetricsType.isIntradayMetricType(type)
+                        || FitnessMetricsType.isDailyMetricType(type))
                     .collect(Collectors.toSet());
                 if (intradayMetrics.isEmpty()) {
                     workScheduler.cancelHCIntradaySyncWork();

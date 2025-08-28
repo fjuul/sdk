@@ -8,9 +8,9 @@ import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
 import com.fjuul.sdk.activitysources.workers.GFIntradaySyncWorker;
 import com.fjuul.sdk.activitysources.workers.GFSessionsSyncWorker;
 import com.fjuul.sdk.activitysources.workers.GFSyncWorker;
+import com.fjuul.sdk.activitysources.workers.HCIntradaySyncWorker;
 import com.fjuul.sdk.activitysources.workers.HCProfileSyncWorker;
 import com.fjuul.sdk.activitysources.workers.ProfileSyncWorker;
-import com.fjuul.sdk.activitysources.workers.HCIntradaySyncWorker;
 
 import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
@@ -148,9 +148,7 @@ public class ActivitySourceWorkScheduler {
     }
 
     @SuppressLint("NewApi")
-    public synchronized void scheduleHCIntradaySyncWork(
-        @NonNull Set<FitnessMetricsType> intradayMetrics
-    ) {
+    public synchronized void scheduleHCIntradaySyncWork(@NonNull Set<FitnessMetricsType> intradayMetrics) {
         if (hcIntradaySyncWorkEnqueued) {
             return;
         }
@@ -189,8 +187,9 @@ public class ActivitySourceWorkScheduler {
                 .setInitialDelay(5, TimeUnit.MINUTES)
                 .setInputData(inputWorkRequestData)
                 .build();
-        workManager
-            .enqueueUniquePeriodicWork(HC_PROFILE_SYNC_WORK_NAME, ExistingPeriodicWorkPolicy.UPDATE, periodicWorkRequest);
+        workManager.enqueueUniquePeriodicWork(HC_PROFILE_SYNC_WORK_NAME,
+            ExistingPeriodicWorkPolicy.UPDATE,
+            periodicWorkRequest);
         hcProfileSyncWorkEnqueued = true;
     }
 

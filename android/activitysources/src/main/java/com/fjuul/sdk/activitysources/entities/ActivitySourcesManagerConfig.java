@@ -1,15 +1,14 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * A configuration class for the ActivitySourceManager that configures its behavior using the specified parameters.
@@ -214,9 +213,9 @@ public class ActivitySourcesManagerConfig {
          * Enables background syncing of intraday data from Health connect. The types of data to be collected will be
          * determined by the set of collectable fitness metrics. If intraday types are not included in the collectable
          * fitness metrics, the background synchronization will be disabled.<br>
-         * Note: SDK will schedule background syncs only if there is a current connection to Health connect. In other words,
-         * this option expresses an intent to have the background synchronization when it's applicable but it doesn't
-         * mean a requirement of the connection to Health Connect.
+         * Note: SDK will schedule background syncs only if there is a current connection to Health connect. In other
+         * words, this option expresses an intent to have the background synchronization when it's applicable but it
+         * doesn't mean a requirement of the connection to Health Connect.
          *
          * @return configured builder
          */
@@ -328,8 +327,8 @@ public class ActivitySourcesManagerConfig {
         }
 
         /**
-         * Disables any kind of health connect background syncs. Use this building method if you want to sure that everything must be
-         * synchronized only manually by explicit invocations.
+         * Disables any kind of health connect background syncs. Use this building method if you want to sure that
+         * everything must be synchronized only manually by explicit invocations.
          *
          * @return configured builder
          */
@@ -388,9 +387,9 @@ public class ActivitySourcesManagerConfig {
         }
 
         /**
-         * Defines the set of fitness metrics to be collected by local trackers (i.e. Health Connect). The set of metrics is
-         * used to determine a list of requested permissions for local activity sources, and to determine background
-         * tasks for syncing data from Health Connect. <br>
+         * Defines the set of fitness metrics to be collected by local trackers (i.e. Health Connect). The set of
+         * metrics is used to determine a list of requested permissions for local activity sources, and to determine
+         * background tasks for syncing data from Health Connect. <br>
          * It's allowed to provide an empty set if you intend to use only external activity sources. <br>
          * NOTE: this doesn't affect external trackers and how they request permissions.
          *
@@ -462,7 +461,11 @@ public class ActivitySourcesManagerConfig {
     @NonNull
     public static ActivitySourcesManagerConfig buildHCDefaultConfig() {
         final Set<FitnessMetricsType> fitnessMetrics =
-            Stream.of(FitnessMetricsType.INTRADAY_CALORIES, FitnessMetricsType.STEPS, FitnessMetricsType.HEIGHT, FitnessMetricsType.WEIGHT)
+            Stream
+                .of(FitnessMetricsType.INTRADAY_CALORIES,
+                    FitnessMetricsType.STEPS,
+                    FitnessMetricsType.HEIGHT,
+                    FitnessMetricsType.WEIGHT)
                 .collect(Collectors.toSet());
         return new Builder().enableHealthConnectIntradayBackgroundSync()
             .enableHealthConnectProfileBackgroundSync()

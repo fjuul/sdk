@@ -36,7 +36,7 @@ public class ActivitySourcesManagerConfigTest {
                         .collect(Collectors.toSet()))
                 .enableGoogleFitBackgroundSync(Duration.ofMinutes(60));
             try {
-                subject.build();
+                subject.build(true);
                 assertTrue("should throw the exception", false);
             } catch (Exception exc) {
                 assertThat(exc, instanceOf(NullPointerException.class));

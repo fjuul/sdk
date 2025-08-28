@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -88,7 +89,7 @@ public class GFIntradaySyncWorkerTest {
                 final ArgumentCaptor<ActivitySourcesManagerConfig> configCaptor =
                     ArgumentCaptor.forClass(ActivitySourcesManagerConfig.class);
                 sourcesManagerStaticMock.verify(() -> {
-                    ActivitySourcesManager.initialize(apiClientCaptor.capture(), configCaptor.capture(), true);
+                    ActivitySourcesManager.initialize(apiClientCaptor.capture(), configCaptor.capture(), eq(true));
                 });
                 final ApiClient apiClient = apiClientCaptor.getValue();
                 assertEquals("api client should be initialized with user token from the input data",

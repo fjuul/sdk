@@ -411,22 +411,25 @@ public class ActivitySourcesManagerConfig {
          * @return config
          */
         @NonNull
-        public ActivitySourcesManagerConfig build() {
+        public ActivitySourcesManagerConfig build(boolean isGoogleFit) {
             if (created) {
                 throw new IllegalStateException("Do not reuse the builder for creating new instance");
             }
-            Objects.requireNonNull(config.googleFitIntradayBackgroundSyncMode,
-                "GoogleFit intraday background sync mode must be set");
-            Objects.requireNonNull(config.googleFitSessionsBackgroundSyncMode,
-                "GoogleFit sessions background sync mode must be set");
-            Objects.requireNonNull(config.profileBackgroundSyncMode,
-                "GoogleFit profile background sync mode must be set");
-            Objects.requireNonNull(config.collectableFitnessMetrics, "Collectable fitness metrics must be set");
-            Objects.requireNonNull(config.healthConnectIntradayBackgroundSyncMode,
-                "HealthConnect intraday background sync mode must be set");
-            Objects.requireNonNull(config.healthConnectProfileSyncMode,
-                "HealthConnect profile background sync mode must be set");
-            Objects.requireNonNull(config.collectableHCFitnessMetrics, "Collectable fitness metrics must be set");
+            if (isGoogleFit) {
+                Objects.requireNonNull(config.googleFitIntradayBackgroundSyncMode,
+                    "GoogleFit intraday background sync mode must be set");
+                Objects.requireNonNull(config.googleFitSessionsBackgroundSyncMode,
+                    "GoogleFit sessions background sync mode must be set");
+                Objects.requireNonNull(config.profileBackgroundSyncMode,
+                    "GoogleFit profile background sync mode must be set");
+                Objects.requireNonNull(config.collectableFitnessMetrics, "Collectable fitness metrics must be set");
+            } else  {
+                Objects.requireNonNull(config.healthConnectIntradayBackgroundSyncMode,
+                    "HealthConnect intraday background sync mode must be set");
+                Objects.requireNonNull(config.healthConnectProfileSyncMode,
+                    "HealthConnect profile background sync mode must be set");
+                Objects.requireNonNull(config.collectableHCFitnessMetrics, "Collectable fitness metrics must be set");
+            }
             this.created = true;
             return config;
         }
@@ -448,7 +451,7 @@ public class ActivitySourcesManagerConfig {
             .disableGoogleFitSessionsBackgroundSync()
             .enableProfileBackgroundSync()
             .setCollectableFitnessMetrics(fitnessMetrics)
-            .build();
+            .build(true);
     }
 
     /**
@@ -470,6 +473,6 @@ public class ActivitySourcesManagerConfig {
         return new Builder().enableHealthConnectIntradayBackgroundSync()
             .enableHealthConnectProfileBackgroundSync()
             .setCollectableHCFitnessMetrics(fitnessMetrics)
-            .build();
+            .build(false);
     }
 }

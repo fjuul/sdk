@@ -54,6 +54,9 @@ class LoginFragment : Fragment() {
             .enableGoogleFitBackgroundSync(minSessionDuration)
             .enableProfileBackgroundSync()
             .setCollectableFitnessMetrics(allFitnessMetrics)
+            .enableHealthConnectIntradayBackgroundSync()
+            .enableHealthConnectProfileBackgroundSync()
+            .setCollectableHCFitnessMetrics(allFitnessMetrics)
             .build()
     }
 
@@ -142,7 +145,8 @@ class LoginFragment : Fragment() {
                     .build()
                 authorizedUserDataViewModel.fetchUserProfile(apiClient) { success, exception ->
                     ApiClientHolder.setup(apiClient)
-                    ActivitySourcesManager.initialize(apiClient, activitySourcesManagerConfig)
+                    ActivitySourcesManager.initialize(apiClient, activitySourcesManagerConfig, true)
+                    ActivitySourcesManager.initialize(apiClient, activitySourcesManagerConfig, false)
                     if (success) {
                         val action = LoginFragmentDirections.actionLoginFragmentToModulesFragment()
                         findNavController().navigate(action)

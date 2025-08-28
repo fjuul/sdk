@@ -98,7 +98,7 @@ class HealthConnectActivitySource private constructor(
                 val permMgr = HealthConnectPermissionManager(
                     context = context,
                     healthConnectClient = hcClient,
-                    allAvailableMetrics = config.collectableFitnessMetrics
+                    allAvailableMetrics = config.collectableHCFitnessMetrics
                 )
                 instance = HealthConnectActivitySource(dataMgr, permMgr)
             }

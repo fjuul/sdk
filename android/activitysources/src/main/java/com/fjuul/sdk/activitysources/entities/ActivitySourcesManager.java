@@ -11,6 +11,7 @@ import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceWorkScheduler;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourcesStateStore;
 import com.fjuul.sdk.activitysources.entities.internal.BackgroundWorkManager;
+import com.fjuul.sdk.activitysources.exceptions.ActivitySourcesApiExceptions;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.Callback;
@@ -98,12 +99,29 @@ public final class ActivitySourcesManager {
      * </ul>
      *
      * @param client configured client with signing ability and user credentials
-     * @see #initialize(ApiClient, ActivitySourcesManagerConfig)
+     * @see #initialize(ApiClient, ActivitySourcesManagerConfig, boolean)
      */
     @SuppressLint("NewApi")
     public static synchronized void initialize(@NonNull ApiClient client) {
-        initialize(client, ActivitySourcesManagerConfig.buildDefault());
+        initialize(client, ActivitySourcesManagerConfig.buildDefault(), true);
     }
+
+    /**
+     * Initialize the singleton with the default health connect config. With the default config:
+     * <ul>
+     * <li>all fitness metrics will be taken into account;</li>
+     * <li>periodic background works for syncing intraday and daily data of Health Connect will be automatically scheduled
+     * if a user has a current Health Connect connection.</li>
+     * </ul>
+     *
+     * @param client configured client with signing ability and user credentials
+     * @see #initialize(ApiClient, ActivitySourcesManagerConfig, boolean)
+     */
+    @SuppressLint("NewApi")
+    public static synchronized void initializeHealthConnect(@NonNull ApiClient client) {
+        initialize(client, ActivitySourcesManagerConfig.buildHCDefaultConfig(), false);
+    }
+
 
     /**
      * Initialize the singleton with the provided config. <br>
@@ -118,7 +136,7 @@ public final class ActivitySourcesManager {
      */
     @SuppressLint("NewApi")
     public static synchronized void initialize(@NonNull ApiClient client,
-        @NonNull ActivitySourcesManagerConfig config) {
+        @NonNull ActivitySourcesManagerConfig config, boolean isGoogleFitInit) {
         final ActivitySourcesStateStore stateStore = new ActivitySourcesStateStore(client.getStorage());
         final List<TrackerConnection> storedConnections = stateStore.getConnections();
         final CopyOnWriteArrayList<TrackerConnection> currentConnections =
@@ -130,8 +148,11 @@ public final class ActivitySourcesManager {
             client.getUserSecret(),
             client.getApiKey(),
             client.getBaseUrl());
-        GoogleFitActivitySource.initialize(client, config);
-        HealthConnectActivitySource.initialize(client, config);
+        if (isGoogleFitInit) {
+            GoogleFitActivitySource.initialize(client, config);
+        } else  {
+            HealthConnectActivitySource.initialize(client, config);
+        }
 
         final BackgroundWorkManager backgroundWorkManager = new BackgroundWorkManager(config, scheduler);
         final ActivitySourceResolver activitySourceResolver = new ActivitySourceResolver();
@@ -141,7 +162,12 @@ public final class ActivitySourcesManager {
             stateStore,
             activitySourceResolver,
             currentConnections);
-        newInstance.configureExternalStateByConnections(currentConnections);
+        if (isGoogleFitInit) {
+            newInstance.configureGoogleFitState(currentConnections);
+        } else {
+            newInstance.configureHealthConnectState(currentConnections);
+        }
+
         instance = newInstance;
         Logger.get().d("initialized successfully (the previous one could be overridden)");
     }
@@ -240,7 +266,9 @@ public final class ActivitySourcesManager {
                 return;
             }
             ConnectionResult connectionResult = apiCallResult.getValue();
-            if (connectionResult instanceof ExternalAuthenticationFlowRequired) {
+            if (connectionResult instanceof ConnectionResult.Connected) {
+                callback.onResult(Result.error(new ActivitySourcesApiExceptions.SourceAlreadyConnectedException("Activity source was already connected")));
+            } else if (connectionResult instanceof ExternalAuthenticationFlowRequired) {
                 final String url = ((ExternalAuthenticationFlowRequired) connectionResult).getUrl();
                 final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 callback.onResult(Result.value(intent));
@@ -276,7 +304,8 @@ public final class ActivitySourcesManager {
                     .orElse(null);
                 this.currentConnections.remove(connectionToRemove);
                 this.stateStore.setConnections(this.currentConnections);
-                this.configureExternalStateByConnections(currentConnections);
+                this.configureGoogleFitState(currentConnections);
+                this.configureHealthConnectState(currentConnections);
                 callback.onResult(Result.value(null));
             });
         };
@@ -331,7 +360,8 @@ public final class ActivitySourcesManager {
             }
             final CopyOnWriteArrayList<TrackerConnection> freshTrackerConnections =
                 new CopyOnWriteArrayList(apiCallResult.getValue());
-            configureExternalStateByConnections(freshTrackerConnections);
+            configureGoogleFitState(freshTrackerConnections);
+            configureHealthConnectState(freshTrackerConnections);
             stateStore.setConnections(freshTrackerConnections);
             this.currentConnections = freshTrackerConnections;
             if (callback != null) {
@@ -366,12 +396,6 @@ public final class ActivitySourcesManager {
         return sourceConnectionsStream.collect(Collectors.toList());
     }
 
-    @SuppressLint("NewApi")
-    private void configureExternalStateByConnections(@Nullable List<TrackerConnection> trackerConnections) {
-        configureGoogleFitState(trackerConnections);
-        configureHealthConnectState(trackerConnections);
-    }
-
     private void configureGoogleFitState(@Nullable List<TrackerConnection> trackerConnections) {
         final TrackerConnection gfTrackerConnection = Optional.ofNullable(trackerConnections)
             .flatMap(connections -> connections.stream()
@@ -403,6 +427,14 @@ public final class ActivitySourcesManager {
                 .filter(c -> c.getTracker().equals(TrackerValue.HEALTH_CONNECT.getValue()))
                 .findFirst())
             .orElse(null);
+
+        if (hcTrackerConnection != null) {
+            backgroundWorkManager.configureHCProfileSyncWork();
+            backgroundWorkManager.configureHCSyncWorks();
+        } else {
+            backgroundWorkManager.cancelHCSyncWorks();
+            backgroundWorkManager.cancelHCProfileSyncWork();
+        }
 
         final HealthConnectActivitySource healthConnect = (HealthConnectActivitySource) activitySourceResolver
             .getInstanceByTrackerValue(TrackerValue.HEALTH_CONNECT.getValue());

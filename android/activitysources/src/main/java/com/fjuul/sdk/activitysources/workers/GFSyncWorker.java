@@ -52,7 +52,7 @@ public abstract class GFSyncWorker extends Worker {
                 new ActivitySourcesManagerConfig.Builder().keepUntouchedBackgroundSync()
                     .setCollectableFitnessMetrics(Collections.emptySet())
                     .build();
-            ActivitySourcesManager.initialize(client, config);
+            ActivitySourcesManager.initialize(client, config, true);
             sourcesManager = ActivitySourcesManager.getInstance();
         }
         return sourcesManager;

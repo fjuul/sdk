@@ -88,7 +88,7 @@ public class GFIntradaySyncWorkerTest {
                 final ArgumentCaptor<ActivitySourcesManagerConfig> configCaptor =
                     ArgumentCaptor.forClass(ActivitySourcesManagerConfig.class);
                 sourcesManagerStaticMock.verify(() -> {
-                    ActivitySourcesManager.initialize(apiClientCaptor.capture(), configCaptor.capture());
+                    ActivitySourcesManager.initialize(apiClientCaptor.capture(), configCaptor.capture(), true);
                 });
                 final ApiClient apiClient = apiClientCaptor.getValue();
                 assertEquals("api client should be initialized with user token from the input data",

@@ -119,5 +119,7 @@ class HealthConnectPermissionManager(
             if (FitnessMetricsType.WEIGHT in metrics) {
                 add(HealthPermission.getReadPermission(WeightRecord::class))
             }
+
+            add(HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND)
         }
 }

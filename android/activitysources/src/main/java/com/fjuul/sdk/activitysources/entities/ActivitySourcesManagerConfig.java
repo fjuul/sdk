@@ -423,7 +423,7 @@ public class ActivitySourcesManagerConfig {
                 Objects.requireNonNull(config.profileBackgroundSyncMode,
                     "GoogleFit profile background sync mode must be set");
                 Objects.requireNonNull(config.collectableFitnessMetrics, "Collectable fitness metrics must be set");
-            } else  {
+            } else {
                 Objects.requireNonNull(config.healthConnectIntradayBackgroundSyncMode,
                     "HealthConnect intraday background sync mode must be set");
                 Objects.requireNonNull(config.healthConnectProfileSyncMode,

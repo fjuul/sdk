@@ -33,7 +33,10 @@ class HealthConnectSyncViewModel : ViewModel() {
         }
 
         val metricsToTrack = mutableSetOf<FitnessMetricsType>()
-        if (calories) metricsToTrack.add(FitnessMetricsType.INTRADAY_CALORIES)
+        if (calories) {
+            metricsToTrack.add(FitnessMetricsType.INTRADAY_ACTIVE_CALORIES)
+            metricsToTrack.add(FitnessMetricsType.INTRADAY_TOTAL_CALORIES)
+        }
         if (heartRate) metricsToTrack.add(FitnessMetricsType.INTRADAY_HEART_RATE)
 
         val options = HealthConnectSyncOptions(

@@ -112,15 +112,19 @@ class HealthConnectDataManager(
             }
         }
 
-        var caloriesTimeChanges = mutableListOf<Instant>()
+        val activeCaloriesTimeChanges = mutableListOf<Instant>()
+        val totalCaloriesTimeChanges = mutableListOf<Instant>()
         var storedActiveCaloriesChangesToken = storage.get(ACTIVE_CALORIES_CHANGES_TOKEN)
         var storedTotalCaloriesChangesToken = storage.get(TOTAL_CALORIES_CHANGES_TOKEN)
-        val caloriesMetric =
-            setOf(FitnessMetricsType.INTRADAY_CALORIES).flatMap { it.toAggregateMetrics() }
+        val activeCaloriesMetric =
+            setOf(FitnessMetricsType.INTRADAY_ACTIVE_CALORIES).flatMap { it.toAggregateMetrics() }
                 .toSet()
-        if (options.metrics.contains(FitnessMetricsType.INTRADAY_CALORIES)) {
+        val totalCaloriesMetric =
+            setOf(FitnessMetricsType.INTRADAY_TOTAL_CALORIES).flatMap { it.toAggregateMetrics() }
+                .toSet()
+        if (options.metrics.contains(FitnessMetricsType.INTRADAY_ACTIVE_CALORIES)) {
             if (storedActiveCaloriesChangesToken.isNullOrEmpty()) {
-                makeFullSync(caloriesMetric, lowerDateBoundary, true) {
+                makeFullSync(activeCaloriesMetric, lowerDateBoundary, true) {
                     CoroutineScope(Dispatchers.IO).launch {
                         val activeCaloriesChangesToken = client.getChangesToken(
                             ChangesTokenRequest(recordTypes = setOf(ActiveCaloriesBurnedRecord::class))
@@ -131,8 +135,31 @@ class HealthConnectDataManager(
                 }
             }
 
+            if (!storedActiveCaloriesChangesToken.isNullOrEmpty()) {
+                activeCaloriesTimeChanges.addAll(
+                    getTimeChangesList(
+                        token = storedActiveCaloriesChangesToken,
+                        type = FitnessMetricsType.INTRADAY_ACTIVE_CALORIES,
+                        onTokenSave = { changedToken ->
+                            storedActiveCaloriesChangesToken = changedToken
+                        },
+                        onChangesTokenExpired = {
+                            tokenExpired(
+                                recordTypes = setOf(ActiveCaloriesBurnedRecord::class),
+                                metrics = activeCaloriesMetric,
+                                changesTokenKey = ACTIVE_CALORIES_CHANGES_TOKEN,
+                                lowerDateBoundary = lowerDateBoundary,
+                                isIntradaySync = true
+                            )
+                        },
+                    )
+                )
+            }
+        }
+
+        if (options.metrics.contains(FitnessMetricsType.INTRADAY_TOTAL_CALORIES)) {
             if (storedTotalCaloriesChangesToken.isNullOrEmpty()) {
-                makeFullSync(caloriesMetric, lowerDateBoundary, true) {
+                makeFullSync(totalCaloriesMetric, lowerDateBoundary, true) {
                     CoroutineScope(Dispatchers.IO).launch {
                         val totalCaloriesChangesToken = client.getChangesToken(
                             ChangesTokenRequest(recordTypes = setOf(TotalCaloriesBurnedRecord::class))
@@ -142,39 +169,18 @@ class HealthConnectDataManager(
 
                 }
             }
-
-            if (!storedActiveCaloriesChangesToken.isNullOrEmpty()) {
-                caloriesTimeChanges =
-                    getTimeChangesList(
-                        token = storedActiveCaloriesChangesToken,
-                        type = FitnessMetricsType.INTRADAY_CALORIES,
-                        onTokenSave = { changedToken ->
-                            storedActiveCaloriesChangesToken = changedToken
-                        },
-                        onChangesTokenExpired = {
-                            tokenExpired(
-                                recordTypes = setOf(ActiveCaloriesBurnedRecord::class),
-                                metrics = caloriesMetric,
-                                changesTokenKey = ACTIVE_CALORIES_CHANGES_TOKEN,
-                                lowerDateBoundary = lowerDateBoundary,
-                                isIntradaySync = true
-                            )
-                        },
-                    )
-            }
-
             if (!storedTotalCaloriesChangesToken.isNullOrEmpty()) {
-                caloriesTimeChanges.addAll(
+                totalCaloriesTimeChanges.addAll(
                     getTimeChangesList(
                         token = storedTotalCaloriesChangesToken,
-                        type = FitnessMetricsType.INTRADAY_CALORIES,
+                        type = FitnessMetricsType.INTRADAY_TOTAL_CALORIES,
                         onTokenSave = { changedToken ->
                             storedTotalCaloriesChangesToken = changedToken
                         },
                         onChangesTokenExpired = {
                             tokenExpired(
                                 recordTypes = setOf(TotalCaloriesBurnedRecord::class),
-                                metrics = caloriesMetric,
+                                metrics = totalCaloriesMetric,
                                 changesTokenKey = TOTAL_CALORIES_CHANGES_TOKEN,
                                 lowerDateBoundary = lowerDateBoundary,
                                 isIntradaySync = true
@@ -189,8 +195,11 @@ class HealthConnectDataManager(
             storage.set(HEART_RATE_CHANGES_TOKEN, storedHeartRateChangesToken)
         }
 
-        syncIntradayChangedBuckets(caloriesMetric, caloriesTimeChanges) {
+        syncIntradayChangedBuckets(activeCaloriesMetric, activeCaloriesTimeChanges) {
             storage.set(ACTIVE_CALORIES_CHANGES_TOKEN, storedActiveCaloriesChangesToken)
+        }
+
+        syncIntradayChangedBuckets(totalCaloriesMetric, totalCaloriesTimeChanges) {
             storage.set(TOTAL_CALORIES_CHANGES_TOKEN, storedTotalCaloriesChangesToken)
         }
     }
@@ -356,14 +365,14 @@ class HealthConnectDataManager(
                             }
 
                             is ActiveCaloriesBurnedRecord -> {
-                                if (type == FitnessMetricsType.INTRADAY_CALORIES) {
+                                if (type == FitnessMetricsType.INTRADAY_ACTIVE_CALORIES) {
                                     timeChangesList.add(record.startTime)
                                     timeChangesList.add(record.endTime)
                                 }
                             }
 
                             is TotalCaloriesBurnedRecord -> {
-                                if (type == FitnessMetricsType.INTRADAY_CALORIES) {
+                                if (type == FitnessMetricsType.INTRADAY_TOTAL_CALORIES) {
                                     timeChangesList.add(record.startTime)
                                     timeChangesList.add(record.endTime)
                                 }
@@ -405,6 +414,7 @@ class HealthConnectDataManager(
         timeChanges: List<Instant>,
         onSuccess: () -> Unit,
     ) {
+        val zone = ZoneOffset.UTC
         if (timeChanges.isNotEmpty()) {
             var start = timeChanges.sorted()[0]
             val now = Instant.now()
@@ -416,13 +426,15 @@ class HealthConnectDataManager(
             }
             days.add(now)
 
-            for (i in 0..<days.size - 1) {
+            for (i in 0..<days.size) {
                 // Read 1-minute buckets by every day
+                val startTime = days[i].atZone(zone).toLocalDate().atStartOfDay()
+                val endTime = startTime.plusDays(1)
                 val buckets: List<AggregationResultGroupedByDuration> =
                     client.aggregateGroupByDuration(
                         AggregateGroupByDurationRequest(
                             metrics = metrics,
-                            timeRangeFilter = TimeRangeFilter.between(days[i], days[i + 1]),
+                            timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
                             timeRangeSlicer = Duration.ofMinutes(1)
                         )
                     )
@@ -432,7 +444,12 @@ class HealthConnectDataManager(
                     timeChanges
                         .sorted()
                         .forEach { time ->
-                            buckets.firstOrNull { (it.startTime > time && it.endTime < time) || it.startTime == time || it.endTime == time }
+                            buckets.firstOrNull {
+                                // do it because AggregationResultGroupedByDuration gets us startTime
+                                // and endTime in current time zone
+                                val startTimeUtc = it.startTime.atZone(zone).toInstant()
+                                val endTimeUtc = it.endTime.atZone(zone).toInstant()
+                                (startTimeUtc > time && endTimeUtc < time) || startTimeUtc == time || endTimeUtc == time }
                                 ?.let { changedBucket ->
                                     changedBuckets.add(changedBucket)
                                 }
@@ -463,6 +480,7 @@ class HealthConnectDataManager(
         onSuccess: () -> Unit,
     ) {
         val zone = ZoneOffset.UTC
+        // makes seconds and milliseconds 0
         val now = Instant.now().atZone(zone).toLocalDateTime().withSecond(ZERO).withNano(ZERO)
             .toInstant(zone)
         // For daily sync we need to make sync during 29 days because HealthConnect returns us not
@@ -761,19 +779,27 @@ class HealthConnectDataManager(
 private fun FitnessMetricsType.toAggregateMetrics(): Set<AggregateMetric<*>> = when (this) {
     FitnessMetricsType.INTRADAY_CALORIES -> setOf(
         TotalCaloriesBurnedRecord.ENERGY_TOTAL,
-        ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL
+        ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL,
+    )
+
+    FitnessMetricsType.INTRADAY_ACTIVE_CALORIES -> setOf(
+        ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL,
+    )
+
+    FitnessMetricsType.INTRADAY_TOTAL_CALORIES -> setOf(
+        TotalCaloriesBurnedRecord.ENERGY_TOTAL,
     )
 
     FitnessMetricsType.INTRADAY_HEART_RATE -> setOf(
         HeartRateRecord.BPM_MIN,
         HeartRateRecord.BPM_AVG,
-        HeartRateRecord.BPM_MAX
+        HeartRateRecord.BPM_MAX,
     )
 
     FitnessMetricsType.RESTING_HEART_RATE -> setOf(
         RestingHeartRateRecord.BPM_MIN,
         RestingHeartRateRecord.BPM_AVG,
-        RestingHeartRateRecord.BPM_MAX
+        RestingHeartRateRecord.BPM_MAX,
     )
 
     FitnessMetricsType.STEPS -> setOf(StepsRecord.COUNT_TOTAL)

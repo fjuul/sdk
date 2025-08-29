@@ -116,13 +116,9 @@ class HealthConnectDataManager(
         val totalCaloriesTimeChanges = mutableListOf<Instant>()
         var storedActiveCaloriesChangesToken = storage.get(ACTIVE_CALORIES_CHANGES_TOKEN)
         var storedTotalCaloriesChangesToken = storage.get(TOTAL_CALORIES_CHANGES_TOKEN)
-        val activeCaloriesMetric =
-            setOf(FitnessMetricsType.INTRADAY_ACTIVE_CALORIES).flatMap { it.toAggregateMetrics() }
-                .toSet()
-        val totalCaloriesMetric =
-            setOf(FitnessMetricsType.INTRADAY_TOTAL_CALORIES).flatMap { it.toAggregateMetrics() }
-                .toSet()
-        if (options.metrics.contains(FitnessMetricsType.INTRADAY_ACTIVE_CALORIES)) {
+        val activeCaloriesMetric = setOf(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL)
+        val totalCaloriesMetric = setOf(TotalCaloriesBurnedRecord.ENERGY_TOTAL)
+        if (options.metrics.contains(FitnessMetricsType.INTRADAY_CALORIES)) {
             if (storedActiveCaloriesChangesToken.isNullOrEmpty()) {
                 makeFullSync(activeCaloriesMetric, lowerDateBoundary, true) {
                     CoroutineScope(Dispatchers.IO).launch {
@@ -139,7 +135,7 @@ class HealthConnectDataManager(
                 activeCaloriesTimeChanges.addAll(
                     getTimeChangesList(
                         token = storedActiveCaloriesChangesToken,
-                        type = FitnessMetricsType.INTRADAY_ACTIVE_CALORIES,
+                        type = FitnessMetricsType.INTRADAY_CALORIES,
                         onTokenSave = { changedToken ->
                             storedActiveCaloriesChangesToken = changedToken
                         },
@@ -152,12 +148,13 @@ class HealthConnectDataManager(
                                 isIntradaySync = true
                             )
                         },
+                        isActiveCaloriesBurned = true,
                     )
                 )
             }
         }
 
-        if (options.metrics.contains(FitnessMetricsType.INTRADAY_TOTAL_CALORIES)) {
+        if (options.metrics.contains(FitnessMetricsType.INTRADAY_CALORIES)) {
             if (storedTotalCaloriesChangesToken.isNullOrEmpty()) {
                 makeFullSync(totalCaloriesMetric, lowerDateBoundary, true) {
                     CoroutineScope(Dispatchers.IO).launch {
@@ -173,7 +170,7 @@ class HealthConnectDataManager(
                 totalCaloriesTimeChanges.addAll(
                     getTimeChangesList(
                         token = storedTotalCaloriesChangesToken,
-                        type = FitnessMetricsType.INTRADAY_TOTAL_CALORIES,
+                        type = FitnessMetricsType.INTRADAY_CALORIES,
                         onTokenSave = { changedToken ->
                             storedTotalCaloriesChangesToken = changedToken
                         },
@@ -344,6 +341,7 @@ class HealthConnectDataManager(
         type: FitnessMetricsType,
         onTokenSave: (String) -> Unit,
         onChangesTokenExpired: () -> Unit,
+        isActiveCaloriesBurned: Boolean? = null,
     ): MutableList<Instant> {
         val timeChangesList = mutableListOf<Instant>()
         var nextChangesToken = token
@@ -365,14 +363,14 @@ class HealthConnectDataManager(
                             }
 
                             is ActiveCaloriesBurnedRecord -> {
-                                if (type == FitnessMetricsType.INTRADAY_ACTIVE_CALORIES) {
+                                if (type == FitnessMetricsType.INTRADAY_CALORIES && isActiveCaloriesBurned == true) {
                                     timeChangesList.add(record.startTime)
                                     timeChangesList.add(record.endTime)
                                 }
                             }
 
                             is TotalCaloriesBurnedRecord -> {
-                                if (type == FitnessMetricsType.INTRADAY_TOTAL_CALORIES) {
+                                if (type == FitnessMetricsType.INTRADAY_CALORIES && isActiveCaloriesBurned == false) {
                                     timeChangesList.add(record.startTime)
                                     timeChangesList.add(record.endTime)
                                 }
@@ -780,14 +778,6 @@ private fun FitnessMetricsType.toAggregateMetrics(): Set<AggregateMetric<*>> = w
     FitnessMetricsType.INTRADAY_CALORIES -> setOf(
         TotalCaloriesBurnedRecord.ENERGY_TOTAL,
         ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL,
-    )
-
-    FitnessMetricsType.INTRADAY_ACTIVE_CALORIES -> setOf(
-        ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL,
-    )
-
-    FitnessMetricsType.INTRADAY_TOTAL_CALORIES -> setOf(
-        TotalCaloriesBurnedRecord.ENERGY_TOTAL,
     )
 
     FitnessMetricsType.INTRADAY_HEART_RATE -> setOf(

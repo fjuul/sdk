@@ -7,8 +7,6 @@ import androidx.annotation.NonNull;
  */
 public enum FitnessMetricsType {
     INTRADAY_CALORIES,
-    INTRADAY_ACTIVE_CALORIES,
-    INTRADAY_TOTAL_CALORIES,
     INTRADAY_HEART_RATE,
     INTRADAY_STEPS,
     /**
@@ -31,8 +29,7 @@ public enum FitnessMetricsType {
 
     public static boolean isIntradayMetricType(@NonNull FitnessMetricsType metricType) {
         return switch (metricType) {
-            case INTRADAY_HEART_RATE, INTRADAY_ACTIVE_CALORIES, INTRADAY_TOTAL_CALORIES,
-                 INTRADAY_CALORIES, INTRADAY_STEPS -> true;
+            case INTRADAY_HEART_RATE, INTRADAY_CALORIES, INTRADAY_STEPS -> true;
             default -> false;
         };
     }

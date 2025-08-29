@@ -426,8 +426,9 @@ class HealthConnectDataManager(
 
             for (i in 0..<days.size) {
                 // Read 1-minute buckets by every day
-                val startTime = days[i].atZone(zone).toLocalDate().atStartOfDay()
-                val endTime = startTime.plusDays(1)
+                val startTimeLocalDate = days[i].atZone(zone).toLocalDate().atStartOfDay()
+                val startTime = startTimeLocalDate.toInstant(zone)
+                val endTime = startTimeLocalDate.plusDays(1).toInstant(zone)
                 val buckets: List<AggregationResultGroupedByDuration> =
                     client.aggregateGroupByDuration(
                         AggregateGroupByDurationRequest(
@@ -505,8 +506,9 @@ class HealthConnectDataManager(
         for (i in 0..<days.size) {
             // Read 1-minute buckets by every day
             if (isIntradaySync) {
-                val startTime = days[i].atZone(zone).toLocalDate().atStartOfDay()
-                val endTime = startTime.plusDays(1)
+                val startTimeLocalDate = days[i].atZone(zone).toLocalDate().atStartOfDay()
+                val startTime = startTimeLocalDate.toInstant(zone)
+                val endTime = startTimeLocalDate.plusDays(1).toInstant(zone)
                 val buckets: List<AggregationResultGroupedByDuration> =
                     client.aggregateGroupByDuration(
                         AggregateGroupByDurationRequest(

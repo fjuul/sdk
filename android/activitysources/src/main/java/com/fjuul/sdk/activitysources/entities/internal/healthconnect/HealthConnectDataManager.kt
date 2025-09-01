@@ -180,9 +180,10 @@ class HealthConnectDataManager(
                                 metrics = totalCaloriesMetric,
                                 changesTokenKey = TOTAL_CALORIES_CHANGES_TOKEN,
                                 lowerDateBoundary = lowerDateBoundary,
-                                isIntradaySync = true
+                                isIntradaySync = true,
                             )
                         },
+                        isActiveCaloriesBurned = false,
                     )
                 )
             }

@@ -205,5 +205,15 @@
                 android:visibility="invisible" />
         </LinearLayout>
 
+        <Button
+            android:id="@+id/btnClearAllChangesTokens"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Clear all changes tokens"
+            android:layout_marginTop="20dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/profile_sync" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

@@ -45,6 +45,7 @@ class HealthConnectDataManager(
     private val client: HealthConnectClient,
     private val service: ActivitySourcesService,
     private val storage: IStorage,
+    private val zone: ZoneOffset = ZoneOffset.UTC,
 ) {
 
     companion object {
@@ -69,7 +70,7 @@ class HealthConnectDataManager(
     suspend fun syncIntraday(options: HealthConnectSyncOptions, lowerDateBoundary: Date?) {
         if (options.metrics.isEmpty()) throw HealthConnectException.NoMetricsSelectedException()
 
-        var heartRateTimeChanges = listOf<Instant>()
+        var heartRateTimeChanges = listOf<HealthConnectTimeInterval>()
         // get heartRate changesToken from our storage
         var storedHeartRateChangesToken = storage.get(HEART_RATE_CHANGES_TOKEN)
         val heartRateMetric =
@@ -112,8 +113,8 @@ class HealthConnectDataManager(
             }
         }
 
-        val activeCaloriesTimeChanges = mutableListOf<Instant>()
-        val totalCaloriesTimeChanges = mutableListOf<Instant>()
+        val activeCaloriesTimeChanges = mutableListOf<HealthConnectTimeInterval>()
+        val totalCaloriesTimeChanges = mutableListOf<HealthConnectTimeInterval>()
         var storedActiveCaloriesChangesToken = storage.get(ACTIVE_CALORIES_CHANGES_TOKEN)
         var storedTotalCaloriesChangesToken = storage.get(TOTAL_CALORIES_CHANGES_TOKEN)
         val activeCaloriesMetric = setOf(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL)
@@ -152,9 +153,7 @@ class HealthConnectDataManager(
                     )
                 )
             }
-        }
 
-        if (options.metrics.contains(FitnessMetricsType.INTRADAY_CALORIES)) {
             if (storedTotalCaloriesChangesToken.isNullOrEmpty()) {
                 makeFullSync(totalCaloriesMetric, lowerDateBoundary, true) {
                     CoroutineScope(Dispatchers.IO).launch {
@@ -213,7 +212,7 @@ class HealthConnectDataManager(
     suspend fun syncDaily(options: HealthConnectSyncOptions, lowerDateBoundary: Date?) {
         if (options.metrics.isEmpty()) throw HealthConnectException.NoMetricsSelectedException()
 
-        var restingHeartRateTimeChanges = listOf<Instant>()
+        var restingHeartRateTimeChanges = listOf<HealthConnectTimeInterval>()
         var restingHeartRateChangesToken = storage.get(RESTING_HEART_RATE_CHANGES_TOKEN)
         val heartRateMetric =
             setOf(FitnessMetricsType.RESTING_HEART_RATE).flatMap { it.toAggregateMetrics() }
@@ -251,7 +250,7 @@ class HealthConnectDataManager(
         val stepsMetric =
             setOf(FitnessMetricsType.STEPS).flatMap { it.toAggregateMetrics() }
                 .toSet()
-        var stepsCountTimeChanges = listOf<Instant>()
+        var stepsCountTimeChanges = listOf<HealthConnectTimeInterval>()
         var stepsCountChangesToken = storage.get(STEPS_CHANGES_TOKEN)
         if (options.metrics.contains(FitnessMetricsType.STEPS)) {
             if (stepsCountChangesToken.isNullOrEmpty()) {
@@ -343,8 +342,8 @@ class HealthConnectDataManager(
         onTokenSave: (String) -> Unit,
         onChangesTokenExpired: () -> Unit,
         isActiveCaloriesBurned: Boolean? = null,
-    ): MutableList<Instant> {
-        val timeChangesList = mutableListOf<Instant>()
+    ): MutableList<HealthConnectTimeInterval> {
+        val timeChangesList = mutableListOf<HealthConnectTimeInterval>()
         var nextChangesToken = token
         do {
             val response = client.getChanges(nextChangesToken)
@@ -358,35 +357,56 @@ class HealthConnectDataManager(
                         when (val record = change.record) {
                             is HeartRateRecord -> {
                                 if (type == FitnessMetricsType.INTRADAY_HEART_RATE) {
-                                    timeChangesList.add(record.startTime)
-                                    timeChangesList.add(record.endTime)
+                                    timeChangesList.add(
+                                        HealthConnectTimeInterval(
+                                            record.startTime.toUTC(),
+                                            record.endTime.toUTC(),
+                                        ),
+                                    )
                                 }
                             }
 
                             is ActiveCaloriesBurnedRecord -> {
                                 if (type == FitnessMetricsType.INTRADAY_CALORIES && isActiveCaloriesBurned == true) {
-                                    timeChangesList.add(record.startTime)
-                                    timeChangesList.add(record.endTime)
+                                    timeChangesList.add(
+                                        HealthConnectTimeInterval(
+                                            record.startTime.toUTC(),
+                                            record.endTime.toUTC(),
+                                        ),
+                                    )
                                 }
                             }
 
                             is TotalCaloriesBurnedRecord -> {
                                 if (type == FitnessMetricsType.INTRADAY_CALORIES && isActiveCaloriesBurned == false) {
-                                    timeChangesList.add(record.startTime)
-                                    timeChangesList.add(record.endTime)
+                                    timeChangesList.add(
+                                        HealthConnectTimeInterval(
+                                            record.startTime.toUTC(),
+                                            record.endTime.toUTC(),
+                                        ),
+                                    )
                                 }
                             }
 
                             is RestingHeartRateRecord -> {
                                 if (type == FitnessMetricsType.RESTING_HEART_RATE) {
-                                    timeChangesList.add(record.time)
+                                    timeChangesList.add(
+                                        HealthConnectTimeInterval(
+                                            record.time.toUTC(),
+                                            record.time.toUTC(),
+                                        ),
+                                    )
                                 }
                             }
 
                             is StepsRecord -> {
                                 if (type == FitnessMetricsType.STEPS) {
-                                    timeChangesList.add(record.startTime)
-                                    timeChangesList.add(record.endTime)
+                                    timeChangesList.add(
+                                        HealthConnectTimeInterval(
+                                            record.startTime.toUTC(),
+                                            record.endTime.toUTC(),
+                                        ),
+                                    )
                                 }
                             }
                         }
@@ -398,7 +418,7 @@ class HealthConnectDataManager(
 
         onTokenSave(nextChangesToken)
 
-        return timeChangesList
+        return timeChangesList.toSet().toMutableList()
     }
 
     /**
@@ -410,58 +430,28 @@ class HealthConnectDataManager(
      */
     private suspend fun syncIntradayChangedBuckets(
         metrics: Set<AggregateMetric<*>>,
-        timeChanges: List<Instant>,
+        timeChanges: List<HealthConnectTimeInterval>,
         onSuccess: () -> Unit,
     ) {
-        val zone = ZoneOffset.UTC
-        if (timeChanges.isNotEmpty()) {
-            var start = timeChanges.sorted()[0]
-            val now = Instant.now()
-
-            val days = mutableListOf<Instant>()
-            while (start < now) {
-                days.add(start)
-                start = start.plus(Duration.ofDays(1))
-            }
-            days.add(now)
-
-            for (i in 0..<days.size) {
-                // Read 1-minute buckets by every day
-                val startTimeLocalDate = days[i].atZone(zone).toLocalDate().atStartOfDay()
-                val startTime = startTimeLocalDate.toInstant(zone)
-                val endTime = startTimeLocalDate.plusDays(1).toInstant(zone)
-                val buckets: List<AggregationResultGroupedByDuration> =
-                    client.aggregateGroupByDuration(
-                        AggregateGroupByDurationRequest(
-                            metrics = metrics,
-                            timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
-                            timeRangeSlicer = Duration.ofMinutes(1)
-                        )
+        timeChanges.forEach {
+            val startTime =
+                it.startTime.atZone(zone).toLocalDateTime().withSecond(ZERO).withNano(ZERO)
+                    .toInstant(zone)
+            val endTime = it.endTime.plus(Duration.ofMinutes(1)).atZone(zone).toLocalDateTime()
+                .withSecond(ZERO).withNano(ZERO)
+                .toInstant(zone)
+            val changedBuckets: List<AggregationResultGroupedByDuration> =
+                client.aggregateGroupByDuration(
+                    AggregateGroupByDurationRequest(
+                        metrics = metrics,
+                        timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
+                        timeRangeSlicer = Duration.ofMinutes(1)
                     )
-
-                if (buckets.isNotEmpty()) {
-                    val changedBuckets = mutableListOf<AggregationResultGroupedByDuration>()
-                    timeChanges
-                        .sorted()
-                        .forEach { time ->
-                            buckets.firstOrNull {
-                                // do it because AggregationResultGroupedByDuration gets us startTime
-                                // and endTime in current time zone
-                                val startTimeUtc = it.startTime.atZone(zone).toInstant()
-                                val endTimeUtc = it.endTime.atZone(zone).toInstant()
-                                (startTimeUtc > time && endTimeUtc < time) || startTimeUtc == time || endTimeUtc == time }
-                                ?.let { changedBucket ->
-                                    changedBuckets.add(changedBucket)
-                                }
-                        }
-
-                    uploadIntradayBuckets(changedBuckets)
-                }
-
-            }
-
-            onSuccess()
+                )
+            uploadIntradayBuckets(changedBuckets)
         }
+
+        onSuccess()
     }
 
     /**
@@ -479,7 +469,6 @@ class HealthConnectDataManager(
         isIntradaySync: Boolean,
         onSuccess: () -> Unit,
     ) {
-        val zone = ZoneOffset.UTC
         // makes seconds and milliseconds 0
         val now = Instant.now().atZone(zone).toLocalDateTime().withSecond(ZERO).withNano(ZERO)
             .toInstant(zone)
@@ -523,7 +512,9 @@ class HealthConnectDataManager(
                 }
             } else {
                 // Read aggregate data day by day
-                val startTime = days[i].atZone(zone).toLocalDate().atStartOfDay()
+                val todayStart = LocalDate.now().atStartOfDay()
+                val localZoneOffset = ZoneId.systemDefault().rules.getOffset(todayStart)
+                val startTime = days[i].atZone(localZoneOffset).toLocalDate().atStartOfDay()
                 val endTime = startTime.plusDays(1)
                 val buckets: List<AggregationResultGroupedByPeriod> = client.aggregateGroupByPeriod(
                     AggregateGroupByPeriodRequest(
@@ -546,8 +537,6 @@ class HealthConnectDataManager(
      * @param buckets list of updated buckets
      */
     private fun uploadIntradayBuckets(buckets: List<AggregationResultGroupedByDuration>) {
-        val zone = ZoneOffset.UTC
-
         // Group by date and upload
         buckets
             .toSet()
@@ -619,48 +608,30 @@ class HealthConnectDataManager(
      * Sync daily changed buckets.
      *
      * @param metrics contains metrics for HealthConnect that we need to sync
-     * @param timeChanges contains metric that we need to get
+     * @param timeChangesIntervals contains metric that we need to get
      * @param onSuccess callback when upload did successful
      */
     private suspend fun syncDailyChangedBuckets(
         metrics: Set<AggregateMetric<*>>,
-        timeChanges: List<Instant>,
+        timeChangesIntervals: List<HealthConnectTimeInterval>,
         onSuccess: () -> Unit,
     ) {
-        // Define the time window for today
-        val todayStart = LocalDate.now().atStartOfDay()
-        val tomorrowStart = todayStart.plusDays(1)
-
+        val timeChangesDays = getTimeChangesDays(timeChangesIntervals)
         // Request daily aggregates (1-day buckets) from Health Connect
-        val buckets: List<AggregationResultGroupedByPeriod> = client.aggregateGroupByPeriod(
-            AggregateGroupByPeriodRequest(
-                metrics = metrics,
-                timeRangeFilter = TimeRangeFilter.between(todayStart, tomorrowStart),
-                timeRangeSlicer = Period.ofDays(1)
+        timeChangesDays.forEach {
+            val todayStartLocal = LocalDate.now().atStartOfDay()
+            val localZoneOffset = ZoneId.systemDefault().rules.getOffset(todayStartLocal)
+            val todayStart = it.atZone(localZoneOffset).toLocalDateTime()
+            val tomorrowStart = todayStart.plus(Duration.ofDays(1)).atZone(localZoneOffset).toLocalDateTime()
+            val buckets: List<AggregationResultGroupedByPeriod> = client.aggregateGroupByPeriod(
+                AggregateGroupByPeriodRequest(
+                    metrics = metrics,
+                    timeRangeFilter = TimeRangeFilter.between(todayStart, tomorrowStart),
+                    timeRangeSlicer = Period.ofDays(1)
+                )
             )
-        )
 
-        val localZoneOffset = ZoneId.systemDefault().rules.getOffset(todayStart)
-
-        // upload buckets by day period
-        if (buckets.isNotEmpty()) {
-            val changedBuckets = mutableListOf<AggregationResultGroupedByPeriod>()
-            timeChanges
-                .sorted()
-                .forEach { time ->
-                    buckets.firstOrNull {
-                        (it.startTime.toInstant(localZoneOffset) < time && it.endTime.toInstant(
-                            localZoneOffset
-                        ) > time) ||
-                            it.startTime.toInstant(localZoneOffset) == time || it.endTime.toInstant(
-                            localZoneOffset
-                        ) == time
-                    }?.let { changedBucket ->
-                        changedBuckets.add(changedBucket)
-                    }
-                }
-
-            uploadDailyBucketsByPeriod(changedBuckets.toSet().toList(), onSuccess)
+            uploadDailyBucketsByPeriod(buckets.toSet().toList(), onSuccess)
         }
     }
 
@@ -772,6 +743,20 @@ class HealthConnectDataManager(
                 }
         }
     }
+
+    private fun getTimeChangesDays(timeChangesIntervals: List<HealthConnectTimeInterval>): List<Instant> {
+        val timeChangesDays = mutableSetOf<Instant>()
+        timeChangesIntervals.forEach {
+            val startTimeIntervalByDay =
+                it.startTime.atZone(zone).toLocalDate().atStartOfDay().atZone(zone).toInstant()
+            val endTimeIntervalByDay =
+                it.endTime.atZone(zone).toLocalDate().atStartOfDay().atZone(zone).toInstant()
+            timeChangesDays.add(startTimeIntervalByDay)
+            timeChangesDays.add(endTimeIntervalByDay)
+        }
+
+        return timeChangesDays.toMutableList()
+    }
 }
 
 /**
@@ -797,4 +782,9 @@ private fun FitnessMetricsType.toAggregateMetrics(): Set<AggregateMetric<*>> = w
 
     FitnessMetricsType.STEPS -> setOf(StepsRecord.COUNT_TOTAL)
     else -> throw HealthConnectException.UnsupportedMetricException(this.name)
+}
+
+private fun Instant.toUTC(): Instant {
+    val zone = ZoneOffset.UTC
+    return this.atZone(zone).toInstant()
 }

@@ -35,6 +35,11 @@ public class ApiClient {
     private @NonNull Keystore userKeystore;
     private @Nullable UserCredentials userCredentials;
     private @Nullable SigningAuthInterceptor signingAuthInterceptor;
+    private static final String HEART_RATE_CHANGES_TOKEN = "HEART_RATE_CHANGES_TOKEN";
+    private static final String TOTAL_CALORIES_CHANGES_TOKEN = "TOTAL_CALORIES_CHANGES_TOKEN";
+    private static final String ACTIVE_CALORIES_CHANGES_TOKEN = "ACTIVE_CALORIES_CHANGES_TOKEN";
+    private static final String RESTING_HEART_RATE_CHANGES_TOKEN = "RESTING_HEART_RATE_CHANGES_TOKEN";
+    private static final String STEPS_CHANGES_TOKEN = "STEPS_CHANGES_TOKEN";
 
     private ApiClient(String baseUrl,
         String apiKey,
@@ -152,6 +157,14 @@ public class ApiClient {
      */
     public boolean clearPersistentStorage() {
         return clearPersistentStorage(appContext, getUserToken());
+    }
+
+    public void forInternalUseOnly_clearChangesTokens() {
+        storage.set(HEART_RATE_CHANGES_TOKEN, "");
+        storage.set(TOTAL_CALORIES_CHANGES_TOKEN, "");
+        storage.set(ACTIVE_CALORIES_CHANGES_TOKEN, "");
+        storage.set(RESTING_HEART_RATE_CHANGES_TOKEN, "");
+        storage.set(STEPS_CHANGES_TOKEN, "");
     }
 
     public @NonNull IStorage getStorage() {

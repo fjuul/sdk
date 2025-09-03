@@ -7,6 +7,7 @@ import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectSyncOptions
+import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
 import com.fjuul.sdk.core.entities.Callback
 
 class HealthConnectSyncViewModel : ViewModel() {
@@ -105,15 +106,17 @@ class HealthConnectSyncViewModel : ViewModel() {
         _syncingProfileData.value = true
 
         (connection.activitySource as HealthConnectActivitySource)
-            .syncProfile(options, object : Callback<Unit> {
-                override fun onResult(result: com.fjuul.sdk.core.entities.Result<Unit>) {
-                    _syncingProfileData.postValue(false)
-                    if (result.isError) {
-                        _errorMessage.postValue(
-                            result.error?.message ?: "Unknown error during sync"
-                        )
-                    }
+            .syncProfile(options) { result ->
+                _syncingProfileData.postValue(false)
+                if (result.isError) {
+                    _errorMessage.postValue(
+                        result.error?.message ?: "Unknown error during sync"
+                    )
                 }
-            })
+            }
+    }
+
+    fun clearAllChangesTokens() {
+        ApiClientHolder.sdkClient.forInternalUseOnly_clearChangesTokens()
     }
 }

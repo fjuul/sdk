@@ -116,7 +116,8 @@ class HealthConnectDataManager(
         val activeCaloriesTimeChanges = mutableListOf<HealthConnectTimeInterval>()
         val totalCaloriesTimeChanges = mutableListOf<HealthConnectTimeInterval>()
         var storedActiveCaloriesChangesToken = storage.get(ACTIVE_CALORIES_CHANGES_TOKEN)
-        var storedTotalCaloriesChangesToken = storage.get(TOTAL_CALORIES_CHANGES_TOKEN)
+//        var storedTotalCaloriesChangesToken = storage.get(TOTAL_CALORIES_CHANGES_TOKEN)
+        var storedTotalCaloriesChangesToken = "634"
         val activeCaloriesMetric = setOf(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL)
         val totalCaloriesMetric = setOf(TotalCaloriesBurnedRecord.ENERGY_TOTAL)
         if (options.metrics.contains(FitnessMetricsType.INTRADAY_CALORIES)) {
@@ -162,7 +163,6 @@ class HealthConnectDataManager(
                         )
                         storage.set(TOTAL_CALORIES_CHANGES_TOKEN, totalCaloriesChangesToken)
                     }
-
                 }
             }
             if (!storedTotalCaloriesChangesToken.isNullOrEmpty()) {
@@ -433,33 +433,40 @@ class HealthConnectDataManager(
         timeChanges: List<HealthConnectTimeInterval>,
         onSuccess: () -> Unit,
     ) {
-        timeChanges
-            .groupBy { it.startTime.atZone(zone).toLocalDate().toString() }
-            .forEach { (_, dayTimeChanges) ->
-                val changedBuckets = mutableSetOf<AggregationResultGroupedByDuration>()
-                dayTimeChanges.forEach {
-                    val startTime =
-                        it.startTime.atZone(zone).toLocalDateTime().withSecond(ZERO).withNano(ZERO)
-                            .toInstant(zone)
-                    val endTime =
-                        it.endTime.plus(Duration.ofMinutes(1)).atZone(zone).toLocalDateTime()
-                            .withSecond(ZERO).withNano(ZERO)
-                            .toInstant(zone)
-                    val buckets: List<AggregationResultGroupedByDuration> =
-                        client.aggregateGroupByDuration(
-                            AggregateGroupByDurationRequest(
-                                metrics = metrics,
-                                timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
-                                timeRangeSlicer = Duration.ofMinutes(1)
+        // we group time changes by days with startTime
+        if (timeChanges.isNotEmpty()) {
+            timeChanges
+                .groupBy { it.startTime.atZone(zone).toLocalDate().toString() }
+                .forEach { (_, dayTimeChanges) ->
+                    // why set? because time changes can intersect. And when we set them into "set",
+                    // all the same buckets delete.
+                    val changedBuckets = mutableSetOf<AggregationResultGroupedByDuration>()
+                    // we collect all changed buckets during each day
+                    dayTimeChanges.forEach {
+                        val startTime =
+                            it.startTime.atZone(zone).toLocalDateTime().withSecond(ZERO).withNano(ZERO)
+                                .toInstant(zone)
+                        val endTime =
+                            it.endTime.plus(Duration.ofMinutes(1)).atZone(zone).toLocalDateTime()
+                                .withSecond(ZERO).withNano(ZERO)
+                                .toInstant(zone)
+                        val buckets: List<AggregationResultGroupedByDuration> =
+                            client.aggregateGroupByDuration(
+                                AggregateGroupByDurationRequest(
+                                    metrics = metrics,
+                                    timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
+                                    timeRangeSlicer = Duration.ofMinutes(1)
+                                )
                             )
-                        )
-                    changedBuckets.addAll(buckets)
+                        changedBuckets.addAll(buckets)
+                    }
+
+                    // and upload this buckets to server
+                    uploadIntradayBuckets(changedBuckets.toMutableList())
                 }
 
-                uploadIntradayBuckets(changedBuckets.toMutableList())
-            }
-
-        onSuccess()
+            onSuccess()
+        }
     }
 
     /**

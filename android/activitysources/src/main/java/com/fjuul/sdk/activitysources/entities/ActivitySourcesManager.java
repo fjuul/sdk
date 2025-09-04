@@ -131,7 +131,7 @@ public final class ActivitySourcesManager {
             client.getApiKey(),
             client.getBaseUrl());
         GoogleFitActivitySource.initialize(client, config);
-        HealthConnectActivitySource.initialize(client, config);
+        HealthConnectActivitySource.initialize(client, config, client.getStorage());
 
         final BackgroundWorkManager backgroundWorkManager = new BackgroundWorkManager(config, scheduler);
         final ActivitySourceResolver activitySourceResolver = new ActivitySourceResolver();

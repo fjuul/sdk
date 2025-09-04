@@ -117,6 +117,14 @@ class HealthConnectSyncViewModel : ViewModel() {
     }
 
     fun clearAllChangesTokens() {
-        ApiClientHolder.sdkClient.forInternalUseOnly_clearChangesTokens()
+        val connection = ActivitySourcesManager.getInstance().current
+            .find { it.activitySource is HealthConnectActivitySource }
+        if (connection == null) {
+            _errorMessage.value = "No active Health Connect connection"
+            return
+        }
+
+        (connection.activitySource as HealthConnectActivitySource)
+            .forInternalUseOnly_clearChangesTokens()
     }
 }

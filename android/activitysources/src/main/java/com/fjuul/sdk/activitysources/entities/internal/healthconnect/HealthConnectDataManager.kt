@@ -49,14 +49,14 @@ class HealthConnectDataManager(
 ) {
 
     companion object {
-        private const val HEART_RATE_CHANGES_TOKEN = "HEART_RATE_CHANGES_TOKEN"
-        private const val TOTAL_CALORIES_CHANGES_TOKEN = "TOTAL_CALORIES_CHANGES_TOKEN"
-        private const val ACTIVE_CALORIES_CHANGES_TOKEN = "ACTIVE_CALORIES_CHANGES_TOKEN"
-        private const val RESTING_HEART_RATE_CHANGES_TOKEN = "RESTING_HEART_RATE_CHANGES_TOKEN"
-        private const val STEPS_CHANGES_TOKEN = "STEPS_CHANGES_TOKEN"
-        private const val TWENTY_NINE_DAYS = 29L
-        private const val THIRTY_DAYS = 30L
-        private const val ZERO = 0
+        const val HEART_RATE_CHANGES_TOKEN = "HEART_RATE_CHANGES_TOKEN"
+        const val TOTAL_CALORIES_CHANGES_TOKEN = "TOTAL_CALORIES_CHANGES_TOKEN"
+        const val ACTIVE_CALORIES_CHANGES_TOKEN = "ACTIVE_CALORIES_CHANGES_TOKEN"
+        const val RESTING_HEART_RATE_CHANGES_TOKEN = "RESTING_HEART_RATE_CHANGES_TOKEN"
+        const val STEPS_CHANGES_TOKEN = "STEPS_CHANGES_TOKEN"
+        const val TWENTY_NINE_DAYS = 29L
+        const val THIRTY_DAYS = 30L
+        const val ZERO = 0
     }
 
     /**
@@ -433,23 +433,31 @@ class HealthConnectDataManager(
         timeChanges: List<HealthConnectTimeInterval>,
         onSuccess: () -> Unit,
     ) {
-        timeChanges.forEach {
-            val startTime =
-                it.startTime.atZone(zone).toLocalDateTime().withSecond(ZERO).withNano(ZERO)
-                    .toInstant(zone)
-            val endTime = it.endTime.plus(Duration.ofMinutes(1)).atZone(zone).toLocalDateTime()
-                .withSecond(ZERO).withNano(ZERO)
-                .toInstant(zone)
-            val changedBuckets: List<AggregationResultGroupedByDuration> =
-                client.aggregateGroupByDuration(
-                    AggregateGroupByDurationRequest(
-                        metrics = metrics,
-                        timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
-                        timeRangeSlicer = Duration.ofMinutes(1)
-                    )
-                )
-            uploadIntradayBuckets(changedBuckets)
-        }
+        timeChanges
+            .groupBy { it.startTime.atZone(zone).toLocalDate().toString() }
+            .forEach { (_, dayTimeChanges) ->
+                val changedBuckets = mutableSetOf<AggregationResultGroupedByDuration>()
+                dayTimeChanges.forEach {
+                    val startTime =
+                        it.startTime.atZone(zone).toLocalDateTime().withSecond(ZERO).withNano(ZERO)
+                            .toInstant(zone)
+                    val endTime =
+                        it.endTime.plus(Duration.ofMinutes(1)).atZone(zone).toLocalDateTime()
+                            .withSecond(ZERO).withNano(ZERO)
+                            .toInstant(zone)
+                    val buckets: List<AggregationResultGroupedByDuration> =
+                        client.aggregateGroupByDuration(
+                            AggregateGroupByDurationRequest(
+                                metrics = metrics,
+                                timeRangeFilter = TimeRangeFilter.between(startTime, endTime),
+                                timeRangeSlicer = Duration.ofMinutes(1)
+                            )
+                        )
+                    changedBuckets.addAll(buckets)
+                }
+
+                uploadIntradayBuckets(changedBuckets.toMutableList())
+            }
 
         onSuccess()
     }
@@ -622,7 +630,8 @@ class HealthConnectDataManager(
             val todayStartLocal = LocalDate.now().atStartOfDay()
             val localZoneOffset = ZoneId.systemDefault().rules.getOffset(todayStartLocal)
             val todayStart = it.atZone(localZoneOffset).toLocalDateTime()
-            val tomorrowStart = todayStart.plus(Duration.ofDays(1)).atZone(localZoneOffset).toLocalDateTime()
+            val tomorrowStart =
+                todayStart.plus(Duration.ofDays(1)).atZone(localZoneOffset).toLocalDateTime()
             val buckets: List<AggregationResultGroupedByPeriod> = client.aggregateGroupByPeriod(
                 AggregateGroupByPeriodRequest(
                     metrics = metrics,

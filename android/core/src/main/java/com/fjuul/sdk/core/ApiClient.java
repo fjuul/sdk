@@ -1,10 +1,5 @@
 package com.fjuul.sdk.core;
 
-import android.content.Context;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import com.fjuul.sdk.core.entities.IStorage;
 import com.fjuul.sdk.core.entities.Keystore;
 import com.fjuul.sdk.core.entities.PersistentStorage;
@@ -17,6 +12,9 @@ import com.fjuul.sdk.core.http.services.ISigningService;
 import com.fjuul.sdk.core.http.services.UserSigningService;
 import com.fjuul.sdk.core.http.utils.RequestSigner;
 
+import android.content.Context;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import okhttp3.OkHttpClient;
 
 /**

@@ -116,8 +116,7 @@ class HealthConnectDataManager(
         val activeCaloriesTimeChanges = mutableListOf<HealthConnectTimeInterval>()
         val totalCaloriesTimeChanges = mutableListOf<HealthConnectTimeInterval>()
         var storedActiveCaloriesChangesToken = storage.get(ACTIVE_CALORIES_CHANGES_TOKEN)
-//        var storedTotalCaloriesChangesToken = storage.get(TOTAL_CALORIES_CHANGES_TOKEN)
-        var storedTotalCaloriesChangesToken = "634"
+        var storedTotalCaloriesChangesToken = storage.get(TOTAL_CALORIES_CHANGES_TOKEN)
         val activeCaloriesMetric = setOf(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL)
         val totalCaloriesMetric = setOf(TotalCaloriesBurnedRecord.ENERGY_TOTAL)
         if (options.metrics.contains(FitnessMetricsType.INTRADAY_CALORIES)) {

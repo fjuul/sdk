@@ -10,6 +10,8 @@ import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService
 import com.fjuul.sdk.activitysources.utils.runAsyncAndCallback
 import com.fjuul.sdk.core.ApiClient
 import com.fjuul.sdk.core.entities.Callback
+import com.fjuul.sdk.core.entities.IStorage
+import java.util.Date
 
 /**
  * [ActivitySource] implementation for Android Health Connect.
@@ -26,8 +28,11 @@ import com.fjuul.sdk.core.entities.Callback
  */
 class HealthConnectActivitySource private constructor(
     private val dataManager: HealthConnectDataManager,
-    private val permissionManager: HealthConnectPermissionManager
+    private val permissionManager: HealthConnectPermissionManager,
+    private val storage: IStorage,
 ) : ActivitySource() {
+
+    var lowerDateBoundary: Date? = null
 
     /**
      * Starts an intraday data synchronization (calories, heart rate).
@@ -39,7 +44,7 @@ class HealthConnectActivitySource private constructor(
         runAsyncAndCallback({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
-            dataManager.syncIntraday(options)
+            dataManager.syncIntraday(options, lowerDateBoundary)
         }, callback)
 
     /**
@@ -52,7 +57,7 @@ class HealthConnectActivitySource private constructor(
         runAsyncAndCallback({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
-            dataManager.syncDaily(options)
+            dataManager.syncDaily(options, lowerDateBoundary)
         }, callback)
 
     /**
@@ -65,13 +70,23 @@ class HealthConnectActivitySource private constructor(
         runAsyncAndCallback({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
-            dataManager.syncProfile(options)
+            dataManager.syncProfile(options, lowerDateBoundary)
         }, callback)
 
 
     override fun getTrackerValue(): TrackerValue = TrackerValue.HEALTH_CONNECT
 
     fun getPermissionManager(): HealthConnectPermissionManager = permissionManager
+
+    fun forInternalUseOnly_clearChangesTokens() {
+        storage.set(HealthConnectDataManager.HEART_RATE_CHANGES_TOKEN, "")
+        storage.set(HealthConnectDataManager.TOTAL_CALORIES_CHANGES_TOKEN, "")
+        storage.set(HealthConnectDataManager.ACTIVE_CALORIES_CHANGES_TOKEN, "")
+        storage.set(HealthConnectDataManager.RESTING_HEART_RATE_CHANGES_TOKEN, "")
+        storage.set(HealthConnectDataManager.STEPS_CHANGES_TOKEN, "")
+        storage.set(HealthConnectDataManager.HEIGHT_CHANGES_TOKEN, "")
+        storage.set(HealthConnectDataManager.WEIGHT_CHANGES_TOKEN, "")
+    }
 
     companion object {
         @Volatile
@@ -86,18 +101,18 @@ class HealthConnectActivitySource private constructor(
          */
         @JvmStatic
         @Synchronized
-        fun initialize(apiClient: ApiClient, config: ActivitySourcesManagerConfig) {
+        fun initialize(apiClient: ApiClient, config: ActivitySourcesManagerConfig, storage: IStorage) {
             if (instance == null) {
                 val context = apiClient.appContext.applicationContext
                 val hcClient = HealthConnectClient.getOrCreate(context)
                 val service = ActivitySourcesService(apiClient)
-                val dataMgr = HealthConnectDataManager(hcClient, service)
+                val dataMgr = HealthConnectDataManager(hcClient, service, apiClient.storage)
                 val permMgr = HealthConnectPermissionManager(
                     context = context,
                     healthConnectClient = hcClient,
                     allAvailableMetrics = config.collectableFitnessMetrics
                 )
-                instance = HealthConnectActivitySource(dataMgr, permMgr)
+                instance = HealthConnectActivitySource(dataMgr, permMgr, storage)
             }
         }
 

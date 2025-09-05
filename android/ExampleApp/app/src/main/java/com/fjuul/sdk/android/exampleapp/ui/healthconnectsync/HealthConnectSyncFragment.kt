@@ -74,5 +74,9 @@ class HealthConnectSyncFragment : Fragment() {
             val weight = binding.weightCheckBox.isChecked
             viewModel.runProfileSync(height, weight)
         }
+
+        binding.btnClearAllChangesTokens.setOnClickListener {
+            viewModel.clearAllChangesTokens()
+        }
     }
 }

@@ -28,23 +28,16 @@ public enum FitnessMetricsType {
     WEIGHT;
 
     public static boolean isIntradayMetricType(@NonNull FitnessMetricsType metricType) {
-        switch (metricType) {
-            case INTRADAY_HEART_RATE:
-            case INTRADAY_CALORIES:
-            case INTRADAY_STEPS:
-                return true;
-            default:
-                return false;
-        }
+        return switch (metricType) {
+            case INTRADAY_HEART_RATE, INTRADAY_CALORIES, INTRADAY_STEPS -> true;
+            default -> false;
+        };
     }
 
     public static boolean isProfileMetricType(@NonNull FitnessMetricsType metricsType) {
-        switch (metricsType) {
-            case HEIGHT:
-            case WEIGHT:
-                return true;
-            default:
-                return false;
-        }
+        return switch (metricsType) {
+            case HEIGHT, WEIGHT -> true;
+            default -> false;
+        };
     }
 }

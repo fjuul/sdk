@@ -54,9 +54,13 @@ class HealthConnectDataManager(
         const val ACTIVE_CALORIES_CHANGES_TOKEN = "ACTIVE_CALORIES_CHANGES_TOKEN"
         const val RESTING_HEART_RATE_CHANGES_TOKEN = "RESTING_HEART_RATE_CHANGES_TOKEN"
         const val STEPS_CHANGES_TOKEN = "STEPS_CHANGES_TOKEN"
-        const val TWENTY_NINE_DAYS = 29L
-        const val THIRTY_DAYS = 30L
-        const val ZERO = 0
+        const val HEIGHT_CHANGES_TOKEN = "HEIGHT_CHANGES_TOKEN"
+        const val WEIGHT_CHANGES_TOKEN = "WEIGHT_CHANGES_TOKEN"
+        private const val TWENTY_NINE_DAYS = 29L
+        private const val THIRTY_DAYS = 30L
+        private const val ZERO = 0
+        private const val TWO = 2
+        private const val EMPTY = ""
     }
 
     /**
@@ -443,7 +447,8 @@ class HealthConnectDataManager(
                     // we collect all changed buckets during each day
                     dayTimeChanges.forEach {
                         val startTime =
-                            it.startTime.atZone(zone).toLocalDateTime().withSecond(ZERO).withNano(ZERO)
+                            it.startTime.atZone(zone).toLocalDateTime().withSecond(ZERO)
+                                .withNano(ZERO)
                                 .toInstant(zone)
                         val endTime =
                             it.endTime.plus(Duration.ofMinutes(1)).atZone(zone).toLocalDateTime()
@@ -703,46 +708,106 @@ class HealthConnectDataManager(
      * picks the most recent values and uploads them.
      * @throws HealthConnectException.NoMetricsSelectedException if no metrics are selected or on upload error.
      */
-    suspend fun syncProfile(options: HealthConnectSyncOptions) {
+    suspend fun syncProfile(options: HealthConnectSyncOptions, lowerDateBoundary: Date?) {
         if (options.metrics.isEmpty()) throw HealthConnectException.NoMetricsSelectedException()
 
         val now = Instant.now()
-        val thirtyDaysAgo = now.minus(30, ChronoUnit.DAYS)
+        val thirtyDaysAgo = now.minus(THIRTY_DAYS, ChronoUnit.DAYS)
+        val startTime =
+            if (lowerDateBoundary != null && lowerDateBoundary.toInstant() > thirtyDaysAgo) {
+                lowerDateBoundary.toInstant()
+            } else {
+                thirtyDaysAgo
+            }
 
-        // Read height and weight
-        val heightsResp = if (options.metrics.contains(FitnessMetricsType.HEIGHT)) {
-            client.readRecords(
-                ReadRecordsRequest(
-                    recordType = HeightRecord::class,
-                    timeRangeFilter = TimeRangeFilter.between(thirtyDaysAgo, now)
-                )
-            )
+        val storedHeightChangesToken = storage.get(HEIGHT_CHANGES_TOKEN) ?: EMPTY
+        val storedWeightChangesToken = storage.get(WEIGHT_CHANGES_TOKEN) ?: EMPTY
+
+        // Read height. If changes token in storage is empty than makes full sync for 30 days
+        // If changes token is not empty than makes changes token mechanism
+        var heightChangesToken = EMPTY
+        val heightsList = if (options.metrics.contains(FitnessMetricsType.HEIGHT)) {
+            if (storedHeightChangesToken.isEmpty()) {
+                makeFullHeightSync(startTime) {
+                    heightChangesToken = it
+                }
+            } else {
+                var nextChangesToken = storedHeightChangesToken
+                val heightList = mutableListOf<HeightRecord>()
+                do {
+                    val response = client.getChanges(nextChangesToken)
+                    if (response.changesTokenExpired) {
+                        makeFullHeightSync(startTime) {
+                            heightChangesToken = it
+                        }
+                    }
+                    response.changes.forEach { change ->
+                        when (change) {
+                            is UpsertionChange -> {
+                                when (val record = change.record) {
+                                    is HeightRecord -> {
+                                        heightList.add(record)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    nextChangesToken = response.nextChangesToken
+                } while (response.hasMore)
+                heightChangesToken = nextChangesToken
+                heightList
+            }
         } else null
 
-        val weightsResp = if (options.metrics.contains(FitnessMetricsType.WEIGHT)) {
-            client.readRecords(
-                ReadRecordsRequest(
-                    recordType = WeightRecord::class,
-                    timeRangeFilter = TimeRangeFilter.between(thirtyDaysAgo, now)
-                )
-            )
+        // Read weight. If changes token in storage is empty than makes full sync for 30 days
+        // If changes token is not empty than makes changes token mechanism
+        var weightChangesToken = EMPTY
+        val weightsList = if (options.metrics.contains(FitnessMetricsType.WEIGHT)) {
+            if (storedWeightChangesToken.isEmpty()) {
+                makeFullWeightSync(startTime) {
+                    weightChangesToken = it
+                }
+            } else {
+                var nextChangesToken = storedWeightChangesToken
+                val heightList = mutableListOf<WeightRecord>()
+                do {
+                    val response = client.getChanges(nextChangesToken)
+                    if (response.changesTokenExpired) {
+                        makeFullWeightSync(startTime) {
+                            weightChangesToken = it
+                        }
+                    }
+                    response.changes.forEach { change ->
+                        when (change) {
+                            is UpsertionChange -> {
+                                when (val record = change.record) {
+                                    is WeightRecord -> {
+                                        heightList.add(record)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    nextChangesToken = response.nextChangesToken
+                } while (response.hasMore)
+                weightChangesToken = nextChangesToken
+                heightList
+            }
         } else null
 
         // Pick latest measurements
-        val latestHeightCm = heightsResp
-            ?.records
+        val latestHeightCm = heightsList
             ?.maxByOrNull { it.time }
             ?.height
             ?.inMeters
             ?.times(100.0)
-            ?.roundTo(2)
+            ?.roundTo(TWO)
 
-        val latestWeightKg = weightsResp
-            ?.records
+        val latestWeightKg = weightsList
             ?.maxByOrNull { it.time }
             ?.weight
             ?.inKilograms
-            ?.roundTo(2)
+            ?.roundTo(TWO)
 
         if (!(latestHeightCm == null && latestWeightKg == null)) {
             service.uploadHealthConnectProfile(
@@ -754,9 +819,41 @@ class HealthConnectDataManager(
                         it.error?.let { error ->
                             throw error
                         }
+                    } else {
+                        storage.set(HEIGHT_CHANGES_TOKEN, heightChangesToken)
+                        storage.set(WEIGHT_CHANGES_TOKEN, weightChangesToken)
                     }
                 }
         }
+    }
+
+    private suspend fun makeFullHeightSync(startTime: Instant, onTokenSave: (String) -> Unit): List<HeightRecord> {
+        val heightChangesToken = client.getChangesToken(
+            ChangesTokenRequest(recordTypes = setOf(HeightRecord::class))
+        )
+        val records = client.readRecords(
+            ReadRecordsRequest(
+                recordType = HeightRecord::class,
+                timeRangeFilter = TimeRangeFilter.after(startTime)
+            )
+        ).records
+        onTokenSave(heightChangesToken)
+        return records
+    }
+
+    private suspend fun makeFullWeightSync(startTime: Instant, onTokenSave: (String)-> Unit): List<WeightRecord> {
+        val weightChangesToken = client.getChangesToken(
+            ChangesTokenRequest(recordTypes = setOf(WeightRecord::class))
+        )
+        val records = client.readRecords(
+            ReadRecordsRequest(
+                recordType = WeightRecord::class,
+                timeRangeFilter = TimeRangeFilter.after(startTime)
+            )
+        ).records
+
+        onTokenSave(weightChangesToken)
+        return records
     }
 
     private fun getTimeChangesDays(timeChangesIntervals: List<HealthConnectTimeInterval>): List<Instant> {

@@ -70,7 +70,7 @@ class HealthConnectActivitySource private constructor(
         runAsyncAndCallback({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
-            dataManager.syncProfile(options)
+            dataManager.syncProfile(options, lowerDateBoundary)
         }, callback)
 
 
@@ -84,6 +84,8 @@ class HealthConnectActivitySource private constructor(
         storage.set(HealthConnectDataManager.ACTIVE_CALORIES_CHANGES_TOKEN, "")
         storage.set(HealthConnectDataManager.RESTING_HEART_RATE_CHANGES_TOKEN, "")
         storage.set(HealthConnectDataManager.STEPS_CHANGES_TOKEN, "")
+        storage.set(HealthConnectDataManager.HEIGHT_CHANGES_TOKEN, "")
+        storage.set(HealthConnectDataManager.WEIGHT_CHANGES_TOKEN, "")
     }
 
     companion object {

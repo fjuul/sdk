@@ -149,6 +149,8 @@ public final class ActivitySourcesManager {
             client.getUserSecret(),
             client.getApiKey(),
             client.getBaseUrl());
+        GoogleFitActivitySource.initialize(client, config);
+        HealthConnectActivitySource.initialize(client, config, client.getStorage());
         if (isGoogleFitInit) {
             GoogleFitActivitySource.initialize(client, config);
         } else {
@@ -399,6 +401,13 @@ public final class ActivitySourcesManager {
     }
 
     private void configureGoogleFitState(@Nullable List<TrackerConnection> trackerConnections) {
+    @SuppressLint("NewApi")
+    private void configureExternalStateByConnections(@Nullable List<TrackerConnection> trackerConnections) {
+        configureGoogleFitState(trackerConnections);
+        configureHealthConnectState(trackerConnections);
+    }
+
+    private void configureGoogleFitState(@Nullable List<TrackerConnection> trackerConnections) {
         final TrackerConnection gfTrackerConnection = Optional.ofNullable(trackerConnections)
             .flatMap(connections -> connections.stream()
                 .filter(c -> c.getTracker().equals(TrackerValue.GOOGLE_FIT.getValue()))
@@ -437,6 +446,22 @@ public final class ActivitySourcesManager {
             backgroundWorkManager.cancelHCSyncWorks();
             backgroundWorkManager.cancelHCProfileSyncWork();
         }
+
+        final HealthConnectActivitySource healthConnect = (HealthConnectActivitySource) activitySourceResolver
+            .getInstanceByTrackerValue(TrackerValue.HEALTH_CONNECT.getValue());
+        if (hcTrackerConnection != null) {
+            healthConnect.setLowerDateBoundary(hcTrackerConnection.getCreatedAt());
+        } else {
+            healthConnect.setLowerDateBoundary(null);
+        }
+    }
+
+    private void configureHealthConnectState(@Nullable List<TrackerConnection> trackerConnections) {
+        final TrackerConnection hcTrackerConnection = Optional.ofNullable(trackerConnections)
+            .flatMap(connections -> connections.stream()
+                .filter(c -> c.getTracker().equals(TrackerValue.HEALTH_CONNECT.getValue()))
+                .findFirst())
+            .orElse(null);
 
         final HealthConnectActivitySource healthConnect = (HealthConnectActivitySource) activitySourceResolver
             .getInstanceByTrackerValue(TrackerValue.HEALTH_CONNECT.getValue());

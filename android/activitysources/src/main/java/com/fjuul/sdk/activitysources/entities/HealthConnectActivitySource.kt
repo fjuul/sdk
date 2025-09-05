@@ -10,6 +10,8 @@ import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService
 import com.fjuul.sdk.activitysources.utils.runAsyncAndCallback
 import com.fjuul.sdk.core.ApiClient
 import com.fjuul.sdk.core.entities.Callback
+import com.fjuul.sdk.core.entities.IStorage
+import java.util.Date
 import java.util.Date
 
 /**
@@ -27,7 +29,8 @@ import java.util.Date
  */
 class HealthConnectActivitySource private constructor(
     private val dataManager: HealthConnectDataManager,
-    private val permissionManager: HealthConnectPermissionManager
+    private val permissionManager: HealthConnectPermissionManager,
+    private val storage: IStorage,
 ) : ActivitySource() {
 
     var lowerDateBoundary: Date? = null
@@ -76,6 +79,16 @@ class HealthConnectActivitySource private constructor(
 
     fun getPermissionManager(): HealthConnectPermissionManager = permissionManager
 
+    fun forInternalUseOnly_clearChangesTokens() {
+        storage.set(HealthConnectDataManager.HEART_RATE_CHANGES_TOKEN, "")
+        storage.set(HealthConnectDataManager.TOTAL_CALORIES_CHANGES_TOKEN, "")
+        storage.set(HealthConnectDataManager.ACTIVE_CALORIES_CHANGES_TOKEN, "")
+        storage.set(HealthConnectDataManager.RESTING_HEART_RATE_CHANGES_TOKEN, "")
+        storage.set(HealthConnectDataManager.STEPS_CHANGES_TOKEN, "")
+        storage.set(HealthConnectDataManager.HEIGHT_CHANGES_TOKEN, "")
+        storage.set(HealthConnectDataManager.WEIGHT_CHANGES_TOKEN, "")
+    }
+
     companion object {
         @Volatile
         private var instance: HealthConnectActivitySource? = null
@@ -89,7 +102,7 @@ class HealthConnectActivitySource private constructor(
          */
         @JvmStatic
         @Synchronized
-        fun initialize(apiClient: ApiClient, config: ActivitySourcesManagerConfig) {
+        fun initialize(apiClient: ApiClient, config: ActivitySourcesManagerConfig, storage: IStorage) {
             if (instance == null) {
                 val context = apiClient.appContext.applicationContext
                 val hcClient = HealthConnectClient.getOrCreate(context)
@@ -100,7 +113,7 @@ class HealthConnectActivitySource private constructor(
                     healthConnectClient = hcClient,
                     allAvailableMetrics = config.collectableHCFitnessMetrics
                 )
-                instance = HealthConnectActivitySource(dataMgr, permMgr)
+                instance = HealthConnectActivitySource(dataMgr, permMgr, storage)
             }
         }
 

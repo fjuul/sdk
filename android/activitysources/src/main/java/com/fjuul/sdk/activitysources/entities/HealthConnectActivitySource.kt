@@ -12,7 +12,6 @@ import com.fjuul.sdk.core.ApiClient
 import com.fjuul.sdk.core.entities.Callback
 import com.fjuul.sdk.core.entities.IStorage
 import java.util.Date
-import java.util.Date
 
 /**
  * [ActivitySource] implementation for Android Health Connect.
@@ -71,7 +70,7 @@ class HealthConnectActivitySource private constructor(
         runAsyncAndCallback({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
-            dataManager.syncProfile(options)
+            dataManager.syncProfile(options, lowerDateBoundary)
         }, callback)
 
 

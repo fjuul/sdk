@@ -1,10 +1,13 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.work.WorkManager;
 
 import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthenticationFlowRequired;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
@@ -20,13 +23,11 @@ import com.fjuul.sdk.core.exceptions.FjuulException;
 import com.fjuul.sdk.core.utils.Logger;
 import com.google.android.gms.tasks.Task;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.work.WorkManager;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The `ActivitySourcesManager` encapsulates connection to fitness trackers, access to current user's tracker
@@ -99,27 +100,11 @@ public final class ActivitySourcesManager {
      * </ul>
      *
      * @param client configured client with signing ability and user credentials
-     * @see #initialize(ApiClient, ActivitySourcesManagerConfig, boolean)
+     * @see #initialize(ApiClient, ActivitySourcesManagerConfig)
      */
     @SuppressLint("NewApi")
     public static synchronized void initialize(@NonNull ApiClient client) {
-        initialize(client, ActivitySourcesManagerConfig.buildDefault(), true);
-    }
-
-    /**
-     * Initialize the singleton with the default health connect config. With the default config:
-     * <ul>
-     * <li>all fitness metrics will be taken into account;</li>
-     * <li>periodic background works for syncing intraday and daily data of Health Connect will be automatically
-     * scheduled if a user has a current Health Connect connection.</li>
-     * </ul>
-     *
-     * @param client configured client with signing ability and user credentials
-     * @see #initialize(ApiClient, ActivitySourcesManagerConfig, boolean)
-     */
-    @SuppressLint("NewApi")
-    public static synchronized void initializeHealthConnect(@NonNull ApiClient client) {
-        initialize(client, ActivitySourcesManagerConfig.buildHCDefaultConfig(), false);
+        initialize(client, ActivitySourcesManagerConfig.buildDefault());
     }
 
 
@@ -136,8 +121,7 @@ public final class ActivitySourcesManager {
      */
     @SuppressLint("NewApi")
     public static synchronized void initialize(@NonNull ApiClient client,
-        @NonNull ActivitySourcesManagerConfig config,
-        boolean isGoogleFitInit) {
+        @NonNull ActivitySourcesManagerConfig config) {
         final ActivitySourcesStateStore stateStore = new ActivitySourcesStateStore(client.getStorage());
         final List<TrackerConnection> storedConnections = stateStore.getConnections();
         final CopyOnWriteArrayList<TrackerConnection> currentConnections =
@@ -151,11 +135,6 @@ public final class ActivitySourcesManager {
             client.getBaseUrl());
         GoogleFitActivitySource.initialize(client, config);
         HealthConnectActivitySource.initialize(client, config, client.getStorage());
-        if (isGoogleFitInit) {
-            GoogleFitActivitySource.initialize(client, config);
-        } else {
-            HealthConnectActivitySource.initialize(client, config);
-        }
 
         final BackgroundWorkManager backgroundWorkManager = new BackgroundWorkManager(config, scheduler);
         final ActivitySourceResolver activitySourceResolver = new ActivitySourceResolver();
@@ -165,11 +144,7 @@ public final class ActivitySourcesManager {
             stateStore,
             activitySourceResolver,
             currentConnections);
-        if (isGoogleFitInit) {
-            newInstance.configureGoogleFitState(currentConnections);
-        } else {
-            newInstance.configureHealthConnectState(currentConnections);
-        }
+        newInstance.configureGoogleFitState(currentConnections);
 
         instance = newInstance;
         Logger.get().d("initialized successfully (the previous one could be overridden)");
@@ -309,7 +284,6 @@ public final class ActivitySourcesManager {
                 this.currentConnections.remove(connectionToRemove);
                 this.stateStore.setConnections(this.currentConnections);
                 this.configureGoogleFitState(currentConnections);
-                this.configureHealthConnectState(currentConnections);
                 callback.onResult(Result.value(null));
             });
         };
@@ -365,7 +339,6 @@ public final class ActivitySourcesManager {
             final CopyOnWriteArrayList<TrackerConnection> freshTrackerConnections =
                 new CopyOnWriteArrayList(apiCallResult.getValue());
             configureGoogleFitState(freshTrackerConnections);
-            configureHealthConnectState(freshTrackerConnections);
             stateStore.setConnections(freshTrackerConnections);
             this.currentConnections = freshTrackerConnections;
             if (callback != null) {
@@ -400,11 +373,9 @@ public final class ActivitySourcesManager {
         return sourceConnectionsStream.collect(Collectors.toList());
     }
 
-    private void configureGoogleFitState(@Nullable List<TrackerConnection> trackerConnections) {
     @SuppressLint("NewApi")
     private void configureExternalStateByConnections(@Nullable List<TrackerConnection> trackerConnections) {
         configureGoogleFitState(trackerConnections);
-        configureHealthConnectState(trackerConnections);
     }
 
     private void configureGoogleFitState(@Nullable List<TrackerConnection> trackerConnections) {
@@ -413,7 +384,6 @@ public final class ActivitySourcesManager {
                 .filter(c -> c.getTracker().equals(TrackerValue.GOOGLE_FIT.getValue()))
                 .findFirst())
             .orElse(null);
-        // TODO: move out the line with configuring the profile sync work when there will be other local activity
 
         if (gfTrackerConnection != null) {
             backgroundWorkManager.configureProfileSyncWork();
@@ -430,9 +400,7 @@ public final class ActivitySourcesManager {
         } else {
             googleFit.setLowerDateBoundary(null);
         }
-    }
 
-    private void configureHealthConnectState(@Nullable List<TrackerConnection> trackerConnections) {
         final TrackerConnection hcTrackerConnection = Optional.ofNullable(trackerConnections)
             .flatMap(connections -> connections.stream()
                 .filter(c -> c.getTracker().equals(TrackerValue.HEALTH_CONNECT.getValue()))
@@ -446,22 +414,6 @@ public final class ActivitySourcesManager {
             backgroundWorkManager.cancelHCSyncWorks();
             backgroundWorkManager.cancelHCProfileSyncWork();
         }
-
-        final HealthConnectActivitySource healthConnect = (HealthConnectActivitySource) activitySourceResolver
-            .getInstanceByTrackerValue(TrackerValue.HEALTH_CONNECT.getValue());
-        if (hcTrackerConnection != null) {
-            healthConnect.setLowerDateBoundary(hcTrackerConnection.getCreatedAt());
-        } else {
-            healthConnect.setLowerDateBoundary(null);
-        }
-    }
-
-    private void configureHealthConnectState(@Nullable List<TrackerConnection> trackerConnections) {
-        final TrackerConnection hcTrackerConnection = Optional.ofNullable(trackerConnections)
-            .flatMap(connections -> connections.stream()
-                .filter(c -> c.getTracker().equals(TrackerValue.HEALTH_CONNECT.getValue()))
-                .findFirst())
-            .orElse(null);
 
         final HealthConnectActivitySource healthConnect = (HealthConnectActivitySource) activitySourceResolver
             .getInstanceByTrackerValue(TrackerValue.HEALTH_CONNECT.getValue());

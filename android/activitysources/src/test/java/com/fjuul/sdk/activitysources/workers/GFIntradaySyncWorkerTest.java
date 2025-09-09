@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -14,15 +13,23 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import android.content.Context;
+import android.os.Build;
+
+import androidx.test.core.app.ApplicationProvider;
+import androidx.work.Data;
+import androidx.work.ListenableWorker.Result;
+import androidx.work.testing.TestWorkerBuilder;
+
+import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig;
+import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
+import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
+import com.fjuul.sdk.activitysources.entities.GoogleFitIntradaySyncOptions;
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
+import com.fjuul.sdk.core.ApiClient;
+import com.fjuul.sdk.core.entities.Callback;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -35,22 +42,15 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.util.concurrent.PausedExecutorService;
 import org.robolectric.annotation.Config;
 
-import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
-import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
-import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig;
-import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
-import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
-import com.fjuul.sdk.activitysources.entities.GoogleFitIntradaySyncOptions;
-import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions.CommonException;
-import com.fjuul.sdk.core.ApiClient;
-import com.fjuul.sdk.core.entities.Callback;
-
-import android.content.Context;
-import android.os.Build;
-import androidx.test.core.app.ApplicationProvider;
-import androidx.work.Data;
-import androidx.work.ListenableWorker.Result;
-import androidx.work.testing.TestWorkerBuilder;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RunWith(Enclosed.class)
 public class GFIntradaySyncWorkerTest {
@@ -89,7 +89,7 @@ public class GFIntradaySyncWorkerTest {
                 final ArgumentCaptor<ActivitySourcesManagerConfig> configCaptor =
                     ArgumentCaptor.forClass(ActivitySourcesManagerConfig.class);
                 sourcesManagerStaticMock.verify(() -> {
-                    ActivitySourcesManager.initialize(apiClientCaptor.capture(), configCaptor.capture(), eq(true));
+                    ActivitySourcesManager.initialize(apiClientCaptor.capture(), configCaptor.capture());
                 });
                 final ApiClient apiClient = apiClientCaptor.getValue();
                 assertEquals("api client should be initialized with user token from the input data",

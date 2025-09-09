@@ -1,14 +1,15 @@
 package com.fjuul.sdk.activitysources.entities;
 
+import android.annotation.SuppressLint;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import android.annotation.SuppressLint;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 /**
  * A configuration class for the ActivitySourceManager that configures its behavior using the specified parameters.
@@ -411,25 +412,22 @@ public class ActivitySourcesManagerConfig {
          * @return config
          */
         @NonNull
-        public ActivitySourcesManagerConfig build(boolean isGoogleFit) {
+        public ActivitySourcesManagerConfig build() {
             if (created) {
                 throw new IllegalStateException("Do not reuse the builder for creating new instance");
             }
-            if (isGoogleFit) {
-                Objects.requireNonNull(config.googleFitIntradayBackgroundSyncMode,
-                    "GoogleFit intraday background sync mode must be set");
-                Objects.requireNonNull(config.googleFitSessionsBackgroundSyncMode,
-                    "GoogleFit sessions background sync mode must be set");
-                Objects.requireNonNull(config.profileBackgroundSyncMode,
-                    "GoogleFit profile background sync mode must be set");
-                Objects.requireNonNull(config.collectableFitnessMetrics, "Collectable fitness metrics must be set");
-            } else {
-                Objects.requireNonNull(config.healthConnectIntradayBackgroundSyncMode,
-                    "HealthConnect intraday background sync mode must be set");
-                Objects.requireNonNull(config.healthConnectProfileSyncMode,
-                    "HealthConnect profile background sync mode must be set");
-                Objects.requireNonNull(config.collectableHCFitnessMetrics, "Collectable fitness metrics must be set");
-            }
+            Objects.requireNonNull(config.googleFitIntradayBackgroundSyncMode,
+                "GoogleFit intraday background sync mode must be set");
+            Objects.requireNonNull(config.googleFitSessionsBackgroundSyncMode,
+                "GoogleFit sessions background sync mode must be set");
+            Objects.requireNonNull(config.profileBackgroundSyncMode,
+                "GoogleFit profile background sync mode must be set");
+            Objects.requireNonNull(config.collectableFitnessMetrics, "Collectable fitness metrics must be set");
+            Objects.requireNonNull(config.healthConnectIntradayBackgroundSyncMode,
+                "HealthConnect intraday background sync mode must be set");
+            Objects.requireNonNull(config.healthConnectProfileSyncMode,
+                "HealthConnect profile background sync mode must be set");
+            Objects.requireNonNull(config.collectableHCFitnessMetrics, "Collectable fitness metrics must be set");
             this.created = true;
             return config;
         }
@@ -445,34 +443,16 @@ public class ActivitySourcesManagerConfig {
     @NonNull
     public static ActivitySourcesManagerConfig buildDefault() {
         final Set<FitnessMetricsType> fitnessMetrics =
-            Stream.of(FitnessMetricsType.INTRADAY_CALORIES, FitnessMetricsType.HEIGHT, FitnessMetricsType.WEIGHT)
+            Stream.of(FitnessMetricsType.INTRADAY_CALORIES, FitnessMetricsType.HEIGHT, FitnessMetricsType.WEIGHT,
+                    FitnessMetricsType.INTRADAY_STEPS, FitnessMetricsType.STEPS, FitnessMetricsType.INTRADAY_HEART_RATE)
                 .collect(Collectors.toSet());
         return new Builder().enableGoogleFitIntradayBackgroundSync()
             .disableGoogleFitSessionsBackgroundSync()
             .enableProfileBackgroundSync()
-            .setCollectableFitnessMetrics(fitnessMetrics)
-            .build(true);
-    }
-
-    /**
-     * Build the default config with the minimum required fitness metrics for core functionality and enabled background
-     * synchronization for intraday and user profile data from Health Connect.
-     *
-     * @return config
-     */
-    @SuppressLint("NewApi")
-    @NonNull
-    public static ActivitySourcesManagerConfig buildHCDefaultConfig() {
-        final Set<FitnessMetricsType> fitnessMetrics =
-            Stream
-                .of(FitnessMetricsType.INTRADAY_CALORIES,
-                    FitnessMetricsType.STEPS,
-                    FitnessMetricsType.HEIGHT,
-                    FitnessMetricsType.WEIGHT)
-                .collect(Collectors.toSet());
-        return new Builder().enableHealthConnectIntradayBackgroundSync()
             .enableHealthConnectProfileBackgroundSync()
+            .enableHealthConnectIntradayBackgroundSync()
+            .setCollectableFitnessMetrics(fitnessMetrics)
             .setCollectableHCFitnessMetrics(fitnessMetrics)
-            .build(false);
+            .build();
     }
 }

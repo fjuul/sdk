@@ -5,6 +5,7 @@ import androidx.work.WorkerParameters
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectSyncOptions
+import com.fjuul.sdk.core.utils.Logger
 import com.google.android.gms.tasks.TaskCompletionSource
 import com.google.android.gms.tasks.Tasks
 
@@ -12,24 +13,29 @@ class HCProfileSyncWorker(context: Context, workerParams: WorkerParameters) :
     HCSyncWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
+        Logger.get().d("HCProfileSyncWorker doWork")
         val hcConnection = getHealthConnectActivitySourceConnection(activitySourcesManager)
         if (hcConnection == null) {
             return Result.success()
         }
         val hcSource = (hcConnection.activitySource as HealthConnectActivitySource)
-        val taskCompletionSource = TaskCompletionSource<Boolean?>()
-        val syncOptions = buildProfileSyncOptions()
-        hcSource.syncProfile(syncOptions) { result ->
-            if (result.isError && result.error is Exception) {
-                taskCompletionSource.trySetException(result.error as Exception)
-                return@syncProfile
+        val permissionManager = hcSource.getPermissionManager()
+
+        if (permissionManager.checkBackgroundPermission()) {
+            val taskCompletionSource = TaskCompletionSource<Boolean?>()
+            val syncOptions = buildProfileSyncOptions()
+            hcSource.syncProfile(syncOptions) { result ->
+                if (result.isError && result.error is Exception) {
+                    taskCompletionSource.trySetException(result.error as Exception)
+                    return@syncProfile
+                }
+                taskCompletionSource.trySetResult(null)
             }
-            taskCompletionSource.trySetResult(null)
-        }
-        try {
-            Tasks.await<Boolean?>(taskCompletionSource.getTask())
-            return Result.success()
-        } catch (_: Exception) {
+            try {
+                Tasks.await<Boolean?>(taskCompletionSource.getTask())
+                return Result.success()
+            } catch (_: Exception) {
+            }
         }
         return Result.failure()
     }

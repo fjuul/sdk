@@ -30,8 +30,8 @@ abstract class HCSyncWorker(context: Context, workerParams: WorkerParameters) :
                 val config =
                     ActivitySourcesManagerConfig.Builder().keepUntouchedHealthConnectBackgroundSync()
                         .setCollectableHCFitnessMetrics(mutableSetOf<FitnessMetricsType?>())
-                        .build(false)
-                ActivitySourcesManager.initialize(client, config, false)
+                        .build()
+                ActivitySourcesManager.initialize(client, config)
                 sourcesManager = ActivitySourcesManager.getInstance()
             }
             return sourcesManager

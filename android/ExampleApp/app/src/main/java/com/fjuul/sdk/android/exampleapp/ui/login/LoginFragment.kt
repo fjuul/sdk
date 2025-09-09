@@ -53,27 +53,11 @@ class LoginFragment : Fragment() {
         return@lazy ActivitySourcesManagerConfig.Builder()
             .enableGoogleFitBackgroundSync(minSessionDuration)
             .enableProfileBackgroundSync()
-            .setCollectableFitnessMetrics(allFitnessMetrics)
-            .build(true)
-    }
-
-    private val activityHCSourcesManagerConfig: ActivitySourcesManagerConfig by lazy {
-        val allFitnessMetrics = Stream.of(
-            FitnessMetricsType.INTRADAY_CALORIES,
-            FitnessMetricsType.INTRADAY_HEART_RATE,
-            FitnessMetricsType.INTRADAY_STEPS,
-            FitnessMetricsType.STEPS, // Health Connect API only
-            FitnessMetricsType.RESTING_HEART_RATE, // Health Connect API only
-            FitnessMetricsType.WORKOUTS,
-            FitnessMetricsType.HEIGHT,
-            FitnessMetricsType.WEIGHT
-        )
-            .collect(Collectors.toSet())
-        return@lazy ActivitySourcesManagerConfig.Builder()
             .enableHealthConnectIntradayBackgroundSync()
             .enableHealthConnectProfileBackgroundSync()
+            .setCollectableFitnessMetrics(allFitnessMetrics)
             .setCollectableHCFitnessMetrics(allFitnessMetrics)
-            .build(false)
+            .build()
     }
 
     override fun onCreateView(
@@ -161,8 +145,7 @@ class LoginFragment : Fragment() {
                     .build()
                 authorizedUserDataViewModel.fetchUserProfile(apiClient) { success, exception ->
                     ApiClientHolder.setup(apiClient)
-                    ActivitySourcesManager.initialize(apiClient, activitySourcesManagerConfig, true)
-                    ActivitySourcesManager.initialize(apiClient, activityHCSourcesManagerConfig, false)
+                    ActivitySourcesManager.initialize(apiClient, activitySourcesManagerConfig)
                     if (success) {
                         val action = LoginFragmentDirections.actionLoginFragmentToModulesFragment()
                         findNavController().navigate(action)

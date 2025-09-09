@@ -1,8 +1,14 @@
 package com.fjuul.sdk.activitysources.entities.internal;
 
-import java.time.Duration;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import android.annotation.SuppressLint;
+
+import androidx.annotation.NonNull;
+import androidx.work.Constraints;
+import androidx.work.Data;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
 import com.fjuul.sdk.activitysources.workers.GFIntradaySyncWorker;
@@ -12,14 +18,9 @@ import com.fjuul.sdk.activitysources.workers.HCIntradaySyncWorker;
 import com.fjuul.sdk.activitysources.workers.HCProfileSyncWorker;
 import com.fjuul.sdk.activitysources.workers.ProfileSyncWorker;
 
-import android.annotation.SuppressLint;
-import androidx.annotation.NonNull;
-import androidx.work.Constraints;
-import androidx.work.Data;
-import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.NetworkType;
-import androidx.work.PeriodicWorkRequest;
-import androidx.work.WorkManager;
+import java.time.Duration;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 public class ActivitySourceWorkScheduler {
     public static final String GF_INTRADAY_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.gf_intraday_sync";
@@ -152,18 +153,19 @@ public class ActivitySourceWorkScheduler {
         if (hcIntradaySyncWorkEnqueued) {
             return;
         }
+
         final String[] serializedIntradayMetrics = serializeFitnessMetrics(intradayMetrics);
         final Data inputWorkRequestData = buildEssentialInputData()
             .putStringArray(HCIntradaySyncWorker.KEY_HC_INTRADAY_METRICS, serializedIntradayMetrics)
             .build();
         final PeriodicWorkRequest periodicWorkRequest =
-            new PeriodicWorkRequest.Builder(HCIntradaySyncWorker.class, 1, TimeUnit.HOURS)
+            new PeriodicWorkRequest.Builder(HCIntradaySyncWorker.class, 15, TimeUnit.MINUTES)
                 .setConstraints(buildCommonWorkConstraints())
-                .setInitialDelay(5, TimeUnit.MINUTES)
+                .setInitialDelay(1, TimeUnit.MINUTES)
                 .setInputData(inputWorkRequestData)
                 .build();
         workManager.enqueueUniquePeriodicWork(HC_INTRADAY_SYNC_WORK_NAME,
-            ExistingPeriodicWorkPolicy.UPDATE,
+            ExistingPeriodicWorkPolicy.REPLACE,
             periodicWorkRequest);
         hcIntradaySyncWorkEnqueued = true;
     }
@@ -182,13 +184,13 @@ public class ActivitySourceWorkScheduler {
             buildEssentialInputData().putStringArray(HCProfileSyncWorker.KEY_HC_PROFILE_METRICS, serializedMetrics)
                 .build();
         final PeriodicWorkRequest periodicWorkRequest =
-            new PeriodicWorkRequest.Builder(HCProfileSyncWorker.class, 1, TimeUnit.HOURS)
+            new PeriodicWorkRequest.Builder(HCProfileSyncWorker.class, 15, TimeUnit.MINUTES)
                 .setConstraints(buildCommonWorkConstraints())
-                .setInitialDelay(5, TimeUnit.MINUTES)
+                .setInitialDelay(1, TimeUnit.MINUTES)
                 .setInputData(inputWorkRequestData)
                 .build();
         workManager.enqueueUniquePeriodicWork(HC_PROFILE_SYNC_WORK_NAME,
-            ExistingPeriodicWorkPolicy.UPDATE,
+            ExistingPeriodicWorkPolicy.REPLACE,
             periodicWorkRequest);
         hcProfileSyncWorkEnqueued = true;
     }

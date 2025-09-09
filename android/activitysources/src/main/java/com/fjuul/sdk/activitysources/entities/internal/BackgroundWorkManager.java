@@ -64,17 +64,16 @@ public class BackgroundWorkManager {
     }
 
     @SuppressLint("NewApi")
-    public void configureHCSyncWorks() {
+    public void configureHCIntradaySyncWorks() {
         switch (config.getHealthConnectIntradayBackgroundSyncMode()) {
             case DISABLED: {
                 workScheduler.cancelHCIntradaySyncWork();
                 break;
             }
             case ENABLED: {
-                final Set<FitnessMetricsType> intradayMetrics = config.getCollectableHCFitnessMetrics()
+                final Set<FitnessMetricsType> intradayMetrics = config.getCollectableFitnessMetrics()
                     .stream()
-                    .filter(type -> FitnessMetricsType.isIntradayMetricType(type)
-                        || FitnessMetricsType.isDailyMetricType(type))
+                    .filter(FitnessMetricsType::isIntradayMetricType)
                     .collect(Collectors.toSet());
                 if (intradayMetrics.isEmpty()) {
                     workScheduler.cancelHCIntradaySyncWork();
@@ -86,8 +85,34 @@ public class BackgroundWorkManager {
         }
     }
 
-    public void cancelHCSyncWorks() {
+    public void cancelHCIntradaySyncWorks() {
         workScheduler.cancelHCIntradaySyncWork();
+    }
+
+    @SuppressLint("NewApi")
+    public void configureHCDailySyncWorks() {
+        switch (config.getHealthConnectDailyBackgroundSyncMode()) {
+            case DISABLED: {
+                workScheduler.cancelHCIntradaySyncWork();
+                break;
+            }
+            case ENABLED: {
+                final Set<FitnessMetricsType> intradayMetrics = config.getCollectableFitnessMetrics()
+                    .stream()
+                    .filter(FitnessMetricsType::isDailyMetricType)
+                    .collect(Collectors.toSet());
+                if (intradayMetrics.isEmpty()) {
+                    workScheduler.cancelHCDailySyncWork();
+                } else {
+                    workScheduler.scheduleHCDailySyncWork(intradayMetrics);
+                }
+                break;
+            }
+        }
+    }
+
+    public void cancelHCDailySyncWorks() {
+        workScheduler.cancelHCDailySyncWork();
     }
 
 
@@ -123,7 +148,7 @@ public class BackgroundWorkManager {
                 workScheduler.cancelHCProfileSyncWork();
                 break;
             case ENABLED: {
-                final Set<FitnessMetricsType> profileMetrics = config.getCollectableHCFitnessMetrics()
+                final Set<FitnessMetricsType> profileMetrics = config.getCollectableFitnessMetrics()
                     .stream()
                     .filter(FitnessMetricsType::isProfileMetricType)
                     .collect(Collectors.toSet());

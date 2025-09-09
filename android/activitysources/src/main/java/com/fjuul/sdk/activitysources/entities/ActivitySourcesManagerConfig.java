@@ -43,10 +43,10 @@ public class ActivitySourcesManagerConfig {
     private BackgroundSyncMode healthConnectIntradayBackgroundSyncMode;
 
     @NonNull
-    private BackgroundSyncMode healthConnectProfileSyncMode;
+    private BackgroundSyncMode healthConnectDailyBackgroundSyncMode;
 
     @NonNull
-    Set<FitnessMetricsType> collectableHCFitnessMetrics;
+    private BackgroundSyncMode healthConnectProfileSyncMode;
 
     /**
      * Returns the mode that indicates whether intraday data of Google Fit should be synced in the background.
@@ -109,6 +109,15 @@ public class ActivitySourcesManagerConfig {
         return healthConnectIntradayBackgroundSyncMode;
     }
 
+    /**
+     * Returns the mode that indicates whether daily data of Health Connect should be synced in the background.
+     *
+     * @return background mode
+     */
+    @NonNull
+    public BackgroundSyncMode getHealthConnectDailyBackgroundSyncMode() {
+        return healthConnectDailyBackgroundSyncMode;
+    }
 
     /**
      * Returns the mode that indicates whether profile data of Health Connect should be synced in the background.
@@ -118,16 +127,6 @@ public class ActivitySourcesManagerConfig {
     @NonNull
     public BackgroundSyncMode getHealthConnectProfileBackgroundSyncMode() {
         return healthConnectProfileSyncMode;
-    }
-
-    /**
-     * Returns a set of health connect fitness metrics that are collected locally (i.e. not by external trackers).
-     *
-     * @return set of fitness metrics
-     */
-    @NonNull
-    public Set<FitnessMetricsType> getCollectableHCFitnessMetrics() {
-        return collectableHCFitnessMetrics;
     }
 
     public static class Builder {
@@ -228,6 +227,23 @@ public class ActivitySourcesManagerConfig {
         }
 
         /**
+         * Enables background syncing of daily data from Health connect. The types of data to be collected will be
+         * determined by the set of collectable fitness metrics. If intraday types are not included in the collectable
+         * fitness metrics, the background synchronization will be disabled.<br>
+         * Note: SDK will schedule background syncs only if there is a current connection to Health connect. In other
+         * words, this option expresses an intent to have the background synchronization when it's applicable but it
+         * doesn't mean a requirement of the connection to Health Connect.
+         *
+         * @return configured builder
+         */
+        @SuppressLint("NewApi")
+        @NonNull
+        public Builder enableHealthConnectDailyBackgroundSync() {
+            config.healthConnectDailyBackgroundSyncMode = BackgroundSyncMode.ENABLED;
+            return this;
+        }
+
+        /**
          * Enables background synchronization of user profile properties (e.g. height, weight) from the local activity
          * sources.<br>
          * Note: SDK will schedule background syncs only if there are appropriate current connections to the local
@@ -303,6 +319,17 @@ public class ActivitySourcesManagerConfig {
 
         /**
          * Disables background syncing of user profile properties (e.g. height, weight) from the local activity sources.
+         *D
+         * @return configured builder
+         */
+        @NonNull
+        public Builder disableHealthConnectDailyBackgroundSync() {
+            config.healthConnectDailyBackgroundSyncMode = BackgroundSyncMode.DISABLED;
+            return this;
+        }
+
+        /**
+         * Disables background syncing of user profile properties (e.g. height, weight) from the local activity sources.
          *
          * @return configured builder
          */
@@ -324,6 +351,7 @@ public class ActivitySourcesManagerConfig {
             disableProfileBackgroundSync();
             disableHealthConnectProfileBackgroundSync();
             disableHealthConnectIntradayBackgroundSync();
+            disableHealthConnectDailyBackgroundSync();
             return this;
         }
 
@@ -337,6 +365,7 @@ public class ActivitySourcesManagerConfig {
         public Builder disableHealthConnectBackgroundSync() {
             disableHealthConnectProfileBackgroundSync();
             disableHealthConnectIntradayBackgroundSync();
+            disableHealthConnectDailyBackgroundSync();
             return this;
         }
 
@@ -366,6 +395,7 @@ public class ActivitySourcesManagerConfig {
         public Builder keepUntouchedHealthConnectBackgroundSync() {
             config.healthConnectProfileSyncMode = BackgroundSyncMode.UNTOUCHED;
             config.healthConnectIntradayBackgroundSyncMode = BackgroundSyncMode.UNTOUCHED;
+            config.healthConnectDailyBackgroundSyncMode = BackgroundSyncMode.UNTOUCHED;
             return this;
         }
 
@@ -384,24 +414,6 @@ public class ActivitySourcesManagerConfig {
         public Builder setCollectableFitnessMetrics(@NonNull Set<FitnessMetricsType> fitnessMetrics) {
             Objects.requireNonNull(fitnessMetrics, "metrics must be not null");
             config.collectableFitnessMetrics = Set.copyOf(fitnessMetrics);
-            return this;
-        }
-
-        /**
-         * Defines the set of fitness metrics to be collected by local trackers (i.e. Health Connect). The set of
-         * metrics is used to determine a list of requested permissions for local activity sources, and to determine
-         * background tasks for syncing data from Health Connect. <br>
-         * It's allowed to provide an empty set if you intend to use only external activity sources. <br>
-         * NOTE: this doesn't affect external trackers and how they request permissions.
-         *
-         * @param fitnessMetrics set of fitness metrics to be collected by local trackers
-         * @return configured builder
-         */
-        @SuppressLint("NewApi")
-        @NonNull
-        public Builder setCollectableHCFitnessMetrics(@NonNull Set<FitnessMetricsType> fitnessMetrics) {
-            Objects.requireNonNull(fitnessMetrics, "metrics must be not null");
-            config.collectableHCFitnessMetrics = Set.copyOf(fitnessMetrics);
             return this;
         }
 
@@ -425,9 +437,10 @@ public class ActivitySourcesManagerConfig {
             Objects.requireNonNull(config.collectableFitnessMetrics, "Collectable fitness metrics must be set");
             Objects.requireNonNull(config.healthConnectIntradayBackgroundSyncMode,
                 "HealthConnect intraday background sync mode must be set");
+            Objects.requireNonNull(config.healthConnectDailyBackgroundSyncMode,
+                "HealthConnect daily background sync mode must be set");
             Objects.requireNonNull(config.healthConnectProfileSyncMode,
                 "HealthConnect profile background sync mode must be set");
-            Objects.requireNonNull(config.collectableHCFitnessMetrics, "Collectable fitness metrics must be set");
             this.created = true;
             return config;
         }
@@ -451,8 +464,8 @@ public class ActivitySourcesManagerConfig {
             .enableProfileBackgroundSync()
             .enableHealthConnectProfileBackgroundSync()
             .enableHealthConnectIntradayBackgroundSync()
+            .enableHealthConnectDailyBackgroundSync()
             .setCollectableFitnessMetrics(fitnessMetrics)
-            .setCollectableHCFitnessMetrics(fitnessMetrics)
             .build();
     }
 }

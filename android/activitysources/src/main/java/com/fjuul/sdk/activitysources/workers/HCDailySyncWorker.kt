@@ -8,7 +8,7 @@ import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConne
 import com.google.android.gms.tasks.TaskCompletionSource
 import com.google.android.gms.tasks.Tasks
 
-class HCIntradaySyncWorker(context: Context, workerParams: WorkerParameters) :
+class HCDailySyncWorker(context: Context, workerParams: WorkerParameters) :
     HCSyncWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
@@ -21,15 +21,15 @@ class HCIntradaySyncWorker(context: Context, workerParams: WorkerParameters) :
 
         if (permissionManager.checkBackgroundPermission()) {
             val taskCompletionSource = TaskCompletionSource<Void?>()
-            val syncOptions = buildIntradaySyncOptions()
-            hcSource.syncIntraday(syncOptions) { result ->
+            val syncOptions = buildDailySyncOptions()
+
+            hcSource.syncDaily(syncOptions) { result ->
                 if (result.isError && result.error is Exception) {
                     taskCompletionSource.trySetException(result.error as Exception)
-                    return@syncIntraday
+                    return@syncDaily
                 }
                 taskCompletionSource.trySetResult(null)
             }
-
             try {
                 Tasks.await<Void?>(taskCompletionSource.getTask())
                 return Result.success()
@@ -40,12 +40,12 @@ class HCIntradaySyncWorker(context: Context, workerParams: WorkerParameters) :
         return Result.failure()
     }
 
-    private fun buildIntradaySyncOptions(): HealthConnectSyncOptions {
+    private fun buildDailySyncOptions(): HealthConnectSyncOptions {
         val metrics = mutableSetOf<FitnessMetricsType>()
-        val rawIntradayMetrics = inputData.getStringArray(KEY_HC_INTRADAY_METRICS) ?: emptyArray()
-        for (rawIntradayMetric in rawIntradayMetrics) {
+        val rawDailyMetrics = inputData.getStringArray(KEY_HC_DAILY_METRICS) ?: emptyArray()
+        for (rawDailyMetric in rawDailyMetrics) {
             try {
-                val metric = FitnessMetricsType.valueOf(rawIntradayMetric)
+                val metric = FitnessMetricsType.valueOf(rawDailyMetric)
                 metrics.add(metric)
             } catch (_: Exception) {
             }
@@ -54,6 +54,6 @@ class HCIntradaySyncWorker(context: Context, workerParams: WorkerParameters) :
     }
 
     companion object {
-        const val KEY_HC_INTRADAY_METRICS: String = "HC_INTRADAY_METRICS"
+        const val KEY_HC_DAILY_METRICS: String = "HC_DAILY_METRICS"
     }
 }

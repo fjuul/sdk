@@ -409,9 +409,11 @@ public final class ActivitySourcesManager {
 
         if (hcTrackerConnection != null) {
             backgroundWorkManager.configureHCProfileSyncWork();
-            backgroundWorkManager.configureHCSyncWorks();
+            backgroundWorkManager.configureHCIntradaySyncWorks();
+            backgroundWorkManager.configureHCDailySyncWorks();
         } else {
-            backgroundWorkManager.cancelHCSyncWorks();
+            backgroundWorkManager.cancelHCIntradaySyncWorks();
+            backgroundWorkManager.cancelHCDailySyncWorks();
             backgroundWorkManager.cancelHCProfileSyncWork();
         }
 

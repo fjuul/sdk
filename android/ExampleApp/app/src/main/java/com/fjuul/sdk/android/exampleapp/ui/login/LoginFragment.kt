@@ -54,9 +54,9 @@ class LoginFragment : Fragment() {
             .enableGoogleFitBackgroundSync(minSessionDuration)
             .enableProfileBackgroundSync()
             .enableHealthConnectIntradayBackgroundSync()
+            .enableHealthConnectDailyBackgroundSync()
             .enableHealthConnectProfileBackgroundSync()
             .setCollectableFitnessMetrics(allFitnessMetrics)
-            .setCollectableHCFitnessMetrics(allFitnessMetrics)
             .build()
     }
 

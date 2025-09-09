@@ -382,17 +382,6 @@ public class ActivitySourcesManagerConfig {
             config.googleFitSessionsBackgroundSyncMode = BackgroundSyncMode.UNTOUCHED;
             config.googleFitSessionsBackgroundSyncMinSessionDuration = null;
             config.profileBackgroundSyncMode = BackgroundSyncMode.UNTOUCHED;
-            return this;
-        }
-
-        /**
-         * Sets the special background mode avoiding any changes of scheduled health connect background workers.
-         * Currently, it supposed to be used internally only.
-         *
-         * @return configured builder
-         */
-        @NonNull
-        public Builder keepUntouchedHealthConnectBackgroundSync() {
             config.healthConnectProfileSyncMode = BackgroundSyncMode.UNTOUCHED;
             config.healthConnectIntradayBackgroundSyncMode = BackgroundSyncMode.UNTOUCHED;
             config.healthConnectDailyBackgroundSyncMode = BackgroundSyncMode.UNTOUCHED;

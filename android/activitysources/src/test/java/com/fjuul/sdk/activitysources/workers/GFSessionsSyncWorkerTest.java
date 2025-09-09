@@ -13,22 +13,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import android.content.Context;
-import android.os.Build;
-
-import androidx.test.core.app.ApplicationProvider;
-import androidx.work.Data;
-import androidx.work.ListenableWorker;
-import androidx.work.testing.TestWorkerBuilder;
-
-import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
-import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
-import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig;
-import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
-import com.fjuul.sdk.activitysources.entities.GoogleFitSessionSyncOptions;
-import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions;
-import com.fjuul.sdk.core.ApiClient;
-import com.fjuul.sdk.core.entities.Callback;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -41,14 +33,21 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.util.concurrent.PausedExecutorService;
 import org.robolectric.annotation.Config;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig;
+import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
+import com.fjuul.sdk.activitysources.entities.GoogleFitSessionSyncOptions;
+import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions;
+import com.fjuul.sdk.core.ApiClient;
+import com.fjuul.sdk.core.entities.Callback;
+
+import android.content.Context;
+import android.os.Build;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.work.Data;
+import androidx.work.ListenableWorker;
+import androidx.work.testing.TestWorkerBuilder;
 
 @RunWith(Enclosed.class)
 public class GFSessionsSyncWorkerTest {

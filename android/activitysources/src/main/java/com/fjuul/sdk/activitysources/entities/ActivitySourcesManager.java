@@ -1,13 +1,10 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.work.WorkManager;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthenticationFlowRequired;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
@@ -23,11 +20,13 @@ import com.fjuul.sdk.core.exceptions.FjuulException;
 import com.fjuul.sdk.core.utils.Logger;
 import com.google.android.gms.tasks.Task;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.work.WorkManager;
 
 /**
  * The `ActivitySourcesManager` encapsulates connection to fitness trackers, access to current user's tracker

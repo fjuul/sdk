@@ -1,14 +1,8 @@
 package com.fjuul.sdk.activitysources.entities.internal;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
-import androidx.work.Constraints;
-import androidx.work.Data;
-import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.NetworkType;
-import androidx.work.PeriodicWorkRequest;
-import androidx.work.WorkManager;
+import java.time.Duration;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
 import com.fjuul.sdk.activitysources.workers.GFIntradaySyncWorker;
@@ -19,9 +13,14 @@ import com.fjuul.sdk.activitysources.workers.HCIntradaySyncWorker;
 import com.fjuul.sdk.activitysources.workers.HCProfileSyncWorker;
 import com.fjuul.sdk.activitysources.workers.ProfileSyncWorker;
 
-import java.time.Duration;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
+import androidx.work.Constraints;
+import androidx.work.Data;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 public class ActivitySourceWorkScheduler {
     public static final String GF_INTRADAY_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.gf_intraday_sync";
@@ -187,9 +186,9 @@ public class ActivitySourceWorkScheduler {
         }
 
         final String[] serializedDailyMetrics = serializeFitnessMetrics(dailyMetrics);
-        final Data inputWorkRequestData = buildEssentialInputData()
-            .putStringArray(HCDailySyncWorker.KEY_HC_DAILY_METRICS, serializedDailyMetrics)
-            .build();
+        final Data inputWorkRequestData =
+            buildEssentialInputData().putStringArray(HCDailySyncWorker.KEY_HC_DAILY_METRICS, serializedDailyMetrics)
+                .build();
         final PeriodicWorkRequest periodicWorkRequest =
             new PeriodicWorkRequest.Builder(HCDailySyncWorker.class, 15, TimeUnit.MINUTES)
                 .setConstraints(buildCommonWorkConstraints())

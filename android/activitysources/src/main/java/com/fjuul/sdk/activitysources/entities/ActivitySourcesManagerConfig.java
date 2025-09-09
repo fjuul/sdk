@@ -1,15 +1,14 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import android.annotation.SuppressLint;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * A configuration class for the ActivitySourceManager that configures its behavior using the specified parameters.
@@ -319,7 +318,8 @@ public class ActivitySourcesManagerConfig {
 
         /**
          * Disables background syncing of user profile properties (e.g. height, weight) from the local activity sources.
-         *D
+         * D
+         *
          * @return configured builder
          */
         @NonNull
@@ -456,8 +456,13 @@ public class ActivitySourcesManagerConfig {
     @NonNull
     public static ActivitySourcesManagerConfig buildDefault() {
         final Set<FitnessMetricsType> fitnessMetrics =
-            Stream.of(FitnessMetricsType.INTRADAY_CALORIES, FitnessMetricsType.HEIGHT, FitnessMetricsType.WEIGHT,
-                    FitnessMetricsType.INTRADAY_STEPS, FitnessMetricsType.STEPS, FitnessMetricsType.INTRADAY_HEART_RATE)
+            Stream
+                .of(FitnessMetricsType.INTRADAY_CALORIES,
+                    FitnessMetricsType.HEIGHT,
+                    FitnessMetricsType.WEIGHT,
+                    FitnessMetricsType.INTRADAY_STEPS,
+                    FitnessMetricsType.STEPS,
+                    FitnessMetricsType.INTRADAY_HEART_RATE)
                 .collect(Collectors.toSet());
         return new Builder().enableGoogleFitIntradayBackgroundSync()
             .disableGoogleFitSessionsBackgroundSync()

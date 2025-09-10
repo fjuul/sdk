@@ -243,10 +243,7 @@ public final class ActivitySourcesManager {
                 return;
             }
             ConnectionResult connectionResult = apiCallResult.getValue();
-            if (connectionResult instanceof ConnectionResult.Connected) {
-                callback.onResult(Result.error(new ActivitySourcesApiExceptions.SourceAlreadyConnectedException(
-                    "Activity source was already connected")));
-            } else if (connectionResult instanceof ExternalAuthenticationFlowRequired) {
+            if (connectionResult instanceof ExternalAuthenticationFlowRequired) {
                 final String url = ((ExternalAuthenticationFlowRequired) connectionResult).getUrl();
                 final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 callback.onResult(Result.value(intent));

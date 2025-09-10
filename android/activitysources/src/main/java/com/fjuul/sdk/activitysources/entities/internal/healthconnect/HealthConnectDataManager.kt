@@ -769,7 +769,7 @@ class HealthConnectDataManager(
                 }
             } else {
                 var nextChangesToken = storedWeightChangesToken
-                val heightList = mutableListOf<WeightRecord>()
+                val weightList = mutableListOf<WeightRecord>()
                 do {
                     val response = client.getChanges(nextChangesToken)
                     if (response.changesTokenExpired) {
@@ -782,7 +782,7 @@ class HealthConnectDataManager(
                             is UpsertionChange -> {
                                 when (val record = change.record) {
                                     is WeightRecord -> {
-                                        heightList.add(record)
+                                        weightList.add(record)
                                     }
                                 }
                             }
@@ -791,7 +791,7 @@ class HealthConnectDataManager(
                     nextChangesToken = response.nextChangesToken
                 } while (response.hasMore)
                 weightChangesToken = nextChangesToken
-                heightList
+                weightList
             }
         } else null
 
@@ -827,7 +827,10 @@ class HealthConnectDataManager(
         }
     }
 
-    private suspend fun makeFullHeightSync(startTime: Instant, onTokenSave: (String) -> Unit): List<HeightRecord> {
+    private suspend fun makeFullHeightSync(
+        startTime: Instant,
+        onTokenSave: (String) -> Unit
+    ): List<HeightRecord> {
         val heightChangesToken = client.getChangesToken(
             ChangesTokenRequest(recordTypes = setOf(HeightRecord::class))
         )
@@ -841,7 +844,10 @@ class HealthConnectDataManager(
         return records
     }
 
-    private suspend fun makeFullWeightSync(startTime: Instant, onTokenSave: (String)-> Unit): List<WeightRecord> {
+    private suspend fun makeFullWeightSync(
+        startTime: Instant,
+        onTokenSave: (String) -> Unit
+    ): List<WeightRecord> {
         val weightChangesToken = client.getChangesToken(
             ChangesTokenRequest(recordTypes = setOf(WeightRecord::class))
         )

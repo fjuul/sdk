@@ -31,7 +31,7 @@ sealed class HealthConnectException(message: String) : FjuulException(message) {
      * Thrown when no metrics are selected for sync.
      */
     class NoMetricsSelectedException: HealthConnectException(
-        "No metrics selected metrics"
+        "No metrics selected"
     )
 
     /** Thrown when a requested metric is not supported by Health Connect. */

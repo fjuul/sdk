@@ -51,7 +51,7 @@ public class ActivitySourcesService {
         HttpLoggingInterceptor logging =
             new HttpLoggingInterceptor(message -> Logger.get().d("HTTP LOGS: %s", message));
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
-        OkHttpClient httpClient = client.buildSigningClient().newBuilder().addInterceptor(logging).build();;
+        OkHttpClient httpClient = client.buildSigningClient().newBuilder().addInterceptor(logging).build();
         Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter())
             .add(new GFUploadDataJsonAdapter())
             .add(new KotlinJsonAdapterFactory())

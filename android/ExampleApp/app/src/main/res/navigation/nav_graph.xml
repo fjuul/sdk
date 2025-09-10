@@ -38,7 +38,7 @@
             app:destination="@id/GFSyncFragment" />
         <action
             android:id="@+id/action_modulesFragment_to_HealthConnectSyncFragment"
-            app:destination="@id/HeathConnectSyncFragment" />
+            app:destination="@id/HealthConnectSyncFragment" />
     </fragment>
     <fragment
         android:id="@+id/dailyStatsFragment"
@@ -79,7 +79,7 @@
         tools:layout="@layout/gf_sync_fragment" />
 
     <fragment
-        android:id="@+id/HeathConnectSyncFragment"
+        android:id="@+id/HealthConnectSyncFragment"
         android:name="com.fjuul.sdk.android.exampleapp.ui.healthconnectsync.HealthConnectSyncFragment"
         android:label="Health Connect Sync"
         tools:layout="@layout/health_connect_sync_fragment" />

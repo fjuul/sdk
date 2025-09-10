@@ -163,9 +163,9 @@ public class ActivitySourceWorkScheduler {
             .putStringArray(HCIntradaySyncWorker.KEY_HC_INTRADAY_METRICS, serializedIntradayMetrics)
             .build();
         final PeriodicWorkRequest periodicWorkRequest =
-            new PeriodicWorkRequest.Builder(HCIntradaySyncWorker.class, 15, TimeUnit.MINUTES)
+            new PeriodicWorkRequest.Builder(HCIntradaySyncWorker.class, 1, TimeUnit.HOURS)
                 .setConstraints(buildCommonWorkConstraints())
-                .setInitialDelay(1, TimeUnit.MINUTES)
+                .setInitialDelay(1, TimeUnit.HOURS)
                 .setInputData(inputWorkRequestData)
                 .build();
         workManager.enqueueUniquePeriodicWork(HC_INTRADAY_SYNC_WORK_NAME,
@@ -190,9 +190,9 @@ public class ActivitySourceWorkScheduler {
             buildEssentialInputData().putStringArray(HCDailySyncWorker.KEY_HC_DAILY_METRICS, serializedDailyMetrics)
                 .build();
         final PeriodicWorkRequest periodicWorkRequest =
-            new PeriodicWorkRequest.Builder(HCDailySyncWorker.class, 15, TimeUnit.MINUTES)
+            new PeriodicWorkRequest.Builder(HCDailySyncWorker.class, 1, TimeUnit.HOURS)
                 .setConstraints(buildCommonWorkConstraints())
-                .setInitialDelay(1, TimeUnit.MINUTES)
+                .setInitialDelay(1, TimeUnit.HOURS)
                 .setInputData(inputWorkRequestData)
                 .build();
         workManager.enqueueUniquePeriodicWork(HC_DAILY_SYNC_WORK_NAME,
@@ -215,9 +215,9 @@ public class ActivitySourceWorkScheduler {
             buildEssentialInputData().putStringArray(HCProfileSyncWorker.KEY_HC_PROFILE_METRICS, serializedMetrics)
                 .build();
         final PeriodicWorkRequest periodicWorkRequest =
-            new PeriodicWorkRequest.Builder(HCProfileSyncWorker.class, 15, TimeUnit.MINUTES)
+            new PeriodicWorkRequest.Builder(HCProfileSyncWorker.class, 1, TimeUnit.HOURS)
                 .setConstraints(buildCommonWorkConstraints())
-                .setInitialDelay(1, TimeUnit.MINUTES)
+                .setInitialDelay(1, TimeUnit.HOURS)
                 .setInputData(inputWorkRequestData)
                 .build();
         workManager.enqueueUniquePeriodicWork(HC_PROFILE_SYNC_WORK_NAME,

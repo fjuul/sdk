@@ -200,7 +200,7 @@ class HealthConnectDataManager(
         }
 
         syncIntradayChangedBuckets(totalCaloriesMetric, totalCaloriesTimeChanges) {
-//            storage.set(TOTAL_CALORIES_CHANGES_TOKEN, storedTotalCaloriesChangesToken)
+            storage.set(TOTAL_CALORIES_CHANGES_TOKEN, storedTotalCaloriesChangesToken)
         }
     }
 

@@ -35,7 +35,6 @@ class HCDailySyncWorker(context: Context, workerParams: WorkerParameters) :
                 return Result.success()
             } catch (_: Exception) {
             }
-            return Result.failure()
         }
         return Result.failure()
     }

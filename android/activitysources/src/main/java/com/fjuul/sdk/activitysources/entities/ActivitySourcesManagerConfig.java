@@ -227,7 +227,7 @@ public class ActivitySourcesManagerConfig {
 
         /**
          * Enables background syncing of daily data from Health connect. The types of data to be collected will be
-         * determined by the set of collectable fitness metrics. If intraday types are not included in the collectable
+         * determined by the set of collectable fitness metrics. If daily types are not included in the collectable
          * fitness metrics, the background synchronization will be disabled.<br>
          * Note: SDK will schedule background syncs only if there is a current connection to Health connect. In other
          * words, this option expresses an intent to have the background synchronization when it's applicable but it
@@ -306,7 +306,7 @@ public class ActivitySourcesManagerConfig {
         }
 
         /**
-         * Disables background syncing of intraday data from Google Fit.
+         * Disables background syncing of intraday data from Health Connect.
          *
          * @return configured builder
          */

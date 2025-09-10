@@ -318,7 +318,6 @@ public class ActivitySourcesManagerConfig {
 
         /**
          * Disables background syncing of user profile properties (e.g. height, weight) from the local activity sources.
-         * D
          *
          * @return configured builder
          */

@@ -93,7 +93,7 @@ public class BackgroundWorkManager {
     public void configureHCDailySyncWorks() {
         switch (config.getHealthConnectDailyBackgroundSyncMode()) {
             case DISABLED: {
-                workScheduler.cancelHCIntradaySyncWork();
+                workScheduler.cancelHCDailySyncWork();
                 break;
             }
             case ENABLED: {

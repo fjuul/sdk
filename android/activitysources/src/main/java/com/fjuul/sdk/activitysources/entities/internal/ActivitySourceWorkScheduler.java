@@ -198,7 +198,7 @@ public class ActivitySourceWorkScheduler {
         workManager.enqueueUniquePeriodicWork(HC_DAILY_SYNC_WORK_NAME,
             ExistingPeriodicWorkPolicy.REPLACE,
             periodicWorkRequest);
-        hcIntradaySyncWorkEnqueued = true;
+        hcDailySyncWorkEnqueued = true;
     }
 
     public synchronized void cancelHCDailySyncWork() {

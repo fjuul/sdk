@@ -1,7 +1,7 @@
 import Foundation
 import Alamofire
 
-class ApiKeyAdapter: RequestAdapter {
+final class ApiKeyAdapter: RequestAdapter {
     let apiKey: String
 
     init(apiKey: String) {

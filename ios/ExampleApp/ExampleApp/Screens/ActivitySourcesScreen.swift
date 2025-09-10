@@ -7,6 +7,14 @@ struct ActivitySourcesScreen: View {
     var body: some View {
         Form {
             Text("Current sources: \(activitySourceObserver.currentConnectionsLabels())")
+            if !activitySourceObserver.currentConnections.isEmpty {
+                Button(action: {
+                    activitySourceObserver.disconnectAll()
+                }) {
+                    Text("Disconnect All")
+                        .foregroundColor(.red)
+                }
+            }
             ForEach(self.activitySourceObserver.currentConnections, id: \.self.id) { activitySourceConnection in
                 HStack {
                     Button(action: {

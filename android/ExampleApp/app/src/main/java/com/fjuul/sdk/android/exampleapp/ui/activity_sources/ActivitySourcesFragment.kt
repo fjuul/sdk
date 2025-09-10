@@ -160,6 +160,7 @@ class ActivitySourcesFragment : Fragment() {
                 ActivitySourcesItem.HEALTH_CONNECT -> HealthConnectActivitySource.getInstance()
                 else -> {
                     model.disconnect()
+                    Toast.makeText(requireContext(), "Disconnecting all active tracker connections", Toast.LENGTH_SHORT).show()
                     return@setOnItemClickListener
                 }
             }

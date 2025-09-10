@@ -1,11 +1,11 @@
 import Foundation
 import Alamofire
 
-class HmacAuthenticatior: Authenticator {
+final class HmacAuthenticatior: Authenticator {
 
     let baseUrl: String
     let refreshSession: Session
-    var credentialStore: HmacCredentialStore
+    let credentialStore: HmacCredentialStore
 
     init(baseUrl: String, refreshSession: Session, credentialStore: HmacCredentialStore) {
         self.baseUrl = baseUrl

@@ -1,6 +1,6 @@
 import Foundation
 
-public class DiskPersistor: Persistor {
+final public class DiskPersistor: Persistor {
     static internal let PERSISTANCE_PREFIX = "com.fjuul.sdk.persistence"
 
     public init() {}

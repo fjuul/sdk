@@ -15,6 +15,9 @@ public class DailyStats {
     ActivityMeasure high;
 
     @NonNull
+    String[] contributingSources;
+
+    @NonNull
     public String getDate() {
         return date;
     }
@@ -36,5 +39,10 @@ public class DailyStats {
     @NonNull
     public ActivityMeasure getHigh() {
         return high;
+    }
+
+    @NonNull
+    public String[] getContributingSources() {
+        return contributingSources;
     }
 }

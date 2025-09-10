@@ -22,7 +22,8 @@ final class AnalyticsApiTests: XCTestCase {
             \"low\":{\"seconds\":180,\"metMinutes\":8},
             \"moderate\":{\"seconds\":1260,\"metMinutes\":89},
             \"high\":{\"seconds\":540,\"metMinutes\":63},
-            \"bmr\":0,\"activeKcal\":0,\"steps\":10000
+            \"bmr\":0,\"activeKcal\":0,\"steps\":10000,
+            \"contributingSources\":[\"healthkit\"]
         }
     """
 
@@ -31,7 +32,8 @@ final class AnalyticsApiTests: XCTestCase {
             \"low\":{\"seconds\":80,\"metMinutes\":4},
             \"moderate\":{\"seconds\":160,\"metMinutes\":5},
             \"high\":{\"seconds\":110,\"metMinutes\":6},
-            \"bmr\":0,\"activeKcal\":0,\"steps\":7400
+            \"bmr\":0,\"activeKcal\":0,\"steps\":7400,
+            \"contributingSources\":[\"healthkit\", \"withings\"]
         }
     """
 
@@ -73,6 +75,7 @@ final class AnalyticsApiTests: XCTestCase {
             switch result {
             case .success(let dailyStats):
                 XCTAssertEqual(dailyStats.moderate.seconds, 1260)
+                XCTAssertEqual(dailyStats.contributingSources, ["healthkit"])
             case .failure:
                 XCTFail("network level failure")
             }
@@ -90,6 +93,8 @@ final class AnalyticsApiTests: XCTestCase {
                 XCTAssertEqual(dailyStats.count, 3)
                 XCTAssertEqual(dailyStats.first?.moderate.seconds, 1260)
                 XCTAssertEqual(dailyStats.last?.moderate.seconds, 1260)
+                XCTAssertEqual(dailyStats.first?.contributingSources, ["healthkit"])
+                XCTAssertEqual(dailyStats.last?.contributingSources, ["healthkit"])
             case .failure:
                 XCTFail("network level failure")
             }
@@ -105,6 +110,7 @@ final class AnalyticsApiTests: XCTestCase {
             switch result {
             case .success(let stat):
                 XCTAssertEqual(stat.moderate.seconds, 160)
+                XCTAssertEqual(stat.contributingSources, ["healthkit", "withings"])
             case .failure:
                 XCTFail("network level failure")
             }

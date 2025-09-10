@@ -63,4 +63,12 @@ class ActivitySourceObservable: ObservableObject {
             }
         }
     }
+
+    func disconnectAll() {
+        let connections = self.currentConnections
+        if connections.isEmpty { return }
+        for connection in connections {
+            self.disconnect(activitySourceConnection: connection)
+        }
+    }
 }

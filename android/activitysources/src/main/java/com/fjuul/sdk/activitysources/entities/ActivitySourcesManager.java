@@ -142,7 +142,7 @@ public final class ActivitySourcesManager {
             stateStore,
             activitySourceResolver,
             currentConnections);
-        newInstance.configureGoogleFitState(currentConnections);
+        newInstance.configureExternalStateByConnections(currentConnections);
 
         instance = newInstance;
         Logger.get().d("initialized successfully (the previous one could be overridden)");
@@ -278,7 +278,7 @@ public final class ActivitySourcesManager {
                     .orElse(null);
                 this.currentConnections.remove(connectionToRemove);
                 this.stateStore.setConnections(this.currentConnections);
-                this.configureGoogleFitState(currentConnections);
+                this.configureExternalStateByConnections(currentConnections);
                 callback.onResult(Result.value(null));
             });
         };
@@ -333,7 +333,7 @@ public final class ActivitySourcesManager {
             }
             final CopyOnWriteArrayList<TrackerConnection> freshTrackerConnections =
                 new CopyOnWriteArrayList(apiCallResult.getValue());
-            configureGoogleFitState(freshTrackerConnections);
+            configureExternalStateByConnections(freshTrackerConnections);
             stateStore.setConnections(freshTrackerConnections);
             this.currentConnections = freshTrackerConnections;
             if (callback != null) {
@@ -371,6 +371,7 @@ public final class ActivitySourcesManager {
     @SuppressLint("NewApi")
     private void configureExternalStateByConnections(@Nullable List<TrackerConnection> trackerConnections) {
         configureGoogleFitState(trackerConnections);
+        configureHealthConnectState(trackerConnections);
     }
 
     private void configureGoogleFitState(@Nullable List<TrackerConnection> trackerConnections) {
@@ -395,7 +396,9 @@ public final class ActivitySourcesManager {
         } else {
             googleFit.setLowerDateBoundary(null);
         }
+    }
 
+    private void configureHealthConnectState(@Nullable List<TrackerConnection> trackerConnections) {
         final TrackerConnection hcTrackerConnection = Optional.ofNullable(trackerConnections)
             .flatMap(connections -> connections.stream()
                 .filter(c -> c.getTracker().equals(TrackerValue.HEALTH_CONNECT.getValue()))

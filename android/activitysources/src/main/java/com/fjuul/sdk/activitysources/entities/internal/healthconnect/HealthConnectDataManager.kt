@@ -254,23 +254,23 @@ class HealthConnectDataManager(
             setOf(FitnessMetricsType.STEPS).flatMap { it.toAggregateMetrics() }
                 .toSet()
         var stepsCountTimeChanges = listOf<HealthConnectTimeInterval>()
-        var stepsCountChangesToken = storage.get(STEPS_CHANGES_TOKEN)
+        var stepsChangesToken = storage.get(STEPS_CHANGES_TOKEN)
         if (options.metrics.contains(FitnessMetricsType.STEPS)) {
-            if (stepsCountChangesToken.isNullOrEmpty()) {
-                stepsCountChangesToken = client.getChangesToken(
+            if (stepsChangesToken.isNullOrEmpty()) {
+                stepsChangesToken = client.getChangesToken(
                     ChangesTokenRequest(recordTypes = setOf(StepsRecord::class))
                 )
 
                 makeFullSync(stepsMetric, lowerDateBoundary, false) {
-                    storage.set(STEPS_CHANGES_TOKEN, stepsCountChangesToken)
+                    storage.set(STEPS_CHANGES_TOKEN, stepsChangesToken)
                 }
             }
 
             stepsCountTimeChanges = getTimeChangesList(
-                token = stepsCountChangesToken,
+                token = stepsChangesToken,
                 type = FitnessMetricsType.STEPS,
                 onTokenSave = { changedToken ->
-                    stepsCountChangesToken = changedToken
+                    stepsChangesToken = changedToken
                 },
                 onChangesTokenExpired = {
                     tokenExpired(
@@ -286,13 +286,13 @@ class HealthConnectDataManager(
 
         if (restingHeartRateTimeChanges.isNotEmpty()) {
             syncDailyChangedBuckets(heartRateMetric, restingHeartRateTimeChanges) {
-                storage.set(HEART_RATE_CHANGES_TOKEN, restingHeartRateChangesToken)
+                storage.set(RESTING_HEART_RATE_CHANGES_TOKEN, restingHeartRateChangesToken)
             }
         }
 
         if (stepsCountTimeChanges.isNotEmpty()) {
             syncDailyChangedBuckets(stepsMetric, stepsCountTimeChanges) {
-                storage.set(STEPS_CHANGES_TOKEN, stepsCountChangesToken)
+                storage.set(STEPS_CHANGES_TOKEN, stepsChangesToken)
             }
         }
     }

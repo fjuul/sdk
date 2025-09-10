@@ -33,8 +33,8 @@ import retrofit2.converter.moshi.MoshiConverterFactory;
  * The `ActivitySourcesService` encapsulates the management of a users activity sources.
  */
 public class ActivitySourcesService {
-    private ActivitySourcesApi apiClient;
-    private ApiClient clientBuilder;
+    private final ActivitySourcesApi apiClient;
+    private final ApiClient clientBuilder;
 
     @NonNull
     public String getUserToken() {
@@ -79,6 +79,7 @@ public class ActivitySourcesService {
      * In case of an attempt to connect to the already connected tracker, the api call result will have
      * {@link ActivitySourcesApiExceptions.SourceAlreadyConnectedException}.
      *
+     * @param activitySource is the name of the activity source
      * @return ApiCall for the connection creation.
      * @see ConnectionResult
      * @see ActivitySourcesApiExceptions.SourceAlreadyConnectedException

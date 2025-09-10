@@ -58,9 +58,9 @@ class HealthConnectSyncFragment : Fragment() {
         }
 
         binding.runIntradaySyncButton.setOnClickListener {
-            val сalories = binding.caloriesCheckBox.isChecked
+            val calories = binding.caloriesCheckBox.isChecked
             val heartRate = binding.heartRateCheckBox.isChecked
-            viewModel.runIntradaySync(сalories, heartRate)
+            viewModel.runIntradaySync(calories, heartRate)
         }
 
         binding.runDailySyncButton.setOnClickListener {

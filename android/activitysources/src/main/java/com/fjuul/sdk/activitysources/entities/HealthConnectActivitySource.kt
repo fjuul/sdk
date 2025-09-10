@@ -11,7 +11,10 @@ import com.fjuul.sdk.activitysources.utils.runAsyncAndCallback
 import com.fjuul.sdk.core.ApiClient
 import com.fjuul.sdk.core.entities.Callback
 import com.fjuul.sdk.core.entities.IStorage
+import kotlinx.coroutines.asCoroutineDispatcher
 import java.util.Date
+import java.util.concurrent.Executors
+import java.util.concurrent.ThreadPoolExecutor
 
 /**
  * [ActivitySource] implementation for Android Health Connect.
@@ -40,12 +43,18 @@ class HealthConnectActivitySource private constructor(
      * @param options  The [HealthConnectSyncOptions] specifying metrics.
      * @param callback Receives a [Result]<Unit> indicating success or failure(exception).
      */
-    fun syncIntraday(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
-        runAsyncAndCallback({
+    fun syncIntraday(options: HealthConnectSyncOptions, callback: Callback<Unit>) = {
+        val threadPool: ThreadPoolExecutor = Executors.newFixedThreadPool(1) as ThreadPoolExecutor
+        val dispatcher = threadPool.asCoroutineDispatcher()
+
+        val job = runAsyncAndCallback({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
             dataManager.syncIntraday(options, lowerDateBoundary)
         }, callback)
+
+    }
+
 
     /**
      * Starts a daily data synchronization (steps, resting heart rate).

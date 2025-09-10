@@ -317,7 +317,7 @@ public class ActivitySourcesManagerConfig {
         }
 
         /**
-         * Disables background syncing of user profile properties (e.g. height, weight) from the local activity sources.
+         * Disables background syncing of daily data from Health Connect.
          *
          * @return configured builder
          */
@@ -328,7 +328,7 @@ public class ActivitySourcesManagerConfig {
         }
 
         /**
-         * Disables background syncing of user profile properties (e.g. height, weight) from the local activity sources.
+         * Disables background syncing of user profile properties (e.g. height, weight) from Health Connect.
          *
          * @return configured builder
          */

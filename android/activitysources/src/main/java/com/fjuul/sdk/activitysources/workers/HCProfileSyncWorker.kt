@@ -22,7 +22,7 @@ class HCProfileSyncWorker(context: Context, workerParams: WorkerParameters) :
         val permissionManager = hcSource.getPermissionManager()
 
         if (permissionManager.checkBackgroundPermission()) {
-            val taskCompletionSource = TaskCompletionSource<Boolean?>()
+            val taskCompletionSource = TaskCompletionSource<Void>()
             val syncOptions = buildProfileSyncOptions()
             hcSource.syncProfile(syncOptions) { result ->
                 if (result.isError && result.error is Exception) {
@@ -32,7 +32,7 @@ class HCProfileSyncWorker(context: Context, workerParams: WorkerParameters) :
                 taskCompletionSource.trySetResult(null)
             }
             try {
-                Tasks.await<Boolean?>(taskCompletionSource.getTask())
+                Tasks.await(taskCompletionSource.getTask())
                 return Result.success()
             } catch (_: Exception) {
             }

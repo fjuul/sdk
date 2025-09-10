@@ -101,7 +101,11 @@ class HealthConnectActivitySource private constructor(
          */
         @JvmStatic
         @Synchronized
-        fun initialize(apiClient: ApiClient, config: ActivitySourcesManagerConfig, storage: IStorage) {
+        fun initialize(
+            apiClient: ApiClient,
+            config: ActivitySourcesManagerConfig,
+            storage: IStorage
+        ) {
             if (instance == null) {
                 val context = apiClient.appContext.applicationContext
                 val hcClient = HealthConnectClient.getOrCreate(context)

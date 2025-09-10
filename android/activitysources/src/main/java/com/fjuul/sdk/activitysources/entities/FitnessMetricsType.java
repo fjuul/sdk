@@ -34,6 +34,13 @@ public enum FitnessMetricsType {
         };
     }
 
+    public static boolean isDailyMetricType(@NonNull FitnessMetricsType metricType) {
+        return switch (metricType) {
+            case RESTING_HEART_RATE, STEPS -> true;
+            default -> false;
+        };
+    }
+
     public static boolean isProfileMetricType(@NonNull FitnessMetricsType metricsType) {
         return switch (metricsType) {
             case HEIGHT, WEIGHT -> true;

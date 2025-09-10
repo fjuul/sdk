@@ -7,6 +7,7 @@ import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.HealthConnectClient.Companion.SDK_AVAILABLE
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.permission.HealthPermission.Companion.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeightRecord
@@ -45,6 +46,11 @@ class HealthConnectPermissionManager(
      */
     fun requiredPermissions(): Set<String> =
         permissionsForMetrics(allAvailableMetrics)
+
+    suspend fun checkBackgroundPermission(): Boolean {
+        val grantedPermissions = healthConnectClient.permissionController.getGrantedPermissions()
+        return PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND in grantedPermissions
+    }
 
     /**
      * Throws if Health Connect SDK is not installed or not supported.
@@ -119,5 +125,7 @@ class HealthConnectPermissionManager(
             if (FitnessMetricsType.WEIGHT in metrics) {
                 add(HealthPermission.getReadPermission(WeightRecord::class))
             }
+
+            add(HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND)
         }
 }

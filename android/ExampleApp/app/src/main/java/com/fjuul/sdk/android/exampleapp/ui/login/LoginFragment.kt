@@ -53,6 +53,9 @@ class LoginFragment : Fragment() {
         return@lazy ActivitySourcesManagerConfig.Builder()
             .enableGoogleFitBackgroundSync(minSessionDuration)
             .enableProfileBackgroundSync()
+            .enableHealthConnectIntradayBackgroundSync()
+            .enableHealthConnectDailyBackgroundSync()
+            .enableHealthConnectProfileBackgroundSync()
             .setCollectableFitnessMetrics(allFitnessMetrics)
             .build()
     }

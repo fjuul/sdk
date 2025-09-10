@@ -8,6 +8,9 @@ import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
 import com.fjuul.sdk.activitysources.workers.GFIntradaySyncWorker;
 import com.fjuul.sdk.activitysources.workers.GFSessionsSyncWorker;
 import com.fjuul.sdk.activitysources.workers.GFSyncWorker;
+import com.fjuul.sdk.activitysources.workers.HCDailySyncWorker;
+import com.fjuul.sdk.activitysources.workers.HCIntradaySyncWorker;
+import com.fjuul.sdk.activitysources.workers.HCProfileSyncWorker;
 import com.fjuul.sdk.activitysources.workers.ProfileSyncWorker;
 
 import android.annotation.SuppressLint;
@@ -23,6 +26,9 @@ public class ActivitySourceWorkScheduler {
     public static final String GF_INTRADAY_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.gf_intraday_sync";
     public static final String GF_SESSIONS_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.gf_sessions_sync";
     public static final String PROFILE_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.profile_sync";
+    public static final String HC_INTRADAY_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.hc_intraday_sync";
+    private static final String HC_DAILY_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.hc_daily_sync";
+    private static final String HC_PROFILE_SYNC_WORK_NAME = "com.fjuul.sdk.background_work.hc_profile_sync";
 
     @NonNull
     private final WorkManager workManager;
@@ -37,6 +43,9 @@ public class ActivitySourceWorkScheduler {
     private volatile boolean gfIntradaySyncWorkEnqueued = false;
     private volatile boolean gfSessionsSyncWorkEnqueued = false;
     private volatile boolean profileSyncWorkEnqueued = false;
+    private volatile boolean hcIntradaySyncWorkEnqueued = false;
+    private volatile boolean hcDailySyncWorkEnqueued = false;
+    private volatile boolean hcProfileSyncWorkEnqueued = false;
 
     public ActivitySourceWorkScheduler(@NonNull WorkManager workManager,
         @NonNull String userToken,
@@ -54,12 +63,18 @@ public class ActivitySourceWorkScheduler {
         workManager.cancelUniqueWork(GF_INTRADAY_SYNC_WORK_NAME);
         workManager.cancelUniqueWork(GF_SESSIONS_SYNC_WORK_NAME);
         workManager.cancelUniqueWork(PROFILE_SYNC_WORK_NAME);
+        workManager.cancelUniqueWork(HC_INTRADAY_SYNC_WORK_NAME);
+        workManager.cancelUniqueWork(HC_PROFILE_SYNC_WORK_NAME);
+        workManager.cancelUniqueWork(HC_DAILY_SYNC_WORK_NAME);
     }
 
     public synchronized void cancelWorks() {
         cancelGFIntradaySyncWork();
         cancelGFSessionsSyncWork();
         cancelProfileSyncWork();
+        cancelHCIntradaySyncWork();
+        cancelHCDailySyncWork();
+        cancelHCProfileSyncWork();
     }
 
     @SuppressLint("NewApi")
@@ -135,6 +150,85 @@ public class ActivitySourceWorkScheduler {
     public synchronized void cancelProfileSyncWork() {
         workManager.cancelUniqueWork(PROFILE_SYNC_WORK_NAME);
         profileSyncWorkEnqueued = false;
+    }
+
+    @SuppressLint("NewApi")
+    public synchronized void scheduleHCIntradaySyncWork(@NonNull Set<FitnessMetricsType> intradayMetrics) {
+        if (hcIntradaySyncWorkEnqueued) {
+            return;
+        }
+
+        final String[] serializedIntradayMetrics = serializeFitnessMetrics(intradayMetrics);
+        final Data inputWorkRequestData = buildEssentialInputData()
+            .putStringArray(HCIntradaySyncWorker.KEY_HC_INTRADAY_METRICS, serializedIntradayMetrics)
+            .build();
+        final PeriodicWorkRequest periodicWorkRequest =
+            new PeriodicWorkRequest.Builder(HCIntradaySyncWorker.class, 1, TimeUnit.HOURS)
+                .setConstraints(buildCommonWorkConstraints())
+                .setInitialDelay(1, TimeUnit.HOURS)
+                .setInputData(inputWorkRequestData)
+                .build();
+        workManager.enqueueUniquePeriodicWork(HC_INTRADAY_SYNC_WORK_NAME,
+            ExistingPeriodicWorkPolicy.REPLACE,
+            periodicWorkRequest);
+        hcIntradaySyncWorkEnqueued = true;
+    }
+
+    public synchronized void cancelHCIntradaySyncWork() {
+        workManager.cancelUniqueWork(HC_INTRADAY_SYNC_WORK_NAME);
+        hcIntradaySyncWorkEnqueued = false;
+    }
+
+    @SuppressLint("NewApi")
+    public synchronized void scheduleHCDailySyncWork(@NonNull Set<FitnessMetricsType> dailyMetrics) {
+        if (hcDailySyncWorkEnqueued) {
+            return;
+        }
+
+        final String[] serializedDailyMetrics = serializeFitnessMetrics(dailyMetrics);
+        final Data inputWorkRequestData =
+            buildEssentialInputData().putStringArray(HCDailySyncWorker.KEY_HC_DAILY_METRICS, serializedDailyMetrics)
+                .build();
+        final PeriodicWorkRequest periodicWorkRequest =
+            new PeriodicWorkRequest.Builder(HCDailySyncWorker.class, 1, TimeUnit.HOURS)
+                .setConstraints(buildCommonWorkConstraints())
+                .setInitialDelay(1, TimeUnit.HOURS)
+                .setInputData(inputWorkRequestData)
+                .build();
+        workManager.enqueueUniquePeriodicWork(HC_DAILY_SYNC_WORK_NAME,
+            ExistingPeriodicWorkPolicy.REPLACE,
+            periodicWorkRequest);
+        hcDailySyncWorkEnqueued = true;
+    }
+
+    public synchronized void cancelHCDailySyncWork() {
+        workManager.cancelUniqueWork(HC_DAILY_SYNC_WORK_NAME);
+        hcDailySyncWorkEnqueued = false;
+    }
+
+    public synchronized void scheduleHCProfileSyncWork(@NonNull Set<FitnessMetricsType> hcProfileMetrics) {
+        if (hcProfileSyncWorkEnqueued) {
+            return;
+        }
+        final String[] serializedMetrics = serializeFitnessMetrics(hcProfileMetrics);
+        final Data inputWorkRequestData =
+            buildEssentialInputData().putStringArray(HCProfileSyncWorker.KEY_HC_PROFILE_METRICS, serializedMetrics)
+                .build();
+        final PeriodicWorkRequest periodicWorkRequest =
+            new PeriodicWorkRequest.Builder(HCProfileSyncWorker.class, 1, TimeUnit.HOURS)
+                .setConstraints(buildCommonWorkConstraints())
+                .setInitialDelay(1, TimeUnit.HOURS)
+                .setInputData(inputWorkRequestData)
+                .build();
+        workManager.enqueueUniquePeriodicWork(HC_PROFILE_SYNC_WORK_NAME,
+            ExistingPeriodicWorkPolicy.REPLACE,
+            periodicWorkRequest);
+        hcProfileSyncWorkEnqueued = true;
+    }
+
+    public synchronized void cancelHCProfileSyncWork() {
+        workManager.cancelUniqueWork(HC_PROFILE_SYNC_WORK_NAME);
+        hcProfileSyncWorkEnqueued = false;
     }
 
     private Data.Builder buildEssentialInputData() {

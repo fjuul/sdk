@@ -97,14 +97,14 @@ public class BackgroundWorkManager {
                 break;
             }
             case ENABLED: {
-                final Set<FitnessMetricsType> intradayMetrics = config.getCollectableFitnessMetrics()
+                final Set<FitnessMetricsType> dailyMetrics = config.getCollectableFitnessMetrics()
                     .stream()
                     .filter(FitnessMetricsType::isDailyMetricType)
                     .collect(Collectors.toSet());
-                if (intradayMetrics.isEmpty()) {
+                if (dailyMetrics.isEmpty()) {
                     workScheduler.cancelHCDailySyncWork();
                 } else {
-                    workScheduler.scheduleHCDailySyncWork(intradayMetrics);
+                    workScheduler.scheduleHCDailySyncWork(dailyMetrics);
                 }
                 break;
             }

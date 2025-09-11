@@ -61,7 +61,7 @@ import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.core.util.Supplier;
 
-// NOTE#1: the package com.google.android.gms.internal.fitness.zzfv it's not supposed to be used as public api but I
+// NOTE#1: the package com.google.android.gms.internal.fitness.zzfv is not supposed to be used as public api but I
 // didn't find another way to get the integer based constant of ActivityType by the string presentation which is
 // returned by default along with a session.
 // Don't worry if it wasn't discovered after the upgrade of `play-services-fitness`, it may be placed under a different
@@ -69,7 +69,7 @@ import androidx.core.util.Supplier;
 
 // NOTE#2: GF can silently fail on a request if response data is too large, more details at
 // https://stackoverflow.com/a/55806509/6685359.
-// Also there may be a case when GoogleFit service can't response to the requester on the first attempts due to failed
+// Also there may be a case when GoogleFit service cannot respond to the requester on the first attempts due to failed
 // delivery.
 // Therefore the wrapper divide one big request into smaller ones and use a fixed thread pool to watch for the fired
 // requests with a timeout and retries.
@@ -335,7 +335,7 @@ class GFClientWrapper {
     private <T> Task<T> runGFTaskUnderWatch(Supplier<SupervisedTask<T>> taskSupplier,
         SupervisedExecutor gfTaskWatcher) {
         // NOTE: here was implementation with TaskCompletionSource but it didn't work in the test
-        // environment because a call #cancel in other thread doesn't notify the listener in
+        // environment because a call to #cancel in other thread does not notify the listener in
         // TaskCompletionSource.
         final ExecutorService gfTaskWatcherExecutor = gfTaskWatcher.getExecutor();
         final CancellationToken cancellationToken = gfTaskWatcher.getCancellationToken();

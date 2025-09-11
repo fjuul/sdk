@@ -82,7 +82,7 @@ public class GFDataManager {
     @SuppressLint("NewApi")
     @NonNull
     public Task<Void> syncIntradayMetrics(@NonNull GoogleFitIntradaySyncOptions options) {
-        // todo: consider returning metadata of the sent data
+        // TODO: consider returning metadata of the sent data
         final Pair<Date, Date> queryDates = transformInputDates(options.getStartDate(), options.getEndDate());
         final Date startDate = queryDates.first;
         final Date endDate = queryDates.second;

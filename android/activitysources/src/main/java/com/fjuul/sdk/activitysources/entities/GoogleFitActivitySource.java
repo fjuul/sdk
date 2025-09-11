@@ -206,7 +206,7 @@ public class GoogleFitActivitySource extends ActivitySource {
                     return;
                 }
                 final ConnectionResult connectionResult = result.getValue();
-                // NOTE: android-sdk shouldn't support an external connection to google-fit
+                // NOTE: android-sdk should not support an external connection to google-fit
                 if (connectionResult instanceof ConnectionResult.Connected) {
                     final Result<Void> success = Result.value(null);
                     callback.onResult(success);

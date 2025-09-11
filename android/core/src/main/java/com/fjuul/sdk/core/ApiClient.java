@@ -73,8 +73,8 @@ public class ApiClient {
         }
 
         /**
-         * The method must be invoked if it's planned to build an api-client with an ability of signing requests (it's
-         * very frequent case). An user credentials is needed to issue or refresh signing keys.
+         * The method must be invoked if it is planned to build an api-client with an ability of signing requests (it is
+         * a very frequent case). User credentials are needed to issue or refresh signing keys.
          *
          * @param userCredentials valid user credentials to authenticate an identity.
          */

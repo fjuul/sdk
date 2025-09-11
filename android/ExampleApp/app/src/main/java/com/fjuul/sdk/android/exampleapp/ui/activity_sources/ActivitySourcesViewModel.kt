@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.fjuul.sdk.activitysources.entities.ActivitySource
 import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
+import com.fjuul.sdk.activitysources.exceptions.ActivitySourcesApiExceptions
 
 class ActivitySourcesViewModel : ViewModel() {
     private val _currentConnections = MutableLiveData<List<ActivitySourceConnection>>(listOf())
@@ -32,7 +33,11 @@ class ActivitySourcesViewModel : ViewModel() {
         val manager = ActivitySourcesManager.getInstance()
         manager.connect(activitySource) lit@{ result ->
             if (result.isError) {
-                _errorMessage.postValue(result.error!!.message)
+                if (result.error is ActivitySourcesApiExceptions.SourceAlreadyConnectedException) {
+                    fetchCurrentConnections()
+                } else {
+                    _errorMessage.postValue(result.error!!.message)
+                }
                 return@lit
             }
             _connectionIntent.postValue(Pair(activitySource, result.value!!))

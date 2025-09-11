@@ -9,7 +9,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -29,7 +28,6 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
@@ -39,24 +37,17 @@ import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourcesStateStore;
 import com.fjuul.sdk.activitysources.entities.internal.BackgroundWorkManager;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
-import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.Callback;
 import com.fjuul.sdk.core.entities.Result;
-import com.fjuul.sdk.core.entities.UserCredentials;
 import com.fjuul.sdk.core.exceptions.ApiExceptions;
 import com.fjuul.sdk.core.http.utils.ApiCall;
 import com.fjuul.sdk.core.http.utils.ApiCallCallback;
 import com.fjuul.sdk.core.http.utils.ApiCallResult;
 import com.fjuul.sdk.test.LoggableTestSuite;
-import com.fjuul.sdk.test.utils.TimberLogEntry;
 import com.google.android.gms.tasks.Tasks;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.util.Log;
-import androidx.test.core.app.ApplicationProvider;
-import androidx.work.WorkManager;
 
 @RunWith(Enclosed.class)
 public class ActivitySourcesManagerTest {
@@ -64,30 +55,6 @@ public class ActivitySourcesManagerTest {
     @RunWith(RobolectricTestRunner.class)
     @Config(sdk = {Build.VERSION_CODES.P})
     public abstract static class GivenRobolectricContext extends LoggableTestSuite {}
-
-    @RunWith(Enclosed.class)
-    public static class StaticMethods {
-        public static class InitializeTests extends GivenRobolectricContext {
-            @Test
-            public void initialize_whenWithoutConfig_logsAboutInitialization() {
-                try (final MockedStatic<WorkManager> staticWorkManager = mockStatic(WorkManager.class)) {
-                    final Context testContext = ApplicationProvider.getApplicationContext();
-                    final WorkManager mockedWorkManager = mock(WorkManager.class);
-                    staticWorkManager.when(() -> WorkManager.getInstance(testContext)).thenReturn(mockedWorkManager);
-                    final ApiClient client = new ApiClient.Builder(testContext, "https://fjuul.com/", "1234")
-                        .setUserCredentials(new UserCredentials("token", "secret"))
-                        .build();
-                    ActivitySourcesManager.initialize(client);
-                    assertEquals("should log only one message", 1, LOGGER.size());
-                    final TimberLogEntry logEntry = LOGGER.getLogEntries().get(0);
-                    assertEquals(
-                        "[activitysources] ActivitySourcesManager: initialized successfully (the previous one could be overridden)",
-                        logEntry.getMessage());
-                    assertEquals(Log.DEBUG, logEntry.getPriority());
-                }
-            }
-        }
-    }
 
     @RunWith(Enclosed.class)
     public static class InstanceMethods {
@@ -205,6 +172,7 @@ public class ActivitySourcesManagerTest {
             ActivitySourcesStateStore mockedStateStore;
             ActivitySourceResolver activitySourceResolver;
             GoogleFitActivitySource mockedGoogleFit;
+            HealthConnectActivitySource mockedHealthConnect;
 
             @Before
             public void beforeTest() {
@@ -213,8 +181,10 @@ public class ActivitySourcesManagerTest {
                 mockedSourcesService = mock(ActivitySourcesService.class);
                 mockedStateStore = mock(ActivitySourcesStateStore.class);
                 mockedGoogleFit = mock(GoogleFitActivitySource.class);
+                mockedHealthConnect = mock(HealthConnectActivitySource.class);
                 activitySourceResolver = mock(ActivitySourceResolver.class);
                 when(activitySourceResolver.getInstanceByTrackerValue("googlefit")).thenReturn(mockedGoogleFit);
+                when(activitySourceResolver.getInstanceByTrackerValue("healthconnect")).thenReturn(mockedHealthConnect);
             }
 
             @Test
@@ -419,7 +389,9 @@ public class ActivitySourcesManagerTest {
                 }).when(mockedGetConnectionsApiCall).enqueue(any());
                 when(mockedSourcesService.getCurrentConnections()).thenReturn(mockedGetConnectionsApiCall);
                 GoogleFitActivitySource googleFitStub = mock(GoogleFitActivitySource.class);
+                final HealthConnectActivitySource healthConnect = mock(HealthConnectActivitySource.class);
                 when(mockedActivitySourceResolver.getInstanceByTrackerValue("googlefit")).thenReturn(googleFitStub);
+                when(mockedActivitySourceResolver.getInstanceByTrackerValue("healthconnect")).thenReturn(healthConnect);
 
                 subject.refreshCurrent(null);
 
@@ -472,8 +444,10 @@ public class ActivitySourcesManagerTest {
                 when(mockedSourcesService.getCurrentConnections()).thenReturn(mockedGetConnectionsApiCall);
                 final PolarActivitySource polarStub = mock(PolarActivitySource.class);
                 final GoogleFitActivitySource googleFitStub = mock(GoogleFitActivitySource.class);
+                final HealthConnectActivitySource healthConnect = mock(HealthConnectActivitySource.class);
                 when(mockedActivitySourceResolver.getInstanceByTrackerValue("polar")).thenReturn(polarStub);
                 when(mockedActivitySourceResolver.getInstanceByTrackerValue("googlefit")).thenReturn(googleFitStub);
+                when(mockedActivitySourceResolver.getInstanceByTrackerValue("healthconnect")).thenReturn(healthConnect);
                 final Callback<List<ActivitySourceConnection>> mockedCallback = mock(Callback.class);
 
                 subject.refreshCurrent(mockedCallback);

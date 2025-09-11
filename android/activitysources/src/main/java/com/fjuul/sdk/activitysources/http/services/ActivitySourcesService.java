@@ -9,17 +9,23 @@ import com.fjuul.sdk.activitysources.entities.ConnectionResult;
 import com.fjuul.sdk.activitysources.entities.TrackerConnection;
 import com.fjuul.sdk.activitysources.entities.internal.GFSynchronizableProfileParams;
 import com.fjuul.sdk.activitysources.entities.internal.GFUploadData;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectDailiesPayload;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectIntradayPayload;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectProfilePayload;
 import com.fjuul.sdk.activitysources.exceptions.ActivitySourcesApiExceptions;
 import com.fjuul.sdk.activitysources.http.ActivitySourcesApiResponseTransformer;
 import com.fjuul.sdk.activitysources.http.apis.ActivitySourcesApi;
 import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.http.utils.ApiCall;
 import com.fjuul.sdk.core.http.utils.ApiCallAdapterFactory;
+import com.fjuul.sdk.core.utils.Logger;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory;
 
 import androidx.annotation.NonNull;
 import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;
 
@@ -27,8 +33,8 @@ import retrofit2.converter.moshi.MoshiConverterFactory;
  * The `ActivitySourcesService` encapsulates the management of a users activity sources.
  */
 public class ActivitySourcesService {
-    private ActivitySourcesApi apiClient;
-    private ApiClient clientBuilder;
+    private final ActivitySourcesApi apiClient;
+    private final ApiClient clientBuilder;
 
     @NonNull
     public String getUserToken() {
@@ -42,9 +48,13 @@ public class ActivitySourcesService {
      */
     public ActivitySourcesService(@NonNull ApiClient client) {
         this.clientBuilder = client;
-        OkHttpClient httpClient = client.buildSigningClient();
+        HttpLoggingInterceptor logging =
+            new HttpLoggingInterceptor(message -> Logger.get().d("HTTP LOGS: %s", message));
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+        OkHttpClient httpClient = client.buildSigningClient().newBuilder().addInterceptor(logging).build();
         Moshi moshi = new Moshi.Builder().add(Date.class, new Rfc3339DateJsonAdapter())
             .add(new GFUploadDataJsonAdapter())
+            .add(new KotlinJsonAdapterFactory())
             .build();
         ActivitySourcesApiResponseTransformer responseTransformer = new ActivitySourcesApiResponseTransformer();
         Retrofit retrofit = new Retrofit.Builder().baseUrl(client.getBaseUrl())
@@ -69,9 +79,10 @@ public class ActivitySourcesService {
      * In case of an attempt to connect to the already connected tracker, the api call result will have
      * {@link ActivitySourcesApiExceptions.SourceAlreadyConnectedException}.
      *
+     * @param activitySource is the name of the activity source
+     * @return ApiCall for the connection creation.
      * @see ConnectionResult
      * @see ActivitySourcesApiExceptions.SourceAlreadyConnectedException
-     * @return ApiCall for the connection creation.
      */
     @NonNull
     public ApiCall<ConnectionResult> connect(@NonNull String activitySource) {
@@ -126,5 +137,38 @@ public class ActivitySourcesService {
     @NonNull
     public ApiCall<Void> updateProfileOnBehalfOfGoogleFit(@NonNull GFSynchronizableProfileParams params) {
         return apiClient.updateProfileOnBehalfOfGoogleFit(clientBuilder.getUserToken(), params);
+    }
+
+    /**
+     * Uploads intraday time-series data from Health Connect, such as hourly aggregated metrics.
+     *
+     * @param payload the intraday payload containing hourly data buckets
+     * @return an ApiCall for performing the intraday data upload
+     */
+    @NonNull
+    public ApiCall<Void> uploadHealthConnectIntraday(@NonNull HealthConnectIntradayPayload payload) {
+        return apiClient.uploadHealthConnectIntraday(getUserToken(), payload);
+    }
+
+    /**
+     * Uploads daily summary data from Health Connect, such as steps and resting heart rate.
+     *
+     * @param payload the daily payload containing aggregated data buckets
+     * @return an ApiCall for performing the daily data upload
+     */
+    @NonNull
+    public ApiCall<Void> uploadHealthConnectDailies(@NonNull HealthConnectDailiesPayload payload) {
+        return apiClient.uploadHealthConnectDailies(getUserToken(), payload);
+    }
+
+    /**
+     * Uploads profile data from Health Connect, such as height and weight.
+     *
+     * @param payload the profile payload containing height and weight records
+     * @return an ApiCall for performing the profile data upload
+     */
+    @NonNull
+    public ApiCall<Void> uploadHealthConnectProfile(@NonNull HealthConnectProfilePayload payload) {
+        return apiClient.uploadHealthConnectProfile(getUserToken(), payload);
     }
 }

@@ -105,6 +105,7 @@ public final class ActivitySourcesManager {
         initialize(client, ActivitySourcesManagerConfig.buildDefault());
     }
 
+
     /**
      * Initialize the singleton with the provided config. <br>
      * Note: make sure that initialization occurs at each start of the user session of your application (most likely, at
@@ -131,6 +132,7 @@ public final class ActivitySourcesManager {
             client.getApiKey(),
             client.getBaseUrl());
         GoogleFitActivitySource.initialize(client, config);
+        HealthConnectActivitySource.initialize(client, config, client.getStorage());
 
         final BackgroundWorkManager backgroundWorkManager = new BackgroundWorkManager(config, scheduler);
         final ActivitySourceResolver activitySourceResolver = new ActivitySourceResolver();
@@ -141,6 +143,7 @@ public final class ActivitySourcesManager {
             activitySourceResolver,
             currentConnections);
         newInstance.configureExternalStateByConnections(currentConnections);
+
         instance = newInstance;
         Logger.get().d("initialized successfully (the previous one could be overridden)");
     }
@@ -367,12 +370,17 @@ public final class ActivitySourcesManager {
 
     @SuppressLint("NewApi")
     private void configureExternalStateByConnections(@Nullable List<TrackerConnection> trackerConnections) {
+        configureGoogleFitState(trackerConnections);
+        configureHealthConnectState(trackerConnections);
+    }
+
+    private void configureGoogleFitState(@Nullable List<TrackerConnection> trackerConnections) {
         final TrackerConnection gfTrackerConnection = Optional.ofNullable(trackerConnections)
             .flatMap(connections -> connections.stream()
                 .filter(c -> c.getTracker().equals(TrackerValue.GOOGLE_FIT.getValue()))
                 .findFirst())
             .orElse(null);
-        // TODO: move out the line with configuring the profile sync work when there will be other local activity
+
         if (gfTrackerConnection != null) {
             backgroundWorkManager.configureProfileSyncWork();
             backgroundWorkManager.configureGFSyncWorks();
@@ -387,6 +395,32 @@ public final class ActivitySourcesManager {
             googleFit.setLowerDateBoundary(gfTrackerConnection.getCreatedAt());
         } else {
             googleFit.setLowerDateBoundary(null);
+        }
+    }
+
+    private void configureHealthConnectState(@Nullable List<TrackerConnection> trackerConnections) {
+        final TrackerConnection hcTrackerConnection = Optional.ofNullable(trackerConnections)
+            .flatMap(connections -> connections.stream()
+                .filter(c -> c.getTracker().equals(TrackerValue.HEALTH_CONNECT.getValue()))
+                .findFirst())
+            .orElse(null);
+
+        if (hcTrackerConnection != null) {
+            backgroundWorkManager.configureHCProfileSyncWork();
+            backgroundWorkManager.configureHCIntradaySyncWorks();
+            backgroundWorkManager.configureHCDailySyncWorks();
+        } else {
+            backgroundWorkManager.cancelHCIntradaySyncWorks();
+            backgroundWorkManager.cancelHCDailySyncWorks();
+            backgroundWorkManager.cancelHCProfileSyncWork();
+        }
+
+        final HealthConnectActivitySource healthConnect = (HealthConnectActivitySource) activitySourceResolver
+            .getInstanceByTrackerValue(TrackerValue.HEALTH_CONNECT.getValue());
+        if (hcTrackerConnection != null) {
+            healthConnect.setLowerDateBoundary(hcTrackerConnection.getCreatedAt());
+        } else {
+            healthConnect.setLowerDateBoundary(null);
         }
     }
 }

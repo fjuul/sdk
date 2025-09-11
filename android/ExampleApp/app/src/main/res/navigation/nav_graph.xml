@@ -36,6 +36,9 @@
         <action
             android:id="@+id/action_modulesFragment_to_GFSyncFragment"
             app:destination="@id/GFSyncFragment" />
+        <action
+            android:id="@+id/action_modulesFragment_to_HealthConnectSyncFragment"
+            app:destination="@id/HealthConnectSyncFragment" />
     </fragment>
     <fragment
         android:id="@+id/dailyStatsFragment"
@@ -74,4 +77,10 @@
         android:name="com.fjuul.sdk.android.exampleapp.ui.gf_sync.GFSyncFragment"
         android:label="Google Fit Sync"
         tools:layout="@layout/gf_sync_fragment" />
+
+    <fragment
+        android:id="@+id/HealthConnectSyncFragment"
+        android:name="com.fjuul.sdk.android.exampleapp.ui.healthconnectsync.HealthConnectSyncFragment"
+        android:label="Health Connect Sync"
+        tools:layout="@layout/health_connect_sync_fragment" />
 </navigation>

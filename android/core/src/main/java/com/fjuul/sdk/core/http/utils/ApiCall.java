@@ -22,7 +22,7 @@ public class ApiCall<T> {
     private final IApiResponseTransformer<T> responseTransformer;
 
     /**
-     * @param delegate instance of retrofit's call to be wrapped of.
+     * @param delegate instance of retrofit's call to be wrapped.
      * @param responseTransformer transformer which decides how to build the result of api call by the response.
      */
     public ApiCall(@NonNull Call<T> delegate, @NonNull IApiResponseTransformer<T> responseTransformer) {
@@ -57,7 +57,7 @@ public class ApiCall<T> {
      */
     public void enqueue(@NonNull ApiCallCallback<T> callback) {
         delegate.enqueue(new Callback<T>() {
-            // Since we use custom Call adapter, a retrofit executor doesn't run a callback in the
+            // Since we use custom Call adapter, a retrofit executor does not run a callback in the
             // main thread as it stated in the docs.
             // see
             // https://square.github.io/retrofit/2.x/retrofit/retrofit2/Retrofit.Builder.html#callbackExecutor-java.util.concurrent.Executor-

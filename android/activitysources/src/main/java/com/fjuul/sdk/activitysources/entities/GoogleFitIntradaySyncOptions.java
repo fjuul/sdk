@@ -86,7 +86,7 @@ public final class GoogleFitIntradaySyncOptions extends GoogleFitSyncOptions {
          * <li>the start date is after the end date</li>
          * <li>the end date points to the future</li>
          * <li>dates exceed the allowed boundary to the past time which is a date of the next day number of the previous
-         * month from today (for example, if today is 20th February, then the max allowed date in the past is 21th
+         * month from today (for example, if today is 20th February, then the max allowed date in the past is 21st
          * January). In other words, the boundary can be calculated as {@code today - 1 month + 1 day}. Use
          * {@link GoogleFitIntradaySyncOptions.Builder#getMaxAllowedPastDate()} to get the last allowed date of the past
          * for the sync.</li>

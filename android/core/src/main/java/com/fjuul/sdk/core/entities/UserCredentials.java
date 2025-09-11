@@ -9,7 +9,7 @@ public class UserCredentials {
     private String secret;
 
     private UserCredentials() {
-        // require by Retrofit
+        // required by Retrofit
     }
 
     public UserCredentials(@NonNull String token, @NonNull String secret) {

@@ -19,7 +19,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;
 
 /**
- * The `AnalyticsService` encapsulates access to a users fitness and activity data.
+ * The `AnalyticsService` encapsulates access to a user's fitness and activity data.
  */
 public class AnalyticsService {
     private AnalyticsApi analyticsApiClient;

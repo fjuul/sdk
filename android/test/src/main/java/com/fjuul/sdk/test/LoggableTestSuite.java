@@ -8,7 +8,7 @@ import com.fjuul.sdk.test.utils.TestTimberTree;
 
 import timber.log.Timber;
 
-// NOTE: unfortunately, robolectric doesn't support JUnit's @ClassRule. That's why we have to use the class inheritance
+// NOTE: unfortunately, robolectric does not support JUnit's @ClassRule. That's why we have to use the class inheritance
 // for test suites (see https://github.com/robolectric/robolectric/issues/2637)
 public abstract class LoggableTestSuite {
     static protected final TestTimberTree LOGGER = new TestTimberTree();

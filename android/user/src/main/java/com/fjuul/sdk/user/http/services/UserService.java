@@ -22,7 +22,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;
 
 /**
- * The `UserService` encapsulates access to a users profile data.
+ * The `UserService` encapsulates access to a user's profile data.
  */
 public class UserService {
     private UserApi userApiClient;
@@ -99,7 +99,7 @@ public class UserService {
     /**
      * Builds the call to mark a user for deletion by the user credentials specified at the client configuration. The
      * user's data will be hard deleted within the constraints of the data protection agreement with the tenant. A user
-     * that was marked for deletion can't make any authorized requests.<br>
+     * that was marked for deletion cannot make any authorized requests.<br>
      * Note: This operation cannot be undone through the API
      *
      * @return ApiCall for the user deletion.

@@ -41,7 +41,7 @@ public class UserApiResponseTransformer<T> extends DefaultApiResponseTransformer
             && userResourcePathPattern.matcher(requestPath).find()) {
             ValidationErrorJSONBodyResponse validationErrorJsonBody = null;
             try {
-                // NOTE: we make a copy of the buffer (actually, put the whole body in memory) because Okio doesn't
+                // NOTE: we make a copy of the buffer (actually, put the whole body in memory) because Okio does not
                 // allow us to consume the stream of response body twice.
                 final Buffer copy = response.errorBody().source().getBuffer().clone();
                 validationErrorJsonBody = validationErrorJsonBodyAdapter.fromJson(copy);

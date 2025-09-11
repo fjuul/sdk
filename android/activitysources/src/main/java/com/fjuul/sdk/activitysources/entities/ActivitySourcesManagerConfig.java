@@ -142,7 +142,7 @@ public class ActivitySourcesManagerConfig {
          * determined by the set of collectable fitness metrics. If intraday types are not included in the collectable
          * fitness metrics, the background synchronization will be disabled.<br>
          * Note: SDK will schedule background syncs only if there is a current connection to Google Fit. In other words,
-         * this option expresses an intent to have the background synchronization when it's applicable but it doesn't
+         * this option expresses an intent to have the background synchronization when it is applicable but it does not
          * mean a requirement of the connection to Google Fit.
          *
          * @return configured builder
@@ -159,7 +159,7 @@ public class ActivitySourcesManagerConfig {
          * specified one will be ignored in the background synchronization. If sessions are not included in the
          * collectable fitness metrics, the background synchronization will be disabled.<br>
          * Note: SDK will schedule background syncs only if there is a current connection to Google Fit. In other words,
-         * this option expresses an intent to have the background synchronization when it's applicable but it doesn't
+         * this option expresses an intent to have the background synchronization when it is applicable but it does not
          * mean a requirement of the connection to Google Fit.
          *
          * @param minSessionDuration min duration for sessions to be synced
@@ -176,7 +176,7 @@ public class ActivitySourcesManagerConfig {
         /**
          * Enables background synchronization of intraday and session data from Google Fit.<br>
          * Note: SDK will schedule background syncs only if there is a current connection to Google Fit. In other words,
-         * this option expresses an intent to have the background synchronization when it's applicable but it doesn't
+         * this option expresses an intent to have the background synchronization when it is applicable but it does not
          * mean a requirement of the connection to Google Fit.
          *
          * @param minSessionDuration min duration for sessions to be synced
@@ -196,7 +196,7 @@ public class ActivitySourcesManagerConfig {
          * sources.<br>
          * Note: SDK will schedule background syncs only if there are appropriate current connections to the local
          * activity source. In other words, this option expresses an intent to have the background synchronization when
-         * it's applicable but it doesn't mean a strict requirement of having the appropriate connections.<br>
+         * it is applicable but it does not mean a strict requirement of having the appropriate connections.<br>
          * If you enabled this then keep in mind that the user profile may be updated anytime, and therefore you should
          * try to get a fresh state of the profile at every session start of your application.
          *
@@ -213,8 +213,8 @@ public class ActivitySourcesManagerConfig {
          * determined by the set of collectable fitness metrics. If intraday types are not included in the collectable
          * fitness metrics, the background synchronization will be disabled.<br>
          * Note: SDK will schedule background syncs only if there is a current connection to Health connect. In other
-         * words, this option expresses an intent to have the background synchronization when it's applicable but it
-         * doesn't mean a requirement of the connection to Health Connect.
+         * words, this option expresses an intent to have the background synchronization when it is applicable but it
+         * does not mean a requirement of the connection to Health Connect.
          *
          * @return configured builder
          */
@@ -230,8 +230,8 @@ public class ActivitySourcesManagerConfig {
          * determined by the set of collectable fitness metrics. If daily types are not included in the collectable
          * fitness metrics, the background synchronization will be disabled.<br>
          * Note: SDK will schedule background syncs only if there is a current connection to Health connect. In other
-         * words, this option expresses an intent to have the background synchronization when it's applicable but it
-         * doesn't mean a requirement of the connection to Health Connect.
+         * words, this option expresses an intent to have the background synchronization when it is applicable but it
+         * does not mean a requirement of the connection to Health Connect.
          *
          * @return configured builder
          */
@@ -247,7 +247,7 @@ public class ActivitySourcesManagerConfig {
          * sources.<br>
          * Note: SDK will schedule background syncs only if there are appropriate current connections to the local
          * activity source. In other words, this option expresses an intent to have the background synchronization when
-         * it's applicable but it doesn't mean a strict requirement of having the appropriate connections.<br>
+         * it is applicable but it does not mean a strict requirement of having the appropriate connections.<br>
          * If you enabled this then keep in mind that the user profile may be updated anytime, and therefore you should
          * try to get a fresh state of the profile at every session start of your application.
          *
@@ -392,7 +392,7 @@ public class ActivitySourcesManagerConfig {
          * used to determine a list of requested permissions for local activity sources, and to determine background
          * tasks for syncing data from Google Fit. <br>
          * It's allowed to provide an empty set if you intend to use only external activity sources. <br>
-         * NOTE: this doesn't affect external trackers and how they request permissions.
+         * NOTE: this does not affect external trackers and how they request permissions.
          *
          * @param fitnessMetrics set of fitness metrics to be collected by local trackers
          * @return configured builder

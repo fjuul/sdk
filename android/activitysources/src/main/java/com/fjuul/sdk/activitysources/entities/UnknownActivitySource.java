@@ -3,9 +3,9 @@ package com.fjuul.sdk.activitysources.entities;
 import androidx.annotation.NonNull;
 
 /**
- * The ActivitySource class with unsupported tracker value. There may be a case when the current SDK version doesn't
- * recognize the received tracker connection and can't provide the appropriate ActivitySource instance for that. In this
- * case, {@code UnknownActivitySource} will be matched for that connection.
+ * The ActivitySource class with unsupported tracker value. There may be a case when the current SDK version does not
+ * recognize the received tracker connection and cannot provide the appropriate ActivitySource instance for that. In
+ * this case, {@code UnknownActivitySource} will be matched for that connection.
  */
 public class UnknownActivitySource extends ActivitySource {
     private TrackerValue trackerValue;

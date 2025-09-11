@@ -30,7 +30,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;
 
 /**
- * The `ActivitySourcesService` encapsulates the management of a users activity sources.
+ * The `ActivitySourcesService` encapsulates the management of a user's activity sources.
  */
 public class ActivitySourcesService {
     private final ActivitySourcesApi apiClient;

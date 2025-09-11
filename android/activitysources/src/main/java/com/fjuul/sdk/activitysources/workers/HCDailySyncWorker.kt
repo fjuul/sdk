@@ -5,6 +5,7 @@ import androidx.work.WorkerParameters
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectSyncOptions
+import com.fjuul.sdk.core.utils.Logger
 import com.google.android.gms.tasks.TaskCompletionSource
 import com.google.android.gms.tasks.Tasks
 
@@ -46,7 +47,8 @@ class HCDailySyncWorker(context: Context, workerParams: WorkerParameters) :
             try {
                 val metric = FitnessMetricsType.valueOf(rawDailyMetric)
                 metrics.add(metric)
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Logger.get().e(e, "Exception during daily sync")
             }
         }
         return HealthConnectSyncOptions(metrics)

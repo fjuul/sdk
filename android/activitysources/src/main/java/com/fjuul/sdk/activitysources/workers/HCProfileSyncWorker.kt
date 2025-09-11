@@ -13,7 +13,6 @@ class HCProfileSyncWorker(context: Context, workerParams: WorkerParameters) :
     HCSyncWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
-        Logger.get().d("HCProfileSyncWorker doWork")
         val hcConnection = getHealthConnectActivitySourceConnection(activitySourcesManager)
         if (hcConnection == null) {
             return Result.success()
@@ -34,7 +33,8 @@ class HCProfileSyncWorker(context: Context, workerParams: WorkerParameters) :
             try {
                 Tasks.await(taskCompletionSource.getTask())
                 return Result.success()
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Logger.get().e(e, "Exception during profile sync")
             }
         }
         return Result.failure()

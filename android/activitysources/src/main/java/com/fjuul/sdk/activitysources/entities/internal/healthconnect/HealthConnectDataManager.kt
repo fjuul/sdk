@@ -24,6 +24,7 @@ import com.fjuul.sdk.activitysources.utils.roundTo
 import com.fjuul.sdk.core.entities.IStorage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.Instant
@@ -63,6 +64,8 @@ class HealthConnectDataManager(
         private const val EMPTY = ""
     }
 
+    private val myScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
     /**
      * Synchronize intraday data: fetches 1-minute buckets over the last 2 days for all requested metrics,
      * groups them by local date, and uploads each day as a separate payload.
@@ -86,7 +89,7 @@ class HealthConnectDataManager(
             // save it.
             if (storedHeartRateChangesToken.isNullOrEmpty()) {
                 makeFullSync(heartRateMetric, lowerDateBoundary, true) {
-                    CoroutineScope(Dispatchers.IO).launch {
+                   myScope.launch {
                         val heartRateChangesToken = client.getChangesToken(
                             ChangesTokenRequest(recordTypes = setOf(HeartRateRecord::class))
                         )
@@ -126,7 +129,7 @@ class HealthConnectDataManager(
         if (options.metrics.contains(FitnessMetricsType.INTRADAY_CALORIES)) {
             if (storedActiveCaloriesChangesToken.isNullOrEmpty()) {
                 makeFullSync(activeCaloriesMetric, lowerDateBoundary, true) {
-                    CoroutineScope(Dispatchers.IO).launch {
+                    myScope.launch {
                         val activeCaloriesChangesToken = client.getChangesToken(
                             ChangesTokenRequest(recordTypes = setOf(ActiveCaloriesBurnedRecord::class))
                         )
@@ -160,7 +163,7 @@ class HealthConnectDataManager(
 
             if (storedTotalCaloriesChangesToken.isNullOrEmpty()) {
                 makeFullSync(totalCaloriesMetric, lowerDateBoundary, true) {
-                    CoroutineScope(Dispatchers.IO).launch {
+                    myScope.launch {
                         val totalCaloriesChangesToken = client.getChangesToken(
                             ChangesTokenRequest(recordTypes = setOf(TotalCaloriesBurnedRecord::class))
                         )
@@ -200,7 +203,7 @@ class HealthConnectDataManager(
         }
 
         syncIntradayChangedBuckets(totalCaloriesMetric, totalCaloriesTimeChanges) {
-            storage.set(TOTAL_CALORIES_CHANGES_TOKEN, storedTotalCaloriesChangesToken)
+//            storage.set(TOTAL_CALORIES_CHANGES_TOKEN, storedTotalCaloriesChangesToken)
         }
     }
 
@@ -315,7 +318,7 @@ class HealthConnectDataManager(
     ) {
         // If token expired we need to make full sync and save our last changes token when
         // everything is success
-        CoroutineScope(Dispatchers.IO).launch {
+        myScope.launch {
             val changesToken = client.getChangesToken(
                 ChangesTokenRequest(
                     recordTypes = recordTypes

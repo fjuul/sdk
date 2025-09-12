@@ -30,12 +30,12 @@ class DailyStatsListAdapter(context: Context, var dataSource: Array<DailyStats>)
         val textView = rowView.findViewById<TextView>(android.R.id.text1)
         textView.text =
             """
-|date: ${item.date};
-|low: ${item.low.metMinutes} metMinutes;
-|moderate: ${item.moderate.metMinutes} metMinutes;
-|high: ${item.high.metMinutes} metMinutes;
+|date: ${item.date}
+|low: ${item.low.seconds / 60} minutes; ${item.low.metMinutes} MET-minutes
+|moderate: ${item.moderate.seconds / 60} minutes; ${item.moderate.metMinutes} MET-minutes
+|high: ${item.high.seconds / 60} minutes; ${item.high.metMinutes} MET-minutes
 |steps: ${item.steps}
-|sources: ${item.contributingSources.joinToString(separator = ", ")};""".trimMargin()
+|sources: ${item.contributingSources.joinToString(separator = ", ")}""".trimMargin()
         return rowView
     }
 }

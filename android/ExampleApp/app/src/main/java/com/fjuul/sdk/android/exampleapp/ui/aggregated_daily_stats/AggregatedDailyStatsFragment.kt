@@ -66,11 +66,11 @@ class AggregatedDailyStatsFragment : Fragment() {
         ) {
             aggregatedStats.text =
                 """
- low: ${it.low.metMinutes} metMinutes;
- moderate: ${it.moderate.metMinutes} metMinutes;
- high: ${it.high.metMinutes} metMinutes;
- steps: ${it.steps};
- sources: ${it.contributingSources.joinToString(separator = ", ")};"""
+ low: ${it.low.seconds / 60} minutes; ${it.low.metMinutes} MET-minutes
+ moderate: ${it.moderate.seconds / 60} minutes; ${it.moderate.metMinutes} MET-minutes
+ high: ${it.high.seconds / 60} minutes; ${it.high.metMinutes} MET-minutes
+ steps: ${it.steps}
+ sources: ${it.contributingSources.joinToString(separator = ", ")}"""
         }
 
         model.errorMessage.observe(

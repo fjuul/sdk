@@ -7,11 +7,25 @@ import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConne
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectPermissionManager
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectSyncOptions
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService
-import com.fjuul.sdk.activitysources.utils.runAsyncAndCallback
 import com.fjuul.sdk.core.ApiClient
 import com.fjuul.sdk.core.entities.Callback
 import com.fjuul.sdk.core.entities.IStorage
+import com.fjuul.sdk.core.entities.Result
+import com.fjuul.sdk.core.utils.Logger
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.util.Date
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 
 /**
  * [ActivitySource] implementation for Android Health Connect.
@@ -30,7 +44,16 @@ class HealthConnectActivitySource private constructor(
     private val dataManager: HealthConnectDataManager,
     private val permissionManager: HealthConnectPermissionManager,
     private val storage: IStorage,
-) : ActivitySource() {
+) : ActivitySource(), AutoCloseable {
+
+    private val executor: ThreadPoolExecutor = ThreadPoolExecutor(
+        1, 1, 0L, TimeUnit.MILLISECONDS, LinkedBlockingQueue()
+    )
+    private val dispatcher = executor.asCoroutineDispatcher()
+    private val scope = CoroutineScope(dispatcher + CoroutineName("SingleThreadScope"))
+
+    private val mutex = Mutex()
+    private var currentJob: Job? = null
 
     var lowerDateBoundary: Date? = null
 
@@ -40,8 +63,8 @@ class HealthConnectActivitySource private constructor(
      * @param options  The [HealthConnectSyncOptions] specifying metrics.
      * @param callback Receives a [Result]<Unit> indicating success or failure(exception).
      */
-    fun syncIntraday(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
-        runAsyncAndCallback({
+    suspend fun syncIntraday(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
+        executeWithCallback({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
             dataManager.syncIntraday(options, lowerDateBoundary)
@@ -53,8 +76,8 @@ class HealthConnectActivitySource private constructor(
      * @param options  The [HealthConnectSyncOptions] specifying metrics.
      * @param callback Receives a [Result]<Unit> indicating success or failure(exception).
      */
-    fun syncDaily(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
-        runAsyncAndCallback({
+    suspend fun syncDaily(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
+        executeWithCallback({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
             dataManager.syncDaily(options, lowerDateBoundary)
@@ -66,8 +89,8 @@ class HealthConnectActivitySource private constructor(
      * @param options  The [HealthConnectSyncOptions] specifying metrics.
      * @param callback Receives a [Result]<Unit> indicating success or failure(exception).
      */
-    fun syncProfile(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
-        runAsyncAndCallback({
+    suspend fun syncProfile(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
+        executeWithCallback({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
             dataManager.syncProfile(options, lowerDateBoundary)
@@ -86,6 +109,35 @@ class HealthConnectActivitySource private constructor(
         storage.set(HealthConnectDataManager.STEPS_CHANGES_TOKEN, "")
         storage.set(HealthConnectDataManager.HEIGHT_CHANGES_TOKEN, "")
         storage.set(HealthConnectDataManager.WEIGHT_CHANGES_TOKEN, "")
+    }
+
+    suspend fun <T : Any> executeWithCallback(
+        block: suspend () -> T,
+        callback: Callback<T>
+    ) {
+        mutex.withLock {
+            currentJob?.join()
+            val deferred = scope.async {
+                val result: Result<T> = try {
+                    Logger.get().d("executeWithCallback: Start job")
+                    Result.value(block())
+                } catch (e: Throwable) {
+                    Result.error(e)
+                } finally {
+                    Logger.get().d("executeWithCallback: End job")
+                }
+                withContext(Dispatchers.Main) {
+                    callback.onResult(result)
+                }
+            }
+            currentJob = deferred
+            deferred.await()
+        }
+    }
+
+    override fun close() {
+        scope.cancel()
+        executor.shutdown()
     }
 
     companion object {

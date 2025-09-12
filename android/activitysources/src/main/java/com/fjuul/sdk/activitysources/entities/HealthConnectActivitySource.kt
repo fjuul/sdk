@@ -64,7 +64,7 @@ class HealthConnectActivitySource private constructor(
      * @param callback Receives a [Result]<Unit> indicating success or failure(exception).
      */
     suspend fun syncIntraday(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
-        executeWithCallback({
+        executeSynchronized({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
             dataManager.syncIntraday(options, lowerDateBoundary)
@@ -77,7 +77,7 @@ class HealthConnectActivitySource private constructor(
      * @param callback Receives a [Result]<Unit> indicating success or failure(exception).
      */
     suspend fun syncDaily(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
-        executeWithCallback({
+        executeSynchronized({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
             dataManager.syncDaily(options, lowerDateBoundary)
@@ -90,7 +90,7 @@ class HealthConnectActivitySource private constructor(
      * @param callback Receives a [Result]<Unit> indicating success or failure(exception).
      */
     suspend fun syncProfile(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
-        executeWithCallback({
+        executeSynchronized({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
             dataManager.syncProfile(options, lowerDateBoundary)
@@ -111,13 +111,14 @@ class HealthConnectActivitySource private constructor(
         storage.set(HealthConnectDataManager.WEIGHT_CHANGES_TOKEN, "")
     }
 
-    suspend fun <T : Any> executeWithCallback(
+    suspend fun <T : Any> executeSynchronized(
         block: suspend () -> T,
         callback: Callback<T>
     ) {
         mutex.withLock {
-            currentJob?.join()
+            val previousJob = currentJob
             val deferred = scope.async {
+                previousJob?.join()
                 val result: Result<T> = try {
                     Logger.get().d("executeWithCallback: Start job")
                     Result.value(block())
@@ -125,6 +126,7 @@ class HealthConnectActivitySource private constructor(
                     Result.error(e)
                 } finally {
                     Logger.get().d("executeWithCallback: End job")
+                    currentJob = null
                 }
                 withContext(Dispatchers.Main) {
                     callback.onResult(result)

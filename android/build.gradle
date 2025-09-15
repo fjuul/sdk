@@ -40,7 +40,7 @@ subprojects {
                 include '**/*.gradle'
             }
             greclipse()
-            indentWithSpaces(4)
+            leadingTabsToSpaces(4)
         }
 
         // only for the example application
@@ -84,19 +84,21 @@ configure(subprojects) {
 }
 
 allprojects {
-    tasks.withType(Test) {
-        testLogging {
-            exceptionFormat "full"
-            showCauses true
-            showExceptions true
-            showStackTraces true
-            showStandardStreams true
-            events = [
-                "passed",
-                "skipped",
-                "failed",
-                "standardOut"
-            ]
+    tasks.withType(Test).tap {
+        configureEach {
+            testLogging {
+                exceptionFormat "full"
+                showCauses true
+                showExceptions true
+                showStackTraces true
+                showStandardStreams true
+                events = [
+                    "passed",
+                    "skipped",
+                    "failed",
+                    "standardOut"
+                ]
+            }
         }
     }
 }

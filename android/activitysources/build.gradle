@@ -44,7 +44,7 @@ android {
     }
 }
 
-tasks.withType(Javadoc) {
+tasks.withType(Javadoc).configureEach {
     excludes = ['**/*.kt']
     options.addStringOption('Xdoclint:none', '-quiet')
 }

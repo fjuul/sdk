@@ -5,11 +5,11 @@ apply from: "${rootDir}/gradle/publish.gradle"
 
 android {
     namespace 'com.fjuul.sdk.core'
-    compileSdk rootProject.ext.compileSdk
+    compileSdkVersion rootProject.ext.compileSdk
 
     defaultConfig {
         minSdk rootProject.ext.minSdk
-        compileSdk rootProject.ext.compileSdk
+        compileSdkVersion rootProject.ext.compileSdk
         targetSdk rootProject.ext.targetSdk
 
         versionCode 1
@@ -67,9 +67,9 @@ dependencies {
 
     api "com.squareup.retrofit2:retrofit:$retrofitVersion"
     api "com.squareup.retrofit2:converter-moshi:$retrofitVersion"
-    api 'com.squareup.moshi:moshi:1.15.1'
-    api 'com.squareup.moshi:moshi-kotlin:1.15.1'
-    api 'com.squareup.moshi:moshi-adapters:1.15.1'
+    api 'com.squareup.moshi:moshi:1.15.2'
+    api 'com.squareup.moshi:moshi-kotlin:1.15.2'
+    api 'com.squareup.moshi:moshi-adapters:1.15.2'
     api 'com.jakewharton.timber:timber:5.0.1'
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
@@ -77,7 +77,7 @@ dependencies {
 
     // Use JUnit test framework
     testImplementation "junit:junit:$rootProject.ext.junitVersion"
-    testImplementation 'org.mockito:mockito-core:5.10.0'
+    testImplementation 'org.mockito:mockito-core:5.19.0'
     testImplementation "com.squareup.okhttp3:mockwebserver:$okHttpVersion"
     testImplementation project(':test')
     testImplementation "org.robolectric:robolectric:$rootProject.ext.robolectricVersion"

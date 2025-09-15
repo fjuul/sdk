@@ -6,9 +6,9 @@ plugins {
 }
 
 ext {
-    compileSdk = 35
+    compileSdk = 36
     minSdk = 26
-    targetSdk = 35
+    targetSdk = 36
 
     okHttpVersion = '4.12.0'
     retrofitVersion = '2.9.0'

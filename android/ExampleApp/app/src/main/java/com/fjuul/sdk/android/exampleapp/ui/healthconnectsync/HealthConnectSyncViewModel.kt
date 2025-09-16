@@ -3,12 +3,10 @@ package com.fjuul.sdk.android.exampleapp.ui.healthconnectsync
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectSyncOptions
-import kotlinx.coroutines.launch
 
 class HealthConnectSyncViewModel : ViewModel() {
     private val _syncingIntradayData = MutableLiveData(false)
@@ -26,96 +24,90 @@ class HealthConnectSyncViewModel : ViewModel() {
     }
 
     fun runIntradaySync(calories: Boolean, heartRate: Boolean) {
-        viewModelScope.launch {
-            val connection = ActivitySourcesManager.getInstance().current
-                .find { it.activitySource is HealthConnectActivitySource }
-            if (connection == null) {
-                _errorMessage.value = "No active Health Connect connection"
-                return@launch
-            }
-
-            val metricsToTrack = mutableSetOf<FitnessMetricsType>()
-            if (calories) metricsToTrack.add(FitnessMetricsType.INTRADAY_CALORIES)
-            if (heartRate) metricsToTrack.add(FitnessMetricsType.INTRADAY_HEART_RATE)
-
-            val options = HealthConnectSyncOptions(
-                metrics = metricsToTrack
-            )
-
-            _syncingIntradayData.value = true
-
-            (connection.activitySource as HealthConnectActivitySource)
-                .syncIntraday(options) { result ->
-                    _syncingIntradayData.postValue(false)
-                    if (result.isError) {
-                        _errorMessage.postValue(
-                            result.error?.message ?: "Unknown error during sync"
-                        )
-                    }
-                }
+        val connection = ActivitySourcesManager.getInstance().current
+            .find { it.activitySource is HealthConnectActivitySource }
+        if (connection == null) {
+            _errorMessage.value = "No active Health Connect connection"
+            return
         }
+
+        val metricsToTrack = mutableSetOf<FitnessMetricsType>()
+        if (calories) metricsToTrack.add(FitnessMetricsType.INTRADAY_CALORIES)
+        if (heartRate) metricsToTrack.add(FitnessMetricsType.INTRADAY_HEART_RATE)
+
+        val options = HealthConnectSyncOptions(
+            metrics = metricsToTrack
+        )
+
+        _syncingIntradayData.value = true
+
+        (connection.activitySource as HealthConnectActivitySource)
+            .syncIntraday(options) { result ->
+                _syncingIntradayData.postValue(false)
+                if (result.isError) {
+                    _errorMessage.postValue(
+                        result.error?.message ?: "Unknown error during sync"
+                    )
+                }
+            }
     }
 
     fun runDailySync(steps: Boolean, restingHeartRate: Boolean) {
-        viewModelScope.launch {
-            val connection = ActivitySourcesManager.getInstance().current
-                .find { it.activitySource is HealthConnectActivitySource }
-            if (connection == null) {
-                _errorMessage.value = "No active Health Connect connection"
-                return@launch
-            }
-
-            val metricsToTrack = mutableSetOf<FitnessMetricsType>()
-            if (steps) metricsToTrack.add(FitnessMetricsType.STEPS)
-            if (restingHeartRate) metricsToTrack.add(FitnessMetricsType.RESTING_HEART_RATE)
-
-            val options = HealthConnectSyncOptions(
-                metrics = metricsToTrack
-            )
-
-            _syncingDailyData.value = true
-
-            (connection.activitySource as HealthConnectActivitySource)
-                .syncDaily(options) { result ->
-                    _syncingDailyData.postValue(false)
-                    if (result.isError) {
-                        _errorMessage.postValue(
-                            result.error?.message ?: "Unknown error during sync"
-                        )
-                    }
-                }
+        val connection = ActivitySourcesManager.getInstance().current
+            .find { it.activitySource is HealthConnectActivitySource }
+        if (connection == null) {
+            _errorMessage.value = "No active Health Connect connection"
+            return
         }
+
+        val metricsToTrack = mutableSetOf<FitnessMetricsType>()
+        if (steps) metricsToTrack.add(FitnessMetricsType.STEPS)
+        if (restingHeartRate) metricsToTrack.add(FitnessMetricsType.RESTING_HEART_RATE)
+
+        val options = HealthConnectSyncOptions(
+            metrics = metricsToTrack
+        )
+
+        _syncingDailyData.value = true
+
+        (connection.activitySource as HealthConnectActivitySource)
+            .syncDaily(options) { result ->
+                _syncingDailyData.postValue(false)
+                if (result.isError) {
+                    _errorMessage.postValue(
+                        result.error?.message ?: "Unknown error during sync"
+                    )
+                }
+            }
     }
 
     fun runProfileSync(height: Boolean, weight: Boolean) {
-        viewModelScope.launch {
-            val connection = ActivitySourcesManager.getInstance().current
-                .find { it.activitySource is HealthConnectActivitySource }
-            if (connection == null) {
-                _errorMessage.value = "No active Health Connect connection"
-                return@launch
-            }
-
-            val metricsToTrack = mutableSetOf<FitnessMetricsType>()
-            if (weight) metricsToTrack.add(FitnessMetricsType.WEIGHT)
-            if (height) metricsToTrack.add(FitnessMetricsType.HEIGHT)
-
-            val options = HealthConnectSyncOptions(
-                metrics = metricsToTrack
-            )
-
-            _syncingProfileData.value = true
-
-            (connection.activitySource as HealthConnectActivitySource)
-                .syncProfile(options) { result ->
-                    _syncingProfileData.postValue(false)
-                    if (result.isError) {
-                        _errorMessage.postValue(
-                            result.error?.message ?: "Unknown error during sync"
-                        )
-                    }
-                }
+        val connection = ActivitySourcesManager.getInstance().current
+            .find { it.activitySource is HealthConnectActivitySource }
+        if (connection == null) {
+            _errorMessage.value = "No active Health Connect connection"
+            return
         }
+
+        val metricsToTrack = mutableSetOf<FitnessMetricsType>()
+        if (weight) metricsToTrack.add(FitnessMetricsType.WEIGHT)
+        if (height) metricsToTrack.add(FitnessMetricsType.HEIGHT)
+
+        val options = HealthConnectSyncOptions(
+            metrics = metricsToTrack
+        )
+
+        _syncingProfileData.value = true
+
+        (connection.activitySource as HealthConnectActivitySource)
+            .syncProfile(options) { result ->
+                _syncingProfileData.postValue(false)
+                if (result.isError) {
+                    _errorMessage.postValue(
+                        result.error?.message ?: "Unknown error during sync"
+                    )
+                }
+            }
     }
 
     fun clearAllChangesTokens() {

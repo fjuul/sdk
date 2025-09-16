@@ -19,6 +19,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -63,7 +64,7 @@ class HealthConnectActivitySource private constructor(
      * @param options  The [HealthConnectSyncOptions] specifying metrics.
      * @param callback Receives a [Result]<Unit> indicating success or failure(exception).
      */
-    suspend fun syncIntraday(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
+    fun syncIntraday(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
         executeSynchronized({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
@@ -76,7 +77,7 @@ class HealthConnectActivitySource private constructor(
      * @param options  The [HealthConnectSyncOptions] specifying metrics.
      * @param callback Receives a [Result]<Unit> indicating success or failure(exception).
      */
-    suspend fun syncDaily(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
+    fun syncDaily(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
         executeSynchronized({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
@@ -89,7 +90,7 @@ class HealthConnectActivitySource private constructor(
      * @param options  The [HealthConnectSyncOptions] specifying metrics.
      * @param callback Receives a [Result]<Unit> indicating success or failure(exception).
      */
-    suspend fun syncProfile(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
+    fun syncProfile(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
         executeSynchronized({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
@@ -111,29 +112,31 @@ class HealthConnectActivitySource private constructor(
         storage.set(HealthConnectDataManager.WEIGHT_CHANGES_TOKEN, "")
     }
 
-    suspend fun <T : Any> executeSynchronized(
+    fun <T : Any> executeSynchronized(
         block: suspend () -> T,
         callback: Callback<T>
     ) {
-        mutex.withLock {
-            val previousJob = currentJob
-            val deferred = scope.async {
-                previousJob?.join()
-                val result: Result<T> = try {
-                    Logger.get().d("executeWithCallback: Start job")
-                    Result.value(block())
-                } catch (e: Throwable) {
-                    Result.error(e)
-                } finally {
-                    Logger.get().d("executeWithCallback: End job")
-                    currentJob = null
+        CoroutineScope(Dispatchers.IO).launch {
+            mutex.withLock {
+                val previousJob = currentJob
+                val deferred = scope.async {
+                    previousJob?.join()
+                    val result: Result<T> = try {
+                        Logger.get().d("executeWithCallback: Start job")
+                        Result.value(block())
+                    } catch (e: Throwable) {
+                        Result.error(e)
+                    } finally {
+                        Logger.get().d("executeWithCallback: End job")
+                        currentJob = null
+                    }
+                    withContext(Dispatchers.Main) {
+                        callback.onResult(result)
+                    }
                 }
-                withContext(Dispatchers.Main) {
-                    callback.onResult(result)
-                }
+                currentJob = deferred
+                deferred.await()
             }
-            currentJob = deferred
-            deferred.await()
         }
     }
 

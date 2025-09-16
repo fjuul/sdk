@@ -12,9 +12,6 @@ android {
         compileSdk rootProject.ext.compileSdk
         targetSdk rootProject.ext.targetSdk
 
-        versionCode 1
-        versionName "1.0"
-
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         consumerProguardFiles "consumer-rules.pro"
     }

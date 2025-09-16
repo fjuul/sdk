@@ -89,7 +89,7 @@ class HealthConnectDataManager(
             // save it.
             if (storedHeartRateChangesToken.isNullOrEmpty()) {
                 makeFullSync(heartRateMetric, lowerDateBoundary, true) {
-                   myScope.launch {
+                    myScope.launch {
                         val heartRateChangesToken = client.getChangesToken(
                             ChangesTokenRequest(recordTypes = setOf(HeartRateRecord::class))
                         )
@@ -506,12 +506,15 @@ class HealthConnectDataManager(
             }
 
         // create a list of days
-        val days = mutableListOf<Instant>()
+        var days = mutableListOf<Instant>()
         while (start < now) {
             days.add(start)
             start = start.plus(Duration.ofDays(1))
         }
         days.add(now)
+        days = days.distinctBy { instant ->
+            instant.atZone(zone).toLocalDate()
+        }.toMutableList()
 
         // make sync day by day because HealthConnect has 5000 buckets limit and if there will be
         // more than 5000 buckets - we will get an exception

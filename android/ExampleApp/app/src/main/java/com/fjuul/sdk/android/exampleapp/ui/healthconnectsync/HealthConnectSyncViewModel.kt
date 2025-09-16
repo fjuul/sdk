@@ -7,8 +7,6 @@ import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectSyncOptions
-import com.fjuul.sdk.android.exampleapp.data.model.ApiClientHolder
-import com.fjuul.sdk.core.entities.Callback
 
 class HealthConnectSyncViewModel : ViewModel() {
     private val _syncingIntradayData = MutableLiveData(false)
@@ -44,16 +42,14 @@ class HealthConnectSyncViewModel : ViewModel() {
         _syncingIntradayData.value = true
 
         (connection.activitySource as HealthConnectActivitySource)
-            .syncIntraday(options, object : Callback<Unit> {
-                override fun onResult(result: com.fjuul.sdk.core.entities.Result<Unit>) {
-                    _syncingIntradayData.postValue(false)
-                    if (result.isError) {
-                        _errorMessage.postValue(
-                            result.error?.message ?: "Unknown error during sync"
-                        )
-                    }
+            .syncIntraday(options) { result ->
+                _syncingIntradayData.postValue(false)
+                if (result.isError) {
+                    _errorMessage.postValue(
+                        result.error?.message ?: "Unknown error during sync"
+                    )
                 }
-            })
+            }
     }
 
     fun runDailySync(steps: Boolean, restingHeartRate: Boolean) {
@@ -75,16 +71,14 @@ class HealthConnectSyncViewModel : ViewModel() {
         _syncingDailyData.value = true
 
         (connection.activitySource as HealthConnectActivitySource)
-            .syncDaily(options, object : Callback<Unit> {
-                override fun onResult(result: com.fjuul.sdk.core.entities.Result<Unit>) {
-                    _syncingDailyData.postValue(false)
-                    if (result.isError) {
-                        _errorMessage.postValue(
-                            result.error?.message ?: "Unknown error during sync"
-                        )
-                    }
+            .syncDaily(options) { result ->
+                _syncingDailyData.postValue(false)
+                if (result.isError) {
+                    _errorMessage.postValue(
+                        result.error?.message ?: "Unknown error during sync"
+                    )
                 }
-            })
+            }
     }
 
     fun runProfileSync(height: Boolean, weight: Boolean) {

@@ -116,7 +116,7 @@ class HealthConnectActivitySource private constructor(
         block: suspend () -> T,
         callback: Callback<T>
     ) {
-        CoroutineScope(Dispatchers.IO).launch {
+        scope.launch {
             mutex.withLock {
                 val previousJob = currentJob
                 val deferred = scope.async {

@@ -89,7 +89,7 @@ class HealthConnectDataManager(
             // save it.
             if (storedHeartRateChangesToken.isNullOrEmpty()) {
                 makeFullSync(heartRateMetric, lowerDateBoundary, true) {
-                   myScope.launch {
+                    myScope.launch {
                         val heartRateChangesToken = client.getChangesToken(
                             ChangesTokenRequest(recordTypes = setOf(HeartRateRecord::class))
                         )
@@ -507,7 +507,7 @@ class HealthConnectDataManager(
 
         // create a list of days
         val days = mutableListOf<Instant>()
-        while (start < now) {
+        while (start.truncatedTo(ChronoUnit.DAYS) < now.truncatedTo(ChronoUnit.DAYS)) {
             days.add(start)
             start = start.plus(Duration.ofDays(1))
         }

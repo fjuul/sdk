@@ -12,20 +12,15 @@ android {
         compileSdkVersion rootProject.ext.compileSdk
         targetSdk rootProject.ext.targetSdk
 
-        versionCode 1
-        versionName project.findProperty("VERSION_NAME") ?: "dev build"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         debug {
-            buildConfigField("long", "VERSION_CODE", "${defaultConfig.versionCode}")
-            buildConfigField("String","VERSION_NAME","\"${defaultConfig.versionName}\"")
+            buildConfigField("String", "VERSION_NAME", "\"${project.findProperty("VERSION_NAME") ?: "dev build"}\"")
         }
         release {
-            buildConfigField("long", "VERSION_CODE", "${defaultConfig.versionCode}")
-            buildConfigField("String","VERSION_NAME","\"${defaultConfig.versionName}\"")
+            buildConfigField("String", "VERSION_NAME", "\"${project.findProperty("VERSION_NAME") ?: "dev build"}\"")
 
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'

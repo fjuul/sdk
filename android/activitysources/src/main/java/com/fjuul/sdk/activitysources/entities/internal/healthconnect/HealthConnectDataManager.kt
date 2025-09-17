@@ -74,7 +74,7 @@ class HealthConnectDataManager(
      * @param lowerDateBoundary contains first date of application sync
      * @throws HealthConnectException.NoMetricsSelectedException if no metrics are selected or on upload error.
      */
-    suspend fun syncIntraday(options: HealthConnectSyncOptions, lowerDateBoundary: Date?) {
+    suspend fun syncIntraday(options: HealthConnectSyncOptions, lowerDateBoundary: Date) {
         if (options.metrics.isEmpty()) throw HealthConnectException.NoMetricsSelectedException()
 
         var heartRateTimeChanges = listOf<HealthConnectTimeInterval>()
@@ -215,7 +215,7 @@ class HealthConnectDataManager(
      * @param lowerDateBoundary contains first date of application sync
      * @throws HealthConnectException if no metrics are selected or upload fails
      */
-    suspend fun syncDaily(options: HealthConnectSyncOptions, lowerDateBoundary: Date?) {
+    suspend fun syncDaily(options: HealthConnectSyncOptions, lowerDateBoundary: Date) {
         if (options.metrics.isEmpty()) throw HealthConnectException.NoMetricsSelectedException()
 
         var restingHeartRateTimeChanges = listOf<HealthConnectTimeInterval>()
@@ -313,7 +313,7 @@ class HealthConnectDataManager(
         recordTypes: Set<KClass<out Record>>,
         metrics: Set<AggregateMetric<*>>,
         changesTokenKey: String,
-        lowerDateBoundary: Date?,
+        lowerDateBoundary: Date,
         isIntradaySync: Boolean,
     ) {
         // If token expired we need to make full sync and save our last changes token when
@@ -487,7 +487,7 @@ class HealthConnectDataManager(
      */
     private suspend fun makeFullSync(
         metrics: Set<AggregateMetric<*>>,
-        lowerDateBoundary: Date?,
+        lowerDateBoundary: Date,
         isIntradaySync: Boolean,
         onSuccess: () -> Unit,
     ) {
@@ -498,12 +498,7 @@ class HealthConnectDataManager(
         // full aggregate data for first day
         val minusDays = if (isIntradaySync) THIRTY_DAYS else TWENTY_NINE_DAYS
         val thirtyDaysAgo = now.minus(Duration.ofDays(minusDays))
-        var start =
-            if (lowerDateBoundary != null && lowerDateBoundary.toInstant() > thirtyDaysAgo) {
-                lowerDateBoundary.toInstant()
-            } else {
-                thirtyDaysAgo
-            }
+        var start = lowerDateBoundary.toInstant().coerceAtLeast(thirtyDaysAgo)
 
         // create a list of days
         val days = mutableListOf<Instant>()
@@ -519,7 +514,11 @@ class HealthConnectDataManager(
             // Read 1-minute buckets by every day
             if (isIntradaySync) {
                 val startTimeLocalDate = days[i].atZone(zone).toLocalDate().atStartOfDay()
-                val startTime = startTimeLocalDate.toInstant(zone)
+                val startTime = startTimeLocalDate
+                    .toInstant(zone)
+                    // never request intraday data from before the point in time of the tracker connection;
+                    // this coercion is only relevant for the first day of the sync interval
+                    .coerceAtLeast(lowerDateBoundary.toInstant().truncatedTo(ChronoUnit.MINUTES))
                 val endTime = startTimeLocalDate.plusDays(1).toInstant(zone)
                 val buckets: List<AggregationResultGroupedByDuration> =
                     client.aggregateGroupByDuration(
@@ -711,17 +710,12 @@ class HealthConnectDataManager(
      * picks the most recent values and uploads them.
      * @throws HealthConnectException.NoMetricsSelectedException if no metrics are selected or on upload error.
      */
-    suspend fun syncProfile(options: HealthConnectSyncOptions, lowerDateBoundary: Date?) {
+    suspend fun syncProfile(options: HealthConnectSyncOptions, lowerDateBoundary: Date) {
         if (options.metrics.isEmpty()) throw HealthConnectException.NoMetricsSelectedException()
 
         val now = Instant.now()
         val thirtyDaysAgo = now.minus(THIRTY_DAYS, ChronoUnit.DAYS)
-        val startTime =
-            if (lowerDateBoundary != null && lowerDateBoundary.toInstant() > thirtyDaysAgo) {
-                lowerDateBoundary.toInstant()
-            } else {
-                thirtyDaysAgo
-            }
+        val startTime = lowerDateBoundary.toInstant().coerceAtLeast(thirtyDaysAgo)
 
         val storedHeightChangesToken = storage.get(HEIGHT_CHANGES_TOKEN) ?: EMPTY
         val storedWeightChangesToken = storage.get(WEIGHT_CHANGES_TOKEN) ?: EMPTY

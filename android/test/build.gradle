@@ -4,18 +4,14 @@ plugins {
 
 android {
     namespace 'com.fjuul.sdk.test'
-    compileSdk rootProject.ext.compileSdk
+    compileSdkVersion rootProject.ext.compileSdk
 
     defaultConfig {
         minSdk rootProject.ext.minSdk
-        compileSdk rootProject.ext.compileSdk
+        compileSdkVersion rootProject.ext.compileSdk
         targetSdk rootProject.ext.targetSdk
 
-        versionCode 1
-        versionName "1.0"
-
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
-        consumerProguardFiles "consumer-rules.pro"
     }
 
     buildTypes {

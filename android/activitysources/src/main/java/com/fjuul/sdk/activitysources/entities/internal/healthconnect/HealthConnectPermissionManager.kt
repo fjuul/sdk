@@ -44,8 +44,13 @@ class HealthConnectPermissionManager(
     /**
      * Returns all permission strings required for the configured metrics and background.
      */
-    fun requiredAllPermissions(): Set<String> =
-        permissionsForMetrics(allAvailableMetrics)
+    fun requiredAllPermissions(): Set<String> {
+        val allPermissions = mutableSetOf<String>()
+        allPermissions.addAll(permissionsForMetrics(allAvailableMetrics))
+        allPermissions.addAll(requiredHealthPermissions())
+        return allPermissions
+    }
+
 
     /**
      * Returns all permission strings required for the configured metrics.

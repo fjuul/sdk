@@ -4,11 +4,11 @@ plugins {
 
 android {
     namespace 'com.fjuul.sdk.test'
-    compileSdk rootProject.ext.compileSdk
+    compileSdkVersion rootProject.ext.compileSdk
 
     defaultConfig {
         minSdk rootProject.ext.minSdk
-        compileSdk rootProject.ext.compileSdk
+        compileSdkVersion rootProject.ext.compileSdk
         targetSdk rootProject.ext.targetSdk
 
         versionCode 1

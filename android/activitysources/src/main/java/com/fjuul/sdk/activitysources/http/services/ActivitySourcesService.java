@@ -122,6 +122,7 @@ public class ActivitySourcesService {
      * @param dataToUpload GoogleFit data to upload
      * @return ApiCall for uploading the fitness data
      */
+    @Deprecated(since = "2.0")
     @NonNull
     public ApiCall<Void> uploadGoogleFitData(@NonNull GFUploadData dataToUpload) {
         return apiClient.uploadGoogleFitData(clientBuilder.getUserToken(), dataToUpload);
@@ -134,6 +135,7 @@ public class ActivitySourcesService {
      * @param params - profile parameters
      * @return ApiCall for updating the user profile
      */
+    @Deprecated(since = "2.0")
     @NonNull
     public ApiCall<Void> updateProfileOnBehalfOfGoogleFit(@NonNull GFSynchronizableProfileParams params) {
         return apiClient.updateProfileOnBehalfOfGoogleFit(clientBuilder.getUserToken(), params);

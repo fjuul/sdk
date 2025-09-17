@@ -15,6 +15,7 @@ import androidx.annotation.VisibleForTesting;
  * A class that encapsulates parameters for syncing intraday data of Google Fit. In order to build the instance of this
  * class, use {@link Builder}.
  */
+@Deprecated(since = "2.0")
 public final class GoogleFitIntradaySyncOptions extends GoogleFitSyncOptions {
     @NonNull
     private final Set<FitnessMetricsType> metrics;

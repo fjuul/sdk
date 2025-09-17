@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
  * A class that encapsulates parameters for syncing body parameters of the user profile from Google Fit. In order to
  * build the instance of this class, use {@link Builder}.
  */
+@Deprecated(since = "2.0")
 public class GoogleFitProfileSyncOptions {
     @NonNull
     private final Set<FitnessMetricsType> metrics;

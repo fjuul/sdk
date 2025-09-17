@@ -56,6 +56,9 @@ class HealthConnectActivitySource private constructor(
     private val mutex = Mutex()
     private var currentJob: Job? = null
 
+    // lowerDateBoundary can become null during the lifetime of the HealthConnectActivitySource singleton,
+    // but may never be null when calling the sync methods (this is only a valid operation when there
+    // is a current connection to Health Connect, and thus a lower date boundary exists).
     var lowerDateBoundary: Date? = null
 
     /**
@@ -68,7 +71,7 @@ class HealthConnectActivitySource private constructor(
         executeSynchronized({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
-            dataManager.syncIntraday(options, lowerDateBoundary)
+            lowerDateBoundary?.let { dataManager.syncIntraday(options, it) }
         }, callback)
 
     /**
@@ -81,7 +84,7 @@ class HealthConnectActivitySource private constructor(
         executeSynchronized({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
-            dataManager.syncDaily(options, lowerDateBoundary)
+            lowerDateBoundary?.let { dataManager.syncDaily(options, it) }
         }, callback)
 
     /**
@@ -94,7 +97,7 @@ class HealthConnectActivitySource private constructor(
         executeSynchronized({
             permissionManager.ensureSdkAvailable()
             permissionManager.ensurePermissionsGranted(options.metrics)
-            dataManager.syncProfile(options, lowerDateBoundary)
+            lowerDateBoundary?.let { dataManager.syncProfile(options, it) }
         }, callback)
 
 

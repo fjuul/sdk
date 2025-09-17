@@ -42,10 +42,21 @@ class HealthConnectPermissionManager(
         PermissionController.createRequestPermissionResultContract()
 
     /**
+     * Returns all permission strings required for the configured metrics and background.
+     */
+    fun requiredAllPermissions(): Set<String> =
+        permissionsForMetrics(allAvailableMetrics)
+
+    /**
      * Returns all permission strings required for the configured metrics.
      */
-    fun requiredPermissions(): Set<String> =
+    fun requiredHealthPermissions(): Set<String> =
         permissionsForMetrics(allAvailableMetrics)
+
+    /**
+     * Returns background permission string.
+     */
+    fun requiredBackgroundPermissions(): Set<String> = setOf(PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND)
 
     suspend fun checkBackgroundPermission(): Boolean {
         val grantedPermissions = healthConnectClient.permissionController.getGrantedPermissions()

@@ -184,7 +184,7 @@ class ActivitySourcesFragment : Fragment() {
                     .setTitle("Health Connect")
                     .setItems(menus) { _, which ->
                         if (which == 0) {
-                            hcPermsLauncher.launch(activitySource.getPermissionManager().requiredPermissions())
+                            hcPermsLauncher.launch(activitySource.getPermissionManager().requiredAllPermissions())
                         } else {
                             model.disconnect(activitySource)
                         }
@@ -205,7 +205,7 @@ class ActivitySourcesFragment : Fragment() {
             activitySource.getPermissionManager().requestPermissionsContract()
         ) { grantedPermissions ->
             // Compute which permissions were denied
-            val required = activitySource.getPermissionManager().requiredPermissions()
+            val required = activitySource.getPermissionManager().requiredAllPermissions()
             val denied = required - grantedPermissions
 
             if (denied.isEmpty()) {

@@ -53,6 +53,7 @@ import androidx.core.content.ContextCompat;
  * synced will be taken from the user device).
  */
 @SuppressLint("NewApi")
+@Deprecated(since = "2.0")
 public class GoogleFitActivitySource extends ActivitySource {
     static final String GOOGLE_FIT_APP_PACKAGE_NAME = "com.google.android.apps.fitness";
 

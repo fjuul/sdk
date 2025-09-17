@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 public enum FitnessMetricsType {
     INTRADAY_CALORIES,
     INTRADAY_HEART_RATE,
+    @Deprecated(since = "2.0")
     INTRADAY_STEPS,
     /**
      * Represents the total number of steps taken during a specific time period. This metric is specifically used for
@@ -22,6 +23,7 @@ public enum FitnessMetricsType {
      * point.
      */
     RESTING_HEART_RATE,
+    @Deprecated(since = "2.0")
     WORKOUTS,
 
     HEIGHT,

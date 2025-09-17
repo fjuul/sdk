@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 
+@Deprecated(since = "2.0")
 public abstract class GoogleFitSyncOptions {
     @NonNull
     protected final LocalDate startDate;

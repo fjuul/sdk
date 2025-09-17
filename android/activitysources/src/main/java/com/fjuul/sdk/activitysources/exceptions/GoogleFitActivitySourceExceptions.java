@@ -4,6 +4,7 @@ import com.fjuul.sdk.core.exceptions.FjuulException;
 
 import androidx.annotation.NonNull;
 
+@Deprecated(since = "2.0")
 public final class GoogleFitActivitySourceExceptions {
     public static class CommonException extends FjuulException {
         public CommonException(@NonNull String message) {

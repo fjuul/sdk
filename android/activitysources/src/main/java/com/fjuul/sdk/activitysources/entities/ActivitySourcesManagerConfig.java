@@ -52,6 +52,7 @@ public class ActivitySourcesManagerConfig {
      *
      * @return background mode
      */
+    @Deprecated(since = "2.0")
     @NonNull
     public BackgroundSyncMode getGoogleFitIntradayBackgroundSyncMode() {
         return googleFitIntradayBackgroundSyncMode;
@@ -62,6 +63,7 @@ public class ActivitySourcesManagerConfig {
      *
      * @return background mode
      */
+    @Deprecated(since = "2.0")
     @NonNull
     public BackgroundSyncMode getGoogleFitSessionsBackgroundSyncMode() {
         return googleFitSessionsBackgroundSyncMode;
@@ -73,6 +75,7 @@ public class ActivitySourcesManagerConfig {
      *
      * @return background mode
      */
+    @Deprecated(since = "2.0")
     @NonNull
     public BackgroundSyncMode getProfileBackgroundSyncMode() {
         return profileBackgroundSyncMode;
@@ -83,6 +86,7 @@ public class ActivitySourcesManagerConfig {
      *
      * @return duration
      */
+    @Deprecated(since = "2.0")
     @Nullable
     public Duration getGoogleFitSessionsBackgroundSyncMinSessionDuration() {
         return googleFitSessionsBackgroundSyncMinSessionDuration;
@@ -147,6 +151,7 @@ public class ActivitySourcesManagerConfig {
          *
          * @return configured builder
          */
+        @Deprecated(since = "2.0")
         @SuppressLint("NewApi")
         @NonNull
         public Builder enableGoogleFitIntradayBackgroundSync() {
@@ -165,6 +170,7 @@ public class ActivitySourcesManagerConfig {
          * @param minSessionDuration min duration for sessions to be synced
          * @return configured builder
          */
+        @Deprecated(since = "2.0")
         @NonNull
         public Builder enableGoogleFitSessionsBackgroundSync(@NonNull Duration minSessionDuration) {
             Objects.requireNonNull(minSessionDuration, "duration must be not null");
@@ -184,6 +190,7 @@ public class ActivitySourcesManagerConfig {
          * @see #enableGoogleFitIntradayBackgroundSync
          * @see #enableGoogleFitSessionsBackgroundSync
          */
+        @Deprecated(since = "2.0")
         @NonNull
         public Builder enableGoogleFitBackgroundSync(@NonNull Duration minSessionDuration) {
             enableGoogleFitIntradayBackgroundSync();
@@ -202,6 +209,7 @@ public class ActivitySourcesManagerConfig {
          *
          * @return configured builder
          */
+        @Deprecated(since = "2.0")
         @NonNull
         public Builder enableProfileBackgroundSync() {
             config.profileBackgroundSyncMode = BackgroundSyncMode.ENABLED;
@@ -264,6 +272,7 @@ public class ActivitySourcesManagerConfig {
          *
          * @return configured builder
          */
+        @Deprecated(since = "2.0")
         @NonNull
         public Builder disableGoogleFitIntradayBackgroundSync() {
             config.googleFitIntradayBackgroundSyncMode = BackgroundSyncMode.DISABLED;
@@ -275,6 +284,7 @@ public class ActivitySourcesManagerConfig {
          *
          * @return configured builder
          */
+        @Deprecated(since = "2.0")
         @NonNull
         public Builder disableGoogleFitSessionsBackgroundSync() {
             config.googleFitSessionsBackgroundSyncMode = BackgroundSyncMode.DISABLED;
@@ -287,6 +297,7 @@ public class ActivitySourcesManagerConfig {
          *
          * @return configured builder
          */
+        @Deprecated(since = "2.0")
         @NonNull
         public Builder disableGoogleFitBackgroundSync() {
             disableGoogleFitIntradayBackgroundSync();
@@ -299,6 +310,7 @@ public class ActivitySourcesManagerConfig {
          *
          * @return configured builder
          */
+        @Deprecated(since = "2.0")
         @NonNull
         public Builder disableProfileBackgroundSync() {
             config.profileBackgroundSyncMode = BackgroundSyncMode.DISABLED;

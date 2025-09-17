@@ -20,7 +20,7 @@ class HCDailySyncWorker(context: Context, workerParams: WorkerParameters) :
         val hcSource = (hcConnection.activitySource as HealthConnectActivitySource)
         val permissionManager = hcSource.getPermissionManager()
 
-        if (permissionManager.checkBackgroundPermission()) {
+        if (permissionManager.isBackgroundPermissionGranted()) {
             val taskCompletionSource = TaskCompletionSource<Void?>()
             val syncOptions = buildDailySyncOptions()
 

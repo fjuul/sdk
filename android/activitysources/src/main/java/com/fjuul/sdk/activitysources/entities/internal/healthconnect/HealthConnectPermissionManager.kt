@@ -46,7 +46,7 @@ class HealthConnectPermissionManager(
      */
     fun requiredAllPermissions(): Set<String> {
         val allPermissions = mutableSetOf<String>()
-        allPermissions.addAll(permissionsForMetrics(allAvailableMetrics))
+        allPermissions.addAll(requiredBackgroundPermissions())
         allPermissions.addAll(requiredHealthPermissions())
         return allPermissions
     }

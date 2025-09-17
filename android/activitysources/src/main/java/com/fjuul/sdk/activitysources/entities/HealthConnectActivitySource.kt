@@ -67,7 +67,7 @@ class HealthConnectActivitySource private constructor(
     fun syncIntraday(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
         executeSynchronized({
             permissionManager.ensureSdkAvailable()
-            permissionManager.ensurePermissionsGranted(options.metrics)
+            permissionManager.ensureAllPermissionsGranted(options.metrics)
             dataManager.syncIntraday(options, lowerDateBoundary)
         }, callback)
 
@@ -80,7 +80,7 @@ class HealthConnectActivitySource private constructor(
     fun syncDaily(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
         executeSynchronized({
             permissionManager.ensureSdkAvailable()
-            permissionManager.ensurePermissionsGranted(options.metrics)
+            permissionManager.ensureAllPermissionsGranted(options.metrics)
             dataManager.syncDaily(options, lowerDateBoundary)
         }, callback)
 
@@ -93,7 +93,7 @@ class HealthConnectActivitySource private constructor(
     fun syncProfile(options: HealthConnectSyncOptions, callback: Callback<Unit>) =
         executeSynchronized({
             permissionManager.ensureSdkAvailable()
-            permissionManager.ensurePermissionsGranted(options.metrics)
+            permissionManager.ensureAllPermissionsGranted(options.metrics)
             dataManager.syncProfile(options, lowerDateBoundary)
         }, callback)
 

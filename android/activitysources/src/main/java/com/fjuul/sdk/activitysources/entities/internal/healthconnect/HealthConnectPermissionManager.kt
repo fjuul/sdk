@@ -83,12 +83,31 @@ class HealthConnectPermissionManager(
     }, callback)
 
     /**
+     * Suspends and throws if permissions for the given metrics and background permission are not
+     * granted.
+     */
+    suspend fun ensureAllPermissionsGranted(metrics: Set<FitnessMetricsType>) {
+        ensureHealthPermissionGranted(metrics)
+        ensureBackgroundPermissionGranted()
+    }
+
+    /**
      * Suspends and throws if permissions for the given metrics are not granted.
      */
-    suspend fun ensurePermissionsGranted(metrics: Set<FitnessMetricsType>) {
+    suspend fun ensureHealthPermissionGranted(metrics: Set<FitnessMetricsType>) {
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
         val required = permissionsForMetrics(metrics)
         if (!granted.containsAll(required)) {
+            throw HealthConnectException.PermissionsNotGrantedException()
+        }
+    }
+
+    /**
+     * Suspends and throws if background permission is not granted.
+     */
+    suspend fun ensureBackgroundPermissionGranted() {
+        val granted = healthConnectClient.permissionController.getGrantedPermissions()
+        if (!granted.contains(PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND)) {
             throw HealthConnectException.PermissionsNotGrantedException()
         }
     }
@@ -125,7 +144,5 @@ class HealthConnectPermissionManager(
             if (FitnessMetricsType.WEIGHT in metrics) {
                 add(HealthPermission.getReadPermission(WeightRecord::class))
             }
-
-            add(HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND)
         }
 }

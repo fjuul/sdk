@@ -51,7 +51,7 @@ import androidx.work.WorkManager;
  *    </intent-filter>
  * }
  * </pre>
- *
+ * <p>
  * where `YOUR_SCHEME` is the scheme provided to you or coordinated with you by Fjuul. For detailed instructions, you
  * can follow the official <a href="https://developer.android.com/training/app-links/deep-linking">guide</a>.</li>
  * <li>it has a `launchMode` declaration with the value `singleTask` or `singleTop` in AndroidManifest to return back
@@ -223,11 +223,11 @@ public final class ActivitySourcesManager {
      * list. Therefore, after a user succeeds in the connection, please invoke refreshing current connections of the
      * user via the {@link #refreshCurrent} method.
      *
+     * @param activitySource instance of ActivitySource to connect
+     * @param callback callback bringing the connecting intent
      * @see ActivitySourcesManager#refreshCurrent
      * @see ExternalAuthenticationFlowHandler
      * @see GoogleFitActivitySource
-     * @param activitySource instance of ActivitySource to connect
-     * @param callback callback bringing the connecting intent
      */
     public void connect(@NonNull final ActivitySource activitySource, @NonNull final Callback<Intent> callback) {
         if (activitySource instanceof GoogleFitActivitySource) {
@@ -242,7 +242,10 @@ public final class ActivitySourcesManager {
                 return;
             }
             ConnectionResult connectionResult = apiCallResult.getValue();
-            if (connectionResult instanceof ExternalAuthenticationFlowRequired) {
+            if (activitySource instanceof HealthConnectActivitySource) {
+                final Intent intent = new Intent();
+                callback.onResult(Result.value(intent));
+            } else if (connectionResult instanceof ExternalAuthenticationFlowRequired) {
                 final String url = ((ExternalAuthenticationFlowRequired) connectionResult).getUrl();
                 final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 callback.onResult(Result.value(intent));
@@ -308,8 +311,8 @@ public final class ActivitySourcesManager {
      * should use this method to work with their instances (for example, GoogleFitActivitySource) by getting them with
      * the {@link ActivitySourceConnection#getActivitySource()} method.
      *
-     * @see #refreshCurrent(Callback)
      * @return list of activity source connections
+     * @see #refreshCurrent(Callback)
      */
     @SuppressLint("NewApi")
     @NonNull

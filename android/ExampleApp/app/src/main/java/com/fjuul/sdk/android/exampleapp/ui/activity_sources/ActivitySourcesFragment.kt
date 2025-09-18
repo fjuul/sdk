@@ -65,7 +65,7 @@ class ActivitySourcesFragment : Fragment() {
                             ACTIVITY_RECOGNITION_PERMISSION_REQUEST_CODE
                         )
                     }
-                    model.fetchCurrentConnections()
+                    refreshCurrentConnections()
                 }
             }
             // TODO: else show the error message
@@ -94,7 +94,7 @@ class ActivitySourcesFragment : Fragment() {
         currentSourceText = view.findViewById(R.id.current_activity_source_text)
         sourcesList = view.findViewById(R.id.activity_sources_list)
 
-        model.fetchCurrentConnections()
+        refreshCurrentConnections()
 
         model.currentConnections.observe(
             viewLifecycleOwner
@@ -126,6 +126,10 @@ class ActivitySourcesFragment : Fragment() {
                 when (activitySource) {
                     is GoogleFitActivitySource -> {
                         startActivityForResult(intent, GOOGLE_SIGN_IN_REQUEST_CODE)
+                    }
+                    is HealthConnectActivitySource -> {
+                        Toast.makeText(requireContext(), "Successfully connected to HealthConnect", Toast.LENGTH_SHORT).show()
+                        refreshCurrentConnections()
                     } else -> {
                         startActivity(intent)
                     }
@@ -215,6 +219,7 @@ class ActivitySourcesFragment : Fragment() {
                     "Health Connect: all permissions granted",
                     Toast.LENGTH_SHORT
                 ).show()
+                refreshCurrentConnections()
             } else {
                 // Some permissions were denied
                 Toast.makeText(

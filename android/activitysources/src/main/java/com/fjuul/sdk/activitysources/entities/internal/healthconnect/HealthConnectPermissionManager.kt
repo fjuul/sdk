@@ -42,12 +42,12 @@ class HealthConnectPermissionManager(
         PermissionController.createRequestPermissionResultContract()
 
     /**
-     * Returns all permission strings required for the configured metrics and background.
+     * Returns all permission strings required for the configured metrics and background access.
      */
-    fun requiredAllPermissions(): Set<String> {
+    fun allRequiredPermissions(): Set<String> {
         val allPermissions = mutableSetOf<String>()
         allPermissions.addAll(requiredBackgroundPermissions())
-        allPermissions.addAll(requiredHealthPermissions())
+        allPermissions.addAll(requiredMetricPermissions())
         return allPermissions
     }
 
@@ -55,7 +55,7 @@ class HealthConnectPermissionManager(
     /**
      * Returns all permission strings required for the configured metrics.
      */
-    fun requiredHealthPermissions(): Set<String> =
+    fun requiredMetricPermissions(): Set<String> =
         permissionsForMetrics(allAvailableMetrics)
 
     /**
@@ -63,7 +63,7 @@ class HealthConnectPermissionManager(
      */
     fun requiredBackgroundPermissions(): Set<String> = setOf(PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND)
 
-    suspend fun checkBackgroundPermission(): Boolean {
+    suspend fun isBackgroundPermissionGranted(): Boolean {
         val grantedPermissions = healthConnectClient.permissionController.getGrantedPermissions()
         return PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND in grantedPermissions
     }
@@ -84,18 +84,15 @@ class HealthConnectPermissionManager(
 
     /**
      * Checks asynchronously if permissions for the given metrics are all granted.
-     * Delivers `true` to the callback if all are granted, or an exception if any are missing.
+     * Delivers `true` to the callback if all are granted, or false otherwise.
      */
-    fun checkPermissions(
+    fun areMetricPermissionsGranted(
         metrics: Set<FitnessMetricsType>,
         callback: Callback<Boolean>
     ) = runAsyncAndCallback({
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
         val required = permissionsForMetrics(metrics)
-        if (!granted.containsAll(required)) {
-            throw HealthConnectException.PermissionsNotGrantedException()
-        }
-        true
+        granted.containsAll(required)
     }, callback)
 
     /**
@@ -103,14 +100,14 @@ class HealthConnectPermissionManager(
      * granted.
      */
     suspend fun ensureAllPermissionsGranted(metrics: Set<FitnessMetricsType>) {
-        ensureHealthPermissionGranted(metrics)
+        ensureMetricPermissionsGranted(metrics)
         ensureBackgroundPermissionGranted()
     }
 
     /**
      * Suspends and throws if permissions for the given metrics are not granted.
      */
-    suspend fun ensureHealthPermissionGranted(metrics: Set<FitnessMetricsType>) {
+    suspend fun ensureMetricPermissionsGranted(metrics: Set<FitnessMetricsType>) {
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
         val required = permissionsForMetrics(metrics)
         if (!granted.containsAll(required)) {

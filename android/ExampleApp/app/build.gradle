@@ -59,6 +59,7 @@ tasks.register('publishFjuulSDKToMavenLocal', Exec) {
         commandLine 'sh', '-c', publishingCommand
     }
 }
+preBuild.dependsOn('publishFjuulSDKToMavenLocal')
 
 dependencies {
 

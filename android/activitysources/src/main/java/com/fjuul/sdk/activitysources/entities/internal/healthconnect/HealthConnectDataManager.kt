@@ -471,9 +471,8 @@ class HealthConnectDataManager(
                     // and upload this buckets to server
                     uploadIntradayBuckets(changedBuckets.toMutableList())
                 }
-
-            onSuccess()
         }
+        onSuccess()
     }
 
     /**
@@ -698,11 +697,11 @@ class HealthConnectDataManager(
                         it.error?.let { error ->
                             throw error
                         }
-                    } else {
-                        onSuccess()
                     }
                 }
         }
+
+        onSuccess()
     }
 
     /**
@@ -816,12 +815,12 @@ class HealthConnectDataManager(
                         it.error?.let { error ->
                             throw error
                         }
-                    } else {
-                        storage.set(HEIGHT_CHANGES_TOKEN, heightChangesToken)
-                        storage.set(WEIGHT_CHANGES_TOKEN, weightChangesToken)
                     }
                 }
         }
+
+        storage.set(HEIGHT_CHANGES_TOKEN, heightChangesToken)
+        storage.set(WEIGHT_CHANGES_TOKEN, weightChangesToken)
     }
 
     private suspend fun makeFullHeightSync(

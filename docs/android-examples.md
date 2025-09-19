@@ -85,7 +85,7 @@ After a successful request, the user won't be able to make any authorized reques
 `ActivitySourcesManager` is the high-level and main entity of the **AcivitySources** module. It is designed as a singleton, which must be initialized before the first use:
 ```kotlin
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
-...
+
 ActivitySourcesManager.initialize(signedClient)
 ```
 The call above initializes `ActivitySourcesManager` with the default config.<br/>
@@ -93,7 +93,7 @@ Consider using the overloaded method that receives the config as a parameter, if
 ```kotlin
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig
-...
+
 val config = ActivitySourcesManagerConfig.Builder()
     .setCollectableFitnessMetrics(setOf(FitnessMetricsType.INTRADAY_STEPS, FitnessMetricsType.INTRADAY_CALORIES))
     .enableGoogleFitBackgroundSync(Duration.ofMinutes(3))
@@ -105,7 +105,7 @@ ActivitySourcesManager.initialize(signedClient, config)
 To retrieve an instance of `ActivitySourcesManager`:
 ```kotlin
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
-...
+
 val sourcesManager = ActivitySourcesManager.getInstance()
 ```
 
@@ -116,7 +116,7 @@ Before working with the Google Fit activity source, you need to make the initial
 Request permissions:
 ```kotlin
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
-...
+
 val sourcesManager = ActivitySourcesManager.getInstance()
 // connect to GoogleFit tracker
 sourcesManager.connect(GoogleFitActivitySource.getInstance()) { connectResult ->
@@ -152,11 +152,11 @@ Sync the user profile from Google Fit:
 ``` kotlin
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.entities.GoogleFitProfileSyncOptions
-...
+
 val googleFitActivitySource = googleFitConnectionSource.activitySource as GoogleFitActivitySource;
 val syncOptions = GoogleFitProfileSyncOptions.Builder()
-    .include(FitnessMetricsType.HEIGHT)
-    .include(FitnessMetricsType.WEIGHT)
+    .include(FitnessMetricsType.GOOGLEFIT_HEIGHT)
+    .include(FitnessMetricsType.GOOGLEFIT_WEIGHT)
     .build()
 googleFitActivitySource.syncProfile(syncOptions) { result ->
     if (result.isError) {
@@ -169,7 +169,7 @@ Sync intraday data:
 ```kotlin
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.entities.GoogleFitIntradaySyncOptions
-...
+
 val googleFitActivitySource = googleFitConnectionSource.activitySource as GoogleFitActivitySource;
 val syncOptions = GoogleFitIntradaySyncOptions.Builder().apply {
     setDateRange(LocalDate.now().minusDays(7), LocalDate.now())
@@ -186,7 +186,7 @@ googleFitActivitySource.syncIntradayMetrics(syncOptions) { result ->
 Sync sessions data:
 ```kotlin
 import com.fjuul.sdk.activitysources.entities.GoogleFitSessionSyncOptions
-...
+
 val googleFitActivitySource = googleFitConnectionSource.activitySource as GoogleFitActivitySource;
 val syncOptions = GoogleFitSessionSyncOptions.Builder()
     .setDateRange(LocalDate.now().minusDays(7), LocalDate.now())
@@ -225,44 +225,44 @@ ActivitySourcesManager.initialize(client, config)
 3. Android OS or its vendor modifications allow your application to run in the background and do not restrict its execution. You can refer to [dontkillmyapp.com](https://dontkillmyapp.com/) for getting more details.
 
 ### Connect to Health Connect
-Connecting to Health Connect:
+To connect to Health Connect:
 ```kotlin
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
-...
+
 val sourcesManager = ActivitySourcesManager.getInstance()
-// connect to Health connect tracker
+// connect to Health Connect tracker
 sourcesManager.connect(HealthConnectActivitySource.getInstance()) { connectResult ->
     val connectIntent = connectResult.value
-    if (connectIntent  is HealthConnectActivitySource) {
-    // Show that you connect to Health Connect successfully and refresh current connections
+    if (connectIntent is HealthConnectActivitySource) {
+        // Successfully connected to Health Connect, refresh current connections
         sourcesManager.refreshCurrent { result ->
-        // result.value returns you List of ActivitySourceConnection
+            // result.value returns a List of ActivitySourceConnection
         }
     }
 }
 ```
-Next, to finish connecting to Health Connect, you need to request permissions in Activity/Fragment. Need to create ActivityResultLauncher for requesting permissions:
+Next, to finish connecting to Health Connect, you need to request permissions in your Activity/Fragment. Create an `ActivityResultLauncher` for requesting permissions:
 ```kotlin
 val hcPermsLauncher: ActivityResultLauncher<Set<String>> = registerForActivityResult(
-            activitySource.getPermissionManager().requestPermissionsContract()
-        ) { grantedPermissions ->
-            // Compute which permissions were denied
-            val required = activitySource.getPermissionManager().allRequiredPermissions()
-            val denied = required - grantedPermissions
+    activitySource.getPermissionManager().requestPermissionsContract()
+) { grantedPermissions ->
+    // Compute which permissions were denied
+    val required = activitySource.getPermissionManager().allRequiredPermissions()
+    val denied = required - grantedPermissions
 
-            if (denied.isEmpty()) {
-               // All permissions granted
-            } else {
-               // Some permissions were denied
-            }
-        }
+    if (denied.isEmpty()) {
+        // All permissions granted
+    } else {
+        // Some permissions were denied
+    }
+}
 ```
-To launch ActivityResultLauncher need to launch it with all required permissions. To get all requered permissions:
+To launch the `ActivityResultLauncher`, you need to provide all required permissions. To get all required permissions:
 ```kotlin
 val activitySource = HealthConnectActivitySource.getInstance()
 val requiredPermissions = activitySource.getPermissionManager().allRequiredPermissions()
 ```
-After it you can launch ActivityResultLauncher with required permissions:
+After that, you can launch the `ActivityResultLauncher` with the required permissions:
 ```kotlin
 hcPermsLauncher.launch(requiredPermissions)
 ```
@@ -271,8 +271,8 @@ hcPermsLauncher.launch(requiredPermissions)
 Find out if the user has a current connection to Health Connect:
 ```kotlin
 val sourcesManager = ActivitySourcesManager.getInstance()
-val healthConnectConnectionSource = sourcesManager.current?.find { connection -> connection.activitySource is HealthConnectActivitySource }
-if (healthConnectConnectionSource == null) {
+val healthConnectConnection = sourcesManager.current?.find { connection -> connection.activitySource is HealthConnectActivitySource }
+if (healthConnectConnection == null) {
     return;
 }
 ```
@@ -280,13 +280,13 @@ Sync the user profile from Health Connect:
 ``` kotlin
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectSyncOptions
-...
-val healthConnectConnectionSource = healthConnectConnectionSource.activitySource as HealthConnectActivitySource
+
+val healthConnectActivitySource = healthConnectConnection.activitySource as HealthConnectActivitySource
 val metricsToTrack = mutableSetOf<FitnessMetricsType>()
 metricsToTrack.add(FitnessMetricsType.HEIGHT)
 metricsToTrack.add(FitnessMetricsType.WEIGHT)
 val syncOptions = HealthConnectSyncOptions(metrics = metricsToTrack)
-healthConnectConnectionSource.syncProfile(syncOptions) { result ->
+healthConnectActivitySource.syncProfile(syncOptions) { result ->
     if (result.isError) {
         // handle error
     } else {
@@ -299,13 +299,13 @@ Sync intraday data:
 ```kotlin
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectSyncOptions
-...
-val healthConnectConnectionSource = healthConnectConnectionSource.activitySource as HealthConnectActivitySource
+
+val healthConnectActivitySource = healthConnectConnection.activitySource as HealthConnectActivitySource
 val metricsToTrack = mutableSetOf<FitnessMetricsType>()
 metricsToTrack.add(FitnessMetricsType.INTRADAY_CALORIES)
 metricsToTrack.add(FitnessMetricsType.INTRADAY_HEART_RATE)
 val syncOptions = HealthConnectSyncOptions(metrics = metricsToTrack)
-healthConnectConnectionSource.syncIntraday(syncOptions) { result ->
+healthConnectActivitySource.syncIntraday(syncOptions) { result ->
     if (result.isError) {
         // handle error
     } else {
@@ -315,19 +315,20 @@ healthConnectConnectionSource.syncIntraday(syncOptions) { result ->
 ```
 Sync daily data:
 ```kotlin
-import com.fjuul.sdk.activitysources.entities.GoogleFitSessionSyncOptions
-...
-val healthConnectConnectionSource = healthConnectConnectionSource.activitySource as HealthConnectActivitySource
+import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectSyncOptions
+
+val healthConnectActivitySource = healthConnectConnection.activitySource as HealthConnectActivitySource
 val metricsToTrack = mutableSetOf<FitnessMetricsType>()
-        metricsToTrack.add(FitnessMetricsType.STEPS)
-        metricsToTrack.add(FitnessMetricsType.RESTING_HEART_RATE)
-        val syncOptions = HealthConnectSyncOptions(metrics = metricsToTrack)
-        healthConnectConnectionSource.syncDaily(syncOptions) { result ->
-            if (result.isError) {
-                // handle error
-            } else {
-                // handle success
-            }
+metricsToTrack.add(FitnessMetricsType.STEPS)
+metricsToTrack.add(FitnessMetricsType.RESTING_HEART_RATE)
+val syncOptions = HealthConnectSyncOptions(metrics = metricsToTrack)
+healthConnectActivitySource.syncDaily(syncOptions) { result ->
+    if (result.isError) {
+        // handle error
+    } else {
+        // handle success
+    }
 }
 ```
 
@@ -340,24 +341,24 @@ import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig
 
 val config = ActivitySourcesManagerConfig.Builder()
-    .setCollectableFitnessMetrics(setOf(FitnessMetricsType.INTRADAY_STEPS, FitnessMetricsType.INTRADAY_CALORIES))
+    .setCollectableFitnessMetrics(setOf(FitnessMetricsType.INTRADAY_CALORIES, FitnessMetricsType.STEPS, FitnessMetricsType.PROFILE_WEIGHT))
     .enableHealthConnectIntradayBackgroundSync()
     .enableHealthConnectDailyBackgroundSync()
     .enableHealthConnectProfileBackgroundSync()
     .build()
 ActivitySourcesManager.initialize(client, config)
 ```
-2. The user must have a current connection to Health connect.
-3. The user must grant a background permission. You can get this permission from:
+2. The user must have a current connection to Health Connect.
+3. The user must grant background permissions. You can request these permissions using:
 ```kotlin
 val required = activitySource.getPermissionManager().requiredBackgroundPermissions()
 hcPermsLauncher.launch(required)
 ```
-Also you can find out that background sync available or not:
+You can also check if background sync is available:
 ```kotlin
 val isBackgroundSyncAvailable = activitySource.getPermissionManager().isBackgroundSyncAvailable()
 ```
-Health Connect's native background sync is only available with Android 14 and higher.
+Background Access to Health Connect data is only available on Android 14 and higher.
 
 4. Android OS or its vendor modifications allow your application to run in the background and do not restrict its execution. You can refer to [dontkillmyapp.com](https://dontkillmyapp.com/) for getting more details.
 
@@ -365,7 +366,7 @@ Health Connect's native background sync is only available with Android 14 and hi
 ### Getting DailyStats
 ```kotlin
 import com.fjuul.sdk.analytics.http.services.AnalyticsService
-...
+
 val analyticsService = AnalyticsService(signedClient)
 val getDailyStatsApiCall = analyticsService.getDailyStats(LocalDate.parse("2020-10-03"), LocalDate.parse("2020-10-20"))
 val getDailyStatsApiResult = getDailyStatsApiCall.execute()
@@ -387,14 +388,14 @@ dailyStats.forEach { item ->
 ### Getting sum or average aggregates of DailyStats per time interval
 ```kotlin
 import com.fjuul.sdk.analytics.http.services.AnalyticsService
-...
+
 val analyticsService = AnalyticsService(signedClient)
-val getAggregatedDailyStatsApiCall = analyticsService.getAggregatedDailyStats(LocalDate.parse("2020-10-03"), LocalDate.parse.("2020-10-20"), AggregationType.sum)
+val getAggregatedDailyStatsApiCall = analyticsService.getAggregatedDailyStats(LocalDate.parse("2020-10-03"), LocalDate.parse("2020-10-20"), AggregationType.sum)
 val getAggregatedDailyStatsApiResult = getAggregatedDailyStatsApiCall.execute()
 if (getAggregatedDailyStatsApiResult.isError) {
     // handle error
 }
-val statsSums = getDailyStatsApiResult.value!!
+val statsSums = getAggregatedDailyStatsApiResult.value!!
 statsSums.forEach { item ->
     val formattedItem = """
         |low: ${item.low.metMinutes} metMinutes;

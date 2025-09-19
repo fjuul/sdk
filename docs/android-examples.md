@@ -358,6 +358,7 @@ Also you can find out that background sync available or not:
 val isBackgroundSyncAvailable = activitySource.getPermissionManager().isBackgroundSyncAvailable()
 ```
 Health Connect's native background sync is only available with Android 14.
+
 4. Android OS or its vendor modifications allow your application to run in the background and do not restrict its execution. You can refer to [dontkillmyapp.com](https://dontkillmyapp.com/) for getting more details.
 
 ## Analytics Module

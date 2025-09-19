@@ -155,8 +155,8 @@ import com.fjuul.sdk.activitysources.entities.GoogleFitProfileSyncOptions
 ...
 val googleFitActivitySource = googleFitConnectionSource.activitySource as GoogleFitActivitySource;
 val syncOptions = GoogleFitProfileSyncOptions.Builder()
-    .include(FitnessMetricsType.GOOGLEFIT_HEIGHT)
-    .include(FitnessMetricsType.GOOGLEFIT_WEIGHT)
+    .include(FitnessMetricsType.HEIGHT)
+    .include(FitnessMetricsType.WEIGHT)
     .build()
 googleFitActivitySource.syncProfile(syncOptions) { result ->
     if (result.isError) {
@@ -223,6 +223,143 @@ ActivitySourcesManager.initialize(client, config)
 ```
 2. the user must have a current connection to Google Fit
 3. Android OS or its vendor modifications allow your application to run in the background and do not restrict its execution. You can refer to [dontkillmyapp.com](https://dontkillmyapp.com/) for getting more details.
+
+### Connect to Health Connect
+Connecting to Health Connect:
+```kotlin
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
+...
+val sourcesManager = ActivitySourcesManager.getInstance()
+// connect to Health connect tracker
+sourcesManager.connect(GoogleFitActivitySource.getInstance()) { connectResult ->
+    val connectIntent = connectResult.value
+    if (connectIntent  is HealthConnectActivitySource) {
+    // Show that you connect to Health Connect successfully and refresh current connections
+        val manager = ActivitySourcesManager.getInstance()
+        manager.refreshCurrent { result ->
+        // result.value returns you List of ActivitySourceConnection
+        }
+    }
+}
+```
+Next, to finish connecting to Health Connect, you need to request permissions in Activity/Fragment. Need to create ActivityResultLauncher for requesting permissions:
+```kotlin
+val hcPermsLauncher: ActivityResultLauncher<Set<String>> = registerForActivityResult(
+            activitySource.getPermissionManager().requestPermissionsContract()
+        ) { grantedPermissions ->
+            // Compute which permissions were denied
+            val required = activitySource.getPermissionManager().allRequiredPermissions()
+            val denied = required - grantedPermissions
+
+            if (denied.isEmpty()) {
+               // All permissions granted
+            } else {
+               // Some permissions were denied
+            }
+        }
+```
+To launch ActivityResultLauncher need to launch it with all required permissions. To get all requered permissions:
+```kotlin
+val activitySource = HealthConnectActivitySource.getInstance()
+val requiredPermissions = activitySource.getPermissionManager().allRequiredPermissions()
+```
+After it you can launch ActivityResultLauncher with required permissions:
+```kotlin
+hcPermsLauncher.launch(requiredPermissions)
+```
+
+### Collect Health Connect data
+Find out if the user has a current connection to Health Connect:
+```kotlin
+val sourcesManager = ActivitySourcesManager.getInstance()
+val healthConnectConnectionSource = sourcesManager.current?.find { connection -> connection.activitySource is HealthConnectActivitySource }
+if (healthConnectConnectionSource == null) {
+    return;
+}
+```
+Sync the user profile from Health Connect:
+``` kotlin
+import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectSyncOptions
+...
+val healthConnectConnectionSource = healthConnectConnectionSource.activitySource as HealthConnectActivitySource
+val metricsToTrack = mutableSetOf<FitnessMetricsType>()
+metricsToTrack.add(FitnessMetricsType.HEIGHT)
+metricsToTrack.add(FitnessMetricsType.WEIGHT)
+val syncOptions = HealthConnectSyncOptions(metrics = metricsToTrack)
+healthConnectConnectionSource.syncProfile(syncOptions) { result ->
+    if (result.isError) {
+        // handle error
+    } else {
+        // handle success
+    }
+}
+```
+
+Sync intraday data:
+```kotlin
+import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectSyncOptions
+...
+val healthConnectConnectionSource = healthConnectConnectionSource.activitySource as HealthConnectActivitySource
+val metricsToTrack = mutableSetOf<FitnessMetricsType>()
+metricsToTrack.add(FitnessMetricsType.INTRADAY_CALORIES)
+metricsToTrack.add(FitnessMetricsType.INTRADAY_HEART_RATE)
+val syncOptions = HealthConnectSyncOptions(metrics = metricsToTrack)
+healthConnectConnectionSource.syncIntraday(syncOptions) { result ->
+    if (result.isError) {
+        // handle error
+    } else {
+        // handle success
+    }
+}
+```
+Sync daily data:
+```kotlin
+import com.fjuul.sdk.activitysources.entities.GoogleFitSessionSyncOptions
+...
+val healthConnectConnectionSource = healthConnectConnectionSource.activitySource as HealthConnectActivitySource
+val metricsToTrack = mutableSetOf<FitnessMetricsType>()
+        metricsToTrack.add(FitnessMetricsType.STEPS)
+        metricsToTrack.add(FitnessMetricsType.RESTING_HEART_RATE)
+        val syncOptions = HealthConnectSyncOptions(metrics = metricsToTrack)
+        healthConnectConnectionSource.syncDaily(syncOptions) { result ->
+            if (result.isError) {
+                // handle error
+            } else {
+                // handle success
+            }
+}
+```
+
+### Collect Health Connect Data in the Background
+The SDK has the ability to sync Health Connect data in the background when all of the following conditions are met:
+
+1. the corresponding options must be enabled in the `ActivitySourcesManagerConfig` configuration (they are enabled in the default configuration):
+```kotlin
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig
+
+val config = ActivitySourcesManagerConfig.Builder()
+    .setCollectableFitnessMetrics(setOf(FitnessMetricsType.INTRADAY_STEPS, FitnessMetricsType.INTRADAY_CALORIES))
+    .enableHealthConnectIntradayBackgroundSync()
+    .enableHealthConnectDailyBackgroundSync()
+    .enableHealthConnectProfileBackgroundSync()
+    .build()
+ActivitySourcesManager.initialize(client, config)
+```
+2. The user must have a current connection to Health connect.
+3. The user must grant a background permission. You can get this permission from:
+```kotlin
+val required = activitySource.getPermissionManager().requiredBackgroundPermissions()
+hcPermsLauncher.launch(required)
+```
+Also you can find out that background sync available or not:
+```kotlin
+val isBackgroundSyncAvailable = activitySource.getPermissionManager().isBackgroundSyncAvailable()
+```
+Health Connect's native background sync is only available with Android 14.
+4. Android OS or its vendor modifications allow your application to run in the background and do not restrict its execution. You can refer to [dontkillmyapp.com](https://dontkillmyapp.com/) for getting more details.
 
 ## Analytics Module
 ### Getting DailyStats

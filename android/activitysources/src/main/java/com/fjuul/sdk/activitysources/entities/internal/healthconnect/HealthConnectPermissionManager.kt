@@ -5,6 +5,7 @@ import android.os.Build
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.HealthConnectClient.Companion.SDK_AVAILABLE
+import androidx.health.connect.client.HealthConnectFeatures
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.permission.HealthPermission.Companion.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND
@@ -46,7 +47,10 @@ class HealthConnectPermissionManager(
      */
     fun allRequiredPermissions(): Set<String> {
         val allPermissions = mutableSetOf<String>()
-        allPermissions.addAll(requiredBackgroundPermissions())
+        if (isBackgroundSyncAvailable()) {
+            allPermissions.addAll(requiredBackgroundPermissions())
+        }
+
         allPermissions.addAll(requiredMetricPermissions())
         return allPermissions
     }
@@ -65,7 +69,7 @@ class HealthConnectPermissionManager(
 
     suspend fun isBackgroundPermissionGranted(): Boolean {
         val grantedPermissions = healthConnectClient.permissionController.getGrantedPermissions()
-        return PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND in grantedPermissions
+        return (PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND in grantedPermissions)
     }
 
     /**
@@ -120,7 +124,7 @@ class HealthConnectPermissionManager(
      */
     suspend fun ensureBackgroundPermissionGranted() {
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
-        if (!granted.contains(PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND)) {
+        if (!isBackgroundSyncAvailable() || !granted.contains(PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND)) {
             throw HealthConnectException.PermissionsNotGrantedException()
         }
     }
@@ -132,6 +136,13 @@ class HealthConnectPermissionManager(
         runAsyncAndCallback({
             healthConnectClient.permissionController.revokeAllPermissions()
         }, callback)
+
+    fun isBackgroundSyncAvailable() : Boolean =
+        healthConnectClient
+            .features
+            .getFeatureStatus(
+                HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_IN_BACKGROUND
+            ) == HealthConnectFeatures.FEATURE_STATUS_AVAILABLE
 
     /**
      * Builds the set of Health Connect permission strings required for the specified metrics.

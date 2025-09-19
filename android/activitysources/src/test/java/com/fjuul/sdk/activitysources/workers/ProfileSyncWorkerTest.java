@@ -168,8 +168,9 @@ public class ProfileSyncWorkerTest {
             when(mockedGfSourceConnection.getActivitySource()).thenReturn(mockedGoogleFit);
             when(mockedSourcesManager.getCurrent()).thenReturn(Arrays.asList(mockedGfSourceConnection));
 
-            final Data inputData =
-                new Data.Builder().putStringArray("PROFILE_METRICS", new String[] {"HEIGHT", "WEIGHT"}).build();
+            final Data inputData = new Data.Builder()
+                .putStringArray("PROFILE_METRICS", new String[] {"GOOGLEFIT_HEIGHT", "GOOGLEFIT_WEIGHT"})
+                .build();
             spySubject = spy((ProfileSyncWorker) workerBuilder.setInputData(inputData).build());
             doReturn(mockedSourcesManager).when(spySubject).getOrInitializeActivitySourcesManager();
 
@@ -187,7 +188,8 @@ public class ProfileSyncWorkerTest {
             verify(mockedGoogleFit).syncProfile(syncOptionsCaptor.capture(), any());
             final GoogleFitProfileSyncOptions syncOptions = syncOptionsCaptor.getValue();
             assertEquals("should transform raw input data to fitness metrics",
-                Stream.of(FitnessMetricsType.HEIGHT, FitnessMetricsType.WEIGHT).collect(Collectors.toSet()),
+                Stream.of(FitnessMetricsType.GOOGLEFIT_HEIGHT, FitnessMetricsType.GOOGLEFIT_WEIGHT)
+                    .collect(Collectors.toSet()),
                 syncOptions.getMetrics());
         }
 
@@ -205,8 +207,9 @@ public class ProfileSyncWorkerTest {
             when(mockedGfSourceConnection.getActivitySource()).thenReturn(mockedGoogleFit);
             when(mockedSourcesManager.getCurrent()).thenReturn(Arrays.asList(mockedGfSourceConnection));
 
-            final Data inputData =
-                new Data.Builder().putStringArray("PROFILE_METRICS", new String[] {"HEIGHT", "WEIGHT"}).build();
+            final Data inputData = new Data.Builder()
+                .putStringArray("PROFILE_METRICS", new String[] {"GOOGLEFIT_HEIGHT", "GOOGLEFIT_WEIGHT"})
+                .build();
             spySubject = spy((ProfileSyncWorker) workerBuilder.setInputData(inputData).build());
             doReturn(mockedSourcesManager).when(spySubject).getOrInitializeActivitySourcesManager();
 
@@ -224,7 +227,8 @@ public class ProfileSyncWorkerTest {
             verify(mockedGoogleFit).syncProfile(syncOptionsCaptor.capture(), any());
             final GoogleFitProfileSyncOptions syncOptions = syncOptionsCaptor.getValue();
             assertEquals("should transform raw input data to fitness metrics",
-                Stream.of(FitnessMetricsType.HEIGHT, FitnessMetricsType.WEIGHT).collect(Collectors.toSet()),
+                Stream.of(FitnessMetricsType.GOOGLEFIT_HEIGHT, FitnessMetricsType.GOOGLEFIT_WEIGHT)
+                    .collect(Collectors.toSet()),
                 syncOptions.getMetrics());
         }
     }

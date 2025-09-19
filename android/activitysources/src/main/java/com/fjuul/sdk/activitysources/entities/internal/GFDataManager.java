@@ -238,12 +238,12 @@ public class GFDataManager {
         Logger.get()
             .d("start syncing GF profile metrics (%s)",
                 options.getMetrics().stream().map(metric -> metric.toString()).collect(Collectors.joining(", ")));
-        final Task<GFWeightDataPoint> getWeightTask =
-            options.getMetrics().contains(FitnessMetricsType.WEIGHT) ? getNotSyncedWeight(localBackgroundExecutor)
-                : Tasks.forResult(null);
-        final Task<GFHeightDataPoint> getHeightTask =
-            options.getMetrics().contains(FitnessMetricsType.HEIGHT) ? getNotSyncedHeight(localBackgroundExecutor)
-                : Tasks.forResult(null);
+        final Task<GFWeightDataPoint> getWeightTask = options.getMetrics().contains(FitnessMetricsType.GOOGLEFIT_WEIGHT)
+            ? getNotSyncedWeight(localBackgroundExecutor)
+            : Tasks.forResult(null);
+        final Task<GFHeightDataPoint> getHeightTask = options.getMetrics().contains(FitnessMetricsType.GOOGLEFIT_HEIGHT)
+            ? getNotSyncedHeight(localBackgroundExecutor)
+            : Tasks.forResult(null);
         final List<Task<?>> allTasks = Arrays.asList(getHeightTask, getWeightTask);
         final Task<GFSynchronizableProfileParams> prepareProfileParamsTask =
             Tasks.whenAll(allTasks).continueWithTask(localBackgroundExecutor, commonResult -> {

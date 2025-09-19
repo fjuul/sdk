@@ -458,9 +458,11 @@ public class ActivitySourcesManagerConfig {
         final Set<FitnessMetricsType> fitnessMetrics =
             Stream
                 .of(FitnessMetricsType.INTRADAY_CALORIES,
-                    FitnessMetricsType.HEIGHT,
-                    FitnessMetricsType.WEIGHT,
+                    FitnessMetricsType.GOOGLEFIT_HEIGHT,
+                    FitnessMetricsType.GOOGLEFIT_WEIGHT,
                     FitnessMetricsType.INTRADAY_STEPS,
+                    FitnessMetricsType.WEIGHT,
+                    FitnessMetricsType.HEIGHT,
                     FitnessMetricsType.STEPS,
                     FitnessMetricsType.INTRADAY_HEART_RATE)
                 .collect(Collectors.toSet());

@@ -47,7 +47,7 @@ class HealthConnectPermissionManager(
      */
     fun allRequiredPermissions(): Set<String> {
         val allPermissions = mutableSetOf<String>()
-        if (isBackgroundSyncEnabled()) {
+        if (isBackgroundSyncAvailable()) {
             allPermissions.addAll(requiredBackgroundPermissions())
         }
 
@@ -69,8 +69,7 @@ class HealthConnectPermissionManager(
 
     suspend fun isBackgroundPermissionGranted(): Boolean {
         val grantedPermissions = healthConnectClient.permissionController.getGrantedPermissions()
-        return (PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND in grantedPermissions) &&
-            isBackgroundSyncEnabled()
+        return (PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND in grantedPermissions)
     }
 
     /**
@@ -125,7 +124,7 @@ class HealthConnectPermissionManager(
      */
     suspend fun ensureBackgroundPermissionGranted() {
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
-        if (!isBackgroundSyncEnabled() || !granted.contains(PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND)) {
+        if (!isBackgroundSyncAvailable() || !granted.contains(PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND)) {
             throw HealthConnectException.PermissionsNotGrantedException()
         }
     }
@@ -138,7 +137,7 @@ class HealthConnectPermissionManager(
             healthConnectClient.permissionController.revokeAllPermissions()
         }, callback)
 
-    private fun isBackgroundSyncEnabled() : Boolean =
+    private fun isBackgroundSyncAvailable() : Boolean =
         healthConnectClient
             .features
             .getFeatureStatus(

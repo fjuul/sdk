@@ -137,7 +137,7 @@ class HealthConnectPermissionManager(
             healthConnectClient.permissionController.revokeAllPermissions()
         }, callback)
 
-    private fun isBackgroundSyncAvailable() : Boolean =
+    fun isBackgroundSyncAvailable() : Boolean =
         healthConnectClient
             .features
             .getFeatureStatus(

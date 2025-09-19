@@ -155,8 +155,8 @@ import com.fjuul.sdk.activitysources.entities.GoogleFitProfileSyncOptions
 ...
 val googleFitActivitySource = googleFitConnectionSource.activitySource as GoogleFitActivitySource;
 val syncOptions = GoogleFitProfileSyncOptions.Builder()
-    .include(FitnessMetricsType.HEIGHT)
-    .include(FitnessMetricsType.WEIGHT)
+    .include(FitnessMetricsType.GOOGLEFIT_HEIGHT)
+    .include(FitnessMetricsType.GOOGLEFIT_WEIGHT)
     .build()
 googleFitActivitySource.syncProfile(syncOptions) { result ->
     if (result.isError) {

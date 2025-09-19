@@ -1047,7 +1047,7 @@ public class GFDataManagerTest {
         public void syncProfile_noWeightFromGoogleFit_returnsSuccessfulTaskWithFalse()
             throws ExecutionException, InterruptedException {
             final GoogleFitProfileSyncOptions options =
-                new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.WEIGHT).build();
+                new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.GOOGLEFIT_WEIGHT).build();
             when(mockedGFClientWrapper.getLastKnownWeight()).thenReturn(Tasks.forResult(null));
 
             Task<Boolean> result = subject.syncProfile(options);
@@ -1066,7 +1066,7 @@ public class GFDataManagerTest {
 
             assertEquals("logger should have entries", 2, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
-            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
+            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (GOOGLEFIT_WEIGHT)",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
@@ -1079,7 +1079,7 @@ public class GFDataManagerTest {
         public void syncProfile_alreadySyncedWeightFromGoogleFit_returnsSuccessfulTaskWithFalse()
             throws ExecutionException, InterruptedException {
             final GoogleFitProfileSyncOptions options =
-                new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.WEIGHT).build();
+                new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.GOOGLEFIT_WEIGHT).build();
             when(mockedGFClientWrapper.getLastKnownWeight()).thenReturn(Tasks.forResult(testWeightDataPoint));
             when(mockedGFSyncMetadataStore.isNeededToSyncWeight(testWeightDataPoint)).thenReturn(false);
 
@@ -1100,7 +1100,7 @@ public class GFDataManagerTest {
 
             assertEquals("logger should have entries", 2, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
-            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
+            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (GOOGLEFIT_WEIGHT)",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
@@ -1112,7 +1112,7 @@ public class GFDataManagerTest {
         @Test
         public void syncProfile_notSyncedWeightWithFailedApiRequest_returnsFailedTask() throws InterruptedException {
             final GoogleFitProfileSyncOptions options =
-                new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.WEIGHT).build();
+                new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.GOOGLEFIT_WEIGHT).build();
             when(mockedGFClientWrapper.getLastKnownWeight()).thenReturn(Tasks.forResult(testWeightDataPoint));
             when(mockedGFSyncMetadataStore.isNeededToSyncWeight(testWeightDataPoint)).thenReturn(true);
 
@@ -1148,7 +1148,7 @@ public class GFDataManagerTest {
 
             assertEquals("logger should have entries", 3, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
-            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
+            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (GOOGLEFIT_WEIGHT)",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
@@ -1166,7 +1166,7 @@ public class GFDataManagerTest {
         public void syncProfile_notSyncedWeightWithSuccessfulApiRequest_returnsFailedTask()
             throws InterruptedException {
             final GoogleFitProfileSyncOptions options =
-                new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.WEIGHT).build();
+                new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.GOOGLEFIT_WEIGHT).build();
             when(mockedGFClientWrapper.getLastKnownWeight()).thenReturn(Tasks.forResult(testWeightDataPoint));
             when(mockedGFSyncMetadataStore.isNeededToSyncWeight(testWeightDataPoint)).thenReturn(true);
 
@@ -1199,7 +1199,7 @@ public class GFDataManagerTest {
 
             assertEquals("logger should have entries", 3, LOGGER.size());
             TimberLogEntry logEntry = LOGGER.removeFirst();
-            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (WEIGHT)",
+            assertEquals("[activitysources] GFDataManager: start syncing GF profile metrics (GOOGLEFIT_WEIGHT)",
                 logEntry.getMessage());
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
@@ -1216,8 +1216,8 @@ public class GFDataManagerTest {
         public void syncProfile_notSyncedProfileFieldsWithSuccessfulApiRequest_returnsFailedTask()
             throws InterruptedException {
             final GoogleFitProfileSyncOptions options =
-                new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.WEIGHT)
-                    .include(FitnessMetricsType.HEIGHT)
+                new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.GOOGLEFIT_WEIGHT)
+                    .include(FitnessMetricsType.GOOGLEFIT_HEIGHT)
                     .build();
             when(mockedGFClientWrapper.getLastKnownWeight()).thenReturn(Tasks.forResult(testWeightDataPoint));
             when(mockedGFClientWrapper.getLastKnownHeight()).thenReturn(Tasks.forResult(testHeightDataPoint));
@@ -1257,8 +1257,8 @@ public class GFDataManagerTest {
             TimberLogEntry logEntry = LOGGER.removeFirst();
             assertThat(logEntry.getMessage(),
                 containsString("[activitysources] GFDataManager: start syncing GF profile metrics"));
-            assertThat(logEntry.getMessage(), containsString("HEIGHT"));
-            assertThat(logEntry.getMessage(), containsString("WEIGHT"));
+            assertThat(logEntry.getMessage(), containsString("GOOGLEFIT_HEIGHT"));
+            assertThat(logEntry.getMessage(), containsString("GOOGLEFIT_WEIGHT"));
             assertEquals(Log.DEBUG, logEntry.getPriority());
             logEntry = LOGGER.removeFirst();
             assertEquals(

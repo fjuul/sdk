@@ -41,7 +41,7 @@ public class GoogleFitProfileSyncOptions {
          */
         @NonNull
         public Builder include(@NonNull FitnessMetricsType type) {
-            if (FitnessMetricsType.HEIGHT.equals(type) || FitnessMetricsType.WEIGHT.equals(type)) {
+            if (FitnessMetricsType.GOOGLEFIT_HEIGHT.equals(type) || FitnessMetricsType.GOOGLEFIT_WEIGHT.equals(type)) {
                 metrics.add(type);
             } else {
                 throw new IllegalArgumentException("Not supported fitness metric type for the profile sync");

@@ -109,8 +109,8 @@ class GFSyncViewModel : ViewModel() {
         lateinit var options: GoogleFitProfileSyncOptions
         try {
             options = GoogleFitProfileSyncOptions.Builder().apply {
-                if (height) { include(FitnessMetricsType.HEIGHT) }
-                if (weight) { include(FitnessMetricsType.WEIGHT) }
+                if (height) { include(FitnessMetricsType.GOOGLEFIT_HEIGHT) }
+                if (weight) { include(FitnessMetricsType.GOOGLEFIT_WEIGHT) }
             }.build()
         } catch (exc: Exception) {
             _errorMessage.postValue(exc.message)

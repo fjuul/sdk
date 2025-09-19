@@ -46,6 +46,8 @@ class LoginFragment : Fragment() {
             FitnessMetricsType.STEPS, // Health Connect API only
             FitnessMetricsType.RESTING_HEART_RATE, // Health Connect API only
             FitnessMetricsType.WORKOUTS,
+            FitnessMetricsType.GOOGLEFIT_HEIGHT,
+            FitnessMetricsType.GOOGLEFIT_WEIGHT,
             FitnessMetricsType.HEIGHT,
             FitnessMetricsType.WEIGHT
         )

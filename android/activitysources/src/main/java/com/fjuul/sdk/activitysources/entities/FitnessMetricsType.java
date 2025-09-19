@@ -26,6 +26,11 @@ public enum FitnessMetricsType {
     @Deprecated(since = "2.0")
     WORKOUTS,
 
+    @Deprecated(since = "2.0")
+    GOOGLEFIT_HEIGHT,
+    @Deprecated(since = "2.0")
+    GOOGLEFIT_WEIGHT,
+
     HEIGHT,
     WEIGHT;
 
@@ -45,7 +50,7 @@ public enum FitnessMetricsType {
 
     public static boolean isProfileMetricType(@NonNull FitnessMetricsType metricsType) {
         return switch (metricsType) {
-            case HEIGHT, WEIGHT -> true;
+            case GOOGLEFIT_HEIGHT, GOOGLEFIT_WEIGHT, HEIGHT, WEIGHT -> true;
             default -> false;
         };
     }

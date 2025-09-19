@@ -231,12 +231,11 @@ import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
 ...
 val sourcesManager = ActivitySourcesManager.getInstance()
 // connect to Health connect tracker
-sourcesManager.connect(GoogleFitActivitySource.getInstance()) { connectResult ->
+sourcesManager.connect(HealthConnectActivitySource.getInstance()) { connectResult ->
     val connectIntent = connectResult.value
     if (connectIntent  is HealthConnectActivitySource) {
     // Show that you connect to Health Connect successfully and refresh current connections
-        val manager = ActivitySourcesManager.getInstance()
-        manager.refreshCurrent { result ->
+        sourcesManager.refreshCurrent { result ->
         // result.value returns you List of ActivitySourceConnection
         }
     }

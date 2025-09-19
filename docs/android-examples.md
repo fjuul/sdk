@@ -224,6 +224,61 @@ ActivitySourcesManager.initialize(client, config)
 2. the user must have a current connection to Google Fit
 3. Android OS or its vendor modifications allow your application to run in the background and do not restrict its execution. You can refer to [dontkillmyapp.com](https://dontkillmyapp.com/) for getting more details.
 
+### Preface to Health Connect
+The `HealthConnectActivitySource` requires configuration to be added to the `AndroidManifest.xml`.
+
+#### Permission Requirements
+Request permissions in your `AndroidManifest.xml` according to the metrics that should be synced. The table below shows the mapping between internal metric enums and required Android permissions:
+
+| Fjuul SDK Metric     | Required Android Permissions |
+|----------------------|------------------------------|
+| `FitnessMetricsType.INTRADAY_CALORIES` | `android.permission.health.READ_TOTAL_CALORIES_BURNED`<br/>`android.permission.health.READ_ACTIVE_CALORIES_BURNED` |
+| `FitnessMetricsType.INTRADAY_HEART_RATE` | `android.permission.health.READ_HEART_RATE` |
+| `FitnessMetricsType.RESTING_HEART_RATE` | `android.permission.health.READ_RESTING_HEART_RATE` |
+| `FitnessMetricsType.STEPS` | `android.permission.health.READ_STEPS` |
+| `FitnessMetricsType.HEIGHT` | `android.permission.health.READ_HEIGHT` |
+| `FitnessMetricsType.WEIGHT` | `android.permission.health.READ_WEIGHT` |
+
+For background data synchronization, also include:
+```xml
+<uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
+```
+
+**Example AndroidManifest.xml configuration:**
+```xml
+<uses-permission android:name="android.permission.health.READ_STEPS" />
+<uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED" />
+<uses-permission android:name="android.permission.health.READ_ACTIVE_CALORIES_BURNED" />
+<uses-permission android:name="android.permission.health.READ_WEIGHT" />
+<uses-permission android:name="android.permission.health.READ_HEIGHT" />
+<uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
+```
+
+#### Intent Filter Configuration
+Health Connect requires specific intent filters to handle permission flows across different Android versions. Add these intent filters to your main Activity in `AndroidManifest.xml` to ensure proper permission handling:
+
+```xml
+<!-- Permission handling for Android 13 and before -->
+<intent-filter>
+    <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+</intent-filter>
+
+<!-- Permission handling for Android 14 and later -->
+<intent-filter>
+    <action android:name="android.intent.action.VIEW_PERMISSION_USAGE"/>
+    <category android:name="android.intent.category.HEALTH_PERMISSIONS"/>
+</intent-filter>
+```
+
+#### Package Visibility Configuration
+For Android 11 (API level 30) and higher, you need to declare package visibility for Health Connect to enable your app to detect and interact with the Health Connect app. Add this queries element to your `AndroidManifest.xml`:
+
+```xml
+<queries>
+    <package android:name="com.google.android.apps.healthdata" />
+</queries>
+```
+
 ### Connect to Health Connect
 To connect to Health Connect:
 ```kotlin

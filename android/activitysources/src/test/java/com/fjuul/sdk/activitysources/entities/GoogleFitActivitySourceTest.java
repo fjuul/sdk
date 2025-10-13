@@ -715,7 +715,7 @@ public class GoogleFitActivitySourceTest {
                         .thenReturn(mockedGoogleSignInAccount);
 
                     final GoogleFitProfileSyncOptions options =
-                        new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.HEIGHT).build();
+                        new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.GOOGLEFIT_HEIGHT).build();
 
                     subject.syncProfile(options, mockedCallback);
 
@@ -747,8 +747,8 @@ public class GoogleFitActivitySourceTest {
                         .thenReturn(mockedGoogleSignInAccount);
 
                     final GoogleFitProfileSyncOptions options =
-                        new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.HEIGHT)
-                            .include(FitnessMetricsType.WEIGHT)
+                        new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.GOOGLEFIT_HEIGHT)
+                            .include(FitnessMetricsType.GOOGLEFIT_WEIGHT)
                             .build();
                     final GFDataManager mockedGfDataManager = mock(GFDataManager.class);
                     final MaxTriesCountExceededException gfException =
@@ -791,8 +791,8 @@ public class GoogleFitActivitySourceTest {
                         .thenReturn(mockedGoogleSignInAccount);
 
                     final GoogleFitProfileSyncOptions options =
-                        new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.HEIGHT)
-                            .include(FitnessMetricsType.WEIGHT)
+                        new GoogleFitProfileSyncOptions.Builder().include(FitnessMetricsType.GOOGLEFIT_HEIGHT)
+                            .include(FitnessMetricsType.GOOGLEFIT_WEIGHT)
                             .build();
                     final GFDataManager mockedGfDataManager = mock(GFDataManager.class);
                     when(mockedGfDataManager.syncProfile(options)).thenReturn(Tasks.forResult(true));

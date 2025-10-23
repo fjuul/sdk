@@ -93,7 +93,7 @@ class HealthConnectDataManager(
                         val heartRateChangesToken = client.getChangesToken(
                             ChangesTokenRequest(recordTypes = setOf(HeartRateRecord::class))
                         )
-                        storage.set(HEART_RATE_CHANGES_TOKEN, heartRateChangesToken)
+                        storedHeartRateChangesToken = heartRateChangesToken
                     }
                 }
             }
@@ -133,7 +133,7 @@ class HealthConnectDataManager(
                         val activeCaloriesChangesToken = client.getChangesToken(
                             ChangesTokenRequest(recordTypes = setOf(ActiveCaloriesBurnedRecord::class))
                         )
-                        storage.set(ACTIVE_CALORIES_CHANGES_TOKEN, activeCaloriesChangesToken)
+                        storedActiveCaloriesChangesToken = activeCaloriesChangesToken
                     }
 
                 }
@@ -167,7 +167,7 @@ class HealthConnectDataManager(
                         val totalCaloriesChangesToken = client.getChangesToken(
                             ChangesTokenRequest(recordTypes = setOf(TotalCaloriesBurnedRecord::class))
                         )
-                        storage.set(TOTAL_CALORIES_CHANGES_TOKEN, totalCaloriesChangesToken)
+                        storedTotalCaloriesChangesToken = totalCaloriesChangesToken
                     }
                 }
             }
@@ -471,9 +471,8 @@ class HealthConnectDataManager(
                     // and upload this buckets to server
                     uploadIntradayBuckets(changedBuckets.toMutableList())
                 }
-
-            onSuccess()
         }
+        onSuccess()
     }
 
     /**
@@ -698,11 +697,11 @@ class HealthConnectDataManager(
                         it.error?.let { error ->
                             throw error
                         }
-                    } else {
-                        onSuccess()
                     }
                 }
         }
+
+        onSuccess()
     }
 
     /**
@@ -816,12 +815,12 @@ class HealthConnectDataManager(
                         it.error?.let { error ->
                             throw error
                         }
-                    } else {
-                        storage.set(HEIGHT_CHANGES_TOKEN, heightChangesToken)
-                        storage.set(WEIGHT_CHANGES_TOKEN, weightChangesToken)
                     }
                 }
         }
+
+        storage.set(HEIGHT_CHANGES_TOKEN, heightChangesToken)
+        storage.set(WEIGHT_CHANGES_TOKEN, weightChangesToken)
     }
 
     private suspend fun makeFullHeightSync(

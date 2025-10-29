@@ -255,7 +255,7 @@ For background data synchronization, also include:
 ```
 
 #### Link to App Privacy Policy Activity
-Health Connect requires specific intent filters to handle permission rationale flows across different Android versions. Those must be linked to the activity the user is taken to when clicking the privacy policy link in the Health Connect permission dialogue. Add these intent filters in your `AndroidManifest.xml` to ensure proper permission handling:
+Health Connect requires specific intent filters to handle permission rationale flows across different Android versions. Those must be linked to the activity the user is taken to when clicking the privacy policy link in the Health Connect permission dialog. Add these intent filters in your `AndroidManifest.xml` to ensure proper permission handling:
 
 ```xml
 <!-- For supported versions through Android 13, create an activity to show the rationale

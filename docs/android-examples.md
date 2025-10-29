@@ -254,20 +254,32 @@ For background data synchronization, also include:
 <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
 ```
 
-#### Intent Filter Configuration
-Health Connect requires specific intent filters to handle permission flows across different Android versions. Add these intent filters to your main Activity in `AndroidManifest.xml` to ensure proper permission handling:
+#### Link to App Privacy Policy Activity
+Health Connect requires specific intent filters to handle permission rationale flows across different Android versions. Those must be linked to the activity the user is taken to when clicking the privacy policy link in the Health Connect permission dialog. Add these intent filters in your `AndroidManifest.xml` to ensure proper permission handling:
 
 ```xml
-<!-- Permission handling for Android 13 and before -->
-<intent-filter>
+<!-- For supported versions through Android 13, create an activity to show the rationale
+     of Health Connect permissions once users click the privacy policy link. -->
+<activity
+    android:name=".PermissionsRationaleActivity"
+    android:exported="true">
+  <intent-filter>
     <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
-</intent-filter>
+  </intent-filter>
+</activity>
 
-<!-- Permission handling for Android 14 and later -->
-<intent-filter>
-    <action android:name="android.intent.action.VIEW_PERMISSION_USAGE"/>
-    <category android:name="android.intent.category.HEALTH_PERMISSIONS"/>
-</intent-filter>
+<!-- For versions starting Android 14, create an activity alias to show the rationale
+     of Health Connect permissions once users click the privacy policy link. -->
+<activity-alias
+    android:name="ViewPermissionUsageActivity"
+    android:exported="true"
+    android:targetActivity=".PermissionsRationaleActivity"
+    android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+  <intent-filter>
+    <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+    <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+  </intent-filter>
+</activity-alias>
 ```
 
 #### Package Visibility Configuration

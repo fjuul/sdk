@@ -1,6 +1,6 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import static com.fjuul.sdk.activitysources.utils.HealthConnectUtilsKt.isHealthConnectAvailable;
+import static com.fjuul.sdk.activitysources.utils.HealthConnectUtilsKt.getHealthConnectAvailability;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +13,7 @@ import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceWorkScheduler;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourcesStateStore;
 import com.fjuul.sdk.activitysources.entities.internal.BackgroundWorkManager;
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectAvailability;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.Callback;
@@ -251,11 +252,19 @@ public final class ActivitySourcesManager {
             }
             ConnectionResult connectionResult = apiCallResult.getValue();
             if (activitySource instanceof HealthConnectActivitySource) {
-                if (isHealthConnectAvailable(applicationContext)) {
+                final HealthConnectAvailability healthConnectAvailability =
+                    getHealthConnectAvailability(applicationContext);
+                if (healthConnectAvailability == HealthConnectAvailability.SDK_AVAILABLE) {
                     final Intent intent = new Intent();
                     callback.onResult(Result.value(intent));
-                } else  {
-                    callback.onResult(Result.error(new FjuulException("Health Connect not supported")));
+                } else {
+                    if (healthConnectAvailability == HealthConnectAvailability.SDK_UNAVAILABLE) {
+                        callback.onResult(Result.error(new FjuulException("Health Connect not supported")));
+                    } else
+                        if (healthConnectAvailability == HealthConnectAvailability.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED) {
+                            callback.onResult(Result.error(
+                                new FjuulException("Health Connect is either not installed or needs to be updated")));
+                        }
                 }
 
             } else if (connectionResult instanceof ExternalAuthenticationFlowRequired) {
@@ -421,7 +430,8 @@ public final class ActivitySourcesManager {
                 .findFirst())
             .orElse(null);
 
-        if (hcTrackerConnection != null && isHealthConnectAvailable(applicationContext)) {
+        final HealthConnectAvailability healthConnectAvailability = getHealthConnectAvailability(applicationContext);
+        if (hcTrackerConnection != null && healthConnectAvailability == HealthConnectAvailability.SDK_AVAILABLE) {
             backgroundWorkManager.configureHCProfileSyncWork();
             backgroundWorkManager.configureHCIntradaySyncWorks();
             backgroundWorkManager.configureHCDailySyncWorks();

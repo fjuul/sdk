@@ -25,6 +25,8 @@ import com.fjuul.sdk.activitysources.entities.OuraActivitySource
 import com.fjuul.sdk.activitysources.entities.PolarActivitySource
 import com.fjuul.sdk.activitysources.entities.SuuntoActivitySource
 import com.fjuul.sdk.activitysources.entities.WithingsActivitySource
+import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectAvailability
+import com.fjuul.sdk.activitysources.utils.getHealthConnectAvailability
 import com.fjuul.sdk.android.exampleapp.R
 
 class ActivitySourcesFragment : Fragment() {
@@ -188,7 +190,25 @@ class ActivitySourcesFragment : Fragment() {
                     .setTitle("Health Connect")
                     .setItems(menus) { _, which ->
                         if (which == 0) {
-                            hcPermsLauncher.launch(activitySource.getPermissionManager().allRequiredPermissions())
+                            val healthConnectAvailability = getHealthConnectAvailability(requireContext())
+                            if (healthConnectAvailability == HealthConnectAvailability.SDK_AVAILABLE) {
+                                hcPermsLauncher.launch(activitySource.getPermissionManager().allRequiredPermissions())
+                            } else {
+                                if (healthConnectAvailability == HealthConnectAvailability.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED) {
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "Health Connect is either not installed or needs to be updated",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                } else if (healthConnectAvailability == HealthConnectAvailability.SDK_UNAVAILABLE) {
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "Health Connect not supported",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+
                         } else {
                             model.disconnect(activitySource)
                         }

@@ -14,23 +14,9 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
-import org.robolectric.annotation.LooperMode;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
 
 import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthenticationFlowRequired;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
@@ -46,8 +32,23 @@ import com.fjuul.sdk.core.http.utils.ApiCallResult;
 import com.fjuul.sdk.test.LoggableTestSuite;
 import com.google.android.gms.tasks.Tasks;
 
-import android.content.Intent;
-import android.os.Build;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
+
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RunWith(Enclosed.class)
 public class ActivitySourcesManagerTest {
@@ -65,9 +66,11 @@ public class ActivitySourcesManagerTest {
             ActivitySourcesService mockedActivitySourcesService;
             ActivitySourcesStateStore mockedStateStore;
             CopyOnWriteArrayList<TrackerConnection> trackerConnections;
+            Context mockContext;
 
             @Before
             public void beforeTest() {
+                mockContext = mock(Context.class);
                 mockedConfig = mock(ActivitySourcesManagerConfig.class);
                 mockedBackgroundWorkManager = mock(BackgroundWorkManager.class);
                 mockedActivitySourcesService = mock(ActivitySourcesService.class);
@@ -79,7 +82,8 @@ public class ActivitySourcesManagerTest {
                     mockedActivitySourcesService,
                     mockedStateStore,
                     activitySourceResolver,
-                    trackerConnections);
+                    trackerConnections,
+                    mockContext);
             }
 
             @Test
@@ -173,9 +177,11 @@ public class ActivitySourcesManagerTest {
             ActivitySourceResolver activitySourceResolver;
             GoogleFitActivitySource mockedGoogleFit;
             HealthConnectActivitySource mockedHealthConnect;
+            Context mockContext;
 
             @Before
             public void beforeTest() {
+                mockContext = mock(Context.class);
                 mockedConfig = mock(ActivitySourcesManagerConfig.class);
                 mockedBackgroundWorkManager = mock(BackgroundWorkManager.class);
                 mockedSourcesService = mock(ActivitySourcesService.class);
@@ -204,7 +210,8 @@ public class ActivitySourcesManagerTest {
                     mockedSourcesService,
                     mockedStateStore,
                     activitySourceResolver,
-                    trackerConnections);
+                    trackerConnections,
+                    mockContext);
                 final Callback<Void> mockedCallback = mock(Callback.class);
                 when(googleFit.disable()).thenReturn(Tasks.forResult(null));
                 final ApiCall<Void> mockedDisconnectApiCall = mock(ApiCall.class);
@@ -255,7 +262,8 @@ public class ActivitySourcesManagerTest {
                     mockedSourcesService,
                     mockedStateStore,
                     activitySourceResolver,
-                    trackerConnections);
+                    trackerConnections,
+                    mockContext);
                 final Callback<Void> mockedCallback = mock(Callback.class);
                 final ApiCall<Void> mockedDisconnectApiCall = mock(ApiCall.class);
                 doAnswer(invocation -> {
@@ -290,9 +298,11 @@ public class ActivitySourcesManagerTest {
             ActivitySourcesService mockedSourcesService;
             ActivitySourcesStateStore mockedStateStore;
             ActivitySourceResolver activitySourceResolver;
+            Context mockContext;
 
             @Before
             public void beforeTest() {
+                mockContext = mock(Context.class);
                 mockedConfig = mock(ActivitySourcesManagerConfig.class);
                 mockedBackgroundWorkManager = mock(BackgroundWorkManager.class);
                 mockedSourcesService = mock(ActivitySourcesService.class);
@@ -307,7 +317,8 @@ public class ActivitySourcesManagerTest {
                     mockedSourcesService,
                     mockedStateStore,
                     activitySourceResolver,
-                    new CopyOnWriteArrayList<>());
+                    new CopyOnWriteArrayList<>(),
+                    mockContext);
                 assertEquals(Collections.emptyList(), subject.getCurrent());
             }
 
@@ -329,7 +340,8 @@ public class ActivitySourcesManagerTest {
                     mockedSourcesService,
                     mockedStateStore,
                     activitySourceResolver,
-                    trackerConnections);
+                    trackerConnections,
+                    mockContext);
                 final List<ActivitySourceConnection> activitySourceConnections = subject.getCurrent();
                 assertEquals("should have 2 activity source connections", 2, activitySourceConnections.size());
                 final ActivitySourceConnection fitbitActivitySourceConnection = activitySourceConnections.get(0);
@@ -356,9 +368,11 @@ public class ActivitySourcesManagerTest {
             ActivitySourcesService mockedSourcesService;
             ActivitySourcesStateStore mockedStateStore;
             ActivitySourceResolver mockedActivitySourceResolver;
+            Context mockContext;
 
             @Before
             public void beforeTest() {
+                mockContext = mock(Context.class);
                 mockedConfig = mock(ActivitySourcesManagerConfig.class);
                 mockedBackgroundWorkManager = mock(BackgroundWorkManager.class);
                 mockedSourcesService = mock(ActivitySourcesService.class);
@@ -373,7 +387,8 @@ public class ActivitySourcesManagerTest {
                     mockedSourcesService,
                     mockedStateStore,
                     mockedActivitySourceResolver,
-                    new CopyOnWriteArrayList<>());
+                    new CopyOnWriteArrayList<>(),
+                    mockContext);
 
                 final Date connectionCreatedAt = Date.from(Instant.parse("2020-09-10T10:05:00Z"));
                 final TrackerConnection gfTrackerConnection =
@@ -426,7 +441,8 @@ public class ActivitySourcesManagerTest {
                     mockedSourcesService,
                     mockedStateStore,
                     mockedActivitySourceResolver,
-                    new CopyOnWriteArrayList<>());
+                    new CopyOnWriteArrayList<>(),
+                    mockContext);
 
                 final TrackerConnection polarTrackerConnection = new TrackerConnection("polar_c_id",
                     TrackerValue.POLAR.getValue(),
@@ -492,7 +508,8 @@ public class ActivitySourcesManagerTest {
                     mockedSourcesService,
                     mockedStateStore,
                     mockedActivitySourceResolver,
-                    new CopyOnWriteArrayList<>());
+                    new CopyOnWriteArrayList<>(),
+                    mockContext);
 
                 final ApiExceptions.BadRequestException apiCallException =
                     new ApiExceptions.BadRequestException("Bad request");

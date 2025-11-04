@@ -7,6 +7,7 @@ import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConne
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectPermissionManager
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectSyncOptions
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService
+import com.fjuul.sdk.activitysources.utils.isHealthConnectAvailable
 import com.fjuul.sdk.core.ApiClient
 import com.fjuul.sdk.core.entities.Callback
 import com.fjuul.sdk.core.entities.IStorage
@@ -150,7 +151,7 @@ class HealthConnectActivitySource private constructor(
 
     companion object {
         @Volatile
-        private var instance: HealthConnectActivitySource? = null
+        private lateinit var instance: HealthConnectActivitySource
 
         /**
          * Initializes the singleton instance with dependencies from [ApiClient].
@@ -166,27 +167,27 @@ class HealthConnectActivitySource private constructor(
             config: ActivitySourcesManagerConfig,
             storage: IStorage
         ) {
-            if (instance == null) {
-                val context = apiClient.appContext.applicationContext
-                val hcClient = HealthConnectClient.getOrCreate(context)
-                val service = ActivitySourcesService(apiClient)
-                val dataMgr = HealthConnectDataManager(hcClient, service, apiClient.storage)
-                val permMgr = HealthConnectPermissionManager(
-                    context = context,
-                    healthConnectClient = hcClient,
-                    allAvailableMetrics = config.collectableFitnessMetrics
-                )
-                instance = HealthConnectActivitySource(dataMgr, permMgr, storage)
+            val context = apiClient.appContext.applicationContext
+            val hcClient = if (isHealthConnectAvailable(context)) {
+                HealthConnectClient.getOrCreate(context)
+            } else {
+                null
             }
+
+            val service = ActivitySourcesService(apiClient)
+            val dataMgr = HealthConnectDataManager(hcClient, service, apiClient.storage)
+            val permMgr = HealthConnectPermissionManager(
+                context = context,
+                healthConnectClient = hcClient,
+                allAvailableMetrics = config.collectableFitnessMetrics
+            )
+            instance = HealthConnectActivitySource(dataMgr, permMgr, storage)
         }
 
         /**
-         * Returns the initialized singleton instance, or throws if not yet initialized.
+         * Returns the initialized singleton instance
          */
         @JvmStatic
-        fun getInstance(): HealthConnectActivitySource =
-            instance ?: throw IllegalStateException(
-                "HealthConnectActivitySource must be initialized first"
-            )
+        fun getInstance(): HealthConnectActivitySource = instance
     }
 }

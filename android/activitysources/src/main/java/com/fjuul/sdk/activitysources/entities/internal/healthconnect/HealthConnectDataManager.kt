@@ -43,7 +43,7 @@ import kotlin.reflect.KClass
  * 3. Profile: latest height (cm) and weight (kg).
  */
 class HealthConnectDataManager(
-    private val client: HealthConnectClient,
+    private val client: HealthConnectClient?,
     private val service: ActivitySourcesService,
     private val storage: IStorage,
     private val zone: ZoneOffset = ZoneOffset.UTC,
@@ -76,6 +76,7 @@ class HealthConnectDataManager(
      */
     suspend fun syncIntraday(options: HealthConnectSyncOptions, lowerDateBoundary: Date) {
         if (options.metrics.isEmpty()) throw HealthConnectException.NoMetricsSelectedException()
+        if (client == null) throw HealthConnectException.UnsupportedHealthConnectException()
 
         var heartRateTimeChanges = listOf<HealthConnectTimeInterval>()
         // get heartRate changesToken from our storage
@@ -217,6 +218,7 @@ class HealthConnectDataManager(
      */
     suspend fun syncDaily(options: HealthConnectSyncOptions, lowerDateBoundary: Date) {
         if (options.metrics.isEmpty()) throw HealthConnectException.NoMetricsSelectedException()
+        if (client == null) throw HealthConnectException.UnsupportedHealthConnectException()
 
         var restingHeartRateTimeChanges = listOf<HealthConnectTimeInterval>()
         var restingHeartRateChangesToken = storage.get(RESTING_HEART_RATE_CHANGES_TOKEN)
@@ -316,6 +318,7 @@ class HealthConnectDataManager(
         lowerDateBoundary: Date,
         isIntradaySync: Boolean,
     ) {
+        if (client == null) throw HealthConnectException.UnsupportedHealthConnectException()
         // If token expired we need to make full sync and save our last changes token when
         // everything is success
         myScope.launch {
@@ -349,6 +352,7 @@ class HealthConnectDataManager(
         onChangesTokenExpired: () -> Unit,
         isActiveCaloriesBurned: Boolean? = null,
     ): MutableList<HealthConnectTimeInterval> {
+        if (client == null) throw HealthConnectException.UnsupportedHealthConnectException()
         val timeChangesList = mutableListOf<HealthConnectTimeInterval>()
         var nextChangesToken = token
         do {
@@ -439,6 +443,7 @@ class HealthConnectDataManager(
         timeChanges: List<HealthConnectTimeInterval>,
         onSuccess: () -> Unit,
     ) {
+        if (client == null) throw HealthConnectException.UnsupportedHealthConnectException()
         // we group time changes by days with startTime
         if (timeChanges.isNotEmpty()) {
             timeChanges
@@ -490,6 +495,7 @@ class HealthConnectDataManager(
         isIntradaySync: Boolean,
         onSuccess: () -> Unit,
     ) {
+        if (client == null) throw HealthConnectException.UnsupportedHealthConnectException()
         // makes seconds and milliseconds 0
         val now = Instant.now().atZone(zone).toLocalDateTime().withSecond(ZERO).withNano(ZERO)
             .toInstant(zone)
@@ -636,6 +642,7 @@ class HealthConnectDataManager(
         timeChangesIntervals: List<HealthConnectTimeInterval>,
         onSuccess: () -> Unit,
     ) {
+        if (client == null) throw HealthConnectException.UnsupportedHealthConnectException()
         val timeChangesDays = getTimeChangesDays(timeChangesIntervals)
         // Request daily aggregates (1-day buckets) from Health Connect
         timeChangesDays.forEach {
@@ -711,6 +718,7 @@ class HealthConnectDataManager(
      */
     suspend fun syncProfile(options: HealthConnectSyncOptions, lowerDateBoundary: Date) {
         if (options.metrics.isEmpty()) throw HealthConnectException.NoMetricsSelectedException()
+        if (client == null) throw HealthConnectException.UnsupportedHealthConnectException()
 
         val now = Instant.now()
         val thirtyDaysAgo = now.minus(THIRTY_DAYS, ChronoUnit.DAYS)
@@ -827,6 +835,7 @@ class HealthConnectDataManager(
         startTime: Instant,
         onTokenSave: (String) -> Unit
     ): List<HeightRecord> {
+        if (client == null) throw HealthConnectException.UnsupportedHealthConnectException()
         val heightChangesToken = client.getChangesToken(
             ChangesTokenRequest(recordTypes = setOf(HeightRecord::class))
         )
@@ -844,6 +853,7 @@ class HealthConnectDataManager(
         startTime: Instant,
         onTokenSave: (String) -> Unit
     ): List<WeightRecord> {
+        if (client == null) throw HealthConnectException.UnsupportedHealthConnectException()
         val weightChangesToken = client.getChangesToken(
             ChangesTokenRequest(recordTypes = setOf(WeightRecord::class))
         )

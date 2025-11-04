@@ -1,5 +1,7 @@
 package com.fjuul.sdk.activitysources.entities;
 
+import static com.fjuul.sdk.activitysources.utils.HealthConnectUtilsKt.isHealthConnectAvailable;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -62,6 +64,8 @@ public final class ActivitySourcesManager {
     @NonNull
     private final ActivitySourcesManagerConfig config;
     @NonNull
+    private final Context applicationContext;
+    @NonNull
     private final BackgroundWorkManager backgroundWorkManager;
     @NonNull
     private final ActivitySourcesService sourcesService;
@@ -80,7 +84,9 @@ public final class ActivitySourcesManager {
         @NonNull ActivitySourcesService sourcesService,
         @NonNull ActivitySourcesStateStore stateStore,
         @NonNull ActivitySourceResolver activitySourceResolver,
-        @NonNull CopyOnWriteArrayList<TrackerConnection> connections) {
+        @NonNull CopyOnWriteArrayList<TrackerConnection> connections,
+        @NonNull Context applicationContext) {
+        this.applicationContext = applicationContext;
         this.config = config;
         this.backgroundWorkManager = backgroundWorkManager;
         this.sourcesService = sourcesService;
@@ -125,7 +131,8 @@ public final class ActivitySourcesManager {
         final CopyOnWriteArrayList<TrackerConnection> currentConnections =
             Optional.ofNullable(storedConnections).map(CopyOnWriteArrayList::new).orElse(new CopyOnWriteArrayList<>());
         final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
-        final WorkManager workManager = WorkManager.getInstance(client.getAppContext());
+        final Context context = client.getAppContext();
+        final WorkManager workManager = WorkManager.getInstance(context);
         final ActivitySourceWorkScheduler scheduler = new ActivitySourceWorkScheduler(workManager,
             client.getUserToken(),
             client.getUserSecret(),
@@ -141,7 +148,8 @@ public final class ActivitySourcesManager {
             sourcesService,
             stateStore,
             activitySourceResolver,
-            currentConnections);
+            currentConnections,
+            context);
         newInstance.configureExternalStateByConnections(currentConnections);
 
         instance = newInstance;
@@ -243,8 +251,13 @@ public final class ActivitySourcesManager {
             }
             ConnectionResult connectionResult = apiCallResult.getValue();
             if (activitySource instanceof HealthConnectActivitySource) {
-                final Intent intent = new Intent();
-                callback.onResult(Result.value(intent));
+                if (isHealthConnectAvailable(applicationContext)) {
+                    final Intent intent = new Intent();
+                    callback.onResult(Result.value(intent));
+                } else  {
+                    callback.onResult(Result.error(new FjuulException("Health Connect not supported")));
+                }
+
             } else if (connectionResult instanceof ExternalAuthenticationFlowRequired) {
                 final String url = ((ExternalAuthenticationFlowRequired) connectionResult).getUrl();
                 final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -408,7 +421,7 @@ public final class ActivitySourcesManager {
                 .findFirst())
             .orElse(null);
 
-        if (hcTrackerConnection != null) {
+        if (hcTrackerConnection != null && isHealthConnectAvailable(applicationContext)) {
             backgroundWorkManager.configureHCProfileSyncWork();
             backgroundWorkManager.configureHCIntradaySyncWorks();
             backgroundWorkManager.configureHCDailySyncWorks();

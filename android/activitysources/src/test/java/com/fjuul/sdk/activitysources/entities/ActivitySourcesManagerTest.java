@@ -222,11 +222,13 @@ public class ActivitySourcesManagerTest {
                     when(googleFit.disable()).thenReturn(Tasks.forResult(null));
                     final ApiCall<Void> mockedDisconnectApiCall = mock(ApiCall.class);
                     doAnswer(invocation -> {
-                        final ApiCallCallback<ConnectionResult> callback = invocation.getArgument(0, ApiCallCallback.class);
+                        final ApiCallCallback<ConnectionResult> callback =
+                            invocation.getArgument(0, ApiCallCallback.class);
                         callback.onResult(null, ApiCallResult.value(null));
                         return null;
                     }).when(mockedDisconnectApiCall).enqueue(any());
-                    mocked.when(() -> getHealthConnectAvailability(mockContext)).thenReturn(HealthConnectAvailability.SDK_AVAILABLE);
+                    mocked.when(() -> getHealthConnectAvailability(mockContext))
+                        .thenReturn(HealthConnectAvailability.SDK_AVAILABLE);
                     when(mockedSourcesService.disconnect(gfConnection)).thenReturn(mockedDisconnectApiCall);
 
                     subject.disconnect(gfConnection, mockedCallback);
@@ -238,7 +240,8 @@ public class ActivitySourcesManagerTest {
                     // should ask the sources service to disconnect
                     verify(mockedSourcesService).disconnect(gfConnection);
                     verify(mockedDisconnectApiCall).enqueue(any());
-                    assertTrue("should remove the source connection from the current ones", subject.getCurrent().isEmpty());
+                    assertTrue("should remove the source connection from the current ones",
+                        subject.getCurrent().isEmpty());
                     // should pass the changed connections to the activity sources state store
                     verify(mockedStateStore).setConnections(Collections.emptyList());
                     // should disable any background workers of GoogleFit
@@ -276,11 +279,13 @@ public class ActivitySourcesManagerTest {
                     final Callback<Void> mockedCallback = mock(Callback.class);
                     final ApiCall<Void> mockedDisconnectApiCall = mock(ApiCall.class);
                     doAnswer(invocation -> {
-                        final ApiCallCallback<ConnectionResult> callback = invocation.getArgument(0, ApiCallCallback.class);
+                        final ApiCallCallback<ConnectionResult> callback =
+                            invocation.getArgument(0, ApiCallCallback.class);
                         callback.onResult(null, ApiCallResult.value(null));
                         return null;
                     }).when(mockedDisconnectApiCall).enqueue(any());
-                    mocked.when(() -> getHealthConnectAvailability(mockContext)).thenReturn(HealthConnectAvailability.SDK_AVAILABLE);
+                    mocked.when(() -> getHealthConnectAvailability(mockContext))
+                        .thenReturn(HealthConnectAvailability.SDK_AVAILABLE);
                     when(mockedSourcesService.disconnect(fitbitConnection)).thenReturn(mockedDisconnectApiCall);
 
                     subject.disconnect(fitbitConnection, mockedCallback);
@@ -288,7 +293,8 @@ public class ActivitySourcesManagerTest {
                     // should ask the sources service to disconnect
                     verify(mockedSourcesService).disconnect(fitbitConnection);
                     verify(mockedDisconnectApiCall).enqueue(any());
-                    assertTrue("should remove the source connection from the current ones", subject.getCurrent().isEmpty());
+                    assertTrue("should remove the source connection from the current ones",
+                        subject.getCurrent().isEmpty());
                     // should pass the changed connections to the activity sources state store
                     verify(mockedStateStore).setConnections(Collections.emptyList());
                     assertEquals("should set new connections in the subject",
@@ -406,7 +412,7 @@ public class ActivitySourcesManagerTest {
                     final TrackerConnection gfTrackerConnection =
                         new TrackerConnection("gf_c_id", TrackerValue.GOOGLE_FIT.getValue(), connectionCreatedAt, null);
 
-                    final TrackerConnection[] newConnections = new TrackerConnection[]{gfTrackerConnection};
+                    final TrackerConnection[] newConnections = new TrackerConnection[] {gfTrackerConnection};
                     final ApiCall<TrackerConnection[]> mockedGetConnectionsApiCall = mock(ApiCall.class);
                     doAnswer(invocation -> {
                         final ApiCallCallback<TrackerConnection[]> callback =
@@ -414,12 +420,14 @@ public class ActivitySourcesManagerTest {
                         callback.onResult(null, ApiCallResult.value(newConnections));
                         return null;
                     }).when(mockedGetConnectionsApiCall).enqueue(any());
-                    mocked.when(() -> getHealthConnectAvailability(mockContext)).thenReturn(HealthConnectAvailability.SDK_AVAILABLE);
+                    mocked.when(() -> getHealthConnectAvailability(mockContext))
+                        .thenReturn(HealthConnectAvailability.SDK_AVAILABLE);
                     when(mockedSourcesService.getCurrentConnections()).thenReturn(mockedGetConnectionsApiCall);
                     GoogleFitActivitySource googleFitStub = mock(GoogleFitActivitySource.class);
                     final HealthConnectActivitySource healthConnect = mock(HealthConnectActivitySource.class);
                     when(mockedActivitySourceResolver.getInstanceByTrackerValue("googlefit")).thenReturn(googleFitStub);
-                    when(mockedActivitySourceResolver.getInstanceByTrackerValue("healthconnect")).thenReturn(healthConnect);
+                    when(mockedActivitySourceResolver.getInstanceByTrackerValue("healthconnect"))
+                        .thenReturn(healthConnect);
 
                     subject.refreshCurrent(null);
 
@@ -464,7 +472,7 @@ public class ActivitySourcesManagerTest {
                         Date.from(Instant.parse("2020-09-10T10:05:00Z")),
                         null);
 
-                    final TrackerConnection[] newConnections = new TrackerConnection[]{polarTrackerConnection};
+                    final TrackerConnection[] newConnections = new TrackerConnection[] {polarTrackerConnection};
                     final ApiCall<TrackerConnection[]> mockedGetConnectionsApiCall = mock(ApiCall.class);
                     doAnswer(invocation -> {
                         final ApiCallCallback<TrackerConnection[]> callback =
@@ -472,14 +480,16 @@ public class ActivitySourcesManagerTest {
                         callback.onResult(null, ApiCallResult.value(newConnections));
                         return null;
                     }).when(mockedGetConnectionsApiCall).enqueue(any());
-                    mocked.when(() -> getHealthConnectAvailability(mockContext)).thenReturn(HealthConnectAvailability.SDK_AVAILABLE);
+                    mocked.when(() -> getHealthConnectAvailability(mockContext))
+                        .thenReturn(HealthConnectAvailability.SDK_AVAILABLE);
                     when(mockedSourcesService.getCurrentConnections()).thenReturn(mockedGetConnectionsApiCall);
                     final PolarActivitySource polarStub = mock(PolarActivitySource.class);
                     final GoogleFitActivitySource googleFitStub = mock(GoogleFitActivitySource.class);
                     final HealthConnectActivitySource healthConnect = mock(HealthConnectActivitySource.class);
                     when(mockedActivitySourceResolver.getInstanceByTrackerValue("polar")).thenReturn(polarStub);
                     when(mockedActivitySourceResolver.getInstanceByTrackerValue("googlefit")).thenReturn(googleFitStub);
-                    when(mockedActivitySourceResolver.getInstanceByTrackerValue("healthconnect")).thenReturn(healthConnect);
+                    when(mockedActivitySourceResolver.getInstanceByTrackerValue("healthconnect"))
+                        .thenReturn(healthConnect);
                     final Callback<List<ActivitySourceConnection>> mockedCallback = mock(Callback.class);
 
                     subject.refreshCurrent(mockedCallback);
@@ -491,7 +501,8 @@ public class ActivitySourcesManagerTest {
                     verify(mockedStateStore).setConnections(Arrays.asList(newConnections));
                     final List<ActivitySourceConnection> currentActivitySourceConnections = subject.getCurrent();
                     assertEquals("current connections should have 1 entry", 1, currentActivitySourceConnections.size());
-                    final ActivitySourceConnection polarActivitySourceConnection = currentActivitySourceConnections.get(0);
+                    final ActivitySourceConnection polarActivitySourceConnection =
+                        currentActivitySourceConnections.get(0);
                     assertEquals("current connection should be polar",
                         polarStub,
                         polarActivitySourceConnection.getActivitySource());
@@ -510,7 +521,8 @@ public class ActivitySourcesManagerTest {
                         ArgumentCaptor.forClass(Result.class);
                     // should pass new connections to the callback
                     verify(mockedCallback).onResult(callbackResultArgumentCaptor.capture());
-                    final Result<List<ActivitySourceConnection>> callbackResult = callbackResultArgumentCaptor.getValue();
+                    final Result<List<ActivitySourceConnection>> callbackResult =
+                        callbackResultArgumentCaptor.getValue();
                     assertFalse("callback should have successful result", callbackResult.isError());
                     assertEquals("callback result should have polar",
                         polarTrackerConnection.getId(),

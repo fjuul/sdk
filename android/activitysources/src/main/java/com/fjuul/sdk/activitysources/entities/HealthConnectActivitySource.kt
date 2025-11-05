@@ -152,7 +152,7 @@ class HealthConnectActivitySource private constructor(
 
     companion object {
         @Volatile
-        private lateinit var instance: HealthConnectActivitySource
+        private var instance: HealthConnectActivitySource? = null
 
         /**
          * Initializes the singleton instance with dependencies from [ApiClient].
@@ -190,6 +190,8 @@ class HealthConnectActivitySource private constructor(
          * Returns the initialized singleton instance
          */
         @JvmStatic
-        fun getInstance(): HealthConnectActivitySource = instance
+        fun getInstance(): HealthConnectActivitySource = instance ?: throw IllegalStateException(
+            "HealthConnectActivitySource must be initialized first"
+        )
     }
 }

@@ -187,7 +187,7 @@ class HealthConnectActivitySource private constructor(
         }
 
         /**
-         * Returns the initialized singleton instance
+         * Returns the initialized singleton instance, or throws if not yet initialized.
          */
         @JvmStatic
         fun getInstance(): HealthConnectActivitySource = instance ?: throw IllegalStateException(

@@ -13,10 +13,6 @@
     <uses-permission android:name="android.permission.health.READ_HEIGHT" />
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
 
-    <queries>
-        <package android:name="com.google.android.apps.healthdata" />
-    </queries>
-
     <application
         android:name=".MainApplication"
         android:allowBackup="true"

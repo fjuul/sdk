@@ -282,15 +282,6 @@ Health Connect requires specific intent filters to handle permission rationale f
 </activity-alias>
 ```
 
-#### Package Visibility Configuration
-For Android 11 (API level 30) and higher, you need to declare package visibility for Health Connect to enable your app to detect and interact with the Health Connect app. Add this queries element to your `AndroidManifest.xml`:
-
-```xml
-<queries>
-    <package android:name="com.google.android.apps.healthdata" />
-</queries>
-```
-
 ### Connect to Health Connect
 To connect to Health Connect:
 ```kotlin

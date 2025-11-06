@@ -38,4 +38,11 @@ sealed class HealthConnectException(message: String) : FjuulException(message) {
     class UnsupportedMetricException(metricName: String) : HealthConnectException(
         "Metric '$metricName' is not supported by Health Connect"
     )
+
+    /**
+     * Thrown when Health Connect is not supported on this device.
+     */
+    class UnsupportedHealthConnectException: HealthConnectException(
+        "Health Connect not supported"
+    )
 }

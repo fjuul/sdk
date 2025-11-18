@@ -71,6 +71,11 @@ class HealthConnectPermissionManager(
         return (PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND in grantedPermissions)
     }
 
+    /**
+     * Asynchronous version of [isBackgroundPermissionGranted] that delivers the result via the provided [callback].
+     *
+     * @param callback Callback that receives `true` if the background permission is granted, `false` otherwise.
+     */
     fun isBackgroundPermissionGranted(callback: Callback<Boolean>) = runAsyncAndCallback({
         isBackgroundPermissionGranted()
     }, callback)
@@ -97,12 +102,22 @@ class HealthConnectPermissionManager(
      * Checks asynchronously if permissions for the configured metrics are all granted.
      * Delivers `true` to the callback if all are granted, or false otherwise.
      */
+    /**
+     * Checks asynchronously if permissions for all configured metrics are granted.
+     * Delivers `true` if all are granted, or `false` otherwise.
+     */
     suspend fun areMetricPermissionsGranted() = areMetricPermissionsGranted(allAvailableMetrics)
 
     fun areMetricPermissionsGranted(
         callback: Callback<Boolean>
     ) = areMetricPermissionsGranted(allAvailableMetrics, callback)
 
+    /**
+     * Checks if all required permissions are granted, including both background permissions
+     * and all configured metric permissions.
+     *
+     * @return true if both background and all metric permissions are granted, false otherwise.
+     */
     suspend fun areAllPermissionsGranted(): Boolean {
         return isBackgroundPermissionGranted() && areMetricPermissionsGranted()
     }

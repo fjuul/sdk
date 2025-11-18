@@ -99,10 +99,6 @@ class HealthConnectPermissionManager(
     }, callback)
 
     /**
-     * Checks asynchronously if permissions for the configured metrics are all granted.
-     * Delivers `true` to the callback if all are granted, or false otherwise.
-     */
-    /**
      * Checks asynchronously if permissions for all configured metrics are granted.
      * Delivers `true` if all are granted, or `false` otherwise.
      */

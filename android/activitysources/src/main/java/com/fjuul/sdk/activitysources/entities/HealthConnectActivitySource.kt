@@ -1,5 +1,7 @@
 package com.fjuul.sdk.activitysources.entities
 
+import android.app.Activity
+import android.content.Intent
 import androidx.health.connect.client.HealthConnectClient
 import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource.Companion.getInstance
 import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource.Companion.initialize
@@ -106,6 +108,17 @@ class HealthConnectActivitySource private constructor(
     override fun getTrackerValue(): TrackerValue = TrackerValue.HEALTH_CONNECT
 
     fun getPermissionManager(): HealthConnectPermissionManager = permissionManager
+
+    /**
+     * Launches the Health Connect settings screen.
+     * This is useful for letting the user manage their Health Connect permissions.
+     *
+     * @param activity The activity to use to launch the settings screen.
+     */
+    fun launchHealthConnectSettings(activity: Activity) {
+        val intent = Intent(HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS)
+        activity.startActivity(intent)
+    }
 
     fun forInternalUseOnly_clearChangesTokens() {
         storage.set(HealthConnectDataManager.HEART_RATE_CHANGES_TOKEN, "")

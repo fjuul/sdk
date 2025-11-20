@@ -325,6 +325,15 @@ After that, you can launch the `ActivityResultLauncher` with the required permis
 hcPermsLauncher.launch(requiredPermissions)
 ```
 
+⚠️ Caveat: When the user explicitly denies a permission request, subsequent calls to `launch` will return
+immediately (with the currently granted permissions) without showing the Health Connect permission prompt to the user.
+Thus, it is strongly advised to perform this request only during the initial activity source connection flow, and
+to direct users to the Health Connect app when missing permissions are detected at some later point. For that
+purpose, the Fjuul SDK provides the utility function `launchHealthConnectSettings`:
+```kotlin
+HealthConnectActivitySource.getInstance().launchHealthConnectSettings(currentActivity)
+```
+
 ### Collect Health Connect data
 Find out if the user has a current connection to Health Connect:
 ```kotlin

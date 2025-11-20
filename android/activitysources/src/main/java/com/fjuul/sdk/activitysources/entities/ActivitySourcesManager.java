@@ -1,7 +1,5 @@
 package com.fjuul.sdk.activitysources.entities;
 
-import static com.fjuul.sdk.activitysources.utils.HealthConnectUtilsKt.getHealthConnectAvailability;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -13,7 +11,6 @@ import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceWorkScheduler;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourcesStateStore;
 import com.fjuul.sdk.activitysources.entities.internal.BackgroundWorkManager;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectAvailability;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.Callback;
@@ -253,7 +250,7 @@ public final class ActivitySourcesManager {
             ConnectionResult connectionResult = apiCallResult.getValue();
             if (activitySource instanceof HealthConnectActivitySource) {
                 final HealthConnectAvailability healthConnectAvailability =
-                    getHealthConnectAvailability(applicationContext);
+                    HealthConnectActivitySource.getHealthConnectAvailability(applicationContext);
                 if (healthConnectAvailability == HealthConnectAvailability.SDK_AVAILABLE) {
                     final Intent intent = new Intent();
                     callback.onResult(Result.value(intent));
@@ -430,7 +427,7 @@ public final class ActivitySourcesManager {
                 .findFirst())
             .orElse(null);
 
-        final HealthConnectAvailability healthConnectAvailability = getHealthConnectAvailability(applicationContext);
+        final HealthConnectAvailability healthConnectAvailability = HealthConnectActivitySource.getHealthConnectAvailability(applicationContext);
         if (hcTrackerConnection != null && healthConnectAvailability == HealthConnectAvailability.SDK_AVAILABLE) {
             backgroundWorkManager.configureHCProfileSyncWork();
             backgroundWorkManager.configureHCIntradaySyncWorks();

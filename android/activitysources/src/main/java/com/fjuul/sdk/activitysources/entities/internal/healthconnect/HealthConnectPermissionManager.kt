@@ -15,7 +15,8 @@ import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.WeightRecord
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
-import com.fjuul.sdk.activitysources.utils.getHealthConnectAvailability
+import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource
+import com.fjuul.sdk.activitysources.entities.HealthConnectAvailability
 import com.fjuul.sdk.activitysources.utils.runAsyncAndCallback
 import com.fjuul.sdk.core.entities.Callback
 
@@ -144,7 +145,7 @@ class HealthConnectPermissionManager(
      * Throws if Health Connect SDK is not installed or not supported.
      */
     fun ensureSdkAvailable() {
-        val healthConnectAvailability = getHealthConnectAvailability(context)
+        val healthConnectAvailability = HealthConnectActivitySource.getHealthConnectAvailability(context)
         when (healthConnectAvailability) {
             HealthConnectAvailability.SDK_AVAILABLE -> Unit
             HealthConnectAvailability.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> throw HealthConnectException.NotInstalledException()

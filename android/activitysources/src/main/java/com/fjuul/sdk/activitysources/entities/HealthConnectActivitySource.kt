@@ -1,18 +1,17 @@
 package com.fjuul.sdk.activitysources.entities
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource.Companion.getInstance
 import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource.Companion.initialize
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectAvailability
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectDataManager
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectPermissionManager
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectSyncOptions
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService
-import com.fjuul.sdk.activitysources.utils.getHealthConnectAvailability
 import com.fjuul.sdk.core.ApiClient
 import com.fjuul.sdk.core.entities.Callback
 import com.fjuul.sdk.core.entities.IStorage
@@ -33,6 +32,12 @@ import java.util.Date
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+
+enum class HealthConnectAvailability {
+    SDK_AVAILABLE,
+    SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED,
+    SDK_UNAVAILABLE,
+}
 
 /**
  * [ActivitySource] implementation for Android Health Connect.
@@ -208,6 +213,18 @@ class HealthConnectActivitySource private constructor(
         fun getInstance(): HealthConnectActivitySource = instance ?: throw IllegalStateException(
             "HealthConnectActivitySource must be initialized first"
         )
+
+        /**
+         * Returns the availability of Health Connect on the device.
+         */
+        @JvmStatic
+        fun getHealthConnectAvailability(context: Context): HealthConnectAvailability {
+            return when (HealthConnectClient.getSdkStatus(context)) {
+                HealthConnectClient.SDK_AVAILABLE -> HealthConnectAvailability.SDK_AVAILABLE
+                HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> HealthConnectAvailability.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED
+                else -> HealthConnectAvailability.SDK_UNAVAILABLE
+            }
+        }
 
         /**
          * Creates an [ActivityResultContract] for requesting Health Connect permissions.

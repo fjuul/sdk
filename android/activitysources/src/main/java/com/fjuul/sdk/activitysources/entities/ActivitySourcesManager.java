@@ -427,7 +427,8 @@ public final class ActivitySourcesManager {
                 .findFirst())
             .orElse(null);
 
-        final HealthConnectAvailability healthConnectAvailability = HealthConnectActivitySource.getHealthConnectAvailability(applicationContext);
+        final HealthConnectAvailability healthConnectAvailability =
+            HealthConnectActivitySource.getHealthConnectAvailability(applicationContext);
         if (hcTrackerConnection != null && healthConnectAvailability == HealthConnectAvailability.SDK_AVAILABLE) {
             backgroundWorkManager.configureHCProfileSyncWork();
             backgroundWorkManager.configureHCIntradaySyncWorks();

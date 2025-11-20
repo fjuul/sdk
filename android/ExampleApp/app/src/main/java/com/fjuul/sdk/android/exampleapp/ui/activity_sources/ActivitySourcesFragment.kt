@@ -21,12 +21,11 @@ import com.fjuul.sdk.activitysources.entities.FitbitActivitySource
 import com.fjuul.sdk.activitysources.entities.GarminActivitySource
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource
 import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource
+import com.fjuul.sdk.activitysources.entities.HealthConnectAvailability
 import com.fjuul.sdk.activitysources.entities.OuraActivitySource
 import com.fjuul.sdk.activitysources.entities.PolarActivitySource
 import com.fjuul.sdk.activitysources.entities.SuuntoActivitySource
 import com.fjuul.sdk.activitysources.entities.WithingsActivitySource
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectAvailability
-import com.fjuul.sdk.activitysources.utils.getHealthConnectAvailability
 import com.fjuul.sdk.android.exampleapp.R
 
 class ActivitySourcesFragment : Fragment() {
@@ -190,7 +189,8 @@ class ActivitySourcesFragment : Fragment() {
                     .setTitle("Health Connect")
                     .setItems(menus) { _, which ->
                         if (which == 0) {
-                            val healthConnectAvailability = getHealthConnectAvailability(requireContext())
+                            val healthConnectAvailability =
+                                HealthConnectActivitySource.getHealthConnectAvailability(requireContext())
                             if (healthConnectAvailability == HealthConnectAvailability.SDK_AVAILABLE) {
                                 hcPermsLauncher.launch(activitySource.getPermissionManager().allRequiredPermissions())
                             } else {

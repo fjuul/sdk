@@ -225,6 +225,35 @@ ActivitySourcesManager.initialize(client, config)
 3. Android OS or its vendor modifications allow your application to run in the background and do not restrict its execution. You can refer to [dontkillmyapp.com](https://dontkillmyapp.com/) for getting more details.
 
 ### Preface to Health Connect
+Health Connect requires a mobile device running Android 9 (API 28) or higher with Google Play services installed.
+On Android 14 and higher, Health Connect is part of the Android system.
+On Android 13 and lower, Health Connect is a publicly available app on the Google Play Store.
+
+Health Connect should only be exposed as an option to users which satisfy those requirements. To check for availability,
+the Fjuul SDK exposes the `getHealthConnectAvailability` utility function:
+```kotlin
+import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource
+import com.fjuul.sdk.activitysources.entities.HealthConnectAvailability
+
+val healthConnectAvailability = HealthConnectActivitySource.getHealthConnectAvailability(context)
+
+when (healthConnectAvailability) {
+    HealthConnectAvailability.SDK_AVAILABLE -> {
+        showHealthConnectOption()
+    }
+
+    HealthConnectAvailability.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> {
+        // Health Connect is not installed or needs to be updated
+        showInstallHealthConnectPrompt()
+    }
+
+    HealthConnectAvailability.SDK_UNAVAILABLE -> {
+        // Health Connect is not available on this device
+    }
+}
+```
+
+### Required Configuration
 The `HealthConnectActivitySource` requires configuration to be added to the `AndroidManifest.xml`.
 
 #### Permission Requirements

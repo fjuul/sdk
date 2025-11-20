@@ -1,7 +1,6 @@
 package com.fjuul.sdk.activitysources.entities;
 
 import static android.os.Looper.getMainLooper;
-import static com.fjuul.sdk.activitysources.utils.HealthConnectUtilsKt.getHealthConnectAvailability;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -39,9 +38,7 @@ import com.fjuul.sdk.activitysources.entities.ConnectionResult.ExternalAuthentic
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourcesStateStore;
 import com.fjuul.sdk.activitysources.entities.internal.BackgroundWorkManager;
-import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectAvailability;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
-import com.fjuul.sdk.activitysources.utils.HealthConnectUtilsKt;
 import com.fjuul.sdk.core.entities.Callback;
 import com.fjuul.sdk.core.entities.Result;
 import com.fjuul.sdk.core.exceptions.ApiExceptions;
@@ -201,7 +198,7 @@ public class ActivitySourcesManagerTest {
             @Test
             @LooperMode(LooperMode.Mode.PAUSED)
             public void disconnect_whenGoogleFit_disconnectsAndRemoveConnectionFromCurrent() {
-                try (MockedStatic<HealthConnectUtilsKt> mocked = mockStatic(HealthConnectUtilsKt.class)) {
+                try (MockedStatic<HealthConnectActivitySource> mocked = mockStatic(HealthConnectActivitySource.class)) {
                     final GoogleFitActivitySource googleFit = mock(GoogleFitActivitySource.class);
                     final TrackerConnection gfTrackerConnection = new TrackerConnection("gf_c_id",
                         TrackerValue.GOOGLE_FIT.getValue(),
@@ -227,7 +224,7 @@ public class ActivitySourcesManagerTest {
                         callback.onResult(null, ApiCallResult.value(null));
                         return null;
                     }).when(mockedDisconnectApiCall).enqueue(any());
-                    mocked.when(() -> getHealthConnectAvailability(mockContext))
+                    mocked.when(() -> HealthConnectActivitySource.getHealthConnectAvailability(mockContext))
                         .thenReturn(HealthConnectAvailability.SDK_AVAILABLE);
                     when(mockedSourcesService.disconnect(gfConnection)).thenReturn(mockedDisconnectApiCall);
 
@@ -259,7 +256,7 @@ public class ActivitySourcesManagerTest {
 
             @Test
             public void disconnect_whenExternalActivitySource_disconnectsAndRemoveConnectionFromCurrent() {
-                try (MockedStatic<HealthConnectUtilsKt> mocked = mockStatic(HealthConnectUtilsKt.class)) {
+                try (MockedStatic<HealthConnectActivitySource> mocked = mockStatic(HealthConnectActivitySource.class)) {
                     final FitbitActivitySource fitbit = FitbitActivitySource.getInstance();
                     final TrackerConnection fitbitTrackerConnection = new TrackerConnection("fitbit_c_id",
                         TrackerValue.FITBIT.getValue(),
@@ -284,7 +281,7 @@ public class ActivitySourcesManagerTest {
                         callback.onResult(null, ApiCallResult.value(null));
                         return null;
                     }).when(mockedDisconnectApiCall).enqueue(any());
-                    mocked.when(() -> getHealthConnectAvailability(mockContext))
+                    mocked.when(() -> HealthConnectActivitySource.getHealthConnectAvailability(mockContext))
                         .thenReturn(HealthConnectAvailability.SDK_AVAILABLE);
                     when(mockedSourcesService.disconnect(fitbitConnection)).thenReturn(mockedDisconnectApiCall);
 
@@ -399,7 +396,7 @@ public class ActivitySourcesManagerTest {
 
             @Test
             public void refreshCurrent_whenGetNewConnectionsWithGoogleFitAndCallbackIsNull_refreshesCurrentConnections() {
-                try (MockedStatic<HealthConnectUtilsKt> mocked = mockStatic(HealthConnectUtilsKt.class)) {
+                try (MockedStatic<HealthConnectActivitySource> mocked = mockStatic(HealthConnectActivitySource.class)) {
                     subject = new ActivitySourcesManager(mockedConfig,
                         mockedBackgroundWorkManager,
                         mockedSourcesService,
@@ -420,7 +417,7 @@ public class ActivitySourcesManagerTest {
                         callback.onResult(null, ApiCallResult.value(newConnections));
                         return null;
                     }).when(mockedGetConnectionsApiCall).enqueue(any());
-                    mocked.when(() -> getHealthConnectAvailability(mockContext))
+                    mocked.when(() -> HealthConnectActivitySource.getHealthConnectAvailability(mockContext))
                         .thenReturn(HealthConnectAvailability.SDK_AVAILABLE);
                     when(mockedSourcesService.getCurrentConnections()).thenReturn(mockedGetConnectionsApiCall);
                     GoogleFitActivitySource googleFitStub = mock(GoogleFitActivitySource.class);
@@ -458,7 +455,7 @@ public class ActivitySourcesManagerTest {
 
             @Test
             public void refreshCurrent_whenGetNewConnectionsWithPolarAndCallbackIsNotNull_refreshesCurrentConnections() {
-                try (MockedStatic<HealthConnectUtilsKt> mocked = mockStatic(HealthConnectUtilsKt.class)) {
+                try (MockedStatic<HealthConnectActivitySource> mocked = mockStatic(HealthConnectActivitySource.class)) {
                     subject = new ActivitySourcesManager(mockedConfig,
                         mockedBackgroundWorkManager,
                         mockedSourcesService,
@@ -480,7 +477,7 @@ public class ActivitySourcesManagerTest {
                         callback.onResult(null, ApiCallResult.value(newConnections));
                         return null;
                     }).when(mockedGetConnectionsApiCall).enqueue(any());
-                    mocked.when(() -> getHealthConnectAvailability(mockContext))
+                    mocked.when(() -> HealthConnectActivitySource.getHealthConnectAvailability(mockContext))
                         .thenReturn(HealthConnectAvailability.SDK_AVAILABLE);
                     when(mockedSourcesService.getCurrentConnections()).thenReturn(mockedGetConnectionsApiCall);
                     final PolarActivitySource polarStub = mock(PolarActivitySource.class);

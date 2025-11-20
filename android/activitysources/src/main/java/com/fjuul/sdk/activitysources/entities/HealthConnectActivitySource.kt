@@ -2,7 +2,9 @@ package com.fjuul.sdk.activitysources.entities
 
 import android.app.Activity
 import android.content.Intent
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.PermissionController
 import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource.Companion.getInstance
 import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource.Companion.initialize
 import com.fjuul.sdk.activitysources.entities.internal.healthconnect.HealthConnectAvailability
@@ -206,5 +208,13 @@ class HealthConnectActivitySource private constructor(
         fun getInstance(): HealthConnectActivitySource = instance ?: throw IllegalStateException(
             "HealthConnectActivitySource must be initialized first"
         )
+
+        /**
+         * Creates an [ActivityResultContract] for requesting Health Connect permissions.
+         */
+        @JvmStatic
+        fun createRequestPermissionResultContract(): ActivityResultContract<Set<String>, Set<String>> {
+            return PermissionController.createRequestPermissionResultContract()
+        }
     }
 }

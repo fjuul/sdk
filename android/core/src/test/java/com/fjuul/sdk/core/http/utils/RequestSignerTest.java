@@ -88,7 +88,7 @@ public class RequestSignerTest {
             Request.Builder testRequestBuilder = new Request.Builder();
             Request testRequest =
                 testRequestBuilder.url("https://fjuul.dev.api/analytics/v1/dailyStats/userToken/2020-01-15")
-                    .post(RequestBody.create(null, ""))
+                    .post(RequestBody.create("", null))
                     .build();
             SigningKey key = new SigningKey(KEY_ID, SECRET_KEY, new Date());
             RequestSigner subject = new RequestSigner(fixedClock);
@@ -107,7 +107,7 @@ public class RequestSignerTest {
             Request testRequest =
                 testRequestBuilder.url("https://fjuul.dev.api/analytics/v1/dailyStats/userToken/2020-01-15")
                     .post(
-                        RequestBody.create(MediaType.get("application/json"), "{\"hello\":\"world\",\"foo\":\"bar\"}"))
+                        RequestBody.create("{\"hello\":\"world\",\"foo\":\"bar\"}", MediaType.get("application/json")))
                     .build();
             SigningKey key = new SigningKey(KEY_ID, SECRET_KEY, new Date());
             RequestSigner subject = new RequestSigner(fixedClock);

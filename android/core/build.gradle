@@ -51,8 +51,7 @@ dependencies {
     def retrofitVersion = rootProject.ext.retrofitVersion
     api('com.squareup.okhttp3:okhttp') {
         version {
-            // NOTE: since Android 5 support, https://square.github.io/okhttp/changelog_3x/#version-3130
-            strictly '[3.13.0, 5)'
+            strictly '[3.13.0, 6)'
             prefer okHttpVersion
         }
     }

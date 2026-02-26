@@ -63,8 +63,9 @@ public class SigningAuthInterceptorTest extends LoggableTestSuite {
                 .protocol(Protocol.HTTP_1_1)
                 .message("Unauthorized")
                 .build();
-        Response mockedSigningKeyResponse = Response.error(ResponseBody.create(MediaType.get("application/json"),
-            "{ \"message\": \"error message\", \"errorCode\": \"expired_signing_key\" }"), incomingRawResponse);
+        Response mockedSigningKeyResponse = Response
+            .error(ResponseBody.create("{ \"message\": \"error message\", \"errorCode\": \"expired_signing_key\" }",
+                MediaType.get("application/json")), incomingRawResponse);
 
         when(mockedSigningService.issueKey().execute()).thenReturn(mockedSigningKeyResponse);
         SigningAuthInterceptor interceptorWithAuthenticator =

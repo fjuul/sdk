@@ -458,6 +458,56 @@ Background Access to Health Connect data is only available on Android 14 and hig
 
 4. Android OS or its vendor modifications allow your application to run in the background and do not restrict its execution. You can refer to [dontkillmyapp.com](https://dontkillmyapp.com/) for getting more details.
 
+### Connect to External Activity Sources
+The SDK supports connection to external activity sources like Fitbit, Garmin, Google Health, Oura, Polar, Suunto, and Withings. These sources require OAuth authentication and follow the same connection pattern:
+
+```kotlin
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
+import com.fjuul.sdk.activitysources.entities.GoogleHealthActivitySource
+import com.fjuul.sdk.activitysources.entities.ExternalAuthenticationFlowHandler
+
+val sourcesManager = ActivitySourcesManager.getInstance()
+// connect to Google Health tracker
+sourcesManager.connect(GoogleHealthActivitySource.getInstance()) { connectResult ->
+    if (connectResult.isError) {
+        // handle error
+        println(connectResult.error!!)
+        return@connect
+    }
+
+    val authenticationUrl = connectResult.value!!
+    // Open the authentication URL in a browser
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(authenticationUrl))
+    startActivity(intent)
+}
+```
+
+To handle the OAuth callback after the user completes authentication, use the `ExternalAuthenticationFlowHandler`:
+
+```kotlin
+import com.fjuul.sdk.activitysources.entities.ExternalAuthenticationFlowHandler
+
+// In your Activity/Fragment that handles the deep link callback
+val connectionStatus = ExternalAuthenticationFlowHandler.handle(uri) { result ->
+    if (result.isError) {
+        // handle error
+        println(result.error!!)
+        return@handle
+    }
+
+    // Update activitySource list
+    sourcesManager.refreshCurrent { refreshResult ->
+        if (refreshResult.isError) {
+            // handle error
+        } else {
+            // Successfully refreshed connections
+        }
+    }
+}
+```
+
+Replace `GoogleHealthActivitySource.getInstance()` with the appropriate activity source instance (e.g., `FitbitActivitySource.getInstance()`, `GarminActivitySource.getInstance()`, etc.) to connect to different external trackers.
+
 ## Analytics Module
 ### Getting DailyStats
 ```kotlin

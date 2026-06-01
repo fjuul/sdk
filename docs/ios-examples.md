@@ -141,7 +141,7 @@ apiClient.activitySourcesManager?.connect(activitySource: HealthKitActivitySourc
 }
 ```
 
-For external trackers like Polar, Garmin, Suunto, the ConnectionResult will expose an `authenticationUrl` that needs to be opened in an external browser, where the user will have to complete the vendors OAuth flow. At the end of the auth flow, the user will be redirected to the app through a deep link. To handle this deep link the SDK provides the utility class `ExternalAuthenticationFlowHandler`:
+For external trackers like Fitbit, Garmin, Google Health, Oura, Polar, Suunto, and Withings, the ConnectionResult will expose an `authenticationUrl` that needs to be opened in an external browser, where the user will have to complete the vendors OAuth flow. At the end of the auth flow, the user will be redirected to the app through a deep link. To handle this deep link the SDK provides the utility class `ExternalAuthenticationFlowHandler`:
 
 ``` swift
 import FjuulActivitySources

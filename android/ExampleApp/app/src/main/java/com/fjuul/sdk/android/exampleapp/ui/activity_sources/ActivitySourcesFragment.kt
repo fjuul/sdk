@@ -20,6 +20,7 @@ import androidx.lifecycle.Observer
 import com.fjuul.sdk.activitysources.entities.FitbitActivitySource
 import com.fjuul.sdk.activitysources.entities.GarminActivitySource
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource
+import com.fjuul.sdk.activitysources.entities.GoogleHealthActivitySource
 import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource
 import com.fjuul.sdk.activitysources.entities.HealthConnectAvailability
 import com.fjuul.sdk.activitysources.entities.OuraActivitySource
@@ -145,6 +146,7 @@ class ActivitySourcesFragment : Fragment() {
                 ActivitySourcesItem.GARMIN,
                 ActivitySourcesItem.OURA,
                 ActivitySourcesItem.POLAR,
+                ActivitySourcesItem.GOOGLE_HEALTH,
                 ActivitySourcesItem.GOOGLE_FIT,
                 ActivitySourcesItem.HEALTH_CONNECT,
                 ActivitySourcesItem.SUUNTO,
@@ -159,6 +161,7 @@ class ActivitySourcesFragment : Fragment() {
                 ActivitySourcesItem.OURA -> OuraActivitySource.getInstance()
                 ActivitySourcesItem.POLAR -> PolarActivitySource.getInstance()
                 ActivitySourcesItem.GARMIN -> GarminActivitySource.getInstance()
+                ActivitySourcesItem.GOOGLE_HEALTH -> GoogleHealthActivitySource.getInstance()
                 ActivitySourcesItem.SUUNTO -> SuuntoActivitySource.getInstance()
                 ActivitySourcesItem.WITHINGS -> WithingsActivitySource.getInstance()
                 ActivitySourcesItem.GOOGLE_FIT -> GoogleFitActivitySource.getInstance()

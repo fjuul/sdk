@@ -5,13 +5,14 @@ import Foundation
 public class TrackerValue: Equatable {
     public static let FITBIT = TrackerValue(value: "fitbit")
     public static let GARMIN = TrackerValue(value: "garmin")
+    public static let GOOGLEHEALTH = TrackerValue(value: "googlehealth")
     public static let OURA = TrackerValue(value: "oura")
     public static let POLAR = TrackerValue(value: "polar")
     public static let SUUNTO = TrackerValue(value: "suunto")
     public static let WITHINGS = TrackerValue(value: "withings")
     public static let HEALTHKIT = TrackerValue(value: "healthkit")
 
-    static var constants = [ FITBIT, GARMIN, OURA, POLAR, SUUNTO, HEALTHKIT, WITHINGS ]
+    static var constants = [ FITBIT, GARMIN, GOOGLEHEALTH, OURA, POLAR, SUUNTO, HEALTHKIT, WITHINGS ]
 
     public static func == (lhs: TrackerValue, rhs: TrackerValue) -> Bool {
         return lhs.value == rhs.value

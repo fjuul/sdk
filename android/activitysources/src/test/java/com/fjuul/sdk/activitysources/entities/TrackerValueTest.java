@@ -30,6 +30,7 @@ public class TrackerValueTest {
                         TrackerValue.OURA,
                         TrackerValue.SUUNTO,
                         TrackerValue.WITHINGS,
+                        TrackerValue.GOOGLE_HEALTH,
                         TrackerValue.GOOGLE_FIT,
                         TrackerValue.HEALTH_CONNECT));
             }

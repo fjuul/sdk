@@ -76,7 +76,7 @@ class AggregatedDataFetcher {
                     continue
                 }
 
-                DateUtils.dirtyHours(startDate: sampleItem.startDate, endDate: endDate).forEach { date in
+                DateUtils.dirtyUTCHours(startDate: sampleItem.startDate, endDate: endDate).forEach { date in
                     batchStartDates.insert(date)
                 }
             }
@@ -103,7 +103,9 @@ class AggregatedDataFetcher {
             var batches: [BatchDataPoint] = []
 
             batchDates.forEach { batchStart in
-                let batchEnd = Calendar.current.date(byAdding: .hour, value: 1, to: batchStart)!
+                // batchStart is a UTC hour start; use absolute arithmetic so DST transitions
+                // in the device timezone do not distort the enumeration window.
+                let batchEnd = Date(timeInterval: 3600, since: batchStart)
 
                 statsCollection.enumerateStatistics(from: batchStart, to: batchEnd) { statistics, _ in
                     if statistics.sumQuantity() != nil {
@@ -150,7 +152,9 @@ class AggregatedDataFetcher {
             let unit = HKUnit.count().unitDivided(by: HKUnit.minute())
 
             batchDates.forEach { batchStart in
-                let batchEnd = Calendar.current.date(byAdding: .hour, value: 1, to: batchStart)!
+                // batchStart is a UTC hour start; use absolute arithmetic so DST transitions
+                // in the device timezone do not distort the enumeration window.
+                let batchEnd = Date(timeInterval: 3600, since: batchStart)
 
                 statsCollection.enumerateStatistics(from: batchStart, to: batchEnd) { statistics, _ in
                     if statistics.averageQuantity() != nil {
@@ -210,10 +214,12 @@ class AggregatedDataFetcher {
     /// - Returns: dictionary grouped HKStatistics by hour
     static private func groupByHour(data: [HKStatistics]) -> [Date: [HKStatistics]] {
         let initial: [Date: [HKStatistics]] = [:]
+        var utcCalendar = Calendar(identifier: .gregorian)
+        utcCalendar.timeZone = TimeZone(secondsFromGMT: 0)!
 
         let groupedByDateComponents = data.reduce(into: initial) { acc, cur in
-            let components = Calendar.current.dateComponents([.year, .month, .day, .hour], from: cur.startDate)
-            let date = Calendar.current.date(from: components)!
+            let components = utcCalendar.dateComponents([.year, .month, .day, .hour], from: cur.startDate)
+            let date = utcCalendar.date(from: components)!
             let existing = acc[date] ?? []
             acc[date] = existing + [cur]
         }

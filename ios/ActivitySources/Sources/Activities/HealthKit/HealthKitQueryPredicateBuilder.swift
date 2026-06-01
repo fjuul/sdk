@@ -46,9 +46,10 @@ class HealthKitQueryPredicateBuilder {
         var predicates: [NSPredicate] = []
 
         batchDates.forEach { (date) in
-            if let endDate = DateUtils.endOfHour(date: date) {
-                predicates.append(HKQuery.predicateForSamples(withStart: date, end: endDate, options: .strictStartDate))
-            }
+            // batchDates are UTC hour starts; use absolute arithmetic (3600 s) so DST
+            // transitions in the device timezone do not distort the window boundaries.
+            let endDate = Date(timeInterval: 3600 - 1, since: date)
+            predicates.append(HKQuery.predicateForSamples(withStart: date, end: endDate, options: .strictStartDate))
         }
 
         return predicates

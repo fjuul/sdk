@@ -5,7 +5,7 @@ import FjuulCore
  The ActivitySourcesManager encapsulates a connection to fitness trackers, access to current user's tracker connections.
  This is a high-level entity and entry point of the ActivitySources module.
 
- One of the main functions of this module is to connect to activity sources. There are local (i.e. HealthKit) and external trackers (i.e. Polar, Garmin, Fitbit, etc).
+ One of the main functions of this module is to connect to activity sources. There are local (i.e. HealthKit) and external trackers (i.e. Polar, Garmin, Google Health, etc).
  External trackers require user authentication in the web browser.
  
  For handle authentication with external trackers, it require support deep linking in app.

@@ -12,16 +12,6 @@ public class DateUtils {
     }
 
     // Inspired from https://github.com/SwifterSwift/SwifterSwift/blob/master/Sources/SwifterSwift/Foundation/DateExtensions.swift
-    static func beginningOfHour(date: Date?) -> Date? {
-        guard let date = date else { return nil }
-
-        let calendar = Calendar.current
-        let component: Set<Calendar.Component> = [.year, .month, .day, .hour]
-
-        return calendar.date(from: calendar.dateComponents(component, from: date))
-    }
-
-    // Inspired from https://github.com/SwifterSwift/SwifterSwift/blob/master/Sources/SwifterSwift/Foundation/DateExtensions.swift
     static func endOfHour(date: Date?) -> Date? {
         guard let date = date else { return nil }
 
@@ -43,20 +33,21 @@ public class DateUtils {
         return Calendar.current.date(byAdding: .second, value: -1, to: newDate)
     }
 
-    /// Prepare Set with hours starts from beginning of hour.
+    /// Prepare a set of UTC hour start dates (beginning of each UTC hour).
     /// - Parameters:
     ///   - startDate: start Date
     ///   - endDate: end Date
-    /// - Returns: Set of dates
-    static func dirtyHours(startDate: Date, endDate: Date) -> Set<Date> {
-        let calendar = Calendar.current
+    /// - Returns: Set of UTC hour start dates
+    static func dirtyUTCHours(startDate: Date, endDate: Date) -> Set<Date> {
+        var utcCalendar = Calendar(identifier: .gregorian)
+        utcCalendar.timeZone = TimeZone(secondsFromGMT: 0)!
+
         var currentDate = startDate
         var dates = [currentDate]
         var batchStartDates: Set<Date> = []
 
         while currentDate < endDate {
-            // iterate by 1 hour
-            if let newDate = calendar.date(byAdding: .hour, value: 1, to: currentDate) {
+            if let newDate = utcCalendar.date(byAdding: .hour, value: 1, to: currentDate) {
                 currentDate = newDate
 
                 if newDate < endDate {
@@ -68,9 +59,9 @@ public class DateUtils {
         }
         dates.append(endDate)
 
-        // Coverts dates to Set with date starts from beginning of hour
         dates.forEach { batchDate in
-            if let date = DateUtils.beginningOfHour(date: batchDate) {
+            let components = utcCalendar.dateComponents([.year, .month, .day, .hour], from: batchDate)
+            if let date = utcCalendar.date(from: components) {
                 batchStartDates.insert(date)
             }
         }

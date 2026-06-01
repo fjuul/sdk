@@ -49,6 +49,7 @@ class AggregatedDataFetcher {
     ///   - completion: Set of dirtyBacthes startDates and new HK anchor
     private static func dirtyBatches(sampleType: HKSampleType, anchor: HKQueryAnchor?, predicate: NSCompoundPredicate, completion: @escaping (Set<Date>, HKQueryAnchor?) -> Void) {
         var batchStartDates: Set<Date> = []
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: DateUtils.startOfDay(date: Date()))!
 
         let query = HKAnchoredObjectQuery(type: sampleType,
                                           predicate: predicate,
@@ -60,7 +61,22 @@ class AggregatedDataFetcher {
             }
 
             for sampleItem in samples {
-                DateUtils.dirtyHours(startDate: sampleItem.startDate, endDate: sampleItem.endDate).forEach { date in
+                // Ignore samples that start beyond tomorrow. This avoids leaking far-future
+                // start hours into dirty batches because dirtyHours always includes startDate.
+                if sampleItem.startDate > tomorrow {
+                    continue
+                }
+
+                // Filter out dates beyond tomorrow - third-party apps may write data with future dates
+                // to HealthKit. Allow up to tomorrow to handle timezone differences gracefully.
+                let endDate = min(sampleItem.endDate, tomorrow)
+
+                // Skip malformed ranges where startDate is after endDate.
+                if sampleItem.startDate > endDate {
+                    continue
+                }
+
+                DateUtils.dirtyHours(startDate: sampleItem.startDate, endDate: endDate).forEach { date in
                     batchStartDates.insert(date)
                 }
             }

@@ -12,6 +12,7 @@ class WorkoutFetcher {
                       predicateBuilder: HealthKitQueryPredicateBuilder, completion: @escaping (_ data: HKBatchData?, _ newAnchor: HKQueryAnchor?) -> Void) {
         let cycleDispatchGroup = DispatchGroup()
         var workouts: [WorkoutDataPoint] = []
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: DateUtils.startOfDay(date: Date()))!
         let query = HKAnchoredObjectQuery(type: HKObjectType.workoutType(), predicate: predicateBuilder.samplePredicate(),
                                           anchor: anchor, limit: HKObjectQueryNoLimit) { (_, samples, _, newAnchor, error) in
             if error != nil {
@@ -25,6 +26,12 @@ class WorkoutFetcher {
             }
 
             for sampleItem in samples {
+                // Filter out dates beyond tomorrow - third-party apps may write workouts with future dates
+                // to HealthKit. Allow up to tomorrow to handle timezone differences gracefully.
+                if sampleItem.startDate > tomorrow {
+                    continue
+                }
+
                 cycleDispatchGroup.enter()
                 let events = sampleItem.workoutEvents?.compactMap { event in
                     return WorkoutEventData(

@@ -98,6 +98,7 @@ class DailyMetricFetcher {
     ///   - completion: Set of dirty days and new HK anchor
     private static func dirtyDays(sampleType: HKSampleType, anchor: HKQueryAnchor?, predicate: NSCompoundPredicate, completion: @escaping (Set<Date>, HKQueryAnchor?) -> Void) {
         var days: Set<Date> = []
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: DateUtils.startOfDay(date: Date()))!
 
         let query = HKAnchoredObjectQuery(type: sampleType,
                                           predicate: predicate,
@@ -109,8 +110,17 @@ class DailyMetricFetcher {
             }
 
             for sampleItem in samples {
-                days.insert(DateUtils.startOfDay(date: sampleItem.startDate))
-                days.insert(DateUtils.startOfDay(date: sampleItem.endDate))
+                let startDay = DateUtils.startOfDay(date: sampleItem.startDate)
+                let endDay = DateUtils.startOfDay(date: sampleItem.endDate)
+
+                // Filter out dates beyond tomorrow - third-party apps may write data with future dates
+                // to HealthKit. Allow up to tomorrow to handle timezone differences gracefully.
+                if startDay <= tomorrow {
+                    days.insert(startDay)
+                }
+                if endDay <= tomorrow {
+                    days.insert(endDay)
+                }
             }
 
             completion(days, newAnchor)

@@ -446,7 +446,13 @@ class HealthConnectDataManager(
         if (client == null) throw HealthConnectException.UnsupportedHealthConnectException()
         // we group time changes by days with startTime
         if (timeChanges.isNotEmpty()) {
+            // Allow up to tomorrow to handle timezone differences gracefully; anything beyond
+            // that is likely bad data written by a third-party app and must not be synced.
+            // Use start-of-day-after-tomorrow as the cutoff so that all of tomorrow's data is
+            // included (e.g. a record at tomorrow 15:00 is still allowed).
+            val cutoff = LocalDate.now(zone).plusDays(2).atStartOfDay().toInstant(zone)
             timeChanges
+                .filter { it.startTime < cutoff }
                 .groupBy { it.startTime.atZone(zone).toLocalDate().toString() }
                 .forEach { (_, dayTimeChanges) ->
                     // why set? because time changes can intersect. And when we set them into "set",
@@ -458,8 +464,12 @@ class HealthConnectDataManager(
                             it.startTime.atZone(zone).toLocalDateTime().withSecond(ZERO)
                                 .withNano(ZERO)
                                 .toInstant(zone)
+                        // Cap endTime to the cutoff, then expand by 1 minute for the bucket
+                        // boundary, then cap again so the query window never exceeds the cutoff.
+                        val cappedEndTime = minOf(it.endTime, cutoff)
                         val endTime =
-                            it.endTime.plus(Duration.ofMinutes(1)).atZone(zone).toLocalDateTime()
+                            minOf(cappedEndTime.plus(Duration.ofMinutes(1)), cutoff)
+                                .atZone(zone).toLocalDateTime()
                                 .withSecond(ZERO).withNano(ZERO)
                                 .toInstant(zone)
                         val buckets: List<AggregationResultGroupedByDuration> =
@@ -869,12 +879,20 @@ class HealthConnectDataManager(
     }
 
     private fun getTimeChangesDays(timeChangesIntervals: List<HealthConnectTimeInterval>): List<Instant> {
+        // Use start-of-day-after-tomorrow as the cutoff so that all of tomorrow's data is
+        // included (e.g. a record at tomorrow 15:00 is still allowed).
+        val cutoff = LocalDate.now(zone).plusDays(2).atStartOfDay().toInstant(zone)
         val timeChangesDays = mutableSetOf<Instant>()
         timeChangesIntervals.forEach {
+            // Skip intervals that start beyond the cutoff.
+            if (it.startTime >= cutoff) return@forEach
+
             val startTimeIntervalByDay =
                 it.startTime.atZone(zone).toLocalDate().atStartOfDay().atZone(zone).toInstant()
+            // Cap endTime to the cutoff before extracting its day.
+            val cappedEndTime = minOf(it.endTime, cutoff)
             val endTimeIntervalByDay =
-                it.endTime.atZone(zone).toLocalDate().atStartOfDay().atZone(zone).toInstant()
+                cappedEndTime.atZone(zone).toLocalDate().atStartOfDay().atZone(zone).toInstant()
             timeChangesDays.add(startTimeIntervalByDay)
             timeChangesDays.add(endTimeIntervalByDay)
         }

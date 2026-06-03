@@ -60,9 +60,9 @@ final class HealthKitQueryPredicateBuilderTests: XCTestCase {
             healthKitConfig: healthKitActivitySourceConfig
         )
 
-        // Returns start of tomorrow to allow timezone differences.
-        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: Date()))!
-        XCTAssertEqual(sut.dataСollectionEndAt(), tomorrow)
+        // Returns start-of-day-after-tomorrow (= end of tomorrow) to allow timezone differences.
+        let cutoff = Calendar.current.date(byAdding: .day, value: 2, to: Calendar.current.startOfDay(for: Date()))!
+        XCTAssertEqual(sut.dataСollectionEndAt(), cutoff)
     }
 
     func testDataСollectionEndAtWhenEndDateLaterThanDataСollectionStartAt() {
@@ -81,7 +81,7 @@ final class HealthKitQueryPredicateBuilderTests: XCTestCase {
     func testDataСollectionEndAtWhenEndDateIsFarFutureCapsToTomorrow() {
         let startDate = Calendar.current.date(byAdding: .day, value: -20, to: Date())!
         let farFutureEndDate = Calendar.current.date(byAdding: .day, value: 365, to: Date())!
-        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: Date()))!
+        let cutoff = Calendar.current.date(byAdding: .day, value: 2, to: Calendar.current.startOfDay(for: Date()))!
 
         let sut = HealthKitQueryPredicateBuilder(
             healthKitConfig: healthKitActivitySourceConfig,
@@ -89,7 +89,7 @@ final class HealthKitQueryPredicateBuilderTests: XCTestCase {
             endDate: farFutureEndDate
         )
 
-        XCTAssertEqual(sut.dataСollectionEndAt(), tomorrow)
+        XCTAssertEqual(sut.dataСollectionEndAt(), cutoff)
     }
 
     func testDataСollectionEndAtWhenEndDateOlderThanDataСollectionStartAt() {

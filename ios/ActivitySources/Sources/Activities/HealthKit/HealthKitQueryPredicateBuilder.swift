@@ -92,16 +92,17 @@ class HealthKitQueryPredicateBuilder {
         return dates.max()!
     }
 
-    /// End date of data collection. Capped at tomorrow to prevent syncing far future dates
-    /// (which may be written by third-party apps to HealthKit). Allows tomorrow to handle
+    /// End date of data collection. Capped at end-of-tomorrow to prevent syncing far future dates
+    /// (which may be written by third-party apps to HealthKit). Allows all of tomorrow to handle
     /// timezone differences gracefully.
     /// - Returns: Date
     internal func dataСollectionEndAt() -> Date {
-        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: DateUtils.startOfDay(date: Date()))!
-        guard let endDate = self.endDate else { return tomorrow }
+        // Start-of-day-after-tomorrow = end of tomorrow.
+        let cutoff = Calendar.current.date(byAdding: .day, value: 2, to: DateUtils.startOfDay(date: Date()))!
+        guard let endDate = self.endDate else { return cutoff }
 
-        // Cap the end date at tomorrow to prevent syncing far future dates
-        let cappedEndDate = min(endDate, tomorrow)
+        // Cap the end date to prevent syncing far future dates
+        let cappedEndDate = min(endDate, cutoff)
         return [self.dataСollectionStartAt(), cappedEndDate].max()!
     }
 }

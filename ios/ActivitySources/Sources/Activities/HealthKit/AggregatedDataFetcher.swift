@@ -69,8 +69,8 @@ class AggregatedDataFetcher {
                     continue
                 }
 
-                // Filter out dates beyond tomorrow - third-party apps may write data with future dates
-                // to HealthKit. Allow up to tomorrow to handle timezone differences gracefully.
+                // Filter out dates beyond end of tomorrow - third-party apps may write data with future dates
+                // to HealthKit. Allow all of tomorrow to handle timezone differences gracefully.
                 let endDate = min(sampleItem.endDate, cutoff)
 
                 // Skip malformed ranges where startDate is after endDate.

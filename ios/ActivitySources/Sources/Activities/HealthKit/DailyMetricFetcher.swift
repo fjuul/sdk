@@ -115,8 +115,8 @@ class DailyMetricFetcher {
                 let startDay = DateUtils.startOfDay(date: sampleItem.startDate)
                 let endDay = DateUtils.startOfDay(date: sampleItem.endDate)
 
-                // Filter out dates beyond tomorrow - third-party apps may write data with future dates
-                // to HealthKit. Allow up to tomorrow to handle timezone differences gracefully.
+                // Filter out dates beyond end of tomorrow - third-party apps may write data with future dates
+                // to HealthKit. Allow all of tomorrow to handle timezone differences gracefully.
                 if startDay < cutoff {
                     days.insert(startDay)
                 }

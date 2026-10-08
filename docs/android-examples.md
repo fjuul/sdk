@@ -475,10 +475,8 @@ sourcesManager.connect(GoogleHealthActivitySource.getInstance()) { connectResult
         return@connect
     }
 
-    val authenticationUrl = connectResult.value!!
-    // Open the authentication URL in a browser
-    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(authenticationUrl))
-    startActivity(intent)
+    // The SDK returns an Intent for opening the authorization URL.
+    startActivity(connectResult.value!!)
 }
 ```
 
@@ -488,23 +486,34 @@ To handle the OAuth callback after the user completes authentication, use the `E
 import com.fjuul.sdk.activitysources.entities.ExternalAuthenticationFlowHandler
 
 // In your Activity/Fragment that handles the deep link callback
-val connectionStatus = ExternalAuthenticationFlowHandler.handle(uri) { result ->
-    if (result.isError) {
-        // handle error
-        println(result.error!!)
-        return@handle
-    }
-
-    // Update activitySource list
-    sourcesManager.refreshCurrent { refreshResult ->
-        if (refreshResult.isError) {
-            // handle error
-        } else {
-            // Successfully refreshed connections
+val connectionStatus = ExternalAuthenticationFlowHandler.handle(uri)
+if (connectionStatus != null) {
+    if (connectionStatus.isSuccess) {
+        sourcesManager.refreshCurrent { refreshResult ->
+            if (refreshResult.isError) {
+                // Handle refresh failure.
+            }
+        }
+    } else {
+        when (connectionStatus.errorCode) {
+            ExternalAuthenticationFlowHandler.ErrorCode.OAUTH_CANCELLED -> {
+                // The provider reported cancellation via a callback.
+            }
+            ExternalAuthenticationFlowHandler.ErrorCode.GOOGLE_HEALTH_ACCOUNT_NOT_LINKED -> {
+                // Prompt account setup or Fitbit migration, then allow retry.
+            }
+            else -> {
+                // Generic failure, including missing or unknown codes.
+            }
         }
     }
 }
 ```
+
+`ConnectionStatus.getErrorCode()` (Kotlin: `errorCode`) is a nullable string for failed
+callbacks. Empty values are treated as absent, unknown values are preserved, and success
+always takes precedence. For Google Health account setup, direct users to
+https://fitbit.google.com/auth/signup.
 
 Replace `GoogleHealthActivitySource.getInstance()` with the appropriate activity source instance (e.g., `FitbitActivitySource.getInstance()`, `GarminActivitySource.getInstance()`, etc.) to connect to different external trackers.
 

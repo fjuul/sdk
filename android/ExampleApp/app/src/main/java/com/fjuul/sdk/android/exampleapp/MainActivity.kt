@@ -1,7 +1,9 @@
 package com.fjuul.sdk.android.exampleapp
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.navigation.findNavController
@@ -27,23 +29,48 @@ class MainActivity : AppCompatActivity() {
         val appBarConfiguration = AppBarConfiguration(navController.graph)
         findViewById<Toolbar>(R.id.toolbar)
             .setupWithNavController(navController, appBarConfiguration)
+        if (savedInstanceState == null) {
+            handleConnectionCallback(intent)
+        }
     }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        if (intent?.data?.scheme == "fjuulsdk-exampleapp") {
-            val redirectResult = ExternalAuthenticationFlowHandler.handle(intent.data!!)
-            if (redirectResult != null && redirectResult.isSuccess) {
-                val navigationController = binding.navHostFragment.findNavController()
-                if (navigationController.currentDestination?.id == R.id.activitySourcesFragment) {
-                    supportFragmentManager.fragments.forEach {
-                        if(it is ActivitySourcesFragment) {
-                            it.refreshCurrentConnections()
-                            return@forEach
-                        }
-                    }
+        handleConnectionCallback(intent)
+    }
+
+    private fun handleConnectionCallback(intent: Intent?) {
+        val uri = intent?.data ?: return
+        if (uri.scheme != "fjuulsdk-exampleapp") return
+        val status = ExternalAuthenticationFlowHandler.handle(uri) ?: return
+        if (status.isSuccess) {
+            val navigationController = binding.navHostFragment.findNavController()
+            if (navigationController.currentDestination?.id == R.id.activitySourcesFragment) {
+                val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+                navHostFragment.childFragmentManager.fragments.filterIsInstance<ActivitySourcesFragment>().forEach {
+                    it.refreshCurrentConnections()
                 }
             }
+            return
         }
+
+        val (title, message) = when (status.errorCode) {
+            ExternalAuthenticationFlowHandler.ErrorCode.OAUTH_CANCELLED ->
+                "Connection Cancelled" to "The provider cancelled the connection. You can try again."
+            ExternalAuthenticationFlowHandler.ErrorCode.GOOGLE_HEALTH_ACCOUNT_NOT_LINKED ->
+                "Google Health Account Required" to
+                    "Create a Google Health profile or migrate your Fitbit account, then return and retry the connection."
+            else -> "Connection Failed" to "The tracker could not be connected. Please try again."
+        }
+        val alert = AlertDialog.Builder(this).setTitle(title).setMessage(message)
+        if (status.errorCode == ExternalAuthenticationFlowHandler.ErrorCode.GOOGLE_HEALTH_ACCOUNT_NOT_LINKED) {
+            alert.setPositiveButton("Account Setup") { _, _ ->
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://fitbit.google.com/auth/signup")))
+            }
+            alert.setNegativeButton("OK", null)
+        } else {
+            alert.setPositiveButton("OK", null)
+        }
+        alert.show()
     }
 }

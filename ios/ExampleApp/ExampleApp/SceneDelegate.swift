@@ -5,6 +5,7 @@ import FjuulActivitySources
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
     var activitySourceObserver = ActivitySourceObservable()
+    private var pendingConnectionCallback: URL?
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         // Use this method to optionally configure and attach the UIWindow to the provided UIWindowScene `scene`.
@@ -22,6 +23,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             window.rootViewController = UIHostingController(rootView: contentView.environmentObject(activitySourceObserver))
             self.window = window
             window.makeKeyAndVisible()
+            pendingConnectionCallback = connectionOptions.urlContexts.first?.url
         }
     }
 
@@ -31,11 +33,42 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             return
         }
 
+        handleConnectionCallback(url: url)
+    }
+
+    private func handleConnectionCallback(url: URL) {
+        guard url.scheme == "fjuulsdk-exampleapp",
+              url.host == "external_connect" || url.host == "externalConnection" else { return }
+
         let connectionStatus = ExternalAuthenticationFlowHandler.handle(url: url)
-        if connectionStatus.tracker != nil {
-            // Update activitySource list
+        if connectionStatus.success {
             activitySourceObserver.getCurrentConnections()
+            return
         }
+
+        let title: String
+        let message: String
+        switch connectionStatus.errorCode {
+        case ExternalAuthenticationFlowHandler.ErrorCode.oauthCancelled:
+            title = "Connection Cancelled"
+            message = "The provider cancelled the connection. You can try again."
+        case ExternalAuthenticationFlowHandler.ErrorCode.googleHealthAccountNotLinked:
+            title = "Google Health Account Required"
+            message = "Create a Google Health profile or migrate your Fitbit account, then return and retry the connection."
+        default:
+            title = "Connection Failed"
+            message = "The tracker could not be connected. Please try again."
+        }
+
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        if connectionStatus.errorCode == ExternalAuthenticationFlowHandler.ErrorCode.googleHealthAccountNotLinked {
+            alert.addAction(UIAlertAction(title: "Account Setup", style: .default) { _ in
+                guard let signupURL = URL(string: "https://fitbit.google.com/auth/signup") else { return }
+                UIApplication.shared.open(signupURL)
+            })
+        }
+        alert.addAction(UIAlertAction(title: "OK", style: .cancel))
+        window?.rootViewController?.present(alert, animated: true)
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -47,6 +80,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneDidBecomeActive(_ scene: UIScene) {
+        if let url = pendingConnectionCallback {
+            pendingConnectionCallback = nil
+            handleConnectionCallback(url: url)
+        }
         // Called when the scene has moved from an inactive state to an active state.
         // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
     }

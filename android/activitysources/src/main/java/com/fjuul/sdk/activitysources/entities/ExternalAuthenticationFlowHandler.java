@@ -12,6 +12,14 @@ import androidx.annotation.Nullable;
  * you should check that the schema of the incoming intent matches the expected for Fjuul SDK.
  */
 public final class ExternalAuthenticationFlowHandler {
+    /** Known server classifications; unknown errorCode strings remain available to consumers. */
+    public static final class ErrorCode {
+        public static final String OAUTH_CANCELLED = "oauth_cancelled";
+        public static final String GOOGLE_HEALTH_ACCOUNT_NOT_LINKED = "google_health_account_not_linked";
+
+        private ErrorCode() {}
+    }
+
     /**
      * Determines the status of connecting to the external activity source and returns either it if the data of the
      * intent successfully recognized or null.
@@ -27,7 +35,8 @@ public final class ExternalAuthenticationFlowHandler {
             && data.getQueryParameterNames().containsAll(Arrays.asList("success", "service"))) {
             final String service = data.getQueryParameter("service");
             final boolean success = data.getBooleanQueryParameter("success", false);
-            return new ConnectionStatus(service, success);
+            final String errorCode = data.getQueryParameter("errorCode");
+            return new ConnectionStatus(service, success, errorCode);
         }
         return null;
     }
@@ -36,10 +45,17 @@ public final class ExternalAuthenticationFlowHandler {
         @NonNull
         private final String service;
         private final boolean success;
+        @Nullable
+        private final String errorCode;
 
         protected ConnectionStatus(@NonNull String service, boolean success) {
+            this(service, success, null);
+        }
+
+        protected ConnectionStatus(@NonNull String service, boolean success, @Nullable String errorCode) {
             this.service = service;
             this.success = success;
+            this.errorCode = !success && errorCode != null && !errorCode.isEmpty() ? errorCode : null;
         }
 
         /**
@@ -55,6 +71,17 @@ public final class ExternalAuthenticationFlowHandler {
 
         public boolean isSuccess() {
             return success;
+        }
+
+        /**
+         * Optional server classification for a failed connection. Missing or empty codes and successful callbacks
+         * return null. Unknown codes are preserved.
+         *
+         * @return error code, or null for success or an unclassified failure
+         */
+        @Nullable
+        public String getErrorCode() {
+            return errorCode;
         }
     }
 }

@@ -4,6 +4,18 @@ import Foundation
 public struct ConnectionStatus {
     public var tracker: TrackerValue?
     public let success: Bool
+    /// Optional server classification for a failed connection; unknown codes are preserved.
+    public let errorCode: String?
+
+    public init(tracker: TrackerValue? = nil, success: Bool) {
+        self.init(tracker: tracker, success: success, errorCode: nil)
+    }
+
+    public init(tracker: TrackerValue? = nil, success: Bool, errorCode: String?) {
+        self.tracker = tracker
+        self.success = success
+        self.errorCode = !success && errorCode != "" ? errorCode : nil
+    }
 }
 
 /**
@@ -27,6 +39,12 @@ public struct ConnectionStatus {
  ~~~
 */
 final public class ExternalAuthenticationFlowHandler {
+    /// Known server classifications. Compare these constants with ConnectionStatus.errorCode.
+    public enum ErrorCode {
+        public static let oauthCancelled = "oauth_cancelled"
+        public static let googleHealthAccountNotLinked = "google_health_account_not_linked"
+    }
+
     /// Determines the status of connecting to the external activity source and returns ConnectionStatus
     /// - Parameter url: instance of URL
     /// - Returns: ConnectionStatus
@@ -42,7 +60,8 @@ final public class ExternalAuthenticationFlowHandler {
 
         let successValue = components.queryItems?.first(where: { $0.name == "success" })?.value ?? "false"
         let success = successValue == "true"
+        let errorCode = components.queryItems?.first(where: { $0.name == "errorCode" })?.value
 
-        return ConnectionStatus(tracker: tracker, success: success)
+        return ConnectionStatus(tracker: tracker, success: success, errorCode: errorCode)
     }
 }

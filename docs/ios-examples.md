@@ -157,8 +157,24 @@ if connectionStatus.success {
             // handle error
         }
     }
+} else {
+    switch connectionStatus.errorCode {
+    case ExternalAuthenticationFlowHandler.ErrorCode.oauthCancelled:
+        // The provider reported cancellation via a callback.
+        break
+    case ExternalAuthenticationFlowHandler.ErrorCode.googleHealthAccountNotLinked:
+        // Prompt account setup or Fitbit migration, then allow retry.
+        break
+    default:
+        // Generic failure, including missing or unknown codes.
+        break
+    }
 }
 ```
+
+`ConnectionStatus.errorCode` is an optional string for failed callbacks. Empty values
+are treated as absent, unknown values are preserved, and success always takes precedence.
+For Google Health account setup, direct users to https://fitbit.google.com/auth/signup.
 
 Sync the user profile from HealthKit:
 ```swift

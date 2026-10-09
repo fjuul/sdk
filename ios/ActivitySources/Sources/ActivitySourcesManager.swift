@@ -7,17 +7,32 @@ import FjuulCore
 
  One of the main functions of this module is to connect to activity sources. There are local (i.e. HealthKit) and external trackers (i.e. Polar, Garmin, Google Health, etc).
  External trackers require user authentication in the web browser.
- 
+
  For handle authentication with external trackers, it require support deep linking in app.
 */
 final public class ActivitySourcesManager {
     let apiClient: ActivitySourcesApiClient
     let config: ActivitySourceConfigBuilder
 
-    public private(set) var mountedActivitySourceConnections: [ActivitySourceConnection] = []
+    /// Connections whose activity sources are currently mounted on this device.
+    public var mountedActivitySourceConnections: [ActivitySourceConnection] {
+        return stateQueue.sync { mountedConnections }
+    }
 
     private let persistor: Persistor
     private let connectionsLocalStore: ActivitySourcesStateStore
+    private let connectionFactory: (TrackerConnection) -> ActivitySourceConnection
+
+    /// Owns all local state below. Callbacks of mounting and unmounting hop onto it before touching that state.
+    private let stateQueue = DispatchQueue(label: "com.fjuul.sdk.activitysources.ActivitySourcesManager")
+    private var mountedConnections: [ActivitySourceConnection] = []
+    /// Requests affecting local state are numbered in call order; local state only moves forward, so a refresh response
+    /// is applied only if its request is newer than the one that last changed the state (refresh, disconnect or unmount).
+    private var lastSequenceNumber = 0
+    private var appliedSequenceNumber = 0
+    /// Local state changes complete asynchronously, so they run one at a time in the order they were requested.
+    private var pendingStateChanges: [() -> Void] = []
+    private var isChangingState = false
 
     /// Internal initializer.
     ///
@@ -26,27 +41,31 @@ final public class ActivitySourcesManager {
     ///   - persistor: for persisted data like HealthKit anchors
     ///   - apiClient: configured client of ActivitySourcesApiClient
     ///   - config: Activity source config
+    ///   - connectionFactory: Creates the activity source connection for a tracker connection
     ///   - completion: Optional completion block will be called when the local state is restored
     internal init(userToken: String,
                   persistor: Persistor,
                   apiClient: ActivitySourcesApiClient,
                   config: ActivitySourceConfigBuilder,
+                  connectionFactory: @escaping (TrackerConnection) -> ActivitySourceConnection =
+                    ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection:),
                   completion: ((Result<Void, Error>) -> Void)? = nil) {
 
         self.apiClient = apiClient
         self.persistor = persistor
         self.config = config
         self.connectionsLocalStore = ActivitySourcesStateStore(userToken: userToken, persistor: persistor)
+        self.connectionFactory = connectionFactory
 
-        self.restoreState { result in
-            if let completion = completion {
-                completion(result)
-            }
-        }
+        changeState({ finish in
+            self.reconcile(to: self.connectionsLocalStore.connections ?? [], persisting: false, completion: finish)
+        }, completion: { error in
+            completion?(error.map { .failure($0) } ?? .success(()))
+        })
     }
 
     /// Connect specified ActivitySource.
-    /// 
+    ///
     /// # ConnectionResult can have 2 states:
     /// 1) connected: it will contain TrackerConnection data
     /// 2) authenticationUrl: it will contain authenticationUrl, the SDK consumer needs to open that URL in the browser to allow the user to finish
@@ -77,213 +96,154 @@ final public class ActivitySourcesManager {
         }
     }
 
-    /// Disconnects the activity source connection and refreshes current connection list.
+    /// Disconnects the activity source connection and removes it from the local state.
     /// In the case of HealthKitActivitySource it will disable backgroundDelivery.
     /// - Parameters:
     ///   - activitySourceConnection: instance of ActivitySourceConnection
     ///   - completion: with void or error
     public func disconnect(activitySourceConnection: ActivitySourceConnection, completion: @escaping (Result<Void, Error>) -> Void) {
         apiClient.disconnect(activitySourceConnection: activitySourceConnection) { result in
-            switch result {
-            case .success:
-                activitySourceConnection.unmount { unmountResult in
-                    switch unmountResult {
-                    case .success:
-                        self.mountedActivitySourceConnections = self.mountedActivitySourceConnections.filter { connection in
-                            connection.tracker != activitySourceConnection.tracker
-                        }
-                        completion(.success(()))
-                    case .failure(let err):
-                        completion(.failure(err))
-                    }
-                }
-            case .failure(let err):
-                completion(.failure(err))
+            if case .failure(let err) = result {
+                return DispatchQueue.global().async { completion(.failure(err)) }
             }
+            let tracker = activitySourceConnection.tracker.value
+            self.changeState(supersedingEarlierRefreshes: true, { finish in
+                self.connectionsLocalStore.connections = self.connectionsLocalStore.connections?.filter { $0.tracker != tracker }
+                self.unmountSequentially(self.mountedConnections.filter { $0.tracker.value == tracker }, completion: finish)
+            }, completion: { error in
+                completion(error.map { .failure($0) } ?? .success(()))
+            })
         }
     }
 
     /// Returns a list of current connections of the user (from back-end) and mount/unmount activitySource if they do not exist in the local state.
+    /// The fetched connections are only applied locally if no later refresh has been applied and no `unmount` or
+    /// successful disconnect happened since the request was made; they are returned either way.
     /// - Parameter completion: completion with [ActivitySourceConnection] or Error
     public func refreshCurrent(completion: @escaping (Result<[ActivitySourceConnection], Error>) -> Void) {
-        apiClient.getCurrentConnections { result in
-            switch result {
-            case .success(let connections):
-                let activitySourceConnections = connections.compactMap { connection in
-                    return ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: connection)
+        stateQueue.async {
+            let sequenceNumber = self.nextSequenceNumber()
+            self.apiClient.getCurrentConnections { result in
+                switch result {
+                case .success(let connections):
+                    let activitySourceConnections = connections.map(self.connectionFactory)
+                    self.changeState({ finish in
+                        // The response may predate a newer refresh, a disconnect or an unmount (e.g. on logout).
+                        guard sequenceNumber > self.appliedSequenceNumber else { return finish(nil) }
+                        self.appliedSequenceNumber = sequenceNumber
+                        self.reconcile(to: connections, completion: finish)
+                    }, completion: { error in
+                        completion(error.map { .failure($0) } ?? .success(activitySourceConnections))
+                    })
+                case .failure(let err):
+                    DispatchQueue.global().async { completion(.failure(err)) }
                 }
-                self.refreshCurrentConnections(connections: connections) { result in
-                    switch result {
-                    case .success:
-                        completion(.success(activitySourceConnections))
-                    case .failure(let err):
-                        completion(.failure(err))
-                    }
-                }
-            case .failure(let err):
-                completion(.failure(err))
             }
         }
     }
 
     /// Unmount all ActivitySources. Useful for logout from app case. The trackers will not be disconnected,
-    /// but all locally mounted ActivitySources will be unmounted on the device. Currently only HealthKitActivitySource is mountable
+    /// but all locally mounted ActivitySources will be unmounted on the device. Currently only HealthKitActivitySource is mountable.
+    /// Waits for local state changes already in progress (e.g. a source being mounted) to finish first.
     /// - Parameter completion: void or error
     public func unmount(completion: @escaping (Result<Void, Error>) -> Void) {
-        let group = DispatchGroup()
-        var error: Error?
+        changeState(supersedingEarlierRefreshes: true, { finish in
+            self.unmountSequentially(self.mountedConnections, completion: finish)
+        }, completion: { error in
+            completion(error.map { .failure($0) } ?? .success(()))
+        })
+    }
 
-        self.mountedActivitySourceConnections.forEach { activitySourceConnection in
+    // MARK: - Local state (only accessed on `stateQueue`)
 
-            group.enter()
-            activitySourceConnection.unmount { result in
-                switch result {
-                case .success: break
-                case .failure(let err):
-                    error = err
+    /// Runs `change` on the state queue once all earlier changes have finished, then calls `completion` off that queue.
+    /// `change` must call `finish` exactly once, on the state queue.
+    private func changeState(supersedingEarlierRefreshes: Bool = false,
+                             _ change: @escaping (_ finish: @escaping (Error?) -> Void) -> Void,
+                             completion: @escaping (Error?) -> Void) {
+        stateQueue.async {
+            if supersedingEarlierRefreshes {
+                self.appliedSequenceNumber = self.nextSequenceNumber()
+            }
+            self.pendingStateChanges.append {
+                change { error in
+                    self.isChangingState = false
+                    self.startNextStateChange()
+                    DispatchQueue.global().async { completion(error) }
                 }
-
-                group.leave()
             }
+            self.startNextStateChange()
         }
+    }
 
-        group.notify(queue: DispatchQueue.global()) {
-            if let err = error {
-                completion(.failure(err))
-            } else {
-                self.mountedActivitySourceConnections = []
-                completion(.success(()))
+    private func nextSequenceNumber() -> Int {
+        lastSequenceNumber += 1
+        return lastSequenceNumber
+    }
+
+    private func startNextStateChange() {
+        guard !isChangingState, !pendingStateChanges.isEmpty else { return }
+        isChangingState = true
+        pendingStateChanges.removeFirst()()
+    }
+
+    /// Persists `desired` (unless restoring from it), unmounts mounted sources that aren't in it, then mounts the missing ones.
+    /// Completes on the state queue with the first error; later steps still run.
+    private func reconcile(to desired: [TrackerConnection], persisting: Bool = true, completion: @escaping (Error?) -> Void) {
+        if persisting {
+            connectionsLocalStore.connections = desired
+        }
+        let obsolete = mountedConnections.filter { mounted in !desired.contains { $0.tracker == mounted.tracker.value } }
+        unmountSequentially(obsolete) { unmountError in
+            let missing = desired.filter { connection in !self.mountedConnections.contains { $0.tracker.value == connection.tracker } }
+            self.mountSequentially(missing.map(self.connectionFactory)) { mountError in
+                completion(unmountError ?? mountError)
             }
         }
     }
 
-    private func refreshCurrentConnections(connections: [TrackerConnection], completion: @escaping (Result<Void, Error>) -> Void) {
-        let group = DispatchGroup()
-        var error: Error?
-
-        // Mount new trackers
-        group.enter()
-        self.mountByConnections(connections: connections) { result in
-            switch result {
-            case .success: break
-            case .failure(let err):
-                error = err
-            }
-
-            group.leave()
-        }
-
-        // Unmount not relevant Trackers
-        group.enter()
-        self.unmountByConnections(connections: connections) { result in
-            switch result {
-            case .success: break
-            case .failure(let err):
-                error = err
-            }
-
-            group.leave()
-        }
-
-        self.connectionsLocalStore.connections = connections
-
-        group.notify(queue: DispatchQueue.global()) {
-            if let err = error {
-                completion(.failure(err))
-            } else {
-                completion(.success(()))
-            }
-        }
-    }
-
-    private func mountByConnections(connections: [TrackerConnection], completion: @escaping (Result<Void, Error>) -> Void) {
-        let group = DispatchGroup()
-        var error: Error?
-
-        connections.forEach { connection in
-            if self.mountedActivitySourceConnections.contains(where: { element in element.tracker.value == connection.tracker }) {
-              return
-            }
-
-            group.enter()
-
-            let activitySourceConnection = ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: connection)
-            activitySourceConnection.mount(apiClient: apiClient, config: config, persistor: persistor) { result in
-                switch result {
-                case .success:
-                    self.mountedActivitySourceConnections.append(activitySourceConnection)
-                case .failure(let err):
-                    error = err
-                    DataLogger.shared.error("Error on mountByConnections \(err)")
-                }
-                group.leave()
-            }
-        }
-
-        group.notify(queue: DispatchQueue.global()) {
-            if let err = error {
-                completion(.failure(err))
-            } else {
-                completion(.success(()))
-            }
-        }
-    }
-
-    private func unmountByConnections(connections: [TrackerConnection], completion: @escaping (Result<Void, Error>) -> Void) {
-        let group = DispatchGroup()
-        var error: Error?
-
-        self.mountedActivitySourceConnections.forEach { activitySourceConnection in
-            if !connections.contains(where: { element in element.tracker == activitySourceConnection.tracker.value }) {
-                group.enter()
-
-                activitySourceConnection.unmount { result in
+    private func mountSequentially(_ connections: [ActivitySourceConnection], completion: @escaping (Error?) -> Void) {
+        sequentially(connections, completion: completion) { connection, finish in
+            connection.mount(apiClient: self.apiClient, config: self.config, persistor: self.persistor) { result in
+                self.stateQueue.async {
                     switch result {
                     case .success:
-                        self.mountedActivitySourceConnections.removeAll { value in value.id == activitySourceConnection.id }
+                        self.mountedConnections.append(connection)
+                        finish(nil)
                     case .failure(let err):
-                        error = err
-                        DataLogger.shared.error("Error on unmount \(err)")
+                        DataLogger.shared.error("Error on mounting \(connection.tracker.value): \(err)")
+                        finish(err)
                     }
-
-                    group.leave()
                 }
-            }
-        }
-
-        group.notify(queue: DispatchQueue.global()) {
-            if let err = error {
-                completion(.failure(err))
-            } else {
-                completion(.success(()))
             }
         }
     }
 
-    private func restoreState(completion: @escaping (Result<Void, Error>) -> Void) {
-        let group = DispatchGroup()
-        var error: Error?
-        connectionsLocalStore.connections?.forEach { connection in
-            group.enter()
-            let activitySourceConnection = ActivitySourceConnectionFactory.activitySourceConnection(trackerConnection: connection)
-            activitySourceConnection.mount(apiClient: apiClient, config: config, persistor: persistor) { result in
-                switch result {
-                case .success:
-                    self.mountedActivitySourceConnections.append(activitySourceConnection)
-                case .failure(let err):
-                    error = err
-                    DataLogger.shared.error("Error: on restore connectionsLocalStore state \(err)")
+    private func unmountSequentially(_ connections: [ActivitySourceConnection], completion: @escaping (Error?) -> Void) {
+        sequentially(connections, completion: completion) { connection, finish in
+            connection.unmount { result in
+                self.stateQueue.async {
+                    switch result {
+                    case .success:
+                        self.mountedConnections.removeAll { $0.id == connection.id }
+                        finish(nil)
+                    case .failure(let err):
+                        DataLogger.shared.error("Error on unmounting \(connection.tracker.value): \(err)")
+                        finish(err)
+                    }
                 }
-                group.leave()
             }
         }
+    }
 
-        group.notify(queue: .global()) {
-            if let err = error {
-                completion(.failure(err))
-            } else {
-                completion(.success(()))
-            }
+    /// Runs `step` for each element, one after another; completes with the first error after all steps ran.
+    private func sequentially<Element>(_ elements: [Element], firstError: Error? = nil, completion: @escaping (Error?) -> Void,
+                                       step: @escaping (Element, @escaping (Error?) -> Void) -> Void) {
+        guard let element = elements.first else {
+            return completion(firstError)
+        }
+        step(element) { error in
+            self.sequentially(Array(elements.dropFirst()), firstError: firstError ?? error, completion: completion, step: step)
         }
     }
 }

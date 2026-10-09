@@ -146,9 +146,9 @@ class LoginFragment : Fragment() {
                     .setUserCredentials(UserCredentials(token!!, secret!!))
                     .build()
                 authorizedUserDataViewModel.fetchUserProfile(apiClient) { success, exception ->
-                    ApiClientHolder.setup(apiClient)
-                    ActivitySourcesManager.initialize(apiClient, activitySourcesManagerConfig)
                     if (success) {
+                        ApiClientHolder.setup(apiClient)
+                        ActivitySourcesManager.initialize(apiClient, activitySourcesManagerConfig)
                         val action = LoginFragmentDirections.actionLoginFragmentToModulesFragment()
                         findNavController().navigate(action)
                     } else {

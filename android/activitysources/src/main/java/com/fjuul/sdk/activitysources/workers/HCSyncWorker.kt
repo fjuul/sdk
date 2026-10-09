@@ -15,7 +15,8 @@ abstract class HCSyncWorker(context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
 
     protected val activitySourcesManager: ActivitySourcesManager
-        get() {
+        // `initialize` holds this monitor, so a foreground initialization can't happen between the check and ours.
+        get() = synchronized(ActivitySourcesManager::class.java) {
             var sourcesManager: ActivitySourcesManager
             try {
                 sourcesManager = ActivitySourcesManager.getInstance()
@@ -34,7 +35,7 @@ abstract class HCSyncWorker(context: Context, workerParams: WorkerParameters) :
                 ActivitySourcesManager.initialize(client, config)
                 sourcesManager = ActivitySourcesManager.getInstance()
             }
-            return sourcesManager
+            sourcesManager
         }
 
     protected fun getHealthConnectActivitySourceConnection(

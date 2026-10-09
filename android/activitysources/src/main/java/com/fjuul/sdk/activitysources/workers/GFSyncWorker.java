@@ -29,6 +29,14 @@ public abstract class GFSyncWorker extends Worker {
 
     @NonNull
     protected ActivitySourcesManager getOrInitializeActivitySourcesManager() {
+        // `initialize` holds this monitor, so a foreground initialization can't happen between the check and ours.
+        synchronized (ActivitySourcesManager.class) {
+            return getOrInitializeActivitySourcesManagerLocked();
+        }
+    }
+
+    @NonNull
+    private ActivitySourcesManager getOrInitializeActivitySourcesManagerLocked() {
         ActivitySourcesManager sourcesManager;
         try {
             sourcesManager = ActivitySourcesManager.getInstance();

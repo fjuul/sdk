@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -21,9 +22,12 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -567,6 +571,74 @@ public class ActivitySourcesManagerTest {
                     apiCallException,
                     callbackResult.getError());
             }
+        }
+    }
+
+    public static class RefreshCurrentIfUploadRejectedTests extends GivenRobolectricContext {
+        ActivitySourcesService mockedSourcesService;
+        ApiCall<TrackerConnection[]> mockedGetConnectionsApiCall;
+        AtomicReference<ApiCallCallback<TrackerConnection[]>> pendingRefreshCallback;
+
+        @Before
+        public void beforeTest() {
+            mockedSourcesService = mock(ActivitySourcesService.class);
+            mockedGetConnectionsApiCall = mock(ApiCall.class);
+            pendingRefreshCallback = new AtomicReference<>();
+            doAnswer(invocation -> {
+                pendingRefreshCallback.set(invocation.getArgument(0, ApiCallCallback.class));
+                return null;
+            }).when(mockedGetConnectionsApiCall).enqueue(any());
+            when(mockedSourcesService.getCurrentConnections()).thenReturn(mockedGetConnectionsApiCall);
+            ActivitySourcesManager.setInstance(new ActivitySourcesManager(mock(ActivitySourcesManagerConfig.class),
+                mock(BackgroundWorkManager.class),
+                mockedSourcesService,
+                mock(ActivitySourcesStateStore.class),
+                mock(ActivitySourceResolver.class),
+                new CopyOnWriteArrayList<>(),
+                mock(Context.class)));
+        }
+
+        @After
+        public void afterTest() {
+            ActivitySourcesManager.setInstance(null);
+        }
+
+        @Test
+        public void refreshCurrentIfUploadRejected_whenConflictOnBackgroundThread_blocksUntilRefreshCompletes()
+            throws InterruptedException {
+            final Exception uploadError =
+                new ApiExceptions.CommonException("Failed to send data", new ApiExceptions.ConflictException("409"));
+            final Thread syncThread =
+                new Thread(() -> ActivitySourcesManager.refreshCurrentIfUploadRejected(uploadError));
+
+            syncThread.start();
+
+            verify(mockedGetConnectionsApiCall, timeout(1000)).enqueue(any());
+            syncThread.join(200);
+            assertTrue("should wait for the refresh to complete", syncThread.isAlive());
+
+            pendingRefreshCallback.get()
+                .onResult(mockedGetConnectionsApiCall, ApiCallResult.error(new ApiExceptions.BadRequestException("")));
+            syncThread.join(1000);
+            assertFalse("should return once the refresh completed", syncThread.isAlive());
+        }
+
+        @Test
+        public void refreshCurrentIfUploadRejected_whenNotConflict_doesNotRefresh() {
+            ActivitySourcesManager.refreshCurrentIfUploadRejected(new ApiExceptions.BadRequestException("400"));
+
+            verifyNoInteractions(mockedSourcesService);
+        }
+
+        @Test
+        public void refreshCurrentIfUploadRejected_whenConflictOnMainThread_refreshesWithoutBlocking() {
+            final long startedAt = System.nanoTime();
+
+            ActivitySourcesManager.refreshCurrentIfUploadRejected(new ApiExceptions.ConflictException("409"));
+
+            verify(mockedGetConnectionsApiCall).enqueue(any());
+            assertTrue("should not wait on the main thread",
+                TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - startedAt) < 5);
         }
     }
 }

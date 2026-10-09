@@ -266,6 +266,39 @@ final class ActivitySourcesApiTests: XCTestCase {
         waitForExpectations(timeout: 5.0, handler: nil)
     }
 
+    func testSendHealthKitBatchDataWithConflictRefreshesCurrentConnections() {
+        let uploadFailed = expectation(description: "Upload fails with 409")
+        let connectionsRefreshed = expectation(description: "Current connections are refreshed")
+
+        apiClient.activitySourcesManager = ActivitySourcesManager(
+            userToken: apiClient.userToken,
+            persistor: InMemoryPersistor(),
+            apiClient: sut,
+            config: ActivitySourceConfigBuilder { _ in }
+        )
+
+        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/healthkit")) { _ in
+            return HTTPStubsResponse(data: Data(), statusCode: 409, headers: nil)
+        }
+        stub(condition: isHost("apibase") && isPath("/sdk/activity-sources/v1/\(apiClient.userToken)/connections")) { request in
+            XCTAssertEqual(request.httpMethod, "GET")
+            connectionsRefreshed.fulfill()
+            return HTTPStubsResponse(data: Data("[]".utf8), statusCode: 200, headers: nil)
+        }
+
+        let entries = [AggregatedDataPoint(value: 3.141592, start: Date())]
+        let batches = [BatchDataPoint(sourceBundleIdentifiers: ["com.apple.health.ADBA62D3-FDA1-413C-AA68-874E1D1A9DF1"], entries: entries)]
+
+        sut.sendHealthKitBatchData(data: HKBatchData(caloriesData: batches)) { result in
+            if case .success = result {
+                XCTFail("Should be failed request")
+            }
+            XCTAssertTrue(Thread.isMainThread)
+            uploadFailed.fulfill()
+        }
+        wait(for: [connectionsRefreshed, uploadFailed], timeout: 5.0, enforceOrder: true)
+    }
+
     func testSendHealthKitDailyMetricData() {
         let e = expectation(description: "Request on send daily metric data")
 

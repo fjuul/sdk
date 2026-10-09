@@ -32,12 +32,21 @@ class ActivitySourceObservable: ObservableObject {
         ApiClientHolder.default.apiClient?.activitySourcesManager?.refreshCurrent { result in
             switch result {
             case .success(let connections):
-                self.currentConnections = connections
-                self.notConnectedActivitySources = self.availableActivitySources.filter { item in
-                    return !connections.contains { connection in connection.tracker == item.trackerValue }
-                }
+                self.setConnections(connections)
             case .failure(let err): self.error = ErrorHolder(error: err)
             }
+        }
+    }
+
+    func loadLocalConnections() {
+        guard let manager = ApiClientHolder.default.apiClient?.activitySourcesManager else { return }
+        setConnections(manager.mountedActivitySourceConnections)
+    }
+
+    private func setConnections(_ connections: [ActivitySourceConnection]) {
+        self.currentConnections = connections
+        self.notConnectedActivitySources = self.availableActivitySources.filter { item in
+            return !connections.contains { connection in connection.tracker == item.trackerValue }
         }
     }
 

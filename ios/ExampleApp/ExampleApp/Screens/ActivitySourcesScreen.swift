@@ -53,6 +53,9 @@ struct ActivitySourcesScreen: View {
             }
         }
         .navigationBarTitle("Activity Sources", displayMode: .inline)
+        .onAppear {
+            activitySourceObserver.loadLocalConnections()
+        }
         .alert(item: $activitySourceObserver.error) { holder in
             Alert(title: Text(holder.error.localizedDescription))
         }

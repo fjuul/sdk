@@ -21,14 +21,7 @@ class HealthKitSyncObservable: ObservableObject {
     var enabledConfigTypes: Set<HealthKitConfigType> = Set(HealthKitConfigType.allCases)
 
     func syncIntradayMetrics() {
-        guard let activitySourceConnection = ApiClientHolder.default.apiClient?.activitySourcesManager?
-                .mountedActivitySourceConnections.first(where: { item in item.activitySource is HealthKitActivitySource }) else {
-            return
-        }
-
-        guard let activitySource = activitySourceConnection.activitySource as? HealthKitActivitySource else {
-            return
-        }
+        guard let activitySource = mountedHealthKitActivitySource() else { return }
 
         self.isLoadingIntraday = true
 
@@ -46,14 +39,7 @@ class HealthKitSyncObservable: ObservableObject {
     }
 
     func syncDailyMetrics() {
-        guard let activitySourceConnection = ApiClientHolder.default.apiClient?.activitySourcesManager?
-                .mountedActivitySourceConnections.first(where: { item in item.activitySource is HealthKitActivitySource }) else {
-            return
-        }
-
-        guard let activitySource = activitySourceConnection.activitySource as? HealthKitActivitySource else {
-            return
-        }
+        guard let activitySource = mountedHealthKitActivitySource() else { return }
 
         self.isLoadingDailyMetrics = true
 
@@ -71,14 +57,7 @@ class HealthKitSyncObservable: ObservableObject {
     }
 
     func syncProfile() {
-        guard let activitySourceConnection = ApiClientHolder.default.apiClient?.activitySourcesManager?
-                .mountedActivitySourceConnections.first(where: { item in item.activitySource is HealthKitActivitySource }) else {
-            return
-        }
-
-        guard let activitySource = activitySourceConnection.activitySource as? HealthKitActivitySource else {
-            return
-        }
+        guard let activitySource = mountedHealthKitActivitySource() else { return }
 
         self.isLoadingProfile = true
 
@@ -96,14 +75,7 @@ class HealthKitSyncObservable: ObservableObject {
     }
 
     func syncWorkouts() {
-        guard let activitySourceConnection = ApiClientHolder.default.apiClient?.activitySourcesManager?
-                .mountedActivitySourceConnections.first(where: { item in item.activitySource is HealthKitActivitySource }) else {
-            return
-        }
-
-        guard let activitySource = activitySourceConnection.activitySource as? HealthKitActivitySource else {
-            return
-        }
+        guard let activitySource = mountedHealthKitActivitySource() else { return }
 
         self.isLoadingWorkouts = true
 
@@ -127,4 +99,18 @@ class HealthKitSyncObservable: ObservableObject {
             }
         }
     }
+
+    private func mountedHealthKitActivitySource() -> HealthKitActivitySource? {
+        let activitySource = ApiClientHolder.default.apiClient?.activitySourcesManager?
+            .mountedActivitySourceConnections.first(where: { item in item.activitySource is HealthKitActivitySource })?
+            .activitySource as? HealthKitActivitySource
+        if activitySource == nil {
+            self.error = ErrorHolder(error: NoHealthKitConnectionError())
+        }
+        return activitySource
+    }
+}
+
+private struct NoHealthKitConnectionError: LocalizedError {
+    var errorDescription: String? { "No active HealthKit connection" }
 }

@@ -209,6 +209,37 @@ final class ActivitySourcesManagerUnmountTests: XCTestCase {
         XCTAssertEqual(persistedConnectionIds(), [], "A manager created later should not restore the disconnected source")
     }
 
+    func testOlderRefreshResponseArrivingLastDoesNotOverwriteNewerState() {
+        // Given
+        let olderTrackerConnection = TrackerConnection(id: "1b6f3d8a-9c2e-4a7f-b5d1-8e4c0a2f6b93", tracker: "polar", createdAt: Date(), endedAt: nil)
+        let newerTrackerConnection = TrackerConnection(id: "8d4a2c6e-3f1b-4d9a-a7e5-2b9f6c1d0e47", tracker: "garmin", createdAt: Date(), endedAt: nil)
+        let olderRefreshed = expectation(description: "Older refresh completes")
+        let newerRefreshed = expectation(description: "Newer refresh completes")
+        var getConnectionsCalls = 0
+        var pendingOlderResponse: ((Result<[TrackerConnection], Error>) -> Void)?
+
+        Perform(apiClientMock, .getCurrentConnections(completion: .any, perform: { (completion) in
+            getConnectionsCalls += 1
+            if getConnectionsCalls == 1 {
+                pendingOlderResponse = completion
+            } else {
+                completion(.success([newerTrackerConnection]))
+            }
+        }))
+        let sut = makeManager()
+
+        // When
+        sut.refreshCurrent { _ in olderRefreshed.fulfill() }
+        sut.refreshCurrent { _ in newerRefreshed.fulfill() }
+        wait(for: [newerRefreshed], timeout: 5)
+        pendingOlderResponse?(.success([olderTrackerConnection]))
+
+        // Then
+        wait(for: [olderRefreshed], timeout: 5)
+        XCTAssertEqual(sut.mountedActivitySourceConnections.map { $0.id }, [newerTrackerConnection.id])
+        XCTAssertEqual(persistedConnectionIds(), [newerTrackerConnection.id])
+    }
+
     func testRefreshCurrentUnmountsObsoleteSourcesBeforeMountingNewOnes() {
         // Given
         let healthKitMock = MountableHealthKitActivitySourceMock()

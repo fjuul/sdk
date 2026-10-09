@@ -26,8 +26,10 @@ final public class ActivitySourcesManager {
     /// Owns all local state below. Callbacks of mounting and unmounting hop onto it before touching that state.
     private let stateQueue = DispatchQueue(label: "com.fjuul.sdk.activitysources.ActivitySourcesManager")
     private var mountedConnections: [ActivitySourceConnection] = []
-    /// Advanced by `unmount()` and successful disconnects, so refreshes requested before them can't undo them.
-    private var generation = 0
+    /// Requests affecting local state are numbered in call order; local state only moves forward, so a refresh response
+    /// is applied only if its request is newer than the one that last changed the state (refresh, disconnect or unmount).
+    private var lastSequenceNumber = 0
+    private var appliedSequenceNumber = 0
     /// Local state changes complete asynchronously, so they run one at a time in the order they were requested.
     private var pendingStateChanges: [() -> Void] = []
     private var isChangingState = false
@@ -105,7 +107,7 @@ final public class ActivitySourcesManager {
                 return DispatchQueue.global().async { completion(.failure(err)) }
             }
             let tracker = activitySourceConnection.tracker.value
-            self.changeState(invalidatingEarlierRefreshes: true, { finish in
+            self.changeState(supersedingEarlierRefreshes: true, { finish in
                 self.connectionsLocalStore.connections = self.connectionsLocalStore.connections?.filter { $0.tracker != tracker }
                 self.unmountSequentially(self.mountedConnections.filter { $0.tracker.value == tracker }, completion: finish)
             }, completion: { error in
@@ -115,18 +117,20 @@ final public class ActivitySourcesManager {
     }
 
     /// Returns a list of current connections of the user (from back-end) and mount/unmount activitySource if they do not exist in the local state.
-    /// If `unmount` is called or a disconnect succeeds while the request is in flight, the fetched connections are returned but not applied locally.
+    /// The fetched connections are only applied locally if no later refresh has been applied and no `unmount` or
+    /// successful disconnect happened since the request was made; they are returned either way.
     /// - Parameter completion: completion with [ActivitySourceConnection] or Error
     public func refreshCurrent(completion: @escaping (Result<[ActivitySourceConnection], Error>) -> Void) {
         stateQueue.async {
-            let generationAtStart = self.generation
+            let sequenceNumber = self.nextSequenceNumber()
             self.apiClient.getCurrentConnections { result in
                 switch result {
                 case .success(let connections):
                     let activitySourceConnections = connections.map(self.connectionFactory)
                     self.changeState({ finish in
-                        // The response may predate an unmount (e.g. on logout) or a disconnect, so it must not change local state.
-                        guard self.generation == generationAtStart else { return finish(nil) }
+                        // The response may predate a newer refresh, a disconnect or an unmount (e.g. on logout).
+                        guard sequenceNumber > self.appliedSequenceNumber else { return finish(nil) }
+                        self.appliedSequenceNumber = sequenceNumber
                         self.reconcile(to: connections, completion: finish)
                     }, completion: { error in
                         completion(error.map { .failure($0) } ?? .success(activitySourceConnections))
@@ -143,7 +147,7 @@ final public class ActivitySourcesManager {
     /// Waits for local state changes already in progress (e.g. a source being mounted) to finish first.
     /// - Parameter completion: void or error
     public func unmount(completion: @escaping (Result<Void, Error>) -> Void) {
-        changeState(invalidatingEarlierRefreshes: true, { finish in
+        changeState(supersedingEarlierRefreshes: true, { finish in
             self.unmountSequentially(self.mountedConnections, completion: finish)
         }, completion: { error in
             completion(error.map { .failure($0) } ?? .success(()))
@@ -154,12 +158,12 @@ final public class ActivitySourcesManager {
 
     /// Runs `change` on the state queue once all earlier changes have finished, then calls `completion` off that queue.
     /// `change` must call `finish` exactly once, on the state queue.
-    private func changeState(invalidatingEarlierRefreshes: Bool = false,
+    private func changeState(supersedingEarlierRefreshes: Bool = false,
                              _ change: @escaping (_ finish: @escaping (Error?) -> Void) -> Void,
                              completion: @escaping (Error?) -> Void) {
         stateQueue.async {
-            if invalidatingEarlierRefreshes {
-                self.generation += 1
+            if supersedingEarlierRefreshes {
+                self.appliedSequenceNumber = self.nextSequenceNumber()
             }
             self.pendingStateChanges.append {
                 change { error in
@@ -170,6 +174,11 @@ final public class ActivitySourcesManager {
             }
             self.startNextStateChange()
         }
+    }
+
+    private func nextSequenceNumber() -> Int {
+        lastSequenceNumber += 1
+        return lastSequenceNumber
     }
 
     private func startNextStateChange() {

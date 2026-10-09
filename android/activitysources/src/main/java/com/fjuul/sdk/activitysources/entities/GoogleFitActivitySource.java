@@ -413,6 +413,7 @@ public class GoogleFitActivitySource extends ActivitySource {
 
     private <T> void performTaskAlongWithCallback(@NonNull Supplier<Task<T>> taskSupplier,
         @Nullable Callback<T> callback) {
+        final ActivitySourcesManager syncManager = ActivitySourcesManager.managerForSync(this);
         localSequentialBackgroundExecutor.execute(() -> {
             try {
                 T taskResult = Tasks.await(taskSupplier.get());
@@ -425,7 +426,7 @@ public class GoogleFitActivitySource extends ActivitySource {
                 if (exc instanceof ExecutionException && exc.getCause() != null) {
                     throwableToPropagate = exc.getCause();
                 }
-                ActivitySourcesManager.refreshCurrentIfUploadRejected(throwableToPropagate);
+                ActivitySourcesManager.refreshCurrentIfUploadRejected(throwableToPropagate, syncManager);
                 if (callback == null) {
                     return;
                 }

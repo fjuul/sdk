@@ -81,6 +81,15 @@ public final class ActivitySourcesManager {
     @NonNull
     private volatile CopyOnWriteArrayList<TrackerConnection> currentConnections;
 
+    // Requests changing local state are numbered in call order and local state only moves forward: a refresh response
+    // is applied only if its request is newer than the last refresh, disconnect or disabling of background works.
+    // Guarded by `this`, like `replaced`.
+    private long lastSequenceNumber = 0;
+    private long appliedSequenceNumber = 0;
+    // Set once `initialize` replaced this instance, so it no longer touches the shared background works and sources.
+    private boolean replaced = false;
+    private boolean automaticRefreshesEnabled = true;
+
     @Nullable
     private volatile static ActivitySourcesManager instance;
 
@@ -131,6 +140,7 @@ public final class ActivitySourcesManager {
     @SuppressLint("NewApi")
     public static synchronized void initialize(@NonNull ApiClient client,
         @NonNull ActivitySourcesManagerConfig config) {
+        final ActivitySourcesManager previousInstance = instance;
         final ActivitySourcesStateStore stateStore = new ActivitySourcesStateStore(client.getStorage());
         final List<TrackerConnection> storedConnections = stateStore.getConnections();
         final CopyOnWriteArrayList<TrackerConnection> currentConnections =
@@ -155,9 +165,15 @@ public final class ActivitySourcesManager {
             activitySourceResolver,
             currentConnections,
             context);
-        newInstance.configureExternalStateByConnections(currentConnections);
-
-        instance = newInstance;
+        // Holding the previous instance's lock keeps its late callbacks from overwriting the new instance's background
+        // works; it is only retired once the new instance is set up, so a failure above leaves it usable.
+        synchronized (previousInstance != null ? previousInstance : ActivitySourcesManager.class) {
+            newInstance.configureExternalStateByConnections(currentConnections);
+            if (previousInstance != null) {
+                previousInstance.markReplaced();
+            }
+            instance = newInstance;
+        }
         Logger.get().d("initialized successfully (the previous one could be overridden)");
     }
 
@@ -306,13 +322,14 @@ public final class ActivitySourcesManager {
                     }
                     return;
                 }
-                final TrackerConnection connectionToRemove = this.currentConnections.stream()
-                    .filter(connection -> connection.getId().equals(sourceConnection.getId()))
-                    .findFirst()
-                    .orElse(null);
-                this.currentConnections.remove(connectionToRemove);
-                this.stateStore.setConnections(this.currentConnections);
-                this.configureExternalStateByConnections(currentConnections);
+                synchronized (this) {
+                    supersedeEarlierRefreshes();
+                    this.currentConnections.removeIf(connection -> connection.getId().equals(sourceConnection.getId()));
+                    this.stateStore.setConnections(this.currentConnections);
+                    if (!replaced) {
+                        this.configureExternalStateByConnections(currentConnections);
+                    }
+                }
                 callback.onResult(Result.value(null));
             });
         };
@@ -352,12 +369,15 @@ public final class ActivitySourcesManager {
     }
 
     /**
-     * Requests for the fresh state of user tracker connections.
+     * Requests for the fresh state of user tracker connections. The fresh connections are only applied locally if no
+     * later refresh has been applied and no disconnect or {@link #disableBackgroundWorkers} happened since the request
+     * was made; the callback brings them either way.
      *
      * @param callback callback bringing the updated connection list
      */
     @SuppressLint("NewApi")
     public void refreshCurrent(@Nullable Callback<List<ActivitySourceConnection>> callback) {
+        final long sequenceNumber = nextSequenceNumber();
         sourcesService.getCurrentConnections().enqueue((call, apiCallResult) -> {
             if (apiCallResult.isError()) {
                 if (callback != null) {
@@ -367,9 +387,15 @@ public final class ActivitySourcesManager {
             }
             final CopyOnWriteArrayList<TrackerConnection> freshTrackerConnections =
                 new CopyOnWriteArrayList(apiCallResult.getValue());
-            configureExternalStateByConnections(freshTrackerConnections);
-            stateStore.setConnections(freshTrackerConnections);
-            this.currentConnections = freshTrackerConnections;
+            synchronized (this) {
+                // The response may predate a newer refresh, a disconnect, a logout or a re-initialization.
+                if (!replaced && sequenceNumber > appliedSequenceNumber) {
+                    appliedSequenceNumber = sequenceNumber;
+                    configureExternalStateByConnections(freshTrackerConnections);
+                    stateStore.setConnections(freshTrackerConnections);
+                    this.currentConnections = freshTrackerConnections;
+                }
+            }
             if (callback != null) {
                 final List<ActivitySourceConnection> sourceConnections =
                     convertTrackerConnectionsToActivitySourcesConnections(activitySourceResolver,
@@ -382,13 +408,31 @@ public final class ActivitySourcesManager {
     // The backend responds to uploads with 409 when it has no current connection to the data source.
     // Waits for the refresh so a background worker can't finish (and the process die) before it completes.
     static void refreshCurrentIfUploadRejected(@Nullable Throwable uploadError) {
+        refreshCurrentIfUploadRejected(uploadError, instance);
+    }
+
+    @Nullable
+    static ActivitySourcesManager managerForSync(@NonNull ActivitySource source) {
         final ActivitySourcesManager manager = instance;
+        return manager != null
+            && manager.activitySourceResolver.getInstanceByTrackerValue(source.getTrackerValue().getValue()) == source
+                ? manager
+                : null;
+    }
+
+    static void refreshCurrentIfUploadRejected(@Nullable Throwable uploadError,
+        @Nullable ActivitySourcesManager manager) {
         if (manager == null || !isCausedByConflict(uploadError)) {
             return;
         }
-        Logger.get().d("upload rejected with HTTP 409, refreshing current connections");
         final CountDownLatch refreshed = new CountDownLatch(1);
-        manager.refreshCurrent(result -> refreshed.countDown());
+        synchronized (manager) {
+            if (manager.replaced || !manager.automaticRefreshesEnabled) {
+                return;
+            }
+            Logger.get().d("upload rejected with HTTP 409, refreshing current connections");
+            manager.refreshCurrent(result -> refreshed.countDown());
+        }
         // The refresh callback is delivered on the main thread, so waiting there would deadlock.
         if (Looper.myLooper() == Looper.getMainLooper()) {
             return;
@@ -415,9 +459,30 @@ public final class ActivitySourcesManager {
      *
      * @param applicationContext
      */
-    public static void disableBackgroundWorkers(@NonNull Context applicationContext) {
+    // Synchronized with `initialize`, so it can't cancel the works a concurrent initialization just scheduled.
+    public static synchronized void disableBackgroundWorkers(@NonNull Context applicationContext) {
+        final ActivitySourcesManager currentInstance = instance;
+        if (currentInstance != null) {
+            // Refreshes still in flight (e.g. during logout) must not schedule the works again.
+            synchronized (currentInstance) {
+                currentInstance.automaticRefreshesEnabled = false;
+                currentInstance.supersedeEarlierRefreshes();
+            }
+        }
         final WorkManager workManager = WorkManager.getInstance(applicationContext);
         ActivitySourceWorkScheduler.cancelWorks(workManager);
+    }
+
+    private synchronized long nextSequenceNumber() {
+        return ++lastSequenceNumber;
+    }
+
+    synchronized void supersedeEarlierRefreshes() {
+        appliedSequenceNumber = nextSequenceNumber();
+    }
+
+    synchronized void markReplaced() {
+        replaced = true;
     }
 
     @SuppressLint("NewApi")

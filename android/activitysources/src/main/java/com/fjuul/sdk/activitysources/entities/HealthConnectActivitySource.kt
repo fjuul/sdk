@@ -58,9 +58,11 @@ class HealthConnectActivitySource private constructor(
     private val storage: IStorage,
 ) : ActivitySource(), AutoCloseable {
 
+    // Re-initialization replaces this instance without closing it (a worker may still await its callback),
+    // so the idle thread must time out for a replaced instance to be released.
     private val executor: ThreadPoolExecutor = ThreadPoolExecutor(
-        1, 1, 0L, TimeUnit.MILLISECONDS, LinkedBlockingQueue()
-    )
+        1, 1, 60L, TimeUnit.SECONDS, LinkedBlockingQueue()
+    ).apply { allowCoreThreadTimeOut(true) }
     private val dispatcher = executor.asCoroutineDispatcher()
     private val scope = CoroutineScope(dispatcher + CoroutineName("SingleThreadScope"))
 
@@ -141,6 +143,7 @@ class HealthConnectActivitySource private constructor(
         block: suspend () -> T,
         callback: Callback<T>
     ) {
+        val syncManager = ActivitySourcesManager.managerForSync(this)
         scope.launch {
             mutex.withLock {
                 val previousJob = currentJob
@@ -150,7 +153,7 @@ class HealthConnectActivitySource private constructor(
                         Logger.get().d("executeWithCallback: Start job")
                         Result.value(block())
                     } catch (e: Throwable) {
-                        ActivitySourcesManager.refreshCurrentIfUploadRejected(e)
+                        ActivitySourcesManager.refreshCurrentIfUploadRejected(e, syncManager)
                         Result.error(e)
                     } finally {
                         Logger.get().d("executeWithCallback: End job")

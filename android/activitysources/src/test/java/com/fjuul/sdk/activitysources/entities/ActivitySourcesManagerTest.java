@@ -5,11 +5,15 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -43,6 +47,7 @@ import com.fjuul.sdk.activitysources.entities.internal.ActivitySourceResolver;
 import com.fjuul.sdk.activitysources.entities.internal.ActivitySourcesStateStore;
 import com.fjuul.sdk.activitysources.entities.internal.BackgroundWorkManager;
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
+import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.Callback;
 import com.fjuul.sdk.core.entities.Result;
 import com.fjuul.sdk.core.exceptions.ApiExceptions;
@@ -55,6 +60,7 @@ import com.google.android.gms.tasks.Tasks;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import androidx.work.WorkManager;
 
 @RunWith(Enclosed.class)
 public class ActivitySourcesManagerTest {
@@ -639,6 +645,220 @@ public class ActivitySourcesManagerTest {
             verify(mockedGetConnectionsApiCall).enqueue(any());
             assertTrue("should not wait on the main thread",
                 TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - startedAt) < 5);
+        }
+    }
+
+    public static class StaleRefreshTests extends GivenRobolectricContext {
+        final TrackerConnection polarConnection = new TrackerConnection("5f2c8e1a-3b7d-4a9c-b6e2-1d8f4a7c3e90",
+            TrackerValue.POLAR.getValue(),
+            Date.from(Instant.parse("2020-09-10T10:05:00Z")),
+            null);
+        final TrackerConnection garminConnection = new TrackerConnection("a3e7c9b1-6d2f-4e8a-9c5b-7f1d3b6e2a48",
+            TrackerValue.GARMIN.getValue(),
+            Date.from(Instant.parse("2020-09-11T10:05:00Z")),
+            null);
+        final TrackerConnection healthConnectConnection = new TrackerConnection("c8b4d2e6-1a7f-4c3e-8d9b-5e2a6f1c7d34",
+            TrackerValue.HEALTH_CONNECT.getValue(),
+            Date.from(Instant.parse("2020-09-12T10:05:00Z")),
+            null);
+
+        ActivitySourcesManager subject;
+        BackgroundWorkManager mockedBackgroundWorkManager;
+        ActivitySourcesService mockedSourcesService;
+        ActivitySourcesStateStore mockedStateStore;
+        Context mockContext;
+        MockedStatic<HealthConnectActivitySource> healthConnectStatic;
+
+        @Before
+        public void beforeTest() {
+            mockContext = mock(Context.class);
+            mockedBackgroundWorkManager = mock(BackgroundWorkManager.class);
+            mockedSourcesService = mock(ActivitySourcesService.class);
+            mockedStateStore = mock(ActivitySourcesStateStore.class);
+            final ActivitySourceResolver activitySourceResolver = mock(ActivitySourceResolver.class);
+            // Looked up on every state update, even without a Google Fit connection.
+            when(activitySourceResolver.getInstanceByTrackerValue(TrackerValue.GOOGLE_FIT.getValue()))
+                .thenReturn(mock(GoogleFitActivitySource.class));
+            when(activitySourceResolver.getInstanceByTrackerValue(TrackerValue.HEALTH_CONNECT.getValue()))
+                .thenReturn(mock(HealthConnectActivitySource.class));
+            healthConnectStatic = mockStatic(HealthConnectActivitySource.class);
+            healthConnectStatic.when(() -> HealthConnectActivitySource.getHealthConnectAvailability(mockContext))
+                .thenReturn(HealthConnectAvailability.SDK_AVAILABLE);
+            subject = new ActivitySourcesManager(mock(ActivitySourcesManagerConfig.class),
+                mockedBackgroundWorkManager,
+                mockedSourcesService,
+                mockedStateStore,
+                activitySourceResolver,
+                new CopyOnWriteArrayList<>(),
+                mockContext);
+        }
+
+        @After
+        public void afterTest() {
+            healthConnectStatic.close();
+            ActivitySourcesManager.setInstance(null);
+        }
+
+        @Test
+        public void refreshCurrent_whenOlderResponseArrivesLast_keepsNewerState() {
+            final ApiCallCallback<TrackerConnection[]> olderResponse = requestRefresh();
+            final ApiCallCallback<TrackerConnection[]> newerResponse = requestRefresh();
+
+            newerResponse.onResult(null, ApiCallResult.value(new TrackerConnection[] {garminConnection}));
+            olderResponse.onResult(null, ApiCallResult.value(new TrackerConnection[] {polarConnection}));
+
+            assertEquals("should keep the newer connections",
+                Collections.singletonList(garminConnection.getId()),
+                currentConnectionIds());
+            verify(mockedStateStore).setConnections(Collections.singletonList(garminConnection));
+            verify(mockedStateStore, never()).setConnections(Collections.singletonList(polarConnection));
+        }
+
+        @Test
+        public void refreshCurrent_whenRequestedBeforeDisconnect_doesNotRestoreDisconnectedConnection() {
+            final ApiCallCallback<TrackerConnection[]> initialResponse = requestRefresh();
+            initialResponse.onResult(null, ApiCallResult.value(new TrackerConnection[] {polarConnection}));
+            final ApiCallCallback<TrackerConnection[]> staleResponse = requestRefresh();
+            final ActivitySourceConnection sourceConnection =
+                new ActivitySourceConnection(polarConnection, PolarActivitySource.getInstance());
+            final ApiCall<Void> mockedDisconnectApiCall = mock(ApiCall.class);
+            doAnswer(invocation -> {
+                invocation.getArgument(0, ApiCallCallback.class).onResult(null, ApiCallResult.value(null));
+                return null;
+            }).when(mockedDisconnectApiCall).enqueue(any());
+            when(mockedSourcesService.disconnect(sourceConnection)).thenReturn(mockedDisconnectApiCall);
+            subject.disconnect(sourceConnection, mock(Callback.class));
+
+            staleResponse.onResult(null, ApiCallResult.value(new TrackerConnection[] {polarConnection}));
+
+            assertTrue("should not restore the disconnected connection", currentConnectionIds().isEmpty());
+        }
+
+        @Test
+        public void refreshCurrent_whenRequestedBeforeDisablingBackgroundWorkers_doesNotScheduleWorksAgain() {
+            ActivitySourcesManager.setInstance(subject);
+            final ApiCallCallback<TrackerConnection[]> staleResponse = requestRefresh();
+            try (MockedStatic<WorkManager> workManagerStatic = mockStatic(WorkManager.class)) {
+                workManagerStatic.when(() -> WorkManager.getInstance(any(Context.class)))
+                    .thenReturn(mock(WorkManager.class));
+                ActivitySourcesManager.disableBackgroundWorkers(mockContext);
+            }
+
+            staleResponse.onResult(null, ApiCallResult.value(new TrackerConnection[] {healthConnectConnection}));
+
+            verifyNoInteractions(mockedBackgroundWorkManager);
+            verifyNoInteractions(mockedStateStore);
+            assertTrue(currentConnectionIds().isEmpty());
+        }
+
+        @Test
+        public void refreshCurrent_whenInstanceWasReplaced_doesNotTouchSharedState() {
+            final ApiCallCallback<TrackerConnection[]> staleResponse = requestRefresh();
+            subject.markReplaced();
+
+            staleResponse.onResult(null, ApiCallResult.value(new TrackerConnection[] {healthConnectConnection}));
+
+            verifyNoInteractions(mockedBackgroundWorkManager);
+            verifyNoInteractions(mockedStateStore);
+        }
+
+        @Test
+        public void initialize_whenItFails_leavesPreviousInstanceUsable() {
+            ActivitySourcesManager.setInstance(subject);
+            final ApiClient failingClient = mock(ApiClient.class);
+            when(failingClient.getStorage()).thenThrow(new IllegalStateException("storage unavailable"));
+
+            assertThrows(IllegalStateException.class,
+                () -> ActivitySourcesManager.initialize(failingClient, mock(ActivitySourcesManagerConfig.class)));
+
+            assertSame("should keep the previous instance", subject, ActivitySourcesManager.getInstance());
+            requestRefresh().onResult(null, ApiCallResult.value(new TrackerConnection[] {healthConnectConnection}));
+            assertEquals("should still apply refreshes",
+                Collections.singletonList(healthConnectConnection.getId()),
+                currentConnectionIds());
+        }
+
+        @Test
+        public void disconnect_whenInstanceWasReplaced_updatesPersistedConnectionsOnly() {
+            final ApiCallCallback<TrackerConnection[]> initialResponse = requestRefresh();
+            initialResponse.onResult(null, ApiCallResult.value(new TrackerConnection[] {healthConnectConnection}));
+            subject.markReplaced();
+            clearInvocations(mockedBackgroundWorkManager, mockedStateStore);
+            final ActivitySourceConnection sourceConnection =
+                new ActivitySourceConnection(healthConnectConnection, mock(HealthConnectActivitySource.class));
+            final ApiCall<Void> mockedDisconnectApiCall = mock(ApiCall.class);
+            doAnswer(invocation -> {
+                invocation.getArgument(0, ApiCallCallback.class).onResult(null, ApiCallResult.value(null));
+                return null;
+            }).when(mockedDisconnectApiCall).enqueue(any());
+            when(mockedSourcesService.disconnect(sourceConnection)).thenReturn(mockedDisconnectApiCall);
+            final Callback<Void> mockedCallback = mock(Callback.class);
+
+            subject.disconnect(sourceConnection, mockedCallback);
+
+            verify(mockedStateStore).setConnections(Collections.emptyList());
+            verifyNoInteractions(mockedBackgroundWorkManager);
+            final ArgumentCaptor<Result<Void>> callbackResultCaptor = ArgumentCaptor.forClass(Result.class);
+            verify(mockedCallback).onResult(callbackResultCaptor.capture());
+            assertFalse("callback should have successful result", callbackResultCaptor.getValue().isError());
+        }
+
+        @Test
+        public void refreshCurrentIfUploadRejected_whenStartedAfterDisabling_doesNotRefresh() {
+            ActivitySourcesManager.setInstance(subject);
+            try (MockedStatic<WorkManager> workManagerStatic = mockStatic(WorkManager.class)) {
+                workManagerStatic.when(() -> WorkManager.getInstance(any(Context.class)))
+                    .thenReturn(mock(WorkManager.class));
+                ActivitySourcesManager.disableBackgroundWorkers(mockContext);
+            }
+
+            ActivitySourcesManager.refreshCurrentIfUploadRejected(new ApiExceptions.ConflictException("409"), subject);
+
+            verifyNoInteractions(mockedSourcesService, mockedStateStore, mockedBackgroundWorkManager);
+        }
+
+        @Test
+        public void refreshCurrentIfUploadRejected_whenOriginatingManagerWasReplaced_doesNotRefreshNewSession() {
+            subject.markReplaced();
+            final ActivitySourcesManager replacement = mock(ActivitySourcesManager.class);
+            ActivitySourcesManager.setInstance(replacement);
+
+            ActivitySourcesManager.refreshCurrentIfUploadRejected(new ApiExceptions.ConflictException("409"), subject);
+
+            verifyNoInteractions(mockedSourcesService, mockedStateStore, mockedBackgroundWorkManager, replacement);
+        }
+
+        @Test
+        public void refreshCurrent_whenStartedAfterDisabling_stillAppliesExplicitRefresh() {
+            ActivitySourcesManager.setInstance(subject);
+            try (MockedStatic<WorkManager> workManagerStatic = mockStatic(WorkManager.class)) {
+                workManagerStatic.when(() -> WorkManager.getInstance(any(Context.class)))
+                    .thenReturn(mock(WorkManager.class));
+                ActivitySourcesManager.disableBackgroundWorkers(mockContext);
+            }
+
+            requestRefresh().onResult(null, ApiCallResult.value(new TrackerConnection[] {healthConnectConnection}));
+
+            verify(mockedStateStore).setConnections(Collections.singletonList(healthConnectConnection));
+            verify(mockedBackgroundWorkManager).configureHCIntradaySyncWorks();
+            assertEquals(Collections.singletonList(healthConnectConnection.getId()), currentConnectionIds());
+        }
+
+        /** Starts a refresh whose response is delivered by calling the returned callback. */
+        private ApiCallCallback<TrackerConnection[]> requestRefresh() {
+            final ApiCall<TrackerConnection[]> mockedApiCall = mock(ApiCall.class);
+            final AtomicReference<ApiCallCallback<TrackerConnection[]>> pendingResponse = new AtomicReference<>();
+            doAnswer(invocation -> {
+                pendingResponse.set(invocation.getArgument(0, ApiCallCallback.class));
+                return null;
+            }).when(mockedApiCall).enqueue(any());
+            when(mockedSourcesService.getCurrentConnections()).thenReturn(mockedApiCall);
+            subject.refreshCurrent(null);
+            return pendingResponse.get();
+        }
+
+        private List<String> currentConnectionIds() {
+            return subject.getCurrent().stream().map(ActivitySourceConnection::getId).collect(Collectors.toList());
         }
     }
 }

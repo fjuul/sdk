@@ -175,7 +175,7 @@ final class ActivitySourcesManagerTests: XCTestCase {
         // Given
         let promise = expectation(description: "Success disconnect activity source")
 
-        let trackerConnection = TrackerConnection(id: "0ca60422", tracker: "polar", createdAt: Date(), endedAt: nil)
+        let trackerConnection = TrackerConnection(id: "5c1d9e7a-2f4b-4b8e-9a3c-7d6f1e0b4c25", tracker: "polar", createdAt: Date(), endedAt: nil)
         let activitySourceConnection = ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: PolarActivitySource.shared)
 
         Perform(apiClientMock, .disconnect(activitySourceConnection: .value(activitySourceConnection), completion: .any, perform: { (_, completion) in
@@ -199,7 +199,7 @@ final class ActivitySourcesManagerTests: XCTestCase {
         // Given
         let promise = expectation(description: "Handle server failure on disconnect activity source")
 
-        let trackerConnection = TrackerConnection(id: "0ca60422", tracker: "polar", createdAt: Date(), endedAt: nil)
+        let trackerConnection = TrackerConnection(id: "b7e2a4c9-8d1f-4e6a-b3c5-0f9d2a7e1b48", tracker: "polar", createdAt: Date(), endedAt: nil)
         let activitySourceConnection = ActivitySourceConnection(trackerConnection: trackerConnection, activitySource: PolarActivitySource.shared)
 
         Perform(apiClientMock, .disconnect(activitySourceConnection: .value(activitySourceConnection), completion: .any, perform: { (_, completion) in
@@ -223,7 +223,7 @@ final class ActivitySourcesManagerTests: XCTestCase {
         // Given
         let promise = expectation(description: "Success disconnect activity source")
 
-        let trackerConnection = TrackerConnection(id: "0ca60422", tracker: "polar", createdAt: Date(), endedAt: nil)
+        let trackerConnection = TrackerConnection(id: "e4f8b2d6-3a9c-4d1e-8b7f-5c2a6e9d0f31", tracker: "polar", createdAt: Date(), endedAt: nil)
 
         Perform(apiClientMock, .getCurrentConnections(completion: .any, perform: { (completion) in
             completion(.success([trackerConnection]))

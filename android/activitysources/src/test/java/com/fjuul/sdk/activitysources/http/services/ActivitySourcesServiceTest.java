@@ -330,6 +330,27 @@ public class ActivitySourcesServiceTest {
                 "{\"caloriesData\":[{\"dataSource\":\"calories:googlefit\",\"entries\":[{\"start\":\"2020-01-01T10:05:00.000Z\",\"value\":5.2751}]}],\"hrData\":[],\"sessionsData\":[],\"stepsData\":[]}",
                 request.getBody().readUtf8());
         }
+
+        @Test
+        public void uploadGoogleFitData_WithHttpConflictResponseCode_RespondWithConflictException() {
+            clientBuilder.setUserCredentials(new UserCredentials(USER_TOKEN, USER_SECRET));
+            testKeystore.setKey(validSigningKey);
+            clientBuilder.setKeystore(testKeystore);
+            sourcesService = new ActivitySourcesService(clientBuilder.build());
+
+            MockResponse mockResponse = new MockResponse().setResponseCode(HttpURLConnection.HTTP_CONFLICT)
+                .setHeader("Content-Type", "application/json")
+                .setBody("{ \"message\": \"No current googlefit connection\" }");
+            mockWebServer.enqueue(mockResponse);
+
+            ApiCallResult<Void> result = sourcesService.uploadGoogleFitData(new GFUploadData()).execute();
+
+            assertTrue("unsuccessful result", result.isError());
+            assertThat(result.getError(), instanceOf(ApiExceptions.ConflictException.class));
+            assertEquals("should have error message",
+                "No current googlefit connection",
+                result.getError().getMessage());
+        }
     }
 
     public static class UpdateProfileOnBehalfOfGoogleFit extends GivenRobolectricContext {

@@ -150,6 +150,7 @@ class HealthConnectActivitySource private constructor(
                         Logger.get().d("executeWithCallback: Start job")
                         Result.value(block())
                     } catch (e: Throwable) {
+                        ActivitySourcesManager.refreshCurrentIfUploadRejected(e)
                         Result.error(e)
                     } finally {
                         Logger.get().d("executeWithCallback: End job")

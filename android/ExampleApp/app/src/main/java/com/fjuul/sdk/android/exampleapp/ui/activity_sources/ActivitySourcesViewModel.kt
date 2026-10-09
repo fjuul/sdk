@@ -41,6 +41,10 @@ class ActivitySourcesViewModel : ViewModel() {
         }
     }
 
+    fun loadLocalConnections() {
+        _currentConnections.value = ActivitySourcesManager.getInstance().current
+    }
+
     fun connect(activitySource: ActivitySource) {
         val manager = ActivitySourcesManager.getInstance()
         manager.connect(activitySource) lit@{ result ->

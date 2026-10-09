@@ -3,6 +3,8 @@ package com.fjuul.sdk.activitysources.entities;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,6 +17,7 @@ import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService;
 import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.Callback;
 import com.fjuul.sdk.core.entities.Result;
+import com.fjuul.sdk.core.exceptions.ApiExceptions;
 import com.fjuul.sdk.core.exceptions.FjuulException;
 import com.fjuul.sdk.core.utils.Logger;
 import com.google.android.gms.tasks.Task;
@@ -23,8 +26,10 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.work.WorkManager;
 
 /**
@@ -59,6 +64,8 @@ import androidx.work.WorkManager;
  * </ol>
  */
 public final class ActivitySourcesManager {
+    private static final long REFRESH_AFTER_REJECTED_UPLOAD_TIMEOUT_SECONDS = 30;
+
     @NonNull
     private final ActivitySourcesManagerConfig config;
     @NonNull
@@ -167,6 +174,11 @@ public final class ActivitySourcesManager {
             throw new IllegalStateException("You must initialize first before getting the instance");
         }
         return instance;
+    }
+
+    @VisibleForTesting
+    static void setInstance(@Nullable ActivitySourcesManager manager) {
+        instance = manager;
     }
 
     /**
@@ -365,6 +377,36 @@ public final class ActivitySourcesManager {
                 callback.onResult(Result.value(sourceConnections));
             }
         });
+    }
+
+    // The backend responds to uploads with 409 when it has no current connection to the data source.
+    // Waits for the refresh so a background worker can't finish (and the process die) before it completes.
+    static void refreshCurrentIfUploadRejected(@Nullable Throwable uploadError) {
+        final ActivitySourcesManager manager = instance;
+        if (manager == null || !isCausedByConflict(uploadError)) {
+            return;
+        }
+        Logger.get().d("upload rejected with HTTP 409, refreshing current connections");
+        final CountDownLatch refreshed = new CountDownLatch(1);
+        manager.refreshCurrent(result -> refreshed.countDown());
+        // The refresh callback is delivered on the main thread, so waiting there would deadlock.
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            return;
+        }
+        try {
+            refreshed.await(REFRESH_AFTER_REJECTED_UPLOAD_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private static boolean isCausedByConflict(@Nullable Throwable error) {
+        for (Throwable cause = error; cause != null; cause = cause.getCause()) {
+            if (cause instanceof ApiExceptions.ConflictException) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

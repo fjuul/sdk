@@ -90,6 +90,11 @@ class ActivitySourcesFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        model.loadLocalConnections()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 

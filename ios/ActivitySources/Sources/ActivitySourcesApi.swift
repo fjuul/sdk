@@ -117,7 +117,7 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
 
         apiClient.signedSession.request(url, method: .post, parameters: data, encoder: parameterEncoder).apiResponse(emptyResponseCodes: [200]) { response in
             let decodedResponse = response.map { _ in () }
-            completion(decodedResponse.result)
+            self.completeUpload(response.response, result: decodedResponse.result, completion: completion)
         }
     }
 
@@ -133,7 +133,7 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
 
         apiClient.signedSession.request(url, method: .post, parameters: data, encoder: parameterEncoder).apiResponse(emptyResponseCodes: [200]) { response in
             let decodedResponse = response.map { _ in () }
-            completion(decodedResponse.result)
+            self.completeUpload(response.response, result: decodedResponse.result, completion: completion)
         }
     }
 
@@ -145,7 +145,6 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
 
         apiClient.signedSession.request(url, method: .put, parameters: data.asJsonEncodableDictionary(), encoding: JSONEncoding.default)
             .apiResponse(emptyResponseCodes: [200]) { response in
-
             let decodedResponse = response
                 .map { _ in () }
                 .mapAPIError { _, jsonError in
@@ -153,7 +152,21 @@ public class ActivitySourcesApi: ActivitySourcesApiClient {
 
                     return .activitySourceConnectionFailure(reason: .generic(message: jsonError.message))
                 }
-            completion(decodedResponse.result)
+            self.completeUpload(response.response, result: decodedResponse.result, completion: completion)
+        }
+    }
+
+    // The backend responds to uploads with 409 when it has no current connection to the data source.
+    // Completion waits for the refresh so background delivery isn't finished (and the app suspended) before unmounting.
+    private func completeUpload(_ response: HTTPURLResponse?, result: Result<Void, Error>,
+                                completion: @escaping (Result<Void, Error>) -> Void) {
+        guard response?.statusCode == 409, let manager = apiClient.activitySourcesManager else {
+            return completion(result)
+        }
+        DataLogger.shared.info("Upload rejected with HTTP 409, refreshing current connections")
+        manager.refreshCurrent { _ in
+            // refreshCurrent completes on a global queue; apiResponse delivers upload results on main.
+            DispatchQueue.main.async { completion(result) }
         }
     }
 }

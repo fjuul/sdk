@@ -3,7 +3,7 @@ import FjuulAnalytics
 
 struct AggregatedDailyStatsScreen: View {
 
-    @ObservedObject var aggregatedStats = AggregatedDailyStatsObservable()
+    @ObservedObject var aggregatedStats: AggregatedDailyStatsObservable
 
     static let taskDateFormat: DateFormatter = {
         let formatter = DateFormatter()
@@ -76,13 +76,5 @@ struct AggregatedDailyStatsScreen: View {
         formatter.zeroFormattingBehavior = .pad
 
         return formatter.string(from: time) ?? ""
-    }
-}
-
-struct AggregatedDailyStatsScreen_Previews: PreviewProvider {
-    static var previews: some View {
-        Group {
-            AggregatedDailyStatsScreen()
-        }
     }
 }

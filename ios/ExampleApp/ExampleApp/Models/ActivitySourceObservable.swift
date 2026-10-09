@@ -2,6 +2,7 @@ import Foundation
 import FjuulActivitySources
 import UIKit
 
+/// Activity source state of one `Session`; discarded with it, so results arriving after sign-out never reach the UI.
 class ActivitySourceObservable: ObservableObject {
     let availableActivitySources: [ActivitySource] = [
         HealthKitActivitySource.shared, FitbitActivitySource.shared,
@@ -10,11 +11,14 @@ class ActivitySourceObservable: ObservableObject {
         SuuntoActivitySource.shared, WithingsActivitySource.shared
     ]
 
+    let manager: ActivitySourcesManager
+
     @Published var error: ErrorHolder?
     @Published var currentConnections: [ActivitySourceConnection] = []
     @Published var notConnectedActivitySources: [ActivitySource] = []
 
-    init() {
+    init(manager: ActivitySourcesManager) {
+        self.manager = manager
         self.getCurrentConnections()
     }
 
@@ -29,17 +33,18 @@ class ActivitySourceObservable: ObservableObject {
     }
 
     func getCurrentConnections() {
-        ApiClientHolder.default.apiClient?.activitySourcesManager?.refreshCurrent { result in
-            switch result {
-            case .success(let connections):
-                self.setConnections(connections)
-            case .failure(let err): self.error = ErrorHolder(error: err)
+        manager.refreshCurrent { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let connections):
+                    self.setConnections(connections)
+                case .failure(let err): self.error = ErrorHolder(error: err)
+                }
             }
         }
     }
 
     func loadLocalConnections() {
-        guard let manager = ApiClientHolder.default.apiClient?.activitySourcesManager else { return }
         setConnections(manager.mountedActivitySourceConnections)
     }
 
@@ -51,25 +56,31 @@ class ActivitySourceObservable: ObservableObject {
     }
 
     func connect(activitySource: ActivitySource) {
-        ApiClientHolder.default.apiClient?.activitySourcesManager?.connect(activitySource: activitySource) { result in
-            switch result {
-            case .success(let connectionResult):
-                switch connectionResult {
-                case .connected: self.getCurrentConnections()
-                case .externalAuthenticationFlowRequired(let authenticationUrl):
-                    guard let url = URL(string: authenticationUrl) else { return }
-                    UIApplication.shared.open(url)
+        manager.connect(activitySource: activitySource) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let connectionResult):
+                    switch connectionResult {
+                    case .connected: self.getCurrentConnections()
+                    case .externalAuthenticationFlowRequired(let authenticationUrl):
+                        // Unlike UI updates, opening the browser is visible after sign-out and would connect the previous user.
+                        guard SessionStore.shared.isActive(self.manager),
+                              let url = URL(string: authenticationUrl) else { return }
+                        UIApplication.shared.open(url)
+                    }
+                case .failure(let err): self.error = ErrorHolder(error: err)
                 }
-            case .failure(let err): self.error = ErrorHolder(error: err)
             }
         }
     }
 
     func disconnect(activitySourceConnection: ActivitySourceConnection) {
-        ApiClientHolder.default.apiClient?.activitySourcesManager?.disconnect(activitySourceConnection: activitySourceConnection) { result in
-            switch result {
-            case .success: self.getCurrentConnections()
-            case .failure(let err): self.error = ErrorHolder(error: err)
+        manager.disconnect(activitySourceConnection: activitySourceConnection) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success: self.getCurrentConnections()
+                case .failure(let err): self.error = ErrorHolder(error: err)
+                }
             }
         }
     }

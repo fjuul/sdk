@@ -2,7 +2,7 @@ import SwiftUI
 import FjuulActivitySources
 
 struct SyncHealthKitActivitySource: View {
-    @ObservedObject var healthKitSyncObservable = HealthKitSyncObservable()
+    @ObservedObject var healthKitSyncObservable: HealthKitSyncObservable
 
     var body: some View {
         Form {
@@ -129,11 +129,5 @@ struct SyncHealthKitActivitySource: View {
             Alert(title: Text(holder.error.localizedDescription))
         }
         .navigationBarTitle("HealthKit sync")
-    }
-}
-
-struct SyncHealthKitActivitySource_Previews: PreviewProvider {
-    static var previews: some View {
-        SyncHealthKitActivitySource()
     }
 }

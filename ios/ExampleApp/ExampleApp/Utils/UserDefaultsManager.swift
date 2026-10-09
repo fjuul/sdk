@@ -2,6 +2,8 @@ import Foundation
 
 class UserDefaultsManager: ObservableObject {
 
+    static let shared = UserDefaultsManager()
+
     @Published var environment: ApiEnvironment = ApiEnvironment(rawValue: UserDefaults.standard.integer(forKey: "environment")) ?? .test {
         didSet { UserDefaults.standard.set(self.environment.rawValue, forKey: "environment") }
     }

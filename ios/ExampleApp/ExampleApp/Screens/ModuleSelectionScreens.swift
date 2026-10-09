@@ -2,22 +2,29 @@ import SwiftUI
 
 struct ModuleSelectionScreens: View {
 
+    let session: Session
+
     var body: some View {
 
         Form {
             Section(header: Text("User")) {
-                NavigationLink(destination: LazyView(UserProfileScreen())) {
+                NavigationLink(destination: LazyView(UserProfileScreen(userProfile: UserProfileObservable(apiClient: session.apiClient, fetchOnInit: true)))) {
                     Text("Profile")
                 }
-                NavigationLink(destination: LazyView(ActivitySourcesScreen())) {
+                NavigationLink(destination: LazyView(ActivitySourcesScreen().environmentObject(session.activitySources))) {
                     Text("Activity Sources")
+                }
+                NavigationLink(destination: LazyView(CredentialsScreen(credentials: session.credentials))) {
+                    Text("Credentials")
                 }
             }
             Section(header: Text("Analytics")) {
-                NavigationLink(destination: LazyView(DailyStatsScreen())) {
+                NavigationLink(destination: LazyView(DailyStatsScreen(dailyStats: DailyStatsObservable(apiClient: session.apiClient)))) {
                     Text("Daily Statistics")
                 }
-                NavigationLink(destination: LazyView(AggregatedDailyStatsScreen())) {
+                NavigationLink(destination: LazyView(AggregatedDailyStatsScreen(
+                    aggregatedStats: AggregatedDailyStatsObservable(apiClient: session.apiClient)
+                ))) {
                     Text("Aggregated Daily Statistics")
                 }
             }
@@ -25,10 +32,4 @@ struct ModuleSelectionScreens: View {
         .navigationBarTitle("Modules", displayMode: .inline)
     }
 
-}
-
-struct ModuleSelectionScreen_Previews: PreviewProvider {
-    static var previews: some View {
-        ModuleSelectionScreens()
-    }
 }

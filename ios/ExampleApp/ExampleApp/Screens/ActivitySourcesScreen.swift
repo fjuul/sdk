@@ -27,7 +27,9 @@ struct ActivitySourcesScreen: View {
                         Spacer()
 
                         ZStack {
-                            NavigationLink(destination: LazyView(SyncHealthKitActivitySource())) {
+                            NavigationLink(destination: LazyView(SyncHealthKitActivitySource(
+                                healthKitSyncObservable: HealthKitSyncObservable(manager: activitySourceObserver.manager)
+                            ))) {
                                 EmptyView()
                             }
                             .buttonStyle(PlainButtonStyle())

@@ -3,20 +3,13 @@ import SwiftUI
 struct UserProfileScreen: View {
 
     @Environment(\.presentationMode) var presentation
-    @ObservedObject var userProfile = UserProfileObservable(fetchOnInit: true)
+    @ObservedObject var userProfile: UserProfileObservable
 
     @State private var showingLogoutAlert = false
-    @State private var onSuccessLogout = false
     @State private var showingUserDeleteAlert = false
 
     var body: some View {
         VStack {
-            NavigationLink(destination: RootView(), isActive: self.$onSuccessLogout) {
-                Text("")
-            }
-            .frame(width: 0, height: 0)
-            .padding(0)
-
             Form {
                 Section {
                     UserProfileForm(showOptionalFields: true).environmentObject(userProfile)
@@ -30,9 +23,7 @@ struct UserProfileScreen: View {
                     .background(Color.white)
                     .alert(isPresented: $showingUserDeleteAlert) {
                         Alert(title: Text("Are you sure you want to mark your profile for deletion?"), primaryButton: .destructive(Text("Delete")) {
-                            if userProfile.markUserForDeletion() {
-                                self.onSuccessLogout = true
-                            }
+                            userProfile.markUserForDeletion()
                         }, secondaryButton: .cancel())
                     }
                 }
@@ -62,19 +53,11 @@ struct UserProfileScreen: View {
                 .padding(10)
                 .alert(isPresented: $showingLogoutAlert) {
                     Alert(title: Text("Are you sure you want to logout?"), primaryButton: .destructive(Text("Logout")) {
-                        if userProfile.logout() {
-                           self.onSuccessLogout = true
-                        }
+                        SessionStore.shared.signOut()
                     }, secondaryButton: .cancel())
                 }
             }
         }
 
-    }
-}
-
-struct UserProfileScreen_Previews: PreviewProvider {
-    static var previews: some View {
-        UserProfileScreen()
     }
 }

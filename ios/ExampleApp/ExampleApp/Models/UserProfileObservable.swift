@@ -5,6 +5,8 @@ import FjuulActivitySources
 
 class UserProfileObservable: ObservableObject {
 
+    /// Nil while signed out (user creation during onboarding).
+    private let apiClient: ApiClient?
     private var originalProfile: UserProfile?
 
     @Published var error: ErrorHolder?
@@ -17,7 +19,8 @@ class UserProfileObservable: ObservableObject {
     @Published var timezone = ""
     @Published var locale = ""
 
-    init(fetchOnInit: Bool = false) {
+    init(apiClient: ApiClient? = nil, fetchOnInit: Bool = false) {
+        self.apiClient = apiClient
         if fetchOnInit {
             fetch()
         }
@@ -55,7 +58,7 @@ class UserProfileObservable: ObservableObject {
     }
 
     func fetch() {
-        ApiClientHolder.default.apiClient?.user.getProfile { result in
+        apiClient?.user.getProfile { result in
             switch result {
             case .success(let profile): self.hydrateFromUserProfile(profile)
             case .failure(let err): self.error = ErrorHolder(error: err)
@@ -82,7 +85,7 @@ class UserProfileObservable: ObservableObject {
     }
 
     func updateUser(completion: @escaping (Result<UserProfile, Error>) -> Void) {
-        ApiClientHolder.default.apiClient?.user.updateProfile(self.getDirtyFields()) { result in
+        apiClient?.user.updateProfile(self.getDirtyFields()) { result in
             switch result {
             case .success(let profile): self.hydrateFromUserProfile(profile)
             case .failure(let err): self.error = ErrorHolder(error: err)
@@ -91,31 +94,17 @@ class UserProfileObservable: ObservableObject {
         }
     }
 
-    func markUserForDeletion() -> Bool {
-        var userDeleted = false
-        ApiClientHolder.default.apiClient?.user.markUserForDeletion { result in
+    func markUserForDeletion() {
+        apiClient?.user.markUserForDeletion { result in
             switch result {
             case .success:
-                userDeleted = true
+                // The request can outlive this session; never sign out a session signed in since.
+                guard SessionStore.shared.isActive(self.apiClient?.activitySourcesManager) else { return }
+                SessionStore.shared.signOut()
             case .failure(let err):
                 self.error = ErrorHolder(error: err)
             }
         }
-        return userDeleted
-    }
-
-    func logout() -> Bool {
-        guard let result = ApiClientHolder.default.apiClient?.clearPersistentStorage(), result else { return false }
-
-        ApiClientHolder.default.apiClient?.activitySourcesManager?.unmount { result in
-            switch result {
-            case .success:
-                ApiClientHolder.default.apiClient = nil
-            case .failure(let err):
-                self.error = ErrorHolder(error: err)
-            }
-        }
-        return true
     }
 
 }

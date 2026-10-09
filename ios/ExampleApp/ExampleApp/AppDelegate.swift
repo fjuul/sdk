@@ -23,11 +23,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return logger
         }
 
-        if let apiClient = FjuulApiBuilder.buildApiClient() {
-            ApiClientHolder.default.apiClient = apiClient
-
-            FjuulApiBuilder.buildActivitySourcesManager(apiClient: apiClient)
-        }
+        // Sign in as early as possible so HealthKit background delivery observers are registered on background launches.
+        SessionStore.shared.signIn()
 
         return true
     }

@@ -28,13 +28,10 @@ class HealthKitSyncObservable: ObservableObject {
         let configTypes = HealthKitConfigType.intradayTypes.filter { item in enabledConfigTypes.contains(item) }
 
         activitySource.syncIntradayMetrics(startDate: self.fromDate, endDate: self.toDate, configTypes: configTypes) { result in
-            switch result {
-            case .success:
-                print("Success sync \(configTypes)")
-            case .failure(let err): self.error = ErrorHolder(error: err)
+            DispatchQueue.main.async {
+                self.handleSyncResult(result, description: "\(configTypes)")
+                self.isLoadingIntraday = false
             }
-
-            DispatchQueue.main.async { self.isLoadingIntraday = false }
         }
     }
 
@@ -46,13 +43,10 @@ class HealthKitSyncObservable: ObservableObject {
         let configTypes = HealthKitConfigType.dailyTypes.filter { item in enabledConfigTypes.contains(item) }
 
         activitySource.syncDailyMetrics(startDate: self.fromDate, endDate: self.toDate, configTypes: configTypes) { result in
-            switch result {
-            case .success:
-                print("Success sync \(configTypes)")
-            case .failure(let err): self.error = ErrorHolder(error: err)
+            DispatchQueue.main.async {
+                self.handleSyncResult(result, description: "\(configTypes)")
+                self.isLoadingDailyMetrics = false
             }
-
-            DispatchQueue.main.async { self.isLoadingDailyMetrics = false }
         }
     }
 
@@ -64,13 +58,10 @@ class HealthKitSyncObservable: ObservableObject {
         let configTypes = HealthKitConfigType.userProfileTypes.filter { item in enabledConfigTypes.contains(item) }
 
         activitySource.syncProfile(configTypes: configTypes) { result in
-            switch result {
-            case .success:
-                print("Success sync \(configTypes)")
-            case .failure(let err): self.error = ErrorHolder(error: err)
+            DispatchQueue.main.async {
+                self.handleSyncResult(result, description: "\(configTypes)")
+                self.isLoadingProfile = false
             }
-
-            DispatchQueue.main.async { self.isLoadingProfile = false }
         }
     }
 
@@ -80,13 +71,18 @@ class HealthKitSyncObservable: ObservableObject {
         self.isLoadingWorkouts = true
 
         activitySource.syncWorkouts(startDate: self.fromDate, endDate: self.toDate) { result in
-            switch result {
-            case .success:
-                print("Success sync workouts")
-            case .failure(let err): self.error = ErrorHolder(error: err)
+            DispatchQueue.main.async {
+                self.handleSyncResult(result, description: "workouts")
+                self.isLoadingWorkouts = false
             }
+        }
+    }
 
-            DispatchQueue.main.async { self.isLoadingWorkouts = false }
+    private func handleSyncResult(_ result: Result<Void, Error>, description: String) {
+        switch result {
+        case .success:
+            print("Success sync \(description)")
+        case .failure(let err): self.error = ErrorHolder(error: err)
         }
     }
 

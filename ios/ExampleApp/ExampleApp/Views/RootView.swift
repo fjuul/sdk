@@ -26,6 +26,11 @@ struct RootView: View {
                 }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .apiClientDidChange).receive(on: DispatchQueue.main)) { _ in
+            if ApiClientHolder.default.apiClient == nil {
+                viewRouter.presentedView = .onboarding
+            }
+        }
     }
 
 }

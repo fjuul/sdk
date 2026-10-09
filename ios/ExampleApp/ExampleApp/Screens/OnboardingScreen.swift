@@ -6,6 +6,7 @@ struct OnboardingScreen: View {
 
     @EnvironmentObject var userDefaultsManager: UserDefaultsManager
     @ObservedObject var viewRouter: ViewRouter
+    @State private var error: ErrorHolder?
 
     var everythingProvidedForUserCreation: Bool {
         return userDefaultsManager.apiKey.count > 0
@@ -42,19 +43,20 @@ struct OnboardingScreen: View {
             }
             Section {
                 Button("Continue") {
-                    // Configure ApiClient if not yet configured in the AppDelegate didFinishLaunchingWithOptions (require for setup backgroundDeliviry)
-                    if ApiClientHolder.default.apiClient == nil {
-                        if let apiClient = FjuulApiBuilder.buildApiClient() {
-                            ApiClientHolder.default.apiClient = apiClient
-
-                            FjuulApiBuilder.buildActivitySourcesManager(apiClient: apiClient)
+                    FjuulApiBuilder.setUpApiClient { error in
+                        if let error = error {
+                            self.error = ErrorHolder(error: error)
+                            return
                         }
+                        self.viewRouter.presentedView = .moduleSelection
                     }
-                    self.viewRouter.presentedView = .moduleSelection
                 }.disabled(!everythingProvided)
             }
         }
         .navigationBarTitle("Fjuul SDK", displayMode: .inline)
+        .alert(item: $error) { holder in
+            Alert(title: Text(holder.error.localizedDescription))
+        }
     }
 
 }

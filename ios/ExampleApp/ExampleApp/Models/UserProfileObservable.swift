@@ -91,31 +91,23 @@ class UserProfileObservable: ObservableObject {
         }
     }
 
-    func markUserForDeletion() -> Bool {
-        var userDeleted = false
+    func markUserForDeletion() {
         ApiClientHolder.default.apiClient?.user.markUserForDeletion { result in
             switch result {
             case .success:
-                userDeleted = true
+                self.logout()
             case .failure(let err):
                 self.error = ErrorHolder(error: err)
             }
         }
-        return userDeleted
     }
 
-    func logout() -> Bool {
-        guard let result = ApiClientHolder.default.apiClient?.clearPersistentStorage(), result else { return false }
-
-        ApiClientHolder.default.apiClient?.activitySourcesManager?.unmount { result in
-            switch result {
-            case .success:
-                ApiClientHolder.default.apiClient = nil
-            case .failure(let err):
-                self.error = ErrorHolder(error: err)
+    func logout() {
+        FjuulApiBuilder.tearDownApiClient(clearPersistentStorage: true) { error in
+            if let error = error {
+                self.error = ErrorHolder(error: error)
             }
         }
-        return true
     }
 
 }

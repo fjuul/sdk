@@ -4,7 +4,6 @@ import FjuulActivitySources
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
-    var activitySourceObserver = ActivitySourceObservable()
     private var pendingConnectionCallback: URL?
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
@@ -15,12 +14,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         // Create the SwiftUI view that provides the window contents.
         let contentView = RootView()
-            .environmentObject(UserDefaultsManager())
+            .environmentObject(UserDefaultsManager.shared)
+            .environmentObject(SessionStore.shared)
 
         // Use a UIHostingController as window root view controller.
         if let windowScene = scene as? UIWindowScene {
             let window = UIWindow(windowScene: windowScene)
-            window.rootViewController = UIHostingController(rootView: contentView.environmentObject(activitySourceObserver))
+            window.rootViewController = UIHostingController(rootView: contentView)
             self.window = window
             window.makeKeyAndVisible()
             pendingConnectionCallback = connectionOptions.urlContexts.first?.url
@@ -42,7 +42,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         let connectionStatus = ExternalAuthenticationFlowHandler.handle(url: url)
         if connectionStatus.success {
-            activitySourceObserver.getCurrentConnections()
+            // While signing in or out there is nothing to refresh; a new session loads its connections itself.
+            if let session = SessionStore.shared.session, SessionStore.shared.isActive(session.activitySourcesManager) {
+                session.activitySources.getCurrentConnections()
+            }
             return
         }
 

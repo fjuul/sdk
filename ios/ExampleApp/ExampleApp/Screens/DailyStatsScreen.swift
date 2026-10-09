@@ -2,7 +2,7 @@ import SwiftUI
 
 struct DailyStatsScreen: View {
 
-    @ObservedObject var dailyStats = DailyStatsObservable()
+    @ObservedObject var dailyStats: DailyStatsObservable
 
     static let taskDateFormat: DateFormatter = {
         let formatter = DateFormatter()
@@ -77,13 +77,5 @@ struct DailyStatsScreen: View {
         formatter.zeroFormattingBehavior = .pad
 
         return formatter.string(from: time) ?? ""
-    }
-}
-
-struct DailyStatsScreen_Previews: PreviewProvider {
-    static var previews: some View {
-        Group {
-            DailyStatsScreen()
-        }
     }
 }

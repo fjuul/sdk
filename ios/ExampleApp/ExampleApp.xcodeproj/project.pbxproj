@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		44F8883726C533FE005B0BBD /* AggregatedDailyStatsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44F8883626C533FE005B0BBD /* AggregatedDailyStatsScreen.swift */; };
 		44F8883926C53474005B0BBD /* AggregatedDailyStatsObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44F8883826C53474005B0BBD /* AggregatedDailyStatsObservable.swift */; };
-		4C3D6A8D25BACB0000729276 /* FjuulApiBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3D6A8C25BACB0000729276 /* FjuulApiBuilder.swift */; };
+		4C3D6A8D25BACB0000729276 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3D6A8C25BACB0000729276 /* Session.swift */; };
 		4C4A4DEE25F79C4300A944C2 /* SyncHealthKitActivitySource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C4A4DED25F79C4300A944C2 /* SyncHealthKitActivitySource.swift */; };
 		4C4A4DF225F7BFB400A944C2 /* CheckboxField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C4A4DF125F7BFB400A944C2 /* CheckboxField.swift */; };
 		4C4A4DF625F7C94700A944C2 /* HealthKitSyncObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C4A4DF525F7C94700A944C2 /* HealthKitSyncObservable.swift */; };
@@ -22,6 +22,7 @@
 		B3548D6224CF0F62002F26B9 /* CreateUserScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3548D6024CF0F62002F26B9 /* CreateUserScreen.swift */; };
 		B3548D6324CF0F62002F26B9 /* DailyStatsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3548D6124CF0F62002F26B9 /* DailyStatsScreen.swift */; };
 		B3548D6524CF0F7B002F26B9 /* ModuleSelectionScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3548D6424CF0F7B002F26B9 /* ModuleSelectionScreens.swift */; };
+		C0FFEE0000000000000000A2 /* CredentialsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE0000000000000000A1 /* CredentialsScreen.swift */; };
 		B3548D6724CF0F91002F26B9 /* OnboardingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3548D6624CF0F91002F26B9 /* OnboardingScreen.swift */; };
 		B3548D6924CF0FA8002F26B9 /* UserProfileScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3548D6824CF0FA8002F26B9 /* UserProfileScreen.swift */; };
 		B3548D6C24CF1E25002F26B9 /* UserProfileObservable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3548D6B24CF1E25002F26B9 /* UserProfileObservable.swift */; };
@@ -36,7 +37,7 @@
 		B3FBCDAB24B8AB1200184A88 /* FloatingTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDA624B8AB1200184A88 /* FloatingTextField.swift */; };
 		B3FBCDB024B8AB3000184A88 /* ApiEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDAF24B8AB3000184A88 /* ApiEnvironment.swift */; };
 		B3FBCDB224B8AB6200184A88 /* UserDefaultsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDB124B8AB6200184A88 /* UserDefaultsManager.swift */; };
-		B3FBCDB424B8AC7800184A88 /* ApiClientHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDB324B8AC7800184A88 /* ApiClientHolder.swift */; };
+		B3FBCDB424B8AC7800184A88 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDB324B8AC7800184A88 /* SessionStore.swift */; };
 		B3FBCDB824B8BE2F00184A88 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDB724B8BE2F00184A88 /* RootView.swift */; };
 		B3FBCDBA24B8D5A400184A88 /* LazyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDB924B8D5A400184A88 /* LazyView.swift */; };
 		B3FBCDBC24BCAFF300184A88 /* ErrorHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3FBCDBB24BCAFF300184A88 /* ErrorHolder.swift */; };
@@ -55,7 +56,7 @@
 /* Begin PBXFileReference section */
 		44F8883626C533FE005B0BBD /* AggregatedDailyStatsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AggregatedDailyStatsScreen.swift; sourceTree = "<group>"; };
 		44F8883826C53474005B0BBD /* AggregatedDailyStatsObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AggregatedDailyStatsObservable.swift; sourceTree = "<group>"; };
-		4C3D6A8C25BACB0000729276 /* FjuulApiBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FjuulApiBuilder.swift; sourceTree = "<group>"; };
+		4C3D6A8C25BACB0000729276 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 		4C4A4DED25F79C4300A944C2 /* SyncHealthKitActivitySource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncHealthKitActivitySource.swift; sourceTree = "<group>"; };
 		4C4A4DF125F7BFB400A944C2 /* CheckboxField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckboxField.swift; sourceTree = "<group>"; };
 		4C4A4DF525F7C94700A944C2 /* HealthKitSyncObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitSyncObservable.swift; sourceTree = "<group>"; };
@@ -67,6 +68,7 @@
 		B3548D6024CF0F62002F26B9 /* CreateUserScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreateUserScreen.swift; sourceTree = "<group>"; };
 		B3548D6124CF0F62002F26B9 /* DailyStatsScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DailyStatsScreen.swift; sourceTree = "<group>"; };
 		B3548D6424CF0F7B002F26B9 /* ModuleSelectionScreens.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModuleSelectionScreens.swift; sourceTree = "<group>"; };
+		C0FFEE0000000000000000A1 /* CredentialsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialsScreen.swift; sourceTree = "<group>"; };
 		B3548D6624CF0F91002F26B9 /* OnboardingScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OnboardingScreen.swift; sourceTree = "<group>"; };
 		B3548D6824CF0FA8002F26B9 /* UserProfileScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserProfileScreen.swift; sourceTree = "<group>"; };
 		B3548D6B24CF1E25002F26B9 /* UserProfileObservable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileObservable.swift; sourceTree = "<group>"; };
@@ -84,7 +86,7 @@
 		B3FBCDA624B8AB1200184A88 /* FloatingTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloatingTextField.swift; sourceTree = "<group>"; };
 		B3FBCDAF24B8AB3000184A88 /* ApiEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiEnvironment.swift; sourceTree = "<group>"; };
 		B3FBCDB124B8AB6200184A88 /* UserDefaultsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsManager.swift; sourceTree = "<group>"; };
-		B3FBCDB324B8AC7800184A88 /* ApiClientHolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiClientHolder.swift; sourceTree = "<group>"; };
+		B3FBCDB324B8AC7800184A88 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		B3FBCDB724B8BE2F00184A88 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		B3FBCDB924B8D5A400184A88 /* LazyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LazyView.swift; sourceTree = "<group>"; };
 		B3FBCDBB24BCAFF300184A88 /* ErrorHolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorHolder.swift; sourceTree = "<group>"; };
@@ -201,11 +203,11 @@
 		B3FBCDA524B8AB1200184A88 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				B3FBCDB324B8AC7800184A88 /* ApiClientHolder.swift */,
 				B3FBCDAF24B8AB3000184A88 /* ApiEnvironment.swift */,
 				B3FBCDBB24BCAFF300184A88 /* ErrorHolder.swift */,
+				4C3D6A8C25BACB0000729276 /* Session.swift */,
+				B3FBCDB324B8AC7800184A88 /* SessionStore.swift */,
 				B3FBCDB124B8AB6200184A88 /* UserDefaultsManager.swift */,
-				4C3D6A8C25BACB0000729276 /* FjuulApiBuilder.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -215,6 +217,7 @@
 			children = (
 				B348CE8724D85551001DCE14 /* ActivitySourcesScreen.swift */,
 				B3548D6024CF0F62002F26B9 /* CreateUserScreen.swift */,
+				C0FFEE0000000000000000A1 /* CredentialsScreen.swift */,
 				B3548D6124CF0F62002F26B9 /* DailyStatsScreen.swift */,
 				44F8883626C533FE005B0BBD /* AggregatedDailyStatsScreen.swift */,
 				B3548D6424CF0F7B002F26B9 /* ModuleSelectionScreens.swift */,
@@ -368,8 +371,8 @@
 				B3548D6724CF0F91002F26B9 /* OnboardingScreen.swift in Sources */,
 				B3FBCDB224B8AB6200184A88 /* UserDefaultsManager.swift in Sources */,
 				B3BB7F1323993EC800A7BEF2 /* SceneDelegate.swift in Sources */,
-				4C3D6A8D25BACB0000729276 /* FjuulApiBuilder.swift in Sources */,
-				B3FBCDB424B8AC7800184A88 /* ApiClientHolder.swift in Sources */,
+				4C3D6A8D25BACB0000729276 /* Session.swift in Sources */,
+				B3FBCDB424B8AC7800184A88 /* SessionStore.swift in Sources */,
 				B3FBCDBC24BCAFF300184A88 /* ErrorHolder.swift in Sources */,
 				B3548D6E24CF1FC4002F26B9 /* DailyStatsObservable.swift in Sources */,
 				B3548D6C24CF1E25002F26B9 /* UserProfileObservable.swift in Sources */,
@@ -379,6 +382,7 @@
 				B348CE8A24D85711001DCE14 /* ActivitySourceObservable.swift in Sources */,
 				4C4A4DF625F7C94700A944C2 /* HealthKitSyncObservable.swift in Sources */,
 				B3548D6524CF0F7B002F26B9 /* ModuleSelectionScreens.swift in Sources */,
+				C0FFEE0000000000000000A2 /* CredentialsScreen.swift in Sources */,
 				B3548D5F24CF0912002F26B9 /* UserProfileForm.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

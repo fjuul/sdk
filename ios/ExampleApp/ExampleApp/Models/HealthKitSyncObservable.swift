@@ -9,6 +9,8 @@ class HealthKitSyncObservable: ObservableObject {
         return Calendar.current.date(byAdding: components, to: Calendar.current.startOfDay(for: Date()))!
     }
 
+    private let manager: ActivitySourcesManager
+
     @Published var error: ErrorHolder?
     @Published var isLoadingIntraday: Bool = false
     @Published var isLoadingDailyMetrics: Bool = false
@@ -19,6 +21,10 @@ class HealthKitSyncObservable: ObservableObject {
     @Published var toDate: Date = HealthKitSyncObservable.dafaultEndOfDay
 
     var enabledConfigTypes: Set<HealthKitConfigType> = Set(HealthKitConfigType.allCases)
+
+    init(manager: ActivitySourcesManager) {
+        self.manager = manager
+    }
 
     func syncIntradayMetrics() {
         guard let activitySource = mountedHealthKitActivitySource() else { return }
@@ -97,7 +103,7 @@ class HealthKitSyncObservable: ObservableObject {
     }
 
     private func mountedHealthKitActivitySource() -> HealthKitActivitySource? {
-        let activitySource = ApiClientHolder.default.apiClient?.activitySourcesManager?
+        let activitySource = manager
             .mountedActivitySourceConnections.first(where: { item in item.activitySource is HealthKitActivitySource })?
             .activitySource as? HealthKitActivitySource
         if activitySource == nil {

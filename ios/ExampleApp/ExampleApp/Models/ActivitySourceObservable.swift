@@ -1,8 +1,8 @@
 import Foundation
-import Combine
 import FjuulActivitySources
 import UIKit
 
+/// Activity source state of one `Session`; discarded with it, so results arriving after sign-out never reach the UI.
 class ActivitySourceObservable: ObservableObject {
     let availableActivitySources: [ActivitySource] = [
         HealthKitActivitySource.shared, FitbitActivitySource.shared,
@@ -11,18 +11,15 @@ class ActivitySourceObservable: ObservableObject {
         SuuntoActivitySource.shared, WithingsActivitySource.shared
     ]
 
+    let manager: ActivitySourcesManager
+
     @Published var error: ErrorHolder?
     @Published var currentConnections: [ActivitySourceConnection] = []
     @Published var notConnectedActivitySources: [ActivitySource] = []
 
-    private var apiClientChangeSubscription: AnyCancellable?
-
-    init() {
+    init(manager: ActivitySourcesManager) {
+        self.manager = manager
         self.getCurrentConnections()
-        // This observer outlives sign-in and sign-out, so it has to reload whenever the api client is replaced.
-        apiClientChangeSubscription = NotificationCenter.default.publisher(for: .apiClientDidChange)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in self?.getCurrentConnections() }
     }
 
     func currentConnectionsLabels() -> String {
@@ -36,15 +33,8 @@ class ActivitySourceObservable: ObservableObject {
     }
 
     func getCurrentConnections() {
-        guard let manager = ApiClientHolder.default.apiClient?.activitySourcesManager else {
-            self.currentConnections = []
-            self.notConnectedActivitySources = []
-            return
-        }
         manager.refreshCurrent { result in
             DispatchQueue.main.async {
-                // A refresh started before logout or a client switch can finish after it.
-                guard manager === ApiClientHolder.default.apiClient?.activitySourcesManager else { return }
                 switch result {
                 case .success(let connections):
                     self.setConnections(connections)
@@ -55,7 +45,6 @@ class ActivitySourceObservable: ObservableObject {
     }
 
     func loadLocalConnections() {
-        guard let manager = ApiClientHolder.default.apiClient?.activitySourcesManager else { return }
         setConnections(manager.mountedActivitySourceConnections)
     }
 
@@ -67,17 +56,16 @@ class ActivitySourceObservable: ObservableObject {
     }
 
     func connect(activitySource: ActivitySource) {
-        guard let manager = ApiClientHolder.default.apiClient?.activitySourcesManager else { return }
         manager.connect(activitySource: activitySource) { result in
             DispatchQueue.main.async {
-                // Opening a stale authentication URL would connect a tracker for the previous user.
-                guard manager === ApiClientHolder.default.apiClient?.activitySourcesManager else { return }
                 switch result {
                 case .success(let connectionResult):
                     switch connectionResult {
                     case .connected: self.getCurrentConnections()
                     case .externalAuthenticationFlowRequired(let authenticationUrl):
-                        guard let url = URL(string: authenticationUrl) else { return }
+                        // Unlike UI updates, opening the browser is visible after sign-out and would connect the previous user.
+                        guard SessionStore.shared.isActive(self.manager),
+                              let url = URL(string: authenticationUrl) else { return }
                         UIApplication.shared.open(url)
                     }
                 case .failure(let err): self.error = ErrorHolder(error: err)
@@ -87,10 +75,8 @@ class ActivitySourceObservable: ObservableObject {
     }
 
     func disconnect(activitySourceConnection: ActivitySourceConnection) {
-        guard let manager = ApiClientHolder.default.apiClient?.activitySourcesManager else { return }
         manager.disconnect(activitySourceConnection: activitySourceConnection) { result in
             DispatchQueue.main.async {
-                guard manager === ApiClientHolder.default.apiClient?.activitySourcesManager else { return }
                 switch result {
                 case .success: self.getCurrentConnections()
                 case .failure(let err): self.error = ErrorHolder(error: err)

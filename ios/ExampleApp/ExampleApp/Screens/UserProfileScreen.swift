@@ -3,7 +3,7 @@ import SwiftUI
 struct UserProfileScreen: View {
 
     @Environment(\.presentationMode) var presentation
-    @ObservedObject var userProfile = UserProfileObservable(fetchOnInit: true)
+    @ObservedObject var userProfile: UserProfileObservable
 
     @State private var showingLogoutAlert = false
     @State private var showingUserDeleteAlert = false
@@ -53,17 +53,11 @@ struct UserProfileScreen: View {
                 .padding(10)
                 .alert(isPresented: $showingLogoutAlert) {
                     Alert(title: Text("Are you sure you want to logout?"), primaryButton: .destructive(Text("Logout")) {
-                        userProfile.logout()
+                        SessionStore.shared.signOut()
                     }, secondaryButton: .cancel())
                 }
             }
         }
 
-    }
-}
-
-struct UserProfileScreen_Previews: PreviewProvider {
-    static var previews: some View {
-        UserProfileScreen()
     }
 }

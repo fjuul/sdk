@@ -23,8 +23,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return logger
         }
 
-        // Set up as early as possible so HealthKit background delivery observers are registered on background launches.
-        FjuulApiBuilder.setUpApiClient { _ in }
+        // Sign in as early as possible so HealthKit background delivery observers are registered on background launches.
+        SessionStore.shared.signIn()
 
         return true
     }

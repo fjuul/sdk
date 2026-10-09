@@ -1,8 +1,11 @@
 import Foundation
 import Combine
+import FjuulCore
 import FjuulAnalytics
 
 class AggregatedDailyStatsObservable: ObservableObject {
+
+    private let apiClient: ApiClient
 
     @Published var isLoading: Bool = false
     @Published var error: ErrorHolder?
@@ -14,7 +17,8 @@ class AggregatedDailyStatsObservable: ObservableObject {
 
     private var dateObserver: AnyCancellable?
 
-    init() {
+    init(apiClient: ApiClient) {
+        self.apiClient = apiClient
         dateObserver = $fromDate.combineLatest($toDate, $aggregation).sink { (fromDate, toDate, aggregation) in
             self.fetch(fromDate, toDate, aggregation)
         }
@@ -22,7 +26,7 @@ class AggregatedDailyStatsObservable: ObservableObject {
 
     func fetch(_ fromDate: Date, _ toDate: Date, _ aggregation: AggregationType) {
         self.isLoading = true
-        ApiClientHolder.default.apiClient?.analytics.aggregatedDailyStats(from: fromDate, to: toDate, aggregation: aggregation) { result in
+        apiClient.analytics.aggregatedDailyStats(from: fromDate, to: toDate, aggregation: aggregation) { result in
             self.isLoading = false
             switch result {
             case .success(let aggregatedDailyStats): self.value = aggregatedDailyStats

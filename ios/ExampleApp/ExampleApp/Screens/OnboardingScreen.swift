@@ -5,8 +5,7 @@ import FjuulActivitySources
 struct OnboardingScreen: View {
 
     @EnvironmentObject var userDefaultsManager: UserDefaultsManager
-    @ObservedObject var viewRouter: ViewRouter
-    @State private var error: ErrorHolder?
+    @EnvironmentObject var sessionStore: SessionStore
 
     var everythingProvidedForUserCreation: Bool {
         return userDefaultsManager.apiKey.count > 0
@@ -43,26 +42,17 @@ struct OnboardingScreen: View {
             }
             Section {
                 Button("Continue") {
-                    FjuulApiBuilder.setUpApiClient { error in
-                        if let error = error {
-                            self.error = ErrorHolder(error: error)
-                            return
-                        }
-                        self.viewRouter.presentedView = .moduleSelection
-                    }
-                }.disabled(!everythingProvided)
+                    sessionStore.signIn()
+                }.disabled(!everythingProvided || sessionStore.isBusy)
             }
         }
         .navigationBarTitle("Fjuul SDK", displayMode: .inline)
-        .alert(item: $error) { holder in
-            Alert(title: Text(holder.error.localizedDescription))
-        }
     }
 
 }
 
 struct OnboardingScreen_Previews: PreviewProvider {
     static var previews: some View {
-        OnboardingScreen(viewRouter: ViewRouter())
+        OnboardingScreen()
     }
 }

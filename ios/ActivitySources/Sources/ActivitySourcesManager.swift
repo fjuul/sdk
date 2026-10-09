@@ -14,17 +14,23 @@ final public class ActivitySourcesManager {
     let apiClient: ActivitySourcesApiClient
     let config: ActivitySourceConfigBuilder
 
-    public private(set) var mountedActivitySourceConnections: [ActivitySourceConnection] = []
+    /// Connections whose activity sources are currently mounted on this device.
+    public var mountedActivitySourceConnections: [ActivitySourceConnection] {
+        return stateQueue.sync { mountedConnections }
+    }
 
     private let persistor: Persistor
     private let connectionsLocalStore: ActivitySourcesStateStore
     private let connectionFactory: (TrackerConnection) -> ActivitySourceConnection
 
-    /// Restoring, applying refresh results, disconnecting and unmounting change the local state asynchronously,
-    /// so they run one at a time.
-    private let localStateChanges = SerialOperations()
+    /// Owns all local state below. Callbacks of mounting and unmounting hop onto it before touching that state.
+    private let stateQueue = DispatchQueue(label: "com.fjuul.sdk.activitysources.ActivitySourcesManager")
+    private var mountedConnections: [ActivitySourceConnection] = []
     /// Advanced by `unmount()` and successful disconnects, so refreshes requested before them can't undo them.
-    private let localStateGeneration = Counter()
+    private var generation = 0
+    /// Local state changes complete asynchronously, so they run one at a time in the order they were requested.
+    private var pendingStateChanges: [() -> Void] = []
+    private var isChangingState = false
 
     /// Internal initializer.
     ///
@@ -49,12 +55,11 @@ final public class ActivitySourcesManager {
         self.connectionsLocalStore = ActivitySourcesStateStore(userToken: userToken, persistor: persistor)
         self.connectionFactory = connectionFactory
 
-        localStateChanges.enqueue { done in
-            self.restoreState { result in
-                done()
-                completion?(result)
-            }
-        }
+        changeState({ finish in
+            self.reconcile(to: self.connectionsLocalStore.connections ?? [], persisting: false, completion: finish)
+        }, completion: { error in
+            completion?(error.map { .failure($0) } ?? .success(()))
+        })
     }
 
     /// Connect specified ActivitySource.
@@ -89,34 +94,23 @@ final public class ActivitySourcesManager {
         }
     }
 
-    /// Disconnects the activity source connection and refreshes current connection list.
+    /// Disconnects the activity source connection and removes it from the local state.
     /// In the case of HealthKitActivitySource it will disable backgroundDelivery.
     /// - Parameters:
     ///   - activitySourceConnection: instance of ActivitySourceConnection
     ///   - completion: with void or error
     public func disconnect(activitySourceConnection: ActivitySourceConnection, completion: @escaping (Result<Void, Error>) -> Void) {
         apiClient.disconnect(activitySourceConnection: activitySourceConnection) { result in
-            switch result {
-            case .success:
-                self.localStateGeneration.increment()
-                self.localStateChanges.enqueue { done in
-                    activitySourceConnection.unmount { unmountResult in
-                        switch unmountResult {
-                        case .success:
-                            self.mountedActivitySourceConnections = self.mountedActivitySourceConnections.filter { connection in
-                                connection.tracker != activitySourceConnection.tracker
-                            }
-                            done()
-                            completion(.success(()))
-                        case .failure(let err):
-                            done()
-                            completion(.failure(err))
-                        }
-                    }
-                }
-            case .failure(let err):
-                completion(.failure(err))
+            if case .failure(let err) = result {
+                return DispatchQueue.global().async { completion(.failure(err)) }
             }
+            let tracker = activitySourceConnection.tracker.value
+            self.changeState(invalidatingEarlierRefreshes: true, { finish in
+                self.connectionsLocalStore.connections = self.connectionsLocalStore.connections?.filter { $0.tracker != tracker }
+                self.unmountSequentially(self.mountedConnections.filter { $0.tracker.value == tracker }, completion: finish)
+            }, completion: { error in
+                completion(error.map { .failure($0) } ?? .success(()))
+            })
         }
     }
 
@@ -124,24 +118,22 @@ final public class ActivitySourcesManager {
     /// If `unmount` is called or a disconnect succeeds while the request is in flight, the fetched connections are returned but not applied locally.
     /// - Parameter completion: completion with [ActivitySourceConnection] or Error
     public func refreshCurrent(completion: @escaping (Result<[ActivitySourceConnection], Error>) -> Void) {
-        let generationAtStart = localStateGeneration.value
-        apiClient.getCurrentConnections { result in
-            switch result {
-            case .success(let connections):
-                let activitySourceConnections = connections.map(self.connectionFactory)
-                self.localStateChanges.enqueue { done in
-                    // The response may predate an unmount (e.g. on logout) or a disconnect, so it must not change local state.
-                    guard self.localStateGeneration.value == generationAtStart else {
-                        done()
-                        return completion(.success(activitySourceConnections))
-                    }
-                    self.refreshCurrentConnections(connections: connections) { result in
-                        done()
-                        completion(result.map { activitySourceConnections })
-                    }
+        stateQueue.async {
+            let generationAtStart = self.generation
+            self.apiClient.getCurrentConnections { result in
+                switch result {
+                case .success(let connections):
+                    let activitySourceConnections = connections.map(self.connectionFactory)
+                    self.changeState({ finish in
+                        // The response may predate an unmount (e.g. on logout) or a disconnect, so it must not change local state.
+                        guard self.generation == generationAtStart else { return finish(nil) }
+                        self.reconcile(to: connections, completion: finish)
+                    }, completion: { error in
+                        completion(error.map { .failure($0) } ?? .success(activitySourceConnections))
+                    })
+                case .failure(let err):
+                    DispatchQueue.global().async { completion(.failure(err)) }
                 }
-            case .failure(let err):
-                completion(.failure(err))
             }
         }
     }
@@ -151,215 +143,98 @@ final public class ActivitySourcesManager {
     /// Waits for local state changes already in progress (e.g. a source being mounted) to finish first.
     /// - Parameter completion: void or error
     public func unmount(completion: @escaping (Result<Void, Error>) -> Void) {
-        localStateGeneration.increment()
-        localStateChanges.enqueue { done in
-            let group = DispatchGroup()
-            var error: Error?
+        changeState(invalidatingEarlierRefreshes: true, { finish in
+            self.unmountSequentially(self.mountedConnections, completion: finish)
+        }, completion: { error in
+            completion(error.map { .failure($0) } ?? .success(()))
+        })
+    }
 
-            self.mountedActivitySourceConnections.forEach { activitySourceConnection in
+    // MARK: - Local state (only accessed on `stateQueue`)
 
-                group.enter()
-                activitySourceConnection.unmount { result in
-                    switch result {
-                    case .success: break
-                    case .failure(let err):
-                        error = err
-                    }
-
-                    group.leave()
+    /// Runs `change` on the state queue once all earlier changes have finished, then calls `completion` off that queue.
+    /// `change` must call `finish` exactly once, on the state queue.
+    private func changeState(invalidatingEarlierRefreshes: Bool = false,
+                             _ change: @escaping (_ finish: @escaping (Error?) -> Void) -> Void,
+                             completion: @escaping (Error?) -> Void) {
+        stateQueue.async {
+            if invalidatingEarlierRefreshes {
+                self.generation += 1
+            }
+            self.pendingStateChanges.append {
+                change { error in
+                    self.isChangingState = false
+                    self.startNextStateChange()
+                    DispatchQueue.global().async { completion(error) }
                 }
             }
+            self.startNextStateChange()
+        }
+    }
 
-            group.notify(queue: DispatchQueue.global()) {
-                if let err = error {
-                    done()
-                    completion(.failure(err))
-                } else {
-                    self.mountedActivitySourceConnections = []
-                    done()
-                    completion(.success(()))
-                }
+    private func startNextStateChange() {
+        guard !isChangingState, !pendingStateChanges.isEmpty else { return }
+        isChangingState = true
+        pendingStateChanges.removeFirst()()
+    }
+
+    /// Persists `desired` (unless restoring from it), unmounts mounted sources that aren't in it, then mounts the missing ones.
+    /// Completes on the state queue with the first error; later steps still run.
+    private func reconcile(to desired: [TrackerConnection], persisting: Bool = true, completion: @escaping (Error?) -> Void) {
+        if persisting {
+            connectionsLocalStore.connections = desired
+        }
+        let obsolete = mountedConnections.filter { mounted in !desired.contains { $0.tracker == mounted.tracker.value } }
+        unmountSequentially(obsolete) { unmountError in
+            let missing = desired.filter { connection in !self.mountedConnections.contains { $0.tracker.value == connection.tracker } }
+            self.mountSequentially(missing.map(self.connectionFactory)) { mountError in
+                completion(unmountError ?? mountError)
             }
         }
     }
 
-    private func refreshCurrentConnections(connections: [TrackerConnection], completion: @escaping (Result<Void, Error>) -> Void) {
-        let group = DispatchGroup()
-        var error: Error?
-
-        // Mount new trackers
-        group.enter()
-        self.mountByConnections(connections: connections) { result in
-            switch result {
-            case .success: break
-            case .failure(let err):
-                error = err
-            }
-
-            group.leave()
-        }
-
-        // Unmount not relevant Trackers
-        group.enter()
-        self.unmountByConnections(connections: connections) { result in
-            switch result {
-            case .success: break
-            case .failure(let err):
-                error = err
-            }
-
-            group.leave()
-        }
-
-        self.connectionsLocalStore.connections = connections
-
-        group.notify(queue: DispatchQueue.global()) {
-            if let err = error {
-                completion(.failure(err))
-            } else {
-                completion(.success(()))
-            }
-        }
-    }
-
-    private func mountByConnections(connections: [TrackerConnection], completion: @escaping (Result<Void, Error>) -> Void) {
-        let group = DispatchGroup()
-        var error: Error?
-
-        connections.forEach { connection in
-            if self.mountedActivitySourceConnections.contains(where: { element in element.tracker.value == connection.tracker }) {
-              return
-            }
-
-            group.enter()
-
-            let activitySourceConnection = self.connectionFactory(connection)
-            activitySourceConnection.mount(apiClient: apiClient, config: config, persistor: persistor) { result in
-                switch result {
-                case .success:
-                    self.mountedActivitySourceConnections.append(activitySourceConnection)
-                case .failure(let err):
-                    error = err
-                    DataLogger.shared.error("Error on mountByConnections \(err)")
-                }
-                group.leave()
-            }
-        }
-
-        group.notify(queue: DispatchQueue.global()) {
-            if let err = error {
-                completion(.failure(err))
-            } else {
-                completion(.success(()))
-            }
-        }
-    }
-
-    private func unmountByConnections(connections: [TrackerConnection], completion: @escaping (Result<Void, Error>) -> Void) {
-        let group = DispatchGroup()
-        var error: Error?
-
-        self.mountedActivitySourceConnections.forEach { activitySourceConnection in
-            if !connections.contains(where: { element in element.tracker == activitySourceConnection.tracker.value }) {
-                group.enter()
-
-                activitySourceConnection.unmount { result in
+    private func mountSequentially(_ connections: [ActivitySourceConnection], completion: @escaping (Error?) -> Void) {
+        sequentially(connections, completion: completion) { connection, finish in
+            connection.mount(apiClient: self.apiClient, config: self.config, persistor: self.persistor) { result in
+                self.stateQueue.async {
                     switch result {
                     case .success:
-                        self.mountedActivitySourceConnections.removeAll { value in value.id == activitySourceConnection.id }
+                        self.mountedConnections.append(connection)
+                        finish(nil)
                     case .failure(let err):
-                        error = err
-                        DataLogger.shared.error("Error on unmount \(err)")
+                        DataLogger.shared.error("Error on mounting \(connection.tracker.value): \(err)")
+                        finish(err)
                     }
-
-                    group.leave()
                 }
             }
         }
-
-        group.notify(queue: DispatchQueue.global()) {
-            if let err = error {
-                completion(.failure(err))
-            } else {
-                completion(.success(()))
-            }
-        }
     }
 
-    private func restoreState(completion: @escaping (Result<Void, Error>) -> Void) {
-        let group = DispatchGroup()
-        var error: Error?
-        connectionsLocalStore.connections?.forEach { connection in
-            group.enter()
-            let activitySourceConnection = self.connectionFactory(connection)
-            activitySourceConnection.mount(apiClient: apiClient, config: config, persistor: persistor) { result in
-                switch result {
-                case .success:
-                    self.mountedActivitySourceConnections.append(activitySourceConnection)
-                case .failure(let err):
-                    error = err
-                    DataLogger.shared.error("Error: on restore connectionsLocalStore state \(err)")
+    private func unmountSequentially(_ connections: [ActivitySourceConnection], completion: @escaping (Error?) -> Void) {
+        sequentially(connections, completion: completion) { connection, finish in
+            connection.unmount { result in
+                self.stateQueue.async {
+                    switch result {
+                    case .success:
+                        self.mountedConnections.removeAll { $0.id == connection.id }
+                        finish(nil)
+                    case .failure(let err):
+                        DataLogger.shared.error("Error on unmounting \(connection.tracker.value): \(err)")
+                        finish(err)
+                    }
                 }
-                group.leave()
-            }
-        }
-
-        group.notify(queue: .global()) {
-            if let err = error {
-                completion(.failure(err))
-            } else {
-                completion(.success(()))
             }
         }
     }
-}
 
-/// Runs asynchronous operations one at a time, in the order they were enqueued.
-/// Each operation must call `done` exactly once when it has finished.
-private final class SerialOperations {
-    typealias Operation = (_ done: @escaping () -> Void) -> Void
-
-    private let lock = NSLock()
-    private var pending: [Operation] = []
-    private var isRunning = false
-
-    func enqueue(_ operation: @escaping Operation) {
-        lock.lock()
-        pending.append(operation)
-        let start = !isRunning
-        isRunning = true
-        lock.unlock()
-        if start {
-            runNext()
+    /// Runs `step` for each element, one after another; completes with the first error after all steps ran.
+    private func sequentially<Element>(_ elements: [Element], firstError: Error? = nil, completion: @escaping (Error?) -> Void,
+                                       step: @escaping (Element, @escaping (Error?) -> Void) -> Void) {
+        guard let element = elements.first else {
+            return completion(firstError)
         }
-    }
-
-    private func runNext() {
-        lock.lock()
-        guard !pending.isEmpty else {
-            isRunning = false
-            lock.unlock()
-            return
+        step(element) { error in
+            self.sequentially(Array(elements.dropFirst()), firstError: firstError ?? error, completion: completion, step: step)
         }
-        let operation = pending.removeFirst()
-        lock.unlock()
-        operation { self.runNext() }
-    }
-}
-
-private final class Counter {
-    private let lock = NSLock()
-    private var count = 0
-
-    var value: Int {
-        lock.lock()
-        defer { lock.unlock() }
-        return count
-    }
-
-    func increment() {
-        lock.lock()
-        count += 1
-        lock.unlock()
     }
 }

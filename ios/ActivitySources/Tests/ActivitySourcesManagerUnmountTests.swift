@@ -206,15 +206,69 @@ final class ActivitySourcesManagerUnmountTests: XCTestCase {
         wait(for: [refreshed], timeout: 5)
         XCTAssert(sut.mountedActivitySourceConnections.isEmpty, "Should not mount the disconnected source again")
         Verify(healthKitMock, 1, .mount(apiClient: .any, config: .any, healthKitManagerBuilder: .any, completion: .any))
+        XCTAssertEqual(persistedConnectionIds(), [], "A manager created later should not restore the disconnected source")
+    }
+
+    func testRefreshCurrentUnmountsObsoleteSourcesBeforeMountingNewOnes() {
+        // Given
+        let healthKitMock = MountableHealthKitActivitySourceMock()
+        Given(healthKitMock, .trackerValue(getter: TrackerValue.HEALTHKIT))
+        let otherSourceMock = MountableHealthKitActivitySourceMock()
+        Given(otherSourceMock, .trackerValue(getter: TrackerValue.POLAR))
+        let otherTrackerConnection = TrackerConnection(id: "e2a9c4f1-7b3d-4c6e-8f5a-0d1b9e3c7a26", tracker: "polar", createdAt: Date(), endedAt: nil)
+        let initiallyRefreshed = expectation(description: "Initial refresh completes")
+        let refreshed = expectation(description: "Refresh completes")
+        var events: [String] = []
+        var getConnectionsCalls = 0
+
+        Perform(healthKitMock, .mount(apiClient: .any, config: .any, healthKitManagerBuilder: .any, completion: .any, perform: { (_, _, _, completion) in
+            completion(.success(()))
+        }))
+        Perform(healthKitMock, .unmount(completion: .any, perform: { (completion) in
+            events.append("unmount started")
+            DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
+                events.append("unmount finished")
+                completion(.success(()))
+            }
+        }))
+        Perform(otherSourceMock, .mount(apiClient: .any, config: .any, healthKitManagerBuilder: .any, completion: .any, perform: { (_, _, _, completion) in
+            events.append("mount started")
+            completion(.success(()))
+        }))
+        Perform(apiClientMock, .getCurrentConnections(completion: .any, perform: { (completion) in
+            getConnectionsCalls += 1
+            completion(.success(getConnectionsCalls == 1 ? [self.healthKitTrackerConnection] : [otherTrackerConnection]))
+        }))
+        let sut = makeManager { $0.tracker == "healthkit" ? healthKitMock : otherSourceMock }
+        sut.refreshCurrent { _ in initiallyRefreshed.fulfill() }
+        wait(for: [initiallyRefreshed], timeout: 5)
+
+        // When
+        sut.refreshCurrent { _ in refreshed.fulfill() }
+
+        // Then
+        wait(for: [refreshed], timeout: 5)
+        XCTAssertEqual(events, ["unmount started", "unmount finished", "mount started"])
+        XCTAssertEqual(sut.mountedActivitySourceConnections.map { $0.id }, [otherTrackerConnection.id])
+        XCTAssertEqual(persistedConnectionIds(), [otherTrackerConnection.id])
     }
 
     /// With `activitySource`, every connection uses it, so mounting and unmounting can be controlled.
     private func makeManager(connectingTo activitySource: ActivitySource? = nil) -> ActivitySourcesManager {
-        let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
         guard let activitySource = activitySource else {
+            let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
             return ActivitySourcesManager(userToken: client.userToken, persistor: persistor, apiClient: apiClientMock, config: config)
         }
+        return makeManager { _ in activitySource }
+    }
+
+    private func makeManager(activitySourceFor: @escaping (TrackerConnection) -> ActivitySource) -> ActivitySourcesManager {
+        let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
         return ActivitySourcesManager(userToken: client.userToken, persistor: persistor, apiClient: apiClientMock, config: config,
-                                      connectionFactory: { ActivitySourceConnection(trackerConnection: $0, activitySource: activitySource) })
+                                      connectionFactory: { ActivitySourceConnection(trackerConnection: $0, activitySource: activitySourceFor($0)) })
+    }
+
+    private func persistedConnectionIds() -> [String]? {
+        return ActivitySourcesStateStore(userToken: "b530b31f-74ca-4814-9e24-1bd35d5d1b61", persistor: persistor).connections?.map { $0.id }
     }
 }

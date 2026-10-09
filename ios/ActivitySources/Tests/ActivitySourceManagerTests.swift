@@ -43,6 +43,8 @@ final class ActivitySourcesManagerTests: XCTestCase {
     func testInitializeWithExistsStoredActyvityConnections() {
         // Given
         let promise = expectation(description: "Init ActivitySourcesManager")
+        // Not the shared persistor: setUp's manager may still be reading it on its own queue.
+        let persistor = InMemoryPersistor()
 
         let client = ApiClient(baseUrl: "https://apibase", apiKey: "", credentials: credentials, persistor: persistor)
 

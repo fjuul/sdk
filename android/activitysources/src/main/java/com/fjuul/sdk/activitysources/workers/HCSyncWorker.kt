@@ -3,6 +3,7 @@ package com.fjuul.sdk.activitysources.workers
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import androidx.annotation.RestrictTo
 import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
 import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource
@@ -11,6 +12,7 @@ abstract class HCSyncWorker(context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
 
     // Null when the active instance belongs to another session than the one that queued this work.
+    @RestrictTo(RestrictTo.Scope.LIBRARY)
     protected fun getSessionActivitySourcesManager(): ActivitySourcesManager? =
         ActivitySourcesManager.getOrInitializeForWorker(applicationContext, inputData)
 

@@ -192,7 +192,14 @@ public final class ActivitySourcesManager {
         awaitInitialization(submitWorkManagerTask(() -> initializeInternal(client, config)));
     }
 
-    /** Initializes the manager without blocking the calling thread. Completion is delivered on the main thread. */
+    /**
+     * Initializes the manager without blocking the calling thread. Completion is delivered on the main thread, after
+     * the manager is ready to use.
+     *
+     * @param client configured client with signing ability and user credentials
+     * @param config config for ActivitySourcesManager
+     * @param callback receives success or the initialization error
+     */
     @SuppressLint("NewApi")
     public static void initializeAsync(@NonNull ApiClient client,
         @NonNull ActivitySourcesManagerConfig config,
@@ -727,7 +734,9 @@ public final class ActivitySourcesManager {
 
     /**
      * Cancel any scheduled background works initiated by the user state and {@link ActivitySourcesManagerConfig}
-     * before.
+     * before. On the main thread this method queues cancellation and returns immediately; use
+     * {@link #disableBackgroundWorkersAsync(Context, Callback)} when subsequent work depends on cancellation
+     * completing.
      *
      * @param applicationContext
      */
@@ -739,7 +748,13 @@ public final class ActivitySourcesManager {
         }
     }
 
-    /** Cancels SDK background work without blocking the caller. Completion is delivered on the main thread. */
+    /**
+     * Cancels SDK background work without blocking the caller. Completion is delivered on the main thread after every
+     * work name has been attempted.
+     *
+     * @param applicationContext application context for WorkManager
+     * @param callback receives success or the aggregated cancellation error; may be null
+     */
     public static synchronized void disableBackgroundWorkersAsync(@NonNull Context applicationContext,
         @Nullable Callback<Void> callback) {
         enqueueBackgroundCancellation(applicationContext, callback);

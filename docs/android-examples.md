@@ -85,10 +85,18 @@ After a successful request, the user won't be able to make any authorized reques
 `ActivitySourcesManager` is the high-level and main entity of the **AcivitySources** module. It is designed as a singleton, which must be initialized before the first use:
 ```kotlin
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
+import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig
 
-ActivitySourcesManager.initialize(signedClient)
+ActivitySourcesManager.initializeAsync(signedClient, ActivitySourcesManagerConfig.buildDefault()) { result ->
+    if (result.isError) {
+        // Handle initialization failure before using ActivitySourcesManager.
+        return@initializeAsync
+    }
+    val sourcesManager = ActivitySourcesManager.getInstance()
+    // Continue with the initialized manager.
+}
 ```
-The call above initializes `ActivitySourcesManager` with the default config.<br/>
+Use `initializeAsync` from the UI thread. Its completion callback is delivered on the main thread, and the manager is ready to use when the callback succeeds. The synchronous `initialize` overload is retained for worker-thread callers; do not call it from the UI thread.<br/>
 Consider using the overloaded method that receives the config as a parameter, if you need to adjust the behavior:
 ```kotlin
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
@@ -98,9 +106,35 @@ val config = ActivitySourcesManagerConfig.Builder()
     .setCollectableFitnessMetrics(setOf(FitnessMetricsType.INTRADAY_STEPS, FitnessMetricsType.INTRADAY_CALORIES))
     .enableGoogleFitBackgroundSync(Duration.ofMinutes(3))
     .build()
-ActivitySourcesManager.initialize(signedClient, config)
+ActivitySourcesManager.initializeAsync(signedClient, config) { result ->
+    if (result.isError) {
+        // Handle initialization failure before using ActivitySourcesManager.
+        return@initializeAsync
+    }
+    val sourcesManager = ActivitySourcesManager.getInstance()
+    // Continue with the initialized manager.
+}
 ```
 `setCollectableFitnessMetrics` implies what permissions will be requested to local activity sources during the connection (e.g. Google Fit) and what kind of data will be collected in the background mode for current connections to local activity sources.
+The worker classes in `com.fjuul.sdk.activitysources.workers` are SDK-managed implementation details, not application extension points. Configure synchronization through `ActivitySourcesManagerConfig` instead of subclassing SDK workers.
+
+### Logging out
+Cancel background synchronization asynchronously when logging out from the UI. Only clear the user's storage after cancellation succeeds; on error, keep the session available and offer a retry because some work may still be scheduled.
+```kotlin
+ActivitySourcesManager.disableBackgroundWorkersAsync(appContext) { result ->
+    if (result.isError) {
+        // Show a retry or cancellation error; do not clear user storage yet.
+        return@disableBackgroundWorkersAsync
+    }
+
+    if (!signedClient.clearPersistentStorage()) {
+        // Handle storage removal failure.
+        return@disableBackgroundWorkersAsync
+    }
+    // Finish the logout flow.
+}
+```
+`disableBackgroundWorkers` remains available for worker-thread callers. On the main thread it queues cancellation and returns immediately; use the async overload when subsequent actions depend on cancellation completing.
 
 To retrieve an instance of `ActivitySourcesManager`:
 ```kotlin
@@ -219,7 +253,13 @@ val config = ActivitySourcesManagerConfig.Builder()
 //    .enableGoogleFitBackgroundSync(Duration.ofMinutes(3))
 //    .enableProfileBackgroundSync()
 //    .build()
-ActivitySourcesManager.initialize(client, config)
+ActivitySourcesManager.initializeAsync(client, config) { result ->
+    if (result.isError) {
+        // Handle initialization failure before starting background sync.
+        return@initializeAsync
+    }
+    // The configured background works are ready.
+}
 ```
 2. the user must have a current connection to Google Fit
 3. Android OS or its vendor modifications allow your application to run in the background and do not restrict its execution. You can refer to [dontkillmyapp.com](https://dontkillmyapp.com/) for getting more details.
@@ -442,7 +482,13 @@ val config = ActivitySourcesManagerConfig.Builder()
     .enableHealthConnectDailyBackgroundSync()
     .enableHealthConnectProfileBackgroundSync()
     .build()
-ActivitySourcesManager.initialize(client, config)
+ActivitySourcesManager.initializeAsync(client, config) { result ->
+    if (result.isError) {
+        // Handle initialization failure before starting background sync.
+        return@initializeAsync
+    }
+    // The configured background works are ready.
+}
 ```
 2. The user must have a current connection to Health Connect.
 3. The user must grant background permissions. You can request these permissions using:

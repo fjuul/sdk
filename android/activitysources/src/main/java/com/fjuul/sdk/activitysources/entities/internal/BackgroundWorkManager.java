@@ -63,6 +63,14 @@ public class BackgroundWorkManager {
         workScheduler.cancelGFSessionsSyncWork();
     }
 
+    public void cancelGFIntradaySyncWork() {
+        workScheduler.cancelGFIntradaySyncWork();
+    }
+
+    public void cancelGFSessionsSyncWork() {
+        workScheduler.cancelGFSessionsSyncWork();
+    }
+
     @SuppressLint("NewApi")
     public void configureHCIntradaySyncWorks() {
         switch (config.getHealthConnectIntradayBackgroundSyncMode()) {

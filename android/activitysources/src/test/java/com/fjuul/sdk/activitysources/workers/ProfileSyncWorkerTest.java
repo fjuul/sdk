@@ -8,7 +8,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -29,19 +28,16 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.util.concurrent.PausedExecutorService;
 import org.robolectric.annotation.Config;
 
 import com.fjuul.sdk.activitysources.entities.ActivitySourceConnection;
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager;
-import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig;
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
 import com.fjuul.sdk.activitysources.entities.GoogleFitActivitySource;
 import com.fjuul.sdk.activitysources.entities.GoogleFitProfileSyncOptions;
 import com.fjuul.sdk.activitysources.exceptions.GoogleFitActivitySourceExceptions;
-import com.fjuul.sdk.core.ApiClient;
 import com.fjuul.sdk.core.entities.Callback;
 
 import android.content.Context;
@@ -56,63 +52,6 @@ public class ProfileSyncWorkerTest {
     @RunWith(RobolectricTestRunner.class)
     @Config(sdk = {Build.VERSION_CODES.P})
     private abstract static class GivenRobolectricContext {}
-
-    public static class GetOrInitializeActivitySourcesManagerTests extends GivenRobolectricContext {
-        ProfileSyncWorker subject;
-        TestWorkerBuilder<ProfileSyncWorker> workerBuilder;
-
-        @Before
-        public void setUp() {
-            final Context context = ApplicationProvider.getApplicationContext();
-            final Executor executor = Executors.newSingleThreadExecutor();
-            workerBuilder = TestWorkerBuilder.from(context, ProfileSyncWorker.class, executor);
-        }
-
-        @Test
-        public void getOrInitializeActivitySourcesManager_whenNoInitializedInstance_initializesAndReturnsIt() {
-            try (MockedStatic<ActivitySourcesManager> sourcesManagerStaticMock =
-                mockStatic(ActivitySourcesManager.class)) {
-                sourcesManagerStaticMock.when(ActivitySourcesManager::getInstance)
-                    .thenThrow(IllegalStateException.class)
-                    .thenReturn(null);
-
-                Data inputData = new Data.Builder().putString("USER_TOKEN", "USER1")
-                    .putString("USER_SECRET", "TOP_SECRET")
-                    .putString("API_KEY", "FJUUL_API_KEY")
-                    .putString("BASE_URL", "https://fjuul.com")
-                    .build();
-                subject = (ProfileSyncWorker) workerBuilder.setInputData(inputData).build();
-                subject.getOrInitializeActivitySourcesManager();
-
-                final ArgumentCaptor<ApiClient> apiClientCaptor = ArgumentCaptor.forClass(ApiClient.class);
-                final ArgumentCaptor<ActivitySourcesManagerConfig> configCaptor =
-                    ArgumentCaptor.forClass(ActivitySourcesManagerConfig.class);
-                sourcesManagerStaticMock.verify(() -> {
-                    ActivitySourcesManager.initialize(apiClientCaptor.capture(), configCaptor.capture());
-                });
-                final ApiClient apiClient = apiClientCaptor.getValue();
-                assertEquals("api client should be initialized with user token from the input data",
-                    "USER1",
-                    apiClient.getUserToken());
-                assertEquals("api client should be initialized with user secret from the input data",
-                    "TOP_SECRET",
-                    apiClient.getUserSecret());
-                assertEquals("api client should be initialized with api key from the input data",
-                    "FJUUL_API_KEY",
-                    apiClient.getApiKey());
-                assertEquals("api client should be initialized with base url from the input data",
-                    "https://fjuul.com",
-                    apiClient.getBaseUrl());
-                final ActivitySourcesManagerConfig config = configCaptor.getValue();
-                assertEquals("config should have the untouched background mode",
-                    ActivitySourcesManagerConfig.BackgroundSyncMode.UNTOUCHED,
-                    config.getProfileBackgroundSyncMode());
-                assertEquals("config should have the empty set of collectable fitness metrics",
-                    Collections.emptySet(),
-                    config.getCollectableFitnessMetrics());
-            }
-        }
-    }
 
     public static class DoWorkTests extends GivenRobolectricContext {
         // NOTE: we use the spy here to mock the initialization of ActivitySourcesManager
@@ -139,7 +78,7 @@ public class ProfileSyncWorkerTest {
             when(mockedSourcesManager.getCurrent()).thenReturn(Collections.emptyList());
 
             spySubject = spy(workerBuilder.build());
-            doReturn(mockedSourcesManager).when(spySubject).getOrInitializeActivitySourcesManager();
+            doReturn(mockedSourcesManager).when(spySubject).getSessionActivitySourcesManager();
 
             final Future<ListenableWorker.Result> futureResult = pausedExecutor.submit(spySubject::doWork);
             pausedExecutor.runAll();
@@ -172,7 +111,7 @@ public class ProfileSyncWorkerTest {
                 .putStringArray("PROFILE_METRICS", new String[] {"GOOGLEFIT_HEIGHT", "GOOGLEFIT_WEIGHT"})
                 .build();
             spySubject = spy((ProfileSyncWorker) workerBuilder.setInputData(inputData).build());
-            doReturn(mockedSourcesManager).when(spySubject).getOrInitializeActivitySourcesManager();
+            doReturn(mockedSourcesManager).when(spySubject).getSessionActivitySourcesManager();
 
             final Future<ListenableWorker.Result> futureResult = pausedExecutor.submit(spySubject::doWork);
             pausedExecutor.runAll();
@@ -211,7 +150,7 @@ public class ProfileSyncWorkerTest {
                 .putStringArray("PROFILE_METRICS", new String[] {"GOOGLEFIT_HEIGHT", "GOOGLEFIT_WEIGHT"})
                 .build();
             spySubject = spy((ProfileSyncWorker) workerBuilder.setInputData(inputData).build());
-            doReturn(mockedSourcesManager).when(spySubject).getOrInitializeActivitySourcesManager();
+            doReturn(mockedSourcesManager).when(spySubject).getSessionActivitySourcesManager();
 
             final Future<ListenableWorker.Result> futureResult = pausedExecutor.submit(spySubject::doWork);
             pausedExecutor.runAll();

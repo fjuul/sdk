@@ -27,7 +27,10 @@ public class GFIntradaySyncWorker extends GFSyncWorker {
     @NonNull
     @Override
     public Result doWork() {
-        final ActivitySourcesManager sourcesManager = getOrInitializeActivitySourcesManager();
+        final ActivitySourcesManager sourcesManager = getSessionActivitySourcesManager();
+        if (sourcesManager == null) {
+            return Result.success();
+        }
         final ActivitySourceConnection gfConnection = getGoogleFitActivitySourceConnection(sourcesManager);
         if (gfConnection == null) {
             // TODO: cancel next scheduled tasks because there is not current gf connection

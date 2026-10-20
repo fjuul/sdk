@@ -26,7 +26,10 @@ public class ProfileSyncWorker extends GFSyncWorker {
     @NonNull
     @Override
     public Result doWork() {
-        final ActivitySourcesManager sourcesManager = getOrInitializeActivitySourcesManager();
+        final ActivitySourcesManager sourcesManager = getSessionActivitySourcesManager();
+        if (sourcesManager == null) {
+            return Result.success();
+        }
         final ActivitySourceConnection gfConnection = getGoogleFitActivitySourceConnection(sourcesManager);
         if (gfConnection == null) {
             // NOTE: currently, the task will be canceled on the next initialization of ActivitySourcesManager

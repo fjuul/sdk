@@ -14,8 +14,8 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
-import com.fjuul.sdk.activitysources.entities.ActivitySourcesManager
 import com.fjuul.sdk.activitysources.entities.ActivitySourcesManagerConfig
 import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.android.exampleapp.R
@@ -80,6 +80,11 @@ class LoginFragment : Fragment() {
         val continueButton = view.findViewById<Button>(R.id.continue_btn)
         val createUserButton = view.findViewById<Button>(R.id.create_user_button)
         val radioGroup = view.findViewById<RadioGroup>(R.id.env_radio_group)
+        var hasValidUserConfig = false
+        var logoutInProgress = authorizedUserDataViewModel.logoutInProgress.value == true
+        fun updateContinueButton() {
+            continueButton.isEnabled = hasValidUserConfig && !logoutInProgress
+        }
 
         // initial setup by view models
         apiKeyInput.setText(sdkConfigViewModel.apiKey.value, TextView.BufferType.NORMAL)
@@ -107,8 +112,42 @@ class LoginFragment : Fragment() {
             viewLifecycleOwner
         ) {
             val (apiKey, env, token, secret) = it
-            continueButton.isEnabled =
-                apiKey != null && env != null && !token.isNullOrBlank() && !secret.isNullOrBlank()
+            hasValidUserConfig = apiKey != null && env != null && !token.isNullOrBlank() && !secret.isNullOrBlank()
+            updateContinueButton()
+        }
+        authorizedUserDataViewModel.logoutInProgress.observe(viewLifecycleOwner) { inProgress ->
+            logoutInProgress = inProgress
+            updateContinueButton()
+        }
+        authorizedUserDataViewModel.loginError.observe(viewLifecycleOwner) { message ->
+            if (message != null && !isLoginDestinationActive(message.destinationId)) {
+                authorizedUserDataViewModel.consumeLoginError()
+            } else if (message != null) {
+                AlertDialog.Builder(requireContext())
+                    .setMessage(message.message)
+                    .setPositiveButton(android.R.string.ok) { _, _ ->
+                        authorizedUserDataViewModel.consumeLoginError()
+                    }
+                    .show()
+            }
+        }
+        authorizedUserDataViewModel.activitySourcesInitialization.observe(viewLifecycleOwner) { result ->
+            if (result != null && !isLoginDestinationActive(result.destinationId)) {
+                authorizedUserDataViewModel.consumeActivitySourcesInitialization()
+            } else if (result != null) {
+                if (result.result.isError) {
+                    AlertDialog.Builder(requireContext())
+                        .setMessage(result.result.error?.message ?: "Activity sources initialization failed")
+                        .setPositiveButton(android.R.string.ok) { _, _ ->
+                            authorizedUserDataViewModel.consumeActivitySourcesInitialization()
+                        }
+                        .show()
+                } else {
+                    authorizedUserDataViewModel.consumeActivitySourcesInitialization()
+                    val action = LoginFragmentDirections.actionLoginFragmentToModulesFragment()
+                    findNavController().navigate(action)
+                }
+            }
         }
 
         radioGroup.setOnCheckedChangeListener { _, checkedId ->
@@ -145,21 +184,25 @@ class LoginFragment : Fragment() {
                 )
                     .setUserCredentials(UserCredentials(token!!, secret!!))
                     .build()
+                val viewModel = authorizedUserDataViewModel
+                val managerConfig = activitySourcesManagerConfig
+                val destinationId = findNavController().currentBackStackEntry?.id ?: return@setOnClickListener
                 authorizedUserDataViewModel.fetchUserProfile(apiClient) { success, exception ->
                     if (success) {
-                        ApiClientHolder.setup(apiClient)
-                        ActivitySourcesManager.initialize(apiClient, activitySourcesManagerConfig)
-                        val action = LoginFragmentDirections.actionLoginFragmentToModulesFragment()
-                        findNavController().navigate(action)
+                        viewModel.initializeActivitySources(apiClient, managerConfig, destinationId)
                     } else {
-                        AlertDialog.Builder(requireContext()).setMessage(
-                            exception?.message ?: "Unknown Error"
-                        ).show()
+                        viewModel.setLoginError(exception?.message ?: "Unknown Error", destinationId)
                     }
                 }
             }
         }
     }
+
+    private fun isLoginDestinationActive(destinationId: String): Boolean =
+        isAdded
+            && viewLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+            && findNavController().currentBackStackEntry?.id == destinationId
+            && findNavController().currentDestination?.id == R.id.loginFragment
 
     companion object {
         /**

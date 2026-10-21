@@ -68,7 +68,8 @@ public class GoogleFitActivitySource extends ActivitySource {
     private final @NonNull ExecutorService localSequentialBackgroundExecutor;
     private volatile @Nullable Date lowerDateBoundary;
 
-    static synchronized void initialize(@NonNull ApiClient client,
+    @NonNull
+    static GoogleFitActivitySource create(@NonNull ApiClient client,
         @NonNull ActivitySourcesManagerConfig sourcesManagerConfig) {
         final Context context = client.getAppContext();
         final ActivitySourcesService sourcesService = new ActivitySourcesService(client);
@@ -76,8 +77,12 @@ public class GoogleFitActivitySource extends ActivitySource {
         final GFSyncMetadataStore syncMetadataStore = new GFSyncMetadataStore(client.getStorage());
         final GFDataManagerBuilder gfDataManagerBuilder =
             new GFDataManagerBuilder(context, gfUtils, syncMetadataStore, sourcesService);
-        instance = new GoogleFitActivitySource(sourcesManagerConfig
+        return new GoogleFitActivitySource(sourcesManagerConfig
             .getCollectableFitnessMetrics(), sourcesService, context, gfDataManagerBuilder, sharedSequentialExecutor);
+    }
+
+    static synchronized void publish(@NonNull GoogleFitActivitySource source) {
+        instance = source;
     }
 
     /**

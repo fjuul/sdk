@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.annotation.RestrictTo
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import com.fjuul.sdk.activitysources.entities.HealthConnectActivitySource.Companion.getInstance
@@ -192,6 +193,18 @@ class HealthConnectActivitySource private constructor(
             config: ActivitySourcesManagerConfig,
             storage: IStorage
         ) {
+            instance = create(apiClient, config, storage)
+        }
+
+        // JVM-public despite `internal`: lets ActivitySourcesManager publish only after its initialization succeeded.
+        @JvmStatic
+        @JvmName("forInternalUseOnly_create")
+        @RestrictTo(RestrictTo.Scope.LIBRARY)
+        internal fun create(
+            apiClient: ApiClient,
+            config: ActivitySourcesManagerConfig,
+            storage: IStorage
+        ): HealthConnectActivitySource {
             val context = apiClient.appContext.applicationContext
             val hcClient =
                 if (getHealthConnectAvailability(context) == HealthConnectAvailability.SDK_AVAILABLE) {
@@ -207,7 +220,15 @@ class HealthConnectActivitySource private constructor(
                 healthConnectClient = hcClient,
                 allAvailableMetrics = config.collectableFitnessMetrics
             )
-            instance = HealthConnectActivitySource(dataMgr, permMgr, storage)
+            return HealthConnectActivitySource(dataMgr, permMgr, storage)
+        }
+
+        @JvmStatic
+        @JvmName("forInternalUseOnly_publish")
+        @RestrictTo(RestrictTo.Scope.LIBRARY)
+        @Synchronized
+        internal fun publish(source: HealthConnectActivitySource) {
+            instance = source
         }
 
         /**

@@ -9,9 +9,11 @@ import androidx.appcompat.widget.Toolbar
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
 import com.fjuul.sdk.activitysources.entities.ExternalAuthenticationFlowHandler
 import com.fjuul.sdk.android.exampleapp.databinding.ActivityMainBinding
+import com.fjuul.sdk.android.exampleapp.data.AuthorizedUserDataViewModel
 import com.fjuul.sdk.android.exampleapp.ui.activity_sources.ActivitySourcesFragment
 
 class MainActivity : AppCompatActivity() {
@@ -27,8 +29,17 @@ class MainActivity : AppCompatActivity() {
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
         val appBarConfiguration = AppBarConfiguration(navController.graph)
-        findViewById<Toolbar>(R.id.toolbar)
-            .setupWithNavController(navController, appBarConfiguration)
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        toolbar.setupWithNavController(navController, appBarConfiguration)
+        val authorizedUserDataViewModel = androidx.lifecycle.ViewModelProvider(this)
+            .get(AuthorizedUserDataViewModel::class.java)
+        toolbar.setNavigationOnClickListener {
+            val logoutPending = authorizedUserDataViewModel.logoutInProgress.value == true
+                || authorizedUserDataViewModel.logoutResult.value != null
+            if (!logoutPending) {
+                navController.navigateUp(appBarConfiguration)
+            }
+        }
         if (savedInstanceState == null) {
             handleConnectionCallback(intent)
         }

@@ -8,6 +8,7 @@ import com.fjuul.sdk.activitysources.entities.FitnessMetricsType;
 
 import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
+import androidx.annotation.RestrictTo;
 
 public class BackgroundWorkManager {
     @NonNull
@@ -60,6 +61,16 @@ public class BackgroundWorkManager {
 
     public void cancelGFSyncWorks() {
         workScheduler.cancelGFIntradaySyncWork();
+        workScheduler.cancelGFSessionsSyncWork();
+    }
+
+    @RestrictTo(RestrictTo.Scope.LIBRARY)
+    public void cancelGFIntradaySyncWork() {
+        workScheduler.cancelGFIntradaySyncWork();
+    }
+
+    @RestrictTo(RestrictTo.Scope.LIBRARY)
+    public void cancelGFSessionsSyncWork() {
         workScheduler.cancelGFSessionsSyncWork();
     }
 

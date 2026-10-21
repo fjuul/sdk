@@ -13,7 +13,8 @@ class HCProfileSyncWorker(context: Context, workerParams: WorkerParameters) :
     HCSyncWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
-        val hcConnection = getHealthConnectActivitySourceConnection(activitySourcesManager)
+        val manager = getSessionActivitySourcesManager() ?: return Result.success()
+        val hcConnection = getHealthConnectActivitySourceConnection(manager)
         if (hcConnection == null) {
             return Result.success()
         }

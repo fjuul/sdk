@@ -1,10 +1,12 @@
 package com.fjuul.sdk.activitysources.entities.internal.healthconnect
 
 import android.os.Build
+import android.os.RemoteException
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.aggregate.AggregationResult
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.request.AggregateGroupByDurationRequest
 import androidx.health.connect.client.request.ChangesTokenRequest
 import androidx.health.connect.client.response.ChangesResponse
@@ -44,13 +46,19 @@ class HealthConnectDataManagerTest {
 
     private val options = HealthConnectSyncOptions(setOf(FitnessMetricsType.INTRADAY_HEART_RATE))
     private val lowerDateBoundary = Date.from(Instant.now().minus(Duration.ofDays(1)))
+    private var foregroundOnlyRecordTypes = emptySet<Any>()
 
     // Health Connect reports the stored token as expired, which forces a full sync.
     private val client = object : HealthConnectClient by mock(HealthConnectClient::class.java) {
         override suspend fun getChanges(changesToken: String) =
             ChangesResponse(emptyList(), "", false, changesToken == EXPIRED_TOKEN)
 
-        override suspend fun getChangesToken(request: ChangesTokenRequest) = FRESH_TOKEN
+        override suspend fun getChangesToken(request: ChangesTokenRequest): String {
+            if (request.recordTypes.any { it in foregroundOnlyRecordTypes }) {
+                throw RemoteException("app must be in foreground to read the following data types")
+            }
+            return FRESH_TOKEN
+        }
 
         override suspend fun aggregateGroupByDuration(
             request: AggregateGroupByDurationRequest
@@ -106,6 +114,18 @@ class HealthConnectDataManagerTest {
         runBlocking { dataManager.syncIntraday(options, lowerDateBoundary) }
 
         assertEquals(FRESH_TOKEN, storage.get(HealthConnectDataManager.HEART_RATE_CHANGES_TOKEN))
+    }
+
+    @Test
+    fun syncIntraday_changesTokenReadDeniedInBackground_throwsToCaller() {
+        foregroundOnlyRecordTypes = setOf(TotalCaloriesBurnedRecord::class)
+        repeat(10) { mockWebServer.enqueue(MockResponse().setResponseCode(200)) }
+        val caloriesOptions = HealthConnectSyncOptions(setOf(FitnessMetricsType.INTRADAY_CALORIES))
+
+        assertThrows(RemoteException::class.java) {
+            runBlocking { dataManager.syncIntraday(caloriesOptions, lowerDateBoundary) }
+        }
+        assertEquals(null, storage.get(HealthConnectDataManager.TOTAL_CALORIES_CHANGES_TOKEN))
     }
 
     private companion object {

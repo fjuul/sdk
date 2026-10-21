@@ -22,10 +22,6 @@ import com.fjuul.sdk.activitysources.entities.FitnessMetricsType
 import com.fjuul.sdk.activitysources.http.services.ActivitySourcesService
 import com.fjuul.sdk.activitysources.utils.roundTo
 import com.fjuul.sdk.core.entities.IStorage
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -64,8 +60,6 @@ class HealthConnectDataManager(
         private const val EMPTY = ""
     }
 
-    private val myScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-
     /**
      * Synchronize intraday data: fetches 1-minute buckets over the last 2 days for all requested metrics,
      * groups them by local date, and uploads each day as a separate payload.
@@ -89,13 +83,11 @@ class HealthConnectDataManager(
             // After that if everything is good we get last changes token from Health Connect and
             // save it.
             if (storedHeartRateChangesToken.isNullOrEmpty()) {
+                val heartRateChangesToken = client.getChangesToken(
+                    ChangesTokenRequest(recordTypes = setOf(HeartRateRecord::class))
+                )
                 makeFullSync(heartRateMetric, lowerDateBoundary, true) {
-                    myScope.launch {
-                        val heartRateChangesToken = client.getChangesToken(
-                            ChangesTokenRequest(recordTypes = setOf(HeartRateRecord::class))
-                        )
-                        storedHeartRateChangesToken = heartRateChangesToken
-                    }
+                    storedHeartRateChangesToken = heartRateChangesToken
                 }
             }
 
@@ -129,14 +121,11 @@ class HealthConnectDataManager(
         val totalCaloriesMetric = setOf(TotalCaloriesBurnedRecord.ENERGY_TOTAL)
         if (options.metrics.contains(FitnessMetricsType.INTRADAY_CALORIES)) {
             if (storedActiveCaloriesChangesToken.isNullOrEmpty()) {
+                val activeCaloriesChangesToken = client.getChangesToken(
+                    ChangesTokenRequest(recordTypes = setOf(ActiveCaloriesBurnedRecord::class))
+                )
                 makeFullSync(activeCaloriesMetric, lowerDateBoundary, true) {
-                    myScope.launch {
-                        val activeCaloriesChangesToken = client.getChangesToken(
-                            ChangesTokenRequest(recordTypes = setOf(ActiveCaloriesBurnedRecord::class))
-                        )
-                        storedActiveCaloriesChangesToken = activeCaloriesChangesToken
-                    }
-
+                    storedActiveCaloriesChangesToken = activeCaloriesChangesToken
                 }
             }
 
@@ -163,13 +152,11 @@ class HealthConnectDataManager(
             }
 
             if (storedTotalCaloriesChangesToken.isNullOrEmpty()) {
+                val totalCaloriesChangesToken = client.getChangesToken(
+                    ChangesTokenRequest(recordTypes = setOf(TotalCaloriesBurnedRecord::class))
+                )
                 makeFullSync(totalCaloriesMetric, lowerDateBoundary, true) {
-                    myScope.launch {
-                        val totalCaloriesChangesToken = client.getChangesToken(
-                            ChangesTokenRequest(recordTypes = setOf(TotalCaloriesBurnedRecord::class))
-                        )
-                        storedTotalCaloriesChangesToken = totalCaloriesChangesToken
-                    }
+                    storedTotalCaloriesChangesToken = totalCaloriesChangesToken
                 }
             }
             if (!storedTotalCaloriesChangesToken.isNullOrEmpty()) {
@@ -310,31 +297,31 @@ class HealthConnectDataManager(
      * @param changesTokenKey contains key of token that we need to save in storage
      * @param lowerDateBoundary contains first date of application sync
      * @param isIntradaySync Boolean variable that get us is it intraday sync or not
+     * @return the new changes token
      */
-    private fun tokenExpired(
+    private suspend fun tokenExpired(
         recordTypes: Set<KClass<out Record>>,
         metrics: Set<AggregateMetric<*>>,
         changesTokenKey: String,
         lowerDateBoundary: Date,
         isIntradaySync: Boolean,
-    ) {
+    ): String {
         if (client == null) throw HealthConnectException.UnsupportedHealthConnectException()
         // If token expired we need to make full sync and save our last changes token when
         // everything is success
-        myScope.launch {
-            val changesToken = client.getChangesToken(
-                ChangesTokenRequest(
-                    recordTypes = recordTypes
-                )
+        val changesToken = client.getChangesToken(
+            ChangesTokenRequest(
+                recordTypes = recordTypes
             )
+        )
 
-            makeFullSync(metrics, lowerDateBoundary, isIntradaySync) {
-                storage.set(
-                    changesTokenKey,
-                    changesToken
-                )
-            }
+        makeFullSync(metrics, lowerDateBoundary, isIntradaySync) {
+            storage.set(
+                changesTokenKey,
+                changesToken
+            )
         }
+        return changesToken
     }
 
     /**
@@ -349,7 +336,7 @@ class HealthConnectDataManager(
         token: String,
         type: FitnessMetricsType,
         onTokenSave: (String) -> Unit,
-        onChangesTokenExpired: () -> Unit,
+        onChangesTokenExpired: suspend () -> String,
         isActiveCaloriesBurned: Boolean? = null,
     ): MutableList<HealthConnectTimeInterval> {
         if (client == null) throw HealthConnectException.UnsupportedHealthConnectException()
@@ -358,7 +345,8 @@ class HealthConnectDataManager(
         do {
             val response = client.getChanges(nextChangesToken)
             if (response.changesTokenExpired) {
-                onChangesTokenExpired()
+                // keep the caller from re-persisting the expired token afterwards
+                onTokenSave(onChangesTokenExpired())
                 return mutableListOf()
             }
             response.changes.forEach { change ->

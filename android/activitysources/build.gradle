@@ -59,7 +59,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-auth:21.3.0'
     implementation 'com.google.android.gms:play-services-fitness:21.1.0'
     implementation "androidx.work:work-runtime:$workVersion"
-    implementation "com.google.guava:guava:33.4.8-android"
+    implementation "com.google.guava:guava:33.7.1-android"
     implementation "androidx.concurrent:concurrent-futures:1.3.0"
 
     // TODO: specify an exact version for the Core package
